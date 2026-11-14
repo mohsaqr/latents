@@ -10,6 +10,24 @@ reference_packages <- c(
   "nnls", "Rmpfr", "jsonlite")
 missing_packages <- setdiff(reference_packages, rownames(utils::installed.packages()))
 if (length(missing_packages)) utils::install.packages(missing_packages)
+# Pinned reference versions, installed from the CRAN archive when another
+# version is present. lcmm 2.2.2 returns no subject-specific predictions for
+# the growth mixtures of test-growth-predict-lcmm.R (its blocks then skip and
+# the lcmm reference is incomplete); 2.2.1 does, and is what the 2026-11-01
+# matrix was built with.
+pinned <- c(lcmm = "2.2.1")
+outdated <- names(pinned)[vapply(names(pinned), function(p) {
+  !p %in% rownames(utils::installed.packages()) ||
+    as.character(utils::packageVersion(p)) != pinned[[p]]
+}, logical(1))]
+invisible(lapply(outdated, function(p) {
+  utils::install.packages(
+    sprintf("https://cran.r-project.org/src/contrib/Archive/%s/%s_%s.tar.gz", p, p, pinned[[p]]),
+    repos = NULL, type = "source")
+  if (as.character(utils::packageVersion(p)) != pinned[[p]]) {
+    stop(sprintf("%s %s could not be installed", p, pinned[[p]]), call. = FALSE)
+  }
+}))
 still_missing <- setdiff(reference_packages, rownames(utils::installed.packages()))
 if (length(still_missing)) {
   stop("Not installed: ", paste(still_missing, collapse = ", "), call. = FALSE)

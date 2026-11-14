@@ -5,7 +5,7 @@ family: "regression"
 label: "mixture_regression(random =)"
 slug: "growth"
 name: "Estimate regression relationships that vary across latent classes"
-summary: "Estimate regression relationships that vary across latent classes. Verification strength +++ P in latents' verification matrix: 3 source(s) (Mplus (Mplus 9 Demo (JStats fixtures); Mplus), Latent GOLD, SAS PROC TRAJ (Andruff et al. 2009)), 1 published paper(s), 16 dataset(s), 941 current checks of which 0 failed."
+summary: "Estimate regression relationships that vary across latent classes. Verification strength ++++ P in latents' verification matrix: 4 source(s) (Mplus (Mplus 9 Demo (JStats fixtures); Mplus), Latent GOLD, SAS PROC TRAJ (Andruff et al. 2009), lcmm), 1 published paper(s), 16 dataset(s), 947 current checks of which 0 failed."
 module_files:
   - "R/mixture-regression.R"
 public_api:

@@ -1,0 +1,4 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-sas-published.R","sas-published","the SAS published kit's data are the files posted and transcribed",2,0,FALSE,FALSE,0,0.018,0,0.019,2
+"test-sas-published.R","sas-published","sas-published compares every case, and its register explains only what occurs",3,0,FALSE,FALSE,0,79.268,0.094,79.375,3
+"test-sas-published.R","sas-published","sas-published agrees with SAS",2,0,FALSE,FALSE,0,0.00199999999999534,0,0.00100000000000477,2

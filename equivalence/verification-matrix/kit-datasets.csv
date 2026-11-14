@@ -25,6 +25,13 @@ equivalence/mplus-published/comparison.csv,^ucla_drinking_.*$,drinking (UCLA lca
 equivalence/mplus-published/comparison.csv,^vermunt_diabetes_.*$,diabetes (EXAM1.dat)
 equivalence/mplus-published/comparison.csv,^langeheine_.*$,Langeheine-van de Pol panel (ALCA ch. 11)
 equivalence/proctraj-published/comparison.csv,^proctraj_.*$,disengagement coping (Andruff et al. 2009)
+equivalence/sas-published/comparison.csv,^proclca_drinking_.*$,drinking (UCLA lca1.dat)
+equivalence/sas-published/comparison.csv,^mccutcheon_p16_.*$,McCutcheon (1987) page 16
+equivalence/sas-published/comparison.csv,^mccutcheon_p33_.*$,McCutcheon (1987) Table 3.2
+equivalence/sas-published/comparison.csv,^mccutcheon_p47_.*$,McCutcheon (1987) Table 4.2
+equivalence/sas-published/comparison.csv,^proclca_help_.*$,HELP (mosaicData HELPrct)
+equivalence/sas-published/comparison.csv,^fmm_galaxies_.*$,galaxies (Roeder 1990)
+equivalence/sas-published/comparison.csv,^fmm_yeast_.*$,yeast cell counts (Student; Pearson 1915)
 equivalence/mplus-ug/comparison.csv,^(ex[78][.][0-9]+)_.*$,Mplus User's Guide \1
 equivalence/mplus-growth/comparison.csv,^(.*)_k[0-9]+$,Mplus growth fixture: \1
 equivalence/enumeration-packages/comparison.csv,^([a-z]+)_.*$,\1

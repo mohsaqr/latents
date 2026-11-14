@@ -27,8 +27,10 @@ BIC = L - p log(N) / 2, N the 321 observations or the 107 persons.
 **Standard errors.** Every error both figures print is latents' (observed
 information) times sqrt(N / (N - q)), N = 321 and q the parameters other than
 Sigma: 1.004706 (q = 3) and 1.017588 (q = 11), to the printed digits, a
-degrees-of-freedom factor on the residual variance. It was measured on these
-two outputs, not taken from PROC TRAJ's documentation.
+degrees-of-freedom factor on the residual variance. Jones, Nagin and Roeder (2001, *Sociological
+Methods & Research* 29, p. 379) document only "inverting the observed
+information matrix"; the factor on top of it is measured on the two printed
+outputs (every error, to the printed digits), not documented.
 
 ## Known differences (`known-differences.csv`)
 

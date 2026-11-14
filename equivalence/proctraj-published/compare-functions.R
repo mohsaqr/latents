@@ -25,9 +25,13 @@
 # information error times sqrt(N / (N - q)), N = 321 observations and q the
 # parameters other than Sigma (1.004706 with q = 3 in Figure 3, 1.017588 with
 # q = 11 in Figure 4), to the printed digits: a degrees-of-freedom factor on
-# the residual variance. The factor was measured on these outputs, not taken
-# from PROC TRAJ's documentation; latents' errors are scaled by it before the
-# comparison.
+# the residual variance. Jones, Nagin and Roeder (2001, Sociological Methods
+# & Research 29, p. 379) say only that "standard error estimates are
+# calculated by inverting the observed information matrix"; the printed
+# errors are that times this factor (to every printed digit, 12 errors in
+# Figure 4 and 4 in Figure 3), so PROC TRAJ applies an undocumented
+# degrees-of-freedom scaling. The factor is measured, not documented;
+# latents' errors are scaled by it before the comparison.
 
 .proctraj_source <- "SAS PROC TRAJ (Andruff et al. 2009)"
 

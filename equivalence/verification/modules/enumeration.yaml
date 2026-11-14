@@ -5,7 +5,7 @@ family: "cluster"
 label: "enumerate_*() / compare_models()"
 slug: "enumeration"
 name: "Class enumeration and comparison of mixture models"
-summary: "Class enumeration and comparison of mixture models. Verification strength ++++ in latents' verification matrix: 4 source(s) (Mplus, mclust, poLCA, glca), 0 published paper(s), 8 dataset(s), 227 current checks of which 0 failed."
+summary: "Class enumeration and comparison of mixture models. Verification strength +++++ in latents' verification matrix: 5 source(s) (Mplus, SAS/STAT 14.2 PROC FMM (User's Guide Getting Started), mclust, poLCA, glca), 0 published paper(s), 9 dataset(s), 233 current checks of which 0 failed."
 module_files:
   - "R/compare-models.R"
   - "R/enumeration.R"
@@ -19,6 +19,7 @@ public_api:
   - "compare_models"
 papers: []
 tolerances:
+  - { function: "enumerate_*() / compare_models(): 6 quantities (sas-published)", reference: "SAS/STAT 14.2 PROC FMM (User's Guide Getting Started)", tolerance: "0 to 0.0054 (6 of 6 within)", status: "pass" }
   - { function: "enumerate_*() / compare_models(): 120 quantities (enumeration-packages)", reference: "mclust", tolerance: "0 to 2.5e-06 (120 of 120 within)", status: "pass" }
   - { function: "enumerate_*() / compare_models(): 36 quantities (enumeration-packages)", reference: "poLCA", tolerance: "0 to 2.1e-06 (36 of 36 within)", status: "pass" }
 cvs_files:
@@ -28,6 +29,7 @@ cvs_files:
   - "equivalence/test-enumeration-mplus.R"
   - "equivalence/test-enumeration-packages.R"
   - "equivalence/test-lrt.R"
+  - "equivalence/test-sas-published.R"
   - "tests/equivalence/test-enumeration.R"
 cvs_test_filter:
   - { file: "equivalence/argument-sweep/modules/postfit.R", test_name_includes: "compare-models[" }
@@ -54,3 +56,4 @@ cvs_test_filter:
 cross_software_expected:
   - { software: "Mplus", package: "Mplus" }
   - { software: "independent", package: "Kneedle hand-worked and reported values" }
+  - { software: "sas", package: "SAS/STAT 14.2 PROC FMM (User's Guide Getting Started)" }

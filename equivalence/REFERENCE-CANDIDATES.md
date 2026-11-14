@@ -48,6 +48,7 @@ paper, and growth has a single program.
 | Scrucca, Fop, Murphy & Raftery (2016), *R Journal* 8(1), doi:10.32614/RJ-2016-021 | old `mclust::diabetes`; `gclus::wine` | 14 structures × G = 1–9 BIC grid; wine EVE-3 BIC −6873.257; bootstrap LRT statistics 361.186445 / 114.703559 / 7.437806 | VVV-3 (BIC −4760.091) is a local maximum: Mplus reaches LL −2303.492 | ✓ |
 | mclust 6.1.3 vignette | current `mclust::diabetes` | VVV-3 LL −2295.118, BIC −4734.561, all parameters; bootstrap LRT statistics 369.98537 / 121.10652 / 19.90071 | the dataset differs from the 2016 paper's | ✓ |
 | Lebret et al. (2015), Rmixmod, *JSS* 67(6), doi:10.18637/jss.v067.i06 | `geyser` | K = 3 LL −1131.0738, BIC 2312.5998 | equal proportions forced; useful mainly as an engine with `weight =` | ✓ |
+| SAS/STAT 14.2 PROC FMM, Getting Started: galaxies (Roeder 1990) | 82 velocities printed in the manual (`MASS::galaxies` with its 78th value corrected) | unequal variances K = 3: −2LL 406.96; equal variances K = 4: 416.49; every mean, variance and GLogit with its SE; the K = 3–7 grids | PROC FMM's equal-variance K = 3, 5–7 are lower maxima; the unequal-variance grid above K = 3 is unbounded | ✓ (`sas-published/`) |
 
 Gaps: no published FIML table on public data (StepMix's `gaussian_*_nan` is the
 software fallback). No published weighted LPA (Rmixmod `weight =`, and the
@@ -62,7 +63,10 @@ only mclust.
 | Beath (2017), randomLCA, *JSS* 81(13), doi:10.18637/jss.v081.i13 | `randomLCA::myocardial`, n = 94 | BIC 524.7441 (K = 1), 402.2951 (K = 2); LL −180.7027; class probabilities .5422/.4578; bootstrap LRT p = .001 (999 replicates) | the default `penalty = 0.01` shifts the optimum (penalised LL −180.7829) | ✓ |
 | Mplus 8.8 UG ex7.6, ex7.7, ex7.8 | output and data in `../JStats/validation/r-reference/` (`mplus-ug-ex7.x-full.out.txt`, `mplus-ug-ex7.x.dat`) | ex7.6, 3 categories, n = 5000: LL −19214.480. ex7.7/7.8, nominal: LL −21408.482. Estimates with SEs | ex7.6 uses STARTS = 0, so its LL may be a local maximum | ✓ |
 | StepMix Table 11, covariate simulation | `data_bakk_covariate(n_samples = 2000, sep_level = 0.9, random_state = 42)`, exported from Python | LL −5192.049 in StepMix, poLCA and Mplus | 6 binary items, covariate on membership | ✓ |
-| Kleinman & Horton (2011), SAS and R blog, Example 8.21 | `mosaicData::HELPrct`, n = 431 complete (homeless, cesd > 20, satreat, linkstatus) | K = 3: SAS PROC LCA LL −1032.48; poLCA −1032.484, 14 parameters, AIC 2092.967, BIC 2149.893, shares .2162/.0785/.7053 (in `lca-packages/`) | df = 1; some probabilities on the boundary; current randomLCA refuses it | ✓ |
+| Kleinman & Horton (2011), SAS and R blog, Example 8.21 | `mosaicData::HELPrct`, n = 431 complete (homeless, cesd > 20, satreat, linkstatus) | K = 3: SAS PROC LCA LL −1032.48; poLCA −1032.484, 14 parameters, AIC 2092.967, BIC 2149.893, shares .2162/.0785/.7053 (poLCA in `lca-packages/`; SAS's own output, every γ and ρ and its fit statistics, in `sas-published/`) | df = 1; some probabilities on the boundary; current randomLCA refuses it | ✓ |
+| SAS PROC LCA, UCLA OARC data analysis example "Latent Class Analysis" | `lca1.dat` (the file of the Mplus page), n = 1000, nine items | K = 3: LL −4231.70, G² 319.96, AIC/BIC/CAIC/ABIC on the G² scale, entropy .55, every γ and ρ with its SE | PROC LCA stops at a parameter change of 1e-6 (MAD), short of the maximum on this flat likelihood: estimates 3e-4 off (`sas-published/mad-stop.R`) | ✓ (`sas-published/`) |
+| SAS PROC LCA, UCLA OARC textbook examples of McCutcheon (1987) | `page16`, `page33`, `page47` SAS data sets (frequency tables) | p. 16 K = 2 (LL −565.59), p. 33 K = 1, 2 (−2872.23, −2783.27), p. 47 K = 1 (−2346.67); γ, ρ, G², AIC, BIC | the restricted models (pp. 33–70) need fixed or equated probabilities in `lca()` | ✓ (`sas-published/`, unrestricted models) |
+| PROC LCA & PROC LTA users' guide 1.3.2 (Methodology Center), Appendices 1–9 | data printed in the guide | Appendix 1 (4-class, groups, measurement invariance): LL −5739.14; Appendix 2 (weights, clusters): −390.96; Appendices 3–9 print no output | both printed outputs use the stabilizing prior `RHO PRIOR=1` (a posterior mode); needs a Dirichlet prior on ρ in `lca()` | ○ |
 
 Also in JStats, unused: Mplus UG ex7.4 (binary, LL −1325.213) and ex7.12
 (covariate with a class-invariant direct effect `u4 ON x`, LL −1255.396; only if
@@ -99,6 +103,7 @@ frequency-aggregated (`yv`) fit.
 | Reference | Data and access | Published numbers | To match | |
 |---|---|---|---|---|
 | Stata 19 [FMM] Examples 1a, 1b, 2 | `https://www.stata-press.com/data/r19/mus03sub.dta`; `gsem_mixture.dta` (needs haven) | 1a, `fmm 3: regress lmedexp income c.age##c.age totchr i.sex`: LL −4727.6738, N = 2955, class probabilities .2216/.7085/.0699, full coefficient and SE tables (1 and 2 classes: −4807.39, −4758.18). 1b, `lcprob(totchr)`: −4712.3871. 2, Poisson: −11502.686 | concomitant model for 1b | ✓ |
+| SAS/STAT 14.2 PROC FMM, Getting Started: yeast cells ("Student"; Pearson 1915) | Table 40.1, six cells, 400 squares | 2-component binomial(5): intercepts −2.2316 (.1522), −0.2974 (.3655), mixing .8799, logit 1.9913 (.5725), posteriors of every cell | events/trials with FREQ | ✓ (`sas-published/`) |
 | SAS/STAT 14.2 PROC FMM, Example 40.3 | Ames salmonella (Margolin et al. 1981), 18 rows printed in the manual | 2-class Poisson, `dose` and `logd` slopes shared across classes: −2LL 121.8; intercepts 1.9097 (.2654), 2.4770 (.2731); mixing .8173 | shared slopes through `common =`; −2LL printed to one decimal | ✓ |
 | Grün & Leisch (2008), FlexMix 2, *JSS* 28(4), doi:10.18637/jss.v028.i04 | bioChemists; betablocker (Aitkin 1999) | Poisson with kid5/mar/ment shared and `~fem` on membership: BIC 3182.328. Binomial with classes by Center, k = 3, common Treatment: LL −159.3605 | flexmix output, but fixed published anchors; betablocker exercises group-level classes | ✓ |
 | Benaglia et al. (2009), mixtools, *JSS* 32(6), doi:10.18637/jss.v032.i06 | `mixtools::CO2data`, n = 28 | 2-class Gaussian: λ .7549/.2451, σ 2.0493/0.8094, LL −66.93977 | started from user values, possibly a local maximum | ✓ |
@@ -200,6 +205,10 @@ chapters 7, 8 and 10 with what latents fits and what it would need.
 - Rmixmod: https://www.jstatsoft.org/article/view/v067i06
 - randomLCA: https://www.jstatsoft.org/article/view/v081i13
 - SAS and R Example 8.21: https://sas-and-r.blogspot.com/2011/01/example-821-latent-class-analysis.html
+- UCLA OARC, SAS latent class analysis: https://stats.oarc.ucla.edu/sas/dae/latent-class-analysis/
+- UCLA OARC, McCutcheon (1987) in SAS: https://stats.oarc.ucla.edu/sas/examples/lca-mccutcheon/latent-class-analysis-by-allan-l-mccutcheon/
+- PROC LCA & PROC LTA users' guide 1.3.2: https://bpb-us-e1.wpmucdn.com/sites.psu.edu/dist/f/84470/files/2019/03/proc_lca_lta_1-3-2-1_users_guide-2ggq4d3.pdf
+- PROC TRAJ examples (code only, no data or output): https://www.andrew.cmu.edu/user/bjones/example.htm
 - LMest (2017): https://www.jstatsoft.org/article/view/v081i04
 - LMest (2024): https://journal.r-project.org/articles/RJ-2024-036/
 - Mplus User's Guide: https://www.statmodel.com/usersguide/chapter7.shtml, `chapter8.shtml`, `chapter10.shtml`

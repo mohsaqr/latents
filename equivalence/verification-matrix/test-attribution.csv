@@ -267,6 +267,9 @@ equivalence,test-mplus-published.R,compares every case,none,kit provenance,prove
 equivalence,test-mplus-published.R,agrees with Mplus,lca;lpa;lta;bootstrap_lrt,Mplus,commercial program
 equivalence,test-proctraj-published.R,compares every case,none,kit provenance,provenance
 equivalence,test-proctraj-published.R,agrees with SAS,growth,SAS PROC TRAJ (Andruff et al. 2009),commercial program
+equivalence,test-sas-published.R,data are the files posted and transcribed,none,kit provenance,provenance
+equivalence,test-sas-published.R,compares every case,none,kit provenance,provenance
+equivalence,test-sas-published.R,agrees with SAS,lca;lpa;enumeration;mixture_regression,SAS PROC LCA (UCLA OARC data analysis example);SAS PROC LCA (UCLA OARC textbook examples of McCutcheon 1987);SAS PROC LCA (SAS and R Example 8.21);SAS/STAT 14.2 PROC FMM (User's Guide Getting Started),commercial program
 equivalence,test-mplus-ug.R,listings are the files statmodel.com posted,none,kit provenance,provenance
 equivalence,test-mplus-ug.R,compares every case,none,kit provenance,provenance
 equivalence,test-mplus-ug.R,agrees with Mplus,lca;lpa;mixture_regression;growth;lta,Mplus,commercial program
@@ -279,6 +282,7 @@ equivalence,test-latentgold-categorical-distal.R,^the kit is the one,none,kit pr
 equivalence,test-latentgold-categorical-distal.R,.,three_step,Latent GOLD,commercial program
 equivalence,test-latentgold-step-one.R,^the kit is the one,none,kit provenance,provenance
 equivalence,test-latentgold-step-one.R,.,three_step,Latent GOLD,commercial program
+equivalence,test-latentgold-ordinal.R,reproduce Latent GOLD,multilpa,Latent GOLD,commercial program
 equivalence,test-lrt.R,^the likelihood-ratio kit compares,none,kit provenance,provenance
 equivalence,test-lrt.R,with mclust and glca,enumeration,mclust;glca,R package
 equivalence,test-lrt.R,with Mplus,enumeration,Mplus,commercial program

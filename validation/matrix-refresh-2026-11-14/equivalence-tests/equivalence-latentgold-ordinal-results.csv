@@ -1,0 +1,2 @@
+"file","context","test","nb","failed","skipped","error","warning","user","system","real","passed"
+"test-latentgold-ordinal.R","latentgold-ordinal","ordinal and count indicators reproduce Latent GOLD",3,0,FALSE,FALSE,0,52.618,0.049,52.69,3

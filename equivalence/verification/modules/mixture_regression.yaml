@@ -5,7 +5,7 @@ family: "regression"
 label: "mixture_regression()"
 slug: "mixture-regression"
 name: "Estimate regression relationships that vary across latent classes"
-summary: "Estimate regression relationships that vary across latent classes. Verification strength +++++ PPP in latents' verification matrix: 5 source(s) (Latent GOLD, Mplus, flexmix, MoEClust, mixtools), 3 published paper(s), 22 dataset(s), 1010 current checks of which 0 failed."
+summary: "Estimate regression relationships that vary across latent classes. Verification strength ++++++ PPP in latents' verification matrix: 6 source(s) (Latent GOLD, Mplus, SAS/STAT 14.2 PROC FMM (User's Guide Getting Started), flexmix, MoEClust, mixtools), 3 published paper(s), 23 dataset(s), 1032 current checks of which 0 failed."
 module_files:
   - "R/mixture-regression.R"
 public_api:
@@ -20,6 +20,7 @@ tolerances:
   - { function: "mixture_regression(): 38 quantities (latentgold-coverage)", reference: "Latent GOLD", tolerance: "0 to 6e-05 (38 of 38 within)", status: "pass" }
   - { function: "mixture_regression(): 25 quantities (regression-packages)", reference: "MoEClust", tolerance: "1e-06 to 1e-04 (25 of 25 within)", status: "pass" }
   - { function: "mixture_regression(): 29 quantities (mplus-ug)", reference: "Mplus", tolerance: "0 to 0.0022 (29 of 29 within)", status: "pass" }
+  - { function: "mixture_regression(): 22 quantities (sas-published)", reference: "SAS/STAT 14.2 PROC FMM (User's Guide Getting Started)", tolerance: "6e-07 to 5.2e-05 (22 of 22 within)", status: "pass" }
   - { function: "mixture_regression(): 14 quantities (regression-packages)", reference: "SAS/STAT 14.2 PROC FMM Example 40.3 (Wang et al. 1996 model)", tolerance: "5e-07 to 0.05 (14 of 14 within)", status: "pass" }
   - { function: "mixture_regression(): 11 quantities (regression-packages)", reference: "flexmix", tolerance: "1e-06 to 1e-04 (11 of 11 within)", status: "pass" }
   - { function: "mixture_regression(): 25 quantities (sweep)", reference: "flexmix", tolerance: "1e-08 to 1e-06 (25 of 25 within)", status: "pass" }
@@ -39,6 +40,7 @@ cvs_files:
   - "equivalence/test-mplus-ug.R"
   - "equivalence/test-regression-packages.R"
   - "equivalence/test-review-1026-oracles.R"
+  - "equivalence/test-sas-published.R"
   - "tests/equivalence/test-astra-core.R"
   - "tests/equivalence/test-audit-extension-repairs.R"
   - "tests/equivalence/test-cluster-robust-cr1.R"
@@ -76,3 +78,4 @@ cross_software_expected:
   - { software: "paper", package: "Benaglia et al. (2009) JSS 32(6), CO2data" }
   - { software: "paper", package: "Grun and Leisch (2008) JSS 28(4), betablocker" }
   - { software: "paper", package: "SAS/STAT 14.2 PROC FMM Example 40.3 (Wang et al. 1996 model)" }
+  - { software: "sas", package: "SAS/STAT 14.2 PROC FMM (User's Guide Getting Started)" }

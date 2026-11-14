@@ -38,12 +38,13 @@ source(file.path(.matrix_dir, "attribution.R"), local = TRUE)
 #' @return A data.frame: one row per input file.
 #' @noRd
 .matrix_evidence_files <- function() {
-  # The 2026-11-14 refresh: every equivalence/ test file in four ci shards, the
+  # The 2026-11-14 refresh: every equivalence/ test file in four ci shards (plus
+  # the one-file runs latentgold-ordinal and sas-published), the
   # tests/equivalence/ files, the harness and the argument sweep, each with its
   # provenance sidecar. Older results stay listed: a file's newest current
   # result is preferred.
   refresh <- "matrix-refresh-2026-11-14"
-  shards <- c("a-f", "g-l", "m-u-v-e-w-z", "verification")
+  shards <- c("a-f", "g-l", "m-u-v-e-w-z", "verification", "latentgold-ordinal", "sas-published")
   files <- data.frame(
     role = c("harness", "sweep", "tests", "tests", "tests", "tests", "tests",
              rep("tests", length(shards)), "tests"),

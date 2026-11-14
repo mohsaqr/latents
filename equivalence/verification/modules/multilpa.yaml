@@ -5,7 +5,7 @@ family: "cluster"
 label: "multilpa()"
 slug: "multilpa"
 name: "Fit a two-level latent profile model"
-summary: "Fit a two-level latent profile model. Verification strength +++++ in latents' verification matrix: 5 source(s) (Mplus, Latent GOLD, depmixS4, mclust, flexmix), 0 published paper(s), 81 dataset(s), 8125 current checks of which 0 failed."
+summary: "Fit a two-level latent profile model. Verification strength +++++ in latents' verification matrix: 5 source(s) (Mplus, Latent GOLD, depmixS4, mclust, flexmix), 0 published paper(s), 88 dataset(s), 8139 current checks of which 0 failed."
 module_files:
   - "R/multilpa.R"
 public_api:
@@ -33,6 +33,7 @@ cvs_files:
   - "equivalence/harness/suites/twolevel-lpa.R"
   - "equivalence/test-external-scripts.R"
   - "equivalence/test-latentgold-families.R"
+  - "equivalence/test-latentgold-ordinal.R"
   - "equivalence/test-latentgold-wider.R"
   - "equivalence/test-latentgold.R"
   - "equivalence/test-missing-patterns.R"
