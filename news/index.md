@@ -1,5 +1,20 @@
 # Changelog
 
+## latents 1.3.1
+
+- No change to the package. Three new published references in the
+  equivalence kits: Mplus output printed by UCLA OARC (Applied Latent
+  Class Analysis chs. 2, 3 and 11, Dayton 1998 and the latent class
+  example with TECH11) for
+  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md),
+  [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) and the
+  VLMR statistics; SAS PROC TRAJ output printed by Andruff et al. (2009)
+  for latent class growth models, a third independent program for growth
+  mixtures; and the Mplus 8.8 User’s Guide examples 8.9, 8.12, 8.14 and
+  8.15. The verification matrix counts a program’s several references as
+  one source, and CVS reports gain a SAS axis.
+
 ## latents 1.3.0
 
 - No change to the package. The verification matrix and the CVS
