@@ -25,7 +25,7 @@ its evidence (an external reference, a simulation, or both).
 | 1 | Coverage cell for correlated residuals (`residual_correlation`), and coverage of the growth bootstrap intervals | add cells to `validation/growth-simulation.R` (new registry rows) | S | 2026-10-19 |
 | 2 | Transition-aware `three_step()` (distal outcomes of an `lta()` profile sequence) and BCH | Latent GOLD `step3` on a dynamic latent variable | M | 2026-10-21 |
 | 3 | Group classes in the three-step latent Markov chain (`r3step()` on `lta(n_group_classes > 1)`) | Latent GOLD step3 with a group latent variable | M | 2026-10-23 |
-| 4 | Standard errors for the ten constrained structures in the homogeneous `lta()` (delta method from the general engine's logits) | numerical Hessian; agreement with the extended engine | S-M | 2026-10-24 |
+| 4 | ~~Standard errors for the ten constrained structures in the homogeneous `lta()` (delta method from the general engine's logits)~~ **done 2026-11-15** (`equivalence/lta-structure-se/`); Mplus/Latent GOLD references pending | numerical Hessian; agreement with the extended engine | S-M | 2026-10-24 |
 | 5 | Multilevel growth bootstrap (match group classes too) | simulation | M | 2026-10-27 |
 | 6 | Vignette sections: growth `predict()`/`r3step()`/correlated residuals; three-step latent Markov | rendered articles, claims tested in tests/equivalence | M | 2026-10-29 |
 | 7 | G6: binary and count growth mixtures (adaptive quadrature) | Latent GOLD, GLMMadaptive | L | November |
@@ -196,7 +196,7 @@ homogeneous and measurement-invariant.
   — done; Mplus occasion-specific thresholds agree.
 - [x] **Second-order transitions** (`order = 2`) — done; exact path sum.
 - [x] The fourteen covariance structures in `lta()` (`model =`) — done for the
-  homogeneous model; SEs only for EEI/VVI/EEE/VVV.
+  homogeneous model; SEs for all fourteen since 2026-11-15.
 - [x] Mover-stayer class; FIML and covariance structures in the general engine (2026-10-01).
 - [ ] Gaps vs JStats: random-intercept LTA (needs the exact Mplus RI-LTA
   specification), absorbing profiles
@@ -208,10 +208,12 @@ homogeneous and measurement-invariant.
   0.9.37): every structure and `covariance_model = "full"`, by chart scores
   (analytic Sigma gradients through the coordinates' Jacobian); scores equal
   the likelihood's numerical gradient to ~2e-7.
-- [ ] The same for the homogeneous `lta()` (multilpa_transitions), which still
-  refuses the ten constrained structures: its table reports natural
-  probabilities, so it needs the delta method from the general engine's
-  logits. **S-M**
+- [x] The same for the homogeneous `lta()` (multilpa_transitions) — done
+  2026-11-15: chart information, delta method to the natural table; agrees
+  with an independent likelihood's Hessian (1e-5), the extended engine (1e-4)
+  and depmixS4 (EII, VII); coverage study `validation/lta-structure-coverage.R`.
+  Open: Mplus inputs prepared (`equivalence/lta-structure-se/mplus/`), not
+  run; no Latent GOLD reference.
 
 ### 1.3 Membership-covariate models
 

@@ -1,0 +1,49 @@
+TITLE: lta() EII structure, homogeneous transitions, waves 1-3 of the
+  latents one_class fixture (equivalence/lta-structure-se).
+DATA: FILE = one_class_w3.dat;
+VARIABLE: NAMES = person a1 b1 a2 b2 a3 b3;
+  USEVARIABLES = a1 b1 a2 b2 a3 b3;
+  IDVARIABLE = person;
+  CLASSES = c1(2) c2(2) c3(2);
+ANALYSIS: TYPE = MIXTURE; ESTIMATOR = ML;
+  STARTS = 200 50; MITERATIONS = 5000;
+MODEL:
+  %OVERALL%
+  [c1#1];
+  ! Homogeneous transitions: the same logits at every move.
+  [c2#1] (i1); [c3#1] (i1);
+  c2#1 ON c1#1 (s1); c3#1 ON c2#1 (s1);
+MODEL c1:
+  %c1#1%
+    [a1] (m1a);
+    [b1] (m1b);
+    a1 (v);
+    b1 (v);
+  %c1#2%
+    [a1] (m2a);
+    [b1] (m2b);
+    a1 (v);
+    b1 (v);
+MODEL c2:
+  %c2#1%
+    [a2] (m1a);
+    [b2] (m1b);
+    a2 (v);
+    b2 (v);
+  %c2#2%
+    [a2] (m2a);
+    [b2] (m2b);
+    a2 (v);
+    b2 (v);
+MODEL c3:
+  %c3#1%
+    [a3] (m1a);
+    [b3] (m1b);
+    a3 (v);
+    b3 (v);
+  %c3#2%
+    [a3] (m2a);
+    [b3] (m2b);
+    a3 (v);
+    b3 (v);
+OUTPUT: TECH1;

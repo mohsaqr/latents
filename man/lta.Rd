@@ -146,9 +146,9 @@ from the third on depends on the profiles at the two previous occasions;
 the first transition stays first order.}
 
 \item{model}{A covariance structure as \code{\link[=multilpa]{multilpa()}} takes it (mclust's
-codes, such as \code{"VVI"}). A \code{multilpa_transitions} fit gives standard
-errors for EEI, VVI, EEE and VVV only; a \code{multilpa_lta} fit (see
-\emph{Value}) gives them for every structure.}
+codes, such as \code{"VVI"}). Standard errors are available for every
+structure, in a \code{multilpa_transitions} fit and a \code{multilpa_lta} fit (see
+\emph{Value}) alike.}
 
 \item{mover_stayer}{\code{TRUE} adds a class of stayers: units that never change
 profile (identity transitions) with their own initial distribution, the

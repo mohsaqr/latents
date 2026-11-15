@@ -1,3 +1,18 @@
+# latents (development version)
+
+* The homogeneous `lta()` (a `multilpa_transitions` fit) has Wald standard
+  errors for the ten constrained covariance structures (EII, VII, EVI, VEI,
+  EEV, VEV, EVE, VVE, VEE, EVV), which `parameter_inference()`, `vcov()` and
+  `confint()` refused until now (`latents_unsupported_inference`). The
+  information is taken in the structure's own chart, as for `multilpa()`, and
+  carried to the natural table by the delta method. They agree with an
+  independent likelihood's numerical Hessian to 1e-5, with the extended
+  engine's standard errors to 1e-4 and, for EII and VII, with depmixS4's
+  likelihood; a predeclared simulation checks their coverage
+  (`equivalence/lta-structure-se/`). An EII fit now reports its one shared
+  variance block once, as `multilpa()` does. No Mplus or Latent GOLD
+  reference exists for them yet.
+
 # latents 1.3.4
 
 * No change to the package's functions. A new article, "Verification and

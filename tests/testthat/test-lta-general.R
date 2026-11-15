@@ -53,7 +53,13 @@ test_that("covariance structures in lta() nest and reproduce the default", {
   expect_lte(fits$EEI$log_likelihood, fits$VEI$log_likelihood + 1e-6)
   expect_lte(fits$VEI$log_likelihood, fits$VVI$log_likelihood + 1e-6)
   expect_equal(fits$VEI$n_parameters, fits$VVI$n_parameters - 2)
-  expect_error(parameter_inference(fits$VEI), class = "latents_unsupported_inference")
+  # The constrained structures have Wald inference in the homogeneous model
+  # too (refused through 1.3.4); the comparisons are in
+  # tests/equivalence/test-lta-structure-inference.R.
+  inference <- parameter_inference(fits$VEI)
+  expect_true(all(is.finite(inference$standard_error)))
+  expect_identical(nrow(vcov(fits$VEI, scale = "unconstrained")),
+                   as.integer(fits$VEI$n_parameters))
 })
 
 test_that("tables, methods and refusals of the general model", {

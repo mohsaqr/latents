@@ -26,8 +26,11 @@ errors within 5% relative.
 - **Second-order transitions:** no reference program or fixture fits them.
   They are checked against an exact sum over every profile path
   (`tests/testthat/test-lta-general.R`) and by nesting the first-order model.
-- **Covariance structures in `lta()`** (`model =`): no external LTA reference;
-  checked by nesting and by `model = "VVI"` reproducing the default fit.
+- **Covariance structures in `lta()`** (`model =`): no commercial LTA
+  reference; checked by nesting and by `model = "VVI"` reproducing the default
+  fit. Their standard errors in the homogeneous model are checked against an
+  independent likelihood, the extended engine and, for EII and VII, depmixS4
+  (`../lta-structure-se/`, where Mplus inputs wait to be run).
 - **Occasion-specific measurement with continuous indicators:** the external
   reference has binary items; the continuous case is checked against the exact
   path sum.

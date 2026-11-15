@@ -38,6 +38,7 @@
     n_groups = x$n_groups, group_index = x$group_index, group_ids = x$group_ids,
     vars = x$vars, continuous = x$continuous, categorical = x$categorical,
     variance_model = x$variance_model, covariance_model = x$covariance_model,
+    covariance_structure = x$covariance_structure,
     min_probability = x$min_probability), class = "multilpa")
 }
 
@@ -156,7 +157,16 @@
   group_index <- view$group_index
   ## Measurement: the cross-sectional scores, weighted by the sequence
   ## posteriors of each observation.
-  measurement <- if (identical(view$covariance_model, "full")) {
+  measurement <- if (.multilpa_uses_chart(view)) {
+    ## A constrained structure is scored in its own chart (log volumes, log
+    ## shapes, orientations): the cross-sectional chart scores, per group,
+    ## weighted by the sequence posteriors.
+    n_means <- length(parameters$means)
+    .multilpa_chart_scores(parameters, expectation, x, view,
+                           theta[n_means + seq_len(.multilpa_coordinate_widths(
+                             view, "unconstrained")[["variances"]])],
+                           group_index)
+  } else if (identical(view$covariance_model, "full")) {
     .multilpa_full_measurement_group_score(parameters, expectation, view)
   } else {
     observed <- !is.na(x)
@@ -445,7 +455,10 @@ parameter_inference.multilpa_transitions <-function(x, data = NULL, level = 0.95
   n_means <- length(x$means)
   if (n_means > 0L) scale[seq_len(n_means)] <- as.vector(t(sqrt(x$variances)))
   dimension <- length(.multilpa_continuous_names(x))
-  if (identical(x$covariance_model, "full") && dimension > 0L) {
+  if (.multilpa_uses_chart(view)) {
+    chart_scale <- .multilpa_chart_encode(view)$scale
+    scale[n_means + seq_along(chart_scale)] <- chart_scale
+  } else if (identical(x$covariance_model, "full") && dimension > 0L) {
     covariance_scale <- .multilpa_covariance_coordinate_scale(
       x$variances, dimension,
       if (identical(x$variance_model, "equal")) 1L else seq_len(x$n_profiles))
@@ -491,12 +504,15 @@ parameter_inference.multilpa_transitions <-function(x, data = NULL, level = 0.95
   if (!isTRUE(x$converged)) {
     refuse("Inference requires a converged fit.", "latents_no_converge")
   }
+  ## Every one of the fourteen structures has Wald inference: the four
+  ## separable ones in log variances or log-Cholesky coordinates, the ten
+  ## constrained ones in the chart of R/structure-inference.R, carried to the
+  ## natural table by the delta method. A structure outside the fourteen
+  ## cannot be fitted, but a hand-edited fit is still refused by name.
   if (!is.null(x$covariance_structure) &&
-      !x$covariance_structure %in% c("EEI", "VVI", "EEE", "VVV")) {
-    refuse(paste(
-      "Standard errors for transition models are available for the EEI, VVI,",
-      "EEE and VVV structures; this fit uses", x$covariance_structure, "."),
-      "latents_unsupported_inference")
+      !x$covariance_structure %in% .multilpa_inferable_structures()) {
+    refuse(paste("Standard errors are not available for the covariance structure",
+                 x$covariance_structure, "."), "latents_unsupported_inference")
   }
   n_groups <- sum(.multilpa_inference_groups(x, observed_only = TRUE))
   if (vcov_type %in% c("robust", "opg") && n_groups <= x$n_parameters) {

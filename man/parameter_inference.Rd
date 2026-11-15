@@ -54,9 +54,8 @@ weights, or with person centring or scaling, uses \code{"robust"} only. See
 the table reports.}
 
 \item{method}{\code{"wald"} (default) or \code{"bootstrap"}. Both are available for
-all fourteen covariance structures, except that a \code{multilpa_transitions}
-fit has Wald inference under EEI, VVI, EEE and VVV only. The bootstrap
-resamples the groups
+all fourteen covariance structures, transition fits included. The
+bootstrap resamples the groups
 with replacement, refits within the same structure and realigns each
 replicate's labels to the original. It is not available for a covariate
 fit, an additive fit, or a fit with held measurement blocks other than

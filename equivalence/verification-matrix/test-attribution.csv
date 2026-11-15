@@ -42,6 +42,8 @@ tests/equivalence,test-lta-general.R,Mplus,lta,Mplus,commercial program
 tests/equivalence,test-lta-general.R,depmixS4,lta,depmixS4,R package
 tests/equivalence,test-lta-general.R,LMest,lta,LMest,R package
 tests/equivalence,test-lta-general.R,.,lta,numDeriv / dense likelihood,independent code
+tests/equivalence,test-lta-structure-inference.R,extended engine,lta,internal identity,internal
+tests/equivalence,test-lta-structure-inference.R,.,lta,numDeriv / dense likelihood,independent code
 tests/equivalence,test-lta-three-step.R,.,three_step,numDeriv / dense likelihood,independent code
 tests/equivalence,test-math-core-audit.R,.,multilpa,numDeriv / dense likelihood,independent code
 tests/equivalence,test-missing-covariance.R,.,lpa,numDeriv / dense likelihood,independent code
@@ -126,6 +128,7 @@ equivalence,test-claims.R,.,none,claims registry,infrastructure
 equivalence,test-cvs-report.R,.,none,CVS reporter,infrastructure
 equivalence,test-verification-manifests.R,.,none,CVS manifests,infrastructure
 equivalence,test-depmixs4-standard-errors.R,.,lta,depmixS4,R package
+equivalence,test-lta-structure-depmixs4.R,.,lta,depmixS4,R package
 equivalence,test-direct-effects-search-protocol.R,.,lca,search protocol,internal
 equivalence,test-enumeration-mplus.R,.,enumeration,Mplus,commercial program
 equivalence,test-enumeration-latentgold.R,.,enumeration,Latent GOLD,commercial program

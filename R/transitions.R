@@ -605,9 +605,9 @@
 #'   from the third on depends on the profiles at the two previous occasions;
 #'   the first transition stays first order.
 #' @param model A covariance structure as [multilpa()] takes it (mclust's
-#'   codes, such as `"VVI"`). A `multilpa_transitions` fit gives standard
-#'   errors for EEI, VVI, EEE and VVV only; a `multilpa_lta` fit (see
-#'   *Value*) gives them for every structure.
+#'   codes, such as `"VVI"`). Standard errors are available for every
+#'   structure, in a `multilpa_transitions` fit and a `multilpa_lta` fit (see
+#'   *Value*) alike.
 #' @param mover_stayer `TRUE` adds a class of stayers: units that never change
 #'   profile (identity transitions) with their own initial distribution, the
 #'   mover-stayer model. `n_group_classes` then counts the
