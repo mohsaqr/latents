@@ -55,6 +55,19 @@
   of 2026-10-17 is corrected in the write-up: it ran with the base
   random-effect variances, not a slope SD of 0.1.
 
+* `parameter_inference(method = "bootstrap")` now covers the multilevel growth
+  mixture (`mixture_regression(random =, cluster =, n_group_classes =)`),
+  which it used to refuse. Whole clusters are resampled (their persons
+  renumbered within each draw), and each replicate's group classes are
+  matched to the original's by the posterior memberships of the original
+  clusters, as its trajectory classes are by those of the original persons.
+  The table of a multilevel fit with group classes gains `"group_share"`
+  rows. Evidence: a brute-force relabelling search on cluster resamples, a
+  permuted-label fixture over both levels. A predeclared simulation of
+  interval coverage and agreement with the Hessian-based standard errors
+  (`validation/growth-simulation-multilevel-bootstrap.R`) is declared but
+  not yet run, so the intervals' coverage is not yet established.
+
 # latents 1.3.4
 
 * No change to the package's functions. A new article, "Verification and

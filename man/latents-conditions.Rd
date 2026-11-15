@@ -200,7 +200,7 @@ for this fit. Raised by \code{\link[=parameter_inference]{parameter_inference()}
 made by an older version, and for a fit recording a covariance
 structure code this version does not know; and by
 \code{parameter_inference(method = "bootstrap")} for an additive or
-covariate fit, a multilevel growth mixture, or a fit holding a
+covariate fit, or a fit holding a
 measurement block through \code{fixed}, or a staged fit whose measurement
 was estimated on different data or has unknown provenance. Also raised by
 \code{vcov(scale = "unconstrained")} for a bootstrap covariance.}

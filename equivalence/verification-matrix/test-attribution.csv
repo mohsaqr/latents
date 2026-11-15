@@ -29,6 +29,8 @@ tests/equivalence,test-features-ml-three-step.R,.,three_step,numDeriv / dense li
 tests/equivalence,test-growth-calendar-reference.R,.,growth,lme4,R package
 tests/equivalence,test-growth-correlated.R,.,growth,numDeriv / dense likelihood,independent code
 tests/equivalence,test-growth-mixture.R,.,growth,numDeriv / dense likelihood,independent code
+tests/equivalence,test-growth-multilevel-bootstrap.R,brute-force,growth,brute-force relabelling search,independent code
+tests/equivalence,test-growth-multilevel-bootstrap.R,.,growth,simulation (known parameters),simulation recovery
 tests/equivalence,test-growth-predict.R,.,growth,numDeriv / dense likelihood,independent code
 tests/equivalence,test-growth-r3step.R,.,three_step,reference optimizer,independent code
 tests/equivalence,test-inference-fixed-measurement.R,.,multilpa,numDeriv / dense likelihood,independent code

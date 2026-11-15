@@ -20,6 +20,9 @@
   names_theta <- .growth_names(spec)
   classes <- .growth_class_names(x)
   n_classes <- spec$n_classes
+  # Group-class shares, when there are group classes to share among.
+  grouped <- !is.null(spec$cluster) && (spec$n_cluster_classes %||% 1L) > 1L
+  group_classes <- if (grouped) paste0("group_class_", seq_len(spec$n_cluster_classes))
   terms <- colnames(spec$random_design)
   n_random <- length(terms)
   split_name <- function(names, prefix) {
@@ -62,6 +65,9 @@
     random_labels,
     data.frame(block = "share", class = classes, term = "share",
                stringsAsFactors = FALSE),
+    if (grouped)
+      data.frame(block = "group_share", class = group_classes, term = "share",
+                 stringsAsFactors = FALSE),
     if (.growth_is_correlated(spec))
       data.frame(block = "residual_process", class = "all",
                  term = names(x$params$correlation), stringsAsFactors = FALSE))
@@ -70,7 +76,7 @@
               group_membership = "identity", residual_sd = "log",
               random_variance = "log", random_sd = "log",
               random_correlation = "atanh", share = "logit",
-              residual_process = "log")[labels$block]
+              group_share = "logit", residual_process = "log")[labels$block]
   values <- function(params, spec) {
     theta <- .growth_pack(spec, params)
     covariances <- .growth_covariances(spec, params)
@@ -85,6 +91,9 @@
     c(theta[coefficient_names], theta[membership_names],
       sqrt(params$sigma2[sd_classes]), random,
       colSums(prior * weights) / sum(weights),
+      # The group-class shares, averaged over the clusters (a multilevel
+      # growth mixture takes no sampling weights).
+      if (grouped) colMeans(exp(.mixture_log_softmax(spec$cluster_v, params$delta))),
       if (.growth_is_correlated(spec)) params$correlation) |> unname()
   }
   # A coordinate the correlated fit left on its floor or bound has no Wald or
@@ -107,18 +116,24 @@
        values = values)
 }
 
-#' Reorder a growth fit's classes
+#' Reorder a growth fit's classes (and group classes)
 #'
 #' Class-specific coefficients, residual variances, random-effect covariances
 #' (or proportional scales) and membership logits follow the classes; the
-#' membership logits are rebased on the new first class.
+#' membership logits are rebased on the new first class. In a multilevel
+#' growth mixture the group-class logits follow the group classes (rebased on
+#' the new first group class), and so do the trajectory-class intercepts, one
+#' row per group class, as `.mixture_permute()` relabels a two-level
+#' regression mixture.
 #'
 #' @param spec The growth specification.
 #' @param params A parameter list.
 #' @param order An integer vector: new class `k` is old class `order[k]`.
+#' @param group_order For a multilevel growth mixture, an integer vector: new
+#'   group class `h` is old group class `group_order[h]`; `NULL` keeps them.
 #' @return The reordered parameter list.
 #' @noRd
-.growth_permute_params <- function(spec, params, order) {
+.growth_permute_params <- function(spec, params, order, group_order = NULL) {
   params$beta <- params$beta[, order, drop = FALSE]
   params$sigma2 <- params$sigma2[order]
   if (identical(spec$random_covariance, "varying")) {
@@ -127,8 +142,21 @@
   if (identical(spec$random_covariance, "proportional")) {
     params$random_scale <- params$random_scale[order]
   }
-  params$gamma <- params$gamma[, order, drop = FALSE] -
-    params$gamma[, order[1L]]
+  if (is.null(spec$cluster)) {
+    params$gamma <- params$gamma[, order, drop = FALSE] -
+      params$gamma[, order[1L]]
+    return(params)
+  }
+  n_group_classes <- spec$n_cluster_classes
+  group_order <- group_order %||% seq_len(n_group_classes)
+  stopifnot("`group_order` must be a permutation of the group classes" =
+              length(group_order) == n_group_classes &&
+              setequal(group_order, seq_len(n_group_classes)))
+  params$delta <- .latents_rebase_logits(params$delta, group_order, "first")
+  logits <- .latents_rebase_logits(params$class_logits, order, "first")
+  intercepts <- seq_len(n_group_classes)
+  logits[intercepts, ] <- logits[group_order, , drop = FALSE]
+  params$class_logits <- logits
   params
 }
 
@@ -137,28 +165,50 @@
 #' The refit classifies the original persons, and its classes are matched to
 #' the original's by their posterior memberships of those persons, which
 #' identifies a class by whom it contains rather than by its trajectory alone.
+#' In a multilevel growth mixture the refit also classifies the original
+#' clusters, and its group classes are matched by their posterior memberships
+#' of those clusters.
 #'
 #' @param x The original fit.
 #' @param refit A fit to a resample.
 #' @return The refit's parameters in the original class order.
 #' @noRd
 .growth_align_refit <- function(x, refit) {
-  order <- .growth_match_classes(x, refit)$order
-  .growth_permute_params(refit$spec, refit$params, order)
+  matched <- .growth_match_classes(x, refit)
+  .growth_permute_params(refit$spec, refit$params, matched$order, matched$group_order)
+}
+
+#' The clusters' group-class posteriors of a multilevel growth E-step
+#' @param expectation A `.growth_expectation()` result of a multilevel fit
+#'   (unweighted: a multilevel growth mixture takes no sampling weights).
+#' @return A clusters-by-group-classes matrix whose rows sum to one.
+#' @noRd
+.growth_group_posterior <- function(expectation) {
+  rho <- expectation$structure$rho
+  rho / rowSums(rho)
 }
 
 #' The order that matches a refit's classes to the original fit's
 #' @param x The original fit.
 #' @param refit Another fit of the same model.
 #' @return A list with `order` (new class `k` is the refit's class
-#'   `order[k]`) and `posterior`, the refit's posteriors of the original
-#'   persons in its own labels.
+#'   `order[k]`), `posterior`, the refit's posteriors of the original
+#'   persons in its own labels, and `group_order` for a multilevel growth
+#'   mixture (new group class `h` is the refit's group class
+#'   `group_order[h]`, matched by the posteriors of the original clusters;
+#'   `NULL` otherwise). A group class is identified by the clusters it holds,
+#'   which does not depend on how the trajectory classes are labelled.
 #' @noRd
 .growth_match_classes <- function(x, refit) {
   persons <- .growth_new_spec(refit, x$spec$model_data, TRUE)
-  posterior <- .growth_fitted_expectation(refit, persons)$posterior
+  expectation <- .growth_fitted_expectation(refit, persons)
+  posterior <- expectation$posterior
+  group_order <- if (!is.null(x$spec$cluster)) {
+    .multilpa_match_order(t(.growth_group_posterior(x$expectation)),
+                          t(.growth_group_posterior(expectation)))
+  }
   list(order = .multilpa_match_order(t(x$expectation$posterior), t(posterior)),
-       posterior = posterior)
+       posterior = posterior, group_order = group_order)
 }
 
 #' The mixture_regression() arguments that refit a growth fit as it was fitted
@@ -181,37 +231,62 @@
        residual_time = spec$residual_time)
 }
 
-#' Person bootstrap inference for a growth fit
+#' Renumber the persons of a cluster resample
+#'
+#' A cluster drawn twice is two clusters (the resampler numbers the cluster
+#' column by draw), and its persons are then two sets of persons: each person
+#' is renumbered within its draw, so no person spans two clusters.
+#'
+#' @param resampled Rows of the drawn clusters, the cluster column numbered
+#'   by draw.
+#' @param cluster,id The cluster and person columns.
+#' @return `resampled` with the person column numbered `1..persons`.
+#' @noRd
+.growth_renumber_persons <- function(resampled, cluster, id) {
+  key <- paste(resampled[[cluster]], resampled[[id]], sep = "\r")
+  resampled[[id]] <- match(key, unique(key))
+  resampled
+}
+
+#' Bootstrap inference for a growth fit
 #'
 #' Persons are drawn with replacement (a person drawn twice is two persons),
 #' each resample is refitted from fresh starts, and its classes are matched to
-#' the original's before the natural parameters are read. A refit's start
-#' failures, degenerate starts and boundary variances are expected and
+#' the original's before the natural parameters are read. In a multilevel
+#' growth mixture the independent units are the clusters: whole clusters are
+#' drawn (`.growth_resample_clusters()`), and each refit's group classes are
+#' matched to the original's as well as its trajectory classes. A refit's
+#' start failures, degenerate starts and boundary variances are expected and
 #' muffled; one that does not converge is dropped with its reason.
 #'
 #' @return The bootstrap table and its attributes.
 #' @noRd
 .growth_bootstrap_inference <- function(x, natural, level, iter, n_starts, max_iter,
                                         tol, adjust) {
-  if (!is.null(x$spec$cluster)) {
-    stop(errorCondition(paste(
-      "The bootstrap is not implemented for a multilevel growth mixture: its",
-      "replicates would also need their group classes matched. Use",
-      "`method = \"wald\"`."), class = "latents_unsupported_inference", call = NULL))
-  }
   spec <- x$spec
   data <- spec$model_data
+  multilevel <- !is.null(spec$cluster)
   weight_column <- NULL
   if (.latents_is_weighted(x)) {
+    # Not reached for a multilevel fit, which refuses sampling weights.
     weight_column <- ".latents_bootstrap_weight"
     data[[weight_column]] <- spec$sampling_weights[spec$group_index]
   }
   arguments <- .growth_refit_arguments(x, weight_column)
   muffled <- c("latents_failed_starts", "latents_degenerate_start",
                "latents_random_boundary", "latents_unconverged")
+  # The resampling unit: persons, or the clusters a multilevel fit's
+  # likelihood treats as independent.
+  unit <- if (multilevel) {
+    list(index = spec$cluster_index[spec$group_index], n = spec$n_clusters,
+         column = spec$cluster)
+  } else list(index = spec$group_index, n = spec$n_groups, column = spec$id)
   drawn <- .latents_cluster_bootstrap(
-    data, spec$group_index, spec$n_groups, spec$id, iter,
+    data, unit$index, unit$n, unit$column, iter,
     refit = function(resampled) {
+      if (multilevel) {
+        resampled <- .growth_renumber_persons(resampled, spec$cluster, spec$id)
+      }
       withCallingHandlers(
         do.call(mixture_regression, c(list(data = resampled), arguments,
                                       list(n_starts = n_starts, max_iter = max_iter,

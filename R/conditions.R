@@ -185,7 +185,7 @@
 #'     made by an older version, and for a fit recording a covariance
 #'     structure code this version does not know; and by
 #'     `parameter_inference(method = "bootstrap")` for an additive or
-#'     covariate fit, a multilevel growth mixture, or a fit holding a
+#'     covariate fit, or a fit holding a
 #'     measurement block through `fixed`, or a staged fit whose measurement
 #'     was estimated on different data or has unknown provenance. Also raised by
 #'     `vcov(scale = "unconstrained")` for a bootstrap covariance.}

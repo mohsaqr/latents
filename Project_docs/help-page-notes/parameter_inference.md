@@ -28,8 +28,10 @@
   row raises `latents_boundary_fit`.
 - **Growth mixtures**: `step` is not used (the information is the derivative
   of the analytic score); the bootstrap refits each resample from `n_starts`
-  starts; multilevel growth mixture bootstrap raises
-  `latents_unsupported_inference`; `data` must be the fitted data.
+  starts; a multilevel growth mixture's bootstrap resamples whole clusters
+  (persons renumbered within each draw) and matches group classes by the
+  original clusters' posteriors as well as classes by the original persons';
+  `data` must be the fitted data.
 - **Value details**: a categorical response probability at or below 1e-6 is
   treated as on its bound; a mixing probability is refused only at zero. The
   table for a `fixed` fit has `n_parameters` rows plus one per set of

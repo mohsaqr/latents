@@ -1,0 +1,2 @@
+"cell","clusters","persons_per_cluster","times","group_share","improving_by_group_class","intercept","slope","random_sd","random_correlation","sigma","n_starts","bootstrap_iter","bootstrap_n_starts","n_datasets","base_seed"
+"multilevel_separated",50,8,"0,1,2,3","0.5,0.5","0.85,0.2","50,55","3,0","2,0.4",0,"1.5,1.5",3,99,1,200,26111500

@@ -884,16 +884,19 @@
 #' For a growth mixture ([mixture_regression()] with `random`) the table has
 #' one row per natural parameter: `block` (`"coefficient"`, `"membership"`,
 #' `"group_membership"` for a multilevel growth mixture, `"residual_sd"`,
-#' `"random_variance"`, `"random_sd"`, `"random_correlation"`, `"share"`),
+#' `"random_variance"`, `"random_sd"`, `"random_correlation"`, `"share"`,
+#' and `"group_share"` for a multilevel growth mixture with group classes),
 #' `class` (`"all"` for a quantity shared by every class), `term` and the
 #' estimate columns. Intervals of standard deviations and variances are
 #' formed on the log scale, of correlations on the Fisher scale and of shares
 #' on the logit scale; only coefficients and logits are tested. The bootstrap
 #' resamples persons and matches each replicate's classes to the original by
-#' the posterior memberships of the original persons; it is unavailable for
-#' a multilevel growth mixture. A degenerate random-effect covariance, a
-#' residual standard deviation at its floor or a residual process on its
-#' bound is refused under `boundary = "error"`; under `"fix"` those rows
+#' the posterior memberships of the original persons. For a multilevel growth
+#' mixture it resamples whole clusters, and matches each replicate's group
+#' classes as well, by the posterior memberships of the original clusters.
+#' A degenerate random-effect covariance, a residual standard deviation at
+#' its floor or a residual process on its bound is refused under
+#' `boundary = "error"`; under `"fix"` those rows
 #' have no standard error, test or interval. Weak class separation can make
 #' Wald intervals inaccurate; the bootstrap is the alternative.
 #'

@@ -119,27 +119,134 @@ test_that("growth inference refuses what it does not cover", {
   expect_true(all(is.finite(subset(fixed, block == "coefficient")$standard_error)))
 })
 
-test_that("a multilevel growth mixture has Wald inference but no bootstrap", {
-  skip_on_cran()
+multilevel_inference_fixture <- function(n_schools = 14L, per_school = 8L, seed = 3L) {
   old <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
   on.exit(if (is.null(old)) rm(".Random.seed", envir = globalenv()) else
     assign(".Random.seed", old, globalenv()), add = TRUE)
-  set.seed(3)
-  schools <- do.call(rbind, lapply(seq_len(14), function(s) {
+  set.seed(seed)
+  do.call(rbind, lapply(seq_len(n_schools), function(s) {
     improving <- if (s %% 2L == 1L) 0.85 else 0.2
-    do.call(rbind, lapply(seq_len(8), function(i) {
+    do.call(rbind, lapply(seq_len(per_school), function(i) {
       k <- if (stats::runif(1) < improving) 1L else 2L
-      data.frame(school = s, student = (s - 1) * 8 + i, wave = 0:3,
+      data.frame(school = s, student = (s - 1) * per_school + i, wave = 0:3,
                  score = (if (k == 1L) 50 + 3 * 0:3 else rep(55, 4)) +
                    stats::rnorm(1, 0, 2) + stats::rnorm(4, 0, 1.5))
     }))
   }))
-  fit <- mixture_regression(score ~ wave, schools, n_classes = 2, id = "student",
-                            class_level = "group", random = ~ 1,
-                            n_group_classes = 2, cluster = "school", n_starts = 2,
-                            seed = 1)
+}
+
+multilevel_inference_fit <- function(data, ...) {
+  mixture_regression(score ~ wave, data, n_classes = 2, id = "student",
+                     class_level = "group", random = ~ 1, n_group_classes = 2,
+                     cluster = "school", n_starts = 2, seed = 1, ...)
+}
+
+test_that("a multilevel growth mixture reports its group-class shares", {
+  skip_on_cran()
+  fit <- multilevel_inference_fit(multilevel_inference_fixture())
   table <- parameter_inference(fit, boundary = "fix")
   expect_true("group_membership" %in% table$block)
-  expect_error(parameter_inference(fit, method = "bootstrap", iter = 2, boundary = "fix"),
-               class = "latents_unsupported_inference")
+  shares <- subset(table, block == "group_share")
+  expect_identical(shares$class, c("group_class_1", "group_class_2"))
+  # The group-class shares are the fit's own (its group_classes table), and
+  # their interval is formed on the logit scale, so it stays inside (0, 1).
+  reported <- get_results(fit, "group_classes")
+  expect_equal(shares$estimate, as.vector(tapply(reported$group_share, reported$group_class,
+                                                 `[`, 1L)), tolerance = 1e-10)
+  expect_equal(sum(shares$estimate), 1, tolerance = 1e-12)
+  expect_true(all(shares$conf_low > 0 & shares$conf_high < 1 &
+                    is.finite(shares$standard_error)))
+  expect_true(all(is.na(shares$p_value)))
+  # One group class has no share to estimate: no group_share rows.
+  single <- mixture_regression(score ~ wave, multilevel_inference_fixture(),
+                               n_classes = 2, id = "student", class_level = "group",
+                               random = ~ 1, n_group_classes = 1, cluster = "school",
+                               n_starts = 1, seed = 1)
+  expect_false("group_share" %in% parameter_inference(single, boundary = "fix")$block)
+})
+
+test_that("relabelled classes and group classes are matched back to the original", {
+  skip_on_cran()
+  fit <- multilevel_inference_fit(multilevel_inference_fixture(), vcov_type = "none")
+  natural <- latents:::.growth_natural_parameters(fit)
+  original <- natural$values(fit$params, fit$spec)
+  # Every combination of a class and a group-class relabelling, including
+  # one of each alone: a matching that confused the two levels, or matched
+  # group classes through the trajectory labels, fails one of them.
+  for (order in list(1:2, 2:1)) for (group_order in list(1:2, 2:1)) {
+    swapped <- fit
+    swapped$params <- latents:::.growth_permute_params(fit$spec, fit$params, order,
+                                                       group_order)
+    # A relabelling is the same model: the same likelihood, other names.
+    expect_equal(latents:::.growth_expectation(fit$spec, fit$stats,
+                                               swapped$params)$log_likelihood,
+                 fit$log_likelihood, tolerance = 1e-9)
+    matched <- latents:::.growth_match_classes(fit, swapped)
+    expect_identical(matched$order, order)
+    expect_identical(matched$group_order, group_order)
+    if (!identical(order, 1:2) || !identical(group_order, 1:2)) {
+      expect_false(isTRUE(all.equal(natural$values(swapped$params, fit$spec), original)))
+    }
+    aligned <- latents:::.growth_align_refit(fit, swapped)
+    expect_equal(natural$values(aligned, fit$spec), original, tolerance = 1e-10)
+  }
+  # A group-class relabelling moves the group-class logits and the
+  # trajectory-class intercepts of each group class, nothing else.
+  moved <- latents:::.growth_permute_params(fit$spec, fit$params, 1:2, 2:1)
+  expect_equal(moved$beta, fit$params$beta)
+  expect_equal(moved$class_logits[1:2, ], fit$params$class_logits[2:1, ])
+  expect_equal(moved$delta[, 2L], -fit$params$delta[, 2L])
+  expect_error(latents:::.growth_permute_params(fit$spec, fit$params, 1:2, c(1L, 1L)),
+               "permutation of the group classes")
+})
+
+test_that("a cluster resample keeps every drawn cluster's persons apart", {
+  data <- data.frame(school = c(1, 1, 1, 2, 2, 2), student = c(1, 1, 2, 1, 1, 3),
+                     score = 1:6)
+  rows <- split(seq_len(nrow(data)), data$school)
+  # School 1 drawn twice: its persons must become four persons, not two.
+  resampled <- latents:::.multilpa_resample_groups(data, rows, "school", c(1L, 1L, 2L))
+  renumbered <- latents:::.growth_renumber_persons(resampled, "school", "student")
+  expect_identical(renumbered$school, rep(1:3, c(3L, 3L, 3L)))
+  expect_identical(renumbered$student, c(1L, 1L, 2L, 3L, 3L, 4L, 5L, 5L, 6L))
+  expect_identical(renumbered$score, c(1:3, 1:3, 4:6))
+  persons <- tapply(renumbered$school, renumbered$student, function(s) length(unique(s)))
+  expect_true(all(persons == 1L))
+})
+
+test_that("the multilevel bootstrap resamples clusters and is reproducible", {
+  skip_on_cran()
+  fit <- multilevel_inference_fit(multilevel_inference_fixture(), vcov_type = "none")
+  set.seed(99)
+  before <- stats::runif(1)
+  set.seed(99)
+  one <- suppressWarnings(parameter_inference(fit, method = "bootstrap", iter = 4,
+                                              n_starts = 1, seed = 5, boundary = "fix"))
+  expect_identical(stats::runif(1), before)
+  two <- suppressWarnings(parameter_inference(fit, method = "bootstrap", iter = 4,
+                                              n_starts = 1, seed = 5, boundary = "fix"))
+  expect_equal(one, two)
+  wald <- parameter_inference(fit, boundary = "fix")
+  expect_identical(as.data.frame(one)[c("block", "class", "term")],
+                   as.data.frame(wald)[c("block", "class", "term")])
+  expect_equal(one$estimate, wald$estimate, tolerance = 1e-10)
+  expect_identical(attr(one, "method"), "bootstrap")
+  expect_identical(dim(attr(one, "replicates")), c(attr(one, "n_valid"), nrow(one)))
+  expect_gte(attr(one, "n_valid"), 2L)
+  # Group-class shares of every replicate are shares.
+  replicates <- attr(one, "replicates")
+  shares <- replicates[, one$block == "group_share", drop = FALSE]
+  expect_equal(rowSums(shares), rep(1, nrow(shares)), tolerance = 1e-10)
+  # A replicate's units are clusters: the persons of a resample are those of
+  # its clusters, so a refit sees 14 clusters whatever persons it draws.
+  record <- new.env()
+  record$seen <- integer()
+  trace(latents:::.growth_renumber_persons, exit = bquote(
+    assign("seen", c(get("seen", envir = .(record)), length(unique(returnValue()$school))),
+           envir = .(record))), print = FALSE, where = asNamespace("latents"))
+  on.exit(untrace(latents:::.growth_renumber_persons, where = asNamespace("latents")),
+          add = TRUE)
+  suppressWarnings(parameter_inference(fit, method = "bootstrap", iter = 2,
+                                       n_starts = 1, seed = 6, boundary = "fix"))
+  expect_identical(record$seen, c(14L, 14L))
 })

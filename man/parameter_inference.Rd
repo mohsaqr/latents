@@ -194,16 +194,19 @@ at a bound is refused under either \code{boundary}.
 For a growth mixture (\code{\link[=mixture_regression]{mixture_regression()}} with \code{random}) the table has
 one row per natural parameter: \code{block} (\code{"coefficient"}, \code{"membership"},
 \code{"group_membership"} for a multilevel growth mixture, \code{"residual_sd"},
-\code{"random_variance"}, \code{"random_sd"}, \code{"random_correlation"}, \code{"share"}),
+\code{"random_variance"}, \code{"random_sd"}, \code{"random_correlation"}, \code{"share"},
+and \code{"group_share"} for a multilevel growth mixture with group classes),
 \code{class} (\code{"all"} for a quantity shared by every class), \code{term} and the
 estimate columns. Intervals of standard deviations and variances are
 formed on the log scale, of correlations on the Fisher scale and of shares
 on the logit scale; only coefficients and logits are tested. The bootstrap
 resamples persons and matches each replicate's classes to the original by
-the posterior memberships of the original persons; it is unavailable for
-a multilevel growth mixture. A degenerate random-effect covariance, a
-residual standard deviation at its floor or a residual process on its
-bound is refused under \code{boundary = "error"}; under \code{"fix"} those rows
+the posterior memberships of the original persons. For a multilevel growth
+mixture it resamples whole clusters, and matches each replicate's group
+classes as well, by the posterior memberships of the original clusters.
+A degenerate random-effect covariance, a residual standard deviation at
+its floor or a residual process on its bound is refused under
+\code{boundary = "error"}; under \code{"fix"} those rows
 have no standard error, test or interval. Weak class separation can make
 Wald intervals inaccurate; the bootstrap is the alternative.
 }
