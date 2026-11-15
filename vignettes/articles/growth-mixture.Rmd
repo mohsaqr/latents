@@ -36,6 +36,12 @@ simulation <- utils::read.csv(file.path(root, "validation", "growth-simulation-r
 separated <- simulation[simulation$cell != "weak", ]
 coverage <- tapply(separated$covered, separated$cell, mean, na.rm = TRUE)
 weak_coverage <- mean(simulation$covered[simulation$cell == "weak"], na.rm = TRUE)
+correlated <- utils::read.csv(file.path(root, "validation",
+                                        "growth-simulation-correlated-summary.csv"),
+                              stringsAsFactors = FALSE)
+correlated_n <- tapply(correlated$n_available, correlated$cell, max)
+correlated_pass <- tapply(correlated$pass, correlated$cell, sum)
+correlated_rows <- tapply(correlated$pass, correlated$cell, length)
 ```
 
 When the same people are measured repeatedly, a single average trajectory
@@ -488,8 +494,15 @@ built, and count only checks run on the current source.
   `r checks_in("equivalence/test-growth-correlated-lcmm.R")` checks,
   `r failed_in("equivalence/test-growth-correlated-lcmm.R")` failed). It
   also equals a likelihood computed from the dense covariance matrix of each
-  person's measurements. The coverage of its intervals has not yet been
-  studied by simulation.
+  person's measurements. In a predeclared simulation
+  (`validation/GROWTH_SIMULATION.md`, a reduced run of 150 datasets per
+  design), Brownian motion met every criterion on
+  `r correlated_pass[["brownian"]]` of `r correlated_rows[["brownian"]]`
+  parameters. In the autoregressive design every parameter was unbiased and
+  its intervals covered within the binomial range, but only
+  `r correlated_n[["ar"]]` of 150 fits were available: in the others one
+  class's residual SD reached its floor while the process took a high rate,
+  and `parameter_inference()` refuses a fit with a parameter on its bound.
 - **Three-step regression.** The estimates of `r3step()` on a growth mixture equal the maximum of the fixed-error likelihood written out from Vermunt (2010),
   found by a general-purpose optimizer (to a relative tolerance of $10^{-5}$),
   and its observed-information standard

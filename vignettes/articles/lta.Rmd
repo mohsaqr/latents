@@ -228,7 +228,7 @@ covariate effects together, so a covariate can change the profiles it is
 meant to predict. The three-step latent Markov model keeps the profiles of a
 model fitted without covariates (Vermunt 2010; Di Mari, Oberski and Vermunt
 2016). `r3step()` with `initial_covariates` or `transition_covariates` on a
-covariate-free `lta()` fit with one group class:
+covariate-free `lta()` fit:
 
 1. takes the profiles of the fitted model;
 2. classifies every occasion from its own indicators and assigns it to its
@@ -268,7 +268,22 @@ per student, since it predicts the profile at the first occasion;
 `transition_covariates` are read at the destination occasion and may change
 over occasions. The step-three chain is homogeneous and first order,
 whatever the transition structure of the step-one model, and the step-one
-model must have one group class and the same measurement at every occasion.
+model must have the same measurement at every occasion. When the step-one
+model has group classes, step three is a mixture of chains, one per group
+class, sharing the classification errors, with every initial and
+transition coefficient estimated per group class and the group classes
+matched to those of step one; its maximum agrees with depmixS4 fitted to
+the expanded group-class-by-profile states.
+
+An outcome measured once per student, such as a final grade, is related to
+the profile at one occasion, or to the pair of profiles at two (a
+transition), by `three_step(occasion =)` on the same covariate-free fit. It
+uses the same pooled classification errors: BCH weights each student by the
+inverse error rows of the chosen occasions, and ML infers the profile there
+from the student's whole sequence through the chain held at the `lta()`
+estimates; its ML estimate maximizes a likelihood summed over every path of
+the chain, written out independently. Neither feature has yet been compared
+with Latent GOLD.
 
 The step-three likelihood equals a sum over every path of profiles, written out independently, and its estimate is a maximum of that sum. Against
 Latent GOLD 6.1's `step3` on a dynamic latent variable, on
