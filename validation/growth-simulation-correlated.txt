@@ -1,0 +1,156 @@
+Growth mixture simulation, study correlated: 150/150 datasets per cell (ar/brownian), 45.8 mins elapsed, psock backend, 7 cores
+
+     cell            block   class        term  truth availability n_available
+       ar      coefficient class_1 (Intercept)  2.000        0.947         142
+       ar      coefficient class_1        time  0.600        0.947         142
+       ar      residual_sd class_1    residual  0.500        0.947         142
+       ar  random_variance class_1 (Intercept)  1.000        0.947         142
+       ar        random_sd class_1 (Intercept)  1.000        0.947         142
+       ar            share class_1       share  0.456        0.947         142
+       ar      coefficient class_2 (Intercept)  5.000        0.947         142
+       ar      coefficient class_2        time -0.400        0.947         142
+       ar      residual_sd class_2    residual  0.600        0.947         142
+       ar  random_variance class_2 (Intercept)  0.600        0.947         142
+       ar        random_sd class_2 (Intercept)  0.775        0.947         142
+       ar            share class_2       share  0.544        0.947         142
+       ar residual_process     all        rate  0.700        0.947         142
+       ar residual_process     all          sd  0.600        0.947         142
+ brownian      coefficient class_1 (Intercept)  2.000        1.000         150
+ brownian      coefficient class_1        time  0.600        1.000         150
+ brownian      residual_sd class_1    residual  0.500        1.000         150
+ brownian  random_variance class_1 (Intercept)  1.000        1.000         150
+ brownian        random_sd class_1 (Intercept)  1.000        1.000         150
+ brownian            share class_1       share  0.456        1.000         150
+ brownian      coefficient class_2 (Intercept)  5.000        1.000         150
+ brownian      coefficient class_2        time -0.400        1.000         150
+ brownian      residual_sd class_2    residual  0.600        1.000         150
+ brownian  random_variance class_2 (Intercept)  0.600        1.000         150
+ brownian        random_sd class_2 (Intercept)  0.775        1.000         150
+ brownian            share class_2       share  0.544        1.000         150
+ brownian residual_process     all          sd  0.300        1.000         150
+      bias  bias_sd bias_mcse empirical_sd se_ratio_observed se_ratio_robust
+ -6.18e-03 -0.05857   -0.6980       0.1056             0.952           0.952
+  3.41e-04  0.02947    0.3512       0.0116             1.046           1.046
+ -1.90e-02 -0.19598   -2.3353       0.0970             1.190           1.197
+ -6.26e-03 -0.04115   -0.4903       0.1522             0.941           0.931
+ -6.03e-03 -0.07916   -0.9433       0.0762             0.944           0.934
+  2.13e-03  0.07567    0.9017       0.0282             1.019           1.020
+ -3.74e-03 -0.05126   -0.6108       0.0730             1.094           1.092
+  6.18e-04  0.04992    0.5948       0.0124             0.958           0.959
+ -1.11e-02 -0.14830   -1.7673       0.0748             1.100           1.101
+ -9.03e-03 -0.10040   -1.1964       0.0900             1.022           1.013
+ -8.12e-03 -0.13716   -1.6344       0.0592             1.018           1.011
+ -2.13e-03 -0.07567   -0.9017       0.0282             1.019           1.020
+  5.14e-03  0.02050    0.2443       0.2506             1.088           1.101
+  1.24e-02  0.21598    2.5737       0.0575             1.118           1.124
+ -4.42e-03 -0.04690   -0.5744       0.0943             0.962           0.964
+  1.09e-03  0.09694    1.1873       0.0113             1.059           1.050
+ -1.14e-03 -0.07593   -0.9300       0.0151             1.072           1.069
+ -1.37e-02 -0.10572   -1.2947       0.1295             1.027           1.008
+ -9.03e-03 -0.13749   -1.6839       0.0656             1.019           0.999
+ -4.53e-04 -0.01577   -0.1931       0.0287             0.999           1.001
+ -3.32e-03 -0.05045   -0.6179       0.0658             1.055           1.059
+ -3.83e-05 -0.00295   -0.0362       0.0130             0.901           0.905
+ -7.95e-04 -0.05300   -0.6491       0.0150             1.094           1.097
+ -1.26e-03 -0.01443   -0.1767       0.0874             0.940           0.926
+ -2.86e-03 -0.05067   -0.6206       0.0564             0.941           0.927
+  4.53e-04  0.01577    0.1931       0.0287             0.999           1.001
+ -2.35e-03 -0.12726   -1.5586       0.0185             0.955           0.948
+ coverage_observed coverage_robust coverage_low coverage_high         criterion
+             0.951           0.944         0.88         1.000 coverage_observed
+             0.965           0.965         0.88         1.000 coverage_observed
+             0.915           0.923         0.88         1.000 coverage_observed
+             0.965           0.930         0.88         1.000 coverage_observed
+             0.965           0.930         0.88         1.000 coverage_observed
+             0.958           0.958         0.88         1.000 coverage_observed
+             0.979           0.972         0.88         1.000 coverage_observed
+             0.908           0.930         0.88         1.000 coverage_observed
+             0.908           0.908         0.88         1.000 coverage_observed
+             0.979           0.979         0.88         1.000 coverage_observed
+             0.979           0.979         0.88         1.000 coverage_observed
+             0.958           0.958         0.88         1.000 coverage_observed
+             1.000           0.972         0.88         1.000 coverage_observed
+             0.965           0.965         0.88         1.000 coverage_observed
+             0.927           0.927         0.88         0.993 coverage_observed
+             0.967           0.953         0.88         0.993 coverage_observed
+             0.987           0.973         0.88         0.993 coverage_observed
+             0.967           0.967         0.88         0.993 coverage_observed
+             0.967           0.967         0.88         0.993 coverage_observed
+             0.947           0.947         0.88         0.993 coverage_observed
+             0.960           0.960         0.88         0.993 coverage_observed
+             0.920           0.927         0.88         0.993 coverage_observed
+             0.960           0.953         0.88         0.993 coverage_observed
+             0.933           0.927         0.88         0.993 coverage_observed
+             0.933           0.927         0.88         0.993 coverage_observed
+             0.947           0.947         0.88         0.993 coverage_observed
+             0.947           0.953         0.88         0.993 coverage_observed
+ pass_gates  pass
+      FALSE FALSE
+      FALSE FALSE
+      FALSE FALSE
+      FALSE FALSE
+      FALSE FALSE
+      FALSE FALSE
+      FALSE FALSE
+      FALSE FALSE
+      FALSE FALSE
+      FALSE FALSE
+      FALSE FALSE
+      FALSE FALSE
+      FALSE FALSE
+      FALSE FALSE
+       TRUE  TRUE
+       TRUE  TRUE
+      FALSE  TRUE
+      FALSE  TRUE
+      FALSE  TRUE
+       TRUE  TRUE
+       TRUE  TRUE
+      FALSE  TRUE
+       TRUE  TRUE
+       TRUE  TRUE
+       TRUE  TRUE
+       TRUE  TRUE
+      FALSE  TRUE
+
+Unavailable replicates by reason
+
+residual process on its bound 
+                            8 
+
+R version 4.5.2 (2025-10-31 ucrt)
+Platform: x86_64-w64-mingw32/x64
+Running under: Windows 11 x64 (build 22631)
+
+Matrix products: default
+  LAPACK version 3.12.1
+
+Random number generation:
+ RNG:     L'Ecuyer-CMRG 
+ Normal:  Inversion 
+ Sample:  Rejection 
+ 
+locale:
+[1] LC_COLLATE=English_United States.utf8 
+[2] LC_CTYPE=English_United States.utf8   
+[3] LC_MONETARY=English_United States.utf8
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.utf8    
+
+time zone: Europe/Kiev
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] latents_1.3.4  testthat_3.3.2
+
+loaded via a namespace (and not attached):
+ [1] desc_1.4.3        R6_2.6.1          devtools_2.5.2    fastmap_1.2.0    
+ [5] magrittr_2.0.4    cachem_1.1.0      glue_1.8.0        parallel_4.5.2   
+ [9] memoise_2.0.1     lifecycle_1.0.5   cli_3.6.6         sessioninfo_1.2.3
+[13] vctrs_0.7.0       withr_3.0.3       pkgload_1.5.3     compiler_4.5.2   
+[17] rprojroot_2.1.1   tools_4.5.2       rstudioapi_0.18.0 purrr_1.2.1      
+[21] pkgbuild_1.4.8    brio_1.1.5        ellipsis_0.3.3    otel_0.2.0       
+[25] rlang_1.3.0       fs_2.1.0          usethis_3.2.1    

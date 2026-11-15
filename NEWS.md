@@ -44,6 +44,17 @@
   Latent GOLD kit (`equivalence/latentgold-step3-distal/`) is prepared and
   awaits a Latent GOLD run.
 
+* No change to the package's functions. The growth mixture simulation
+  (`validation/growth-simulation.R`, `validation/GROWTH_SIMULATION.md`)
+  gains predeclared cells for correlated residuals (`residual_correlation =
+  "ar"` and `"brownian"`) and for the coverage of the person-bootstrap
+  intervals of `parameter_inference(method = "bootstrap")`, judged by the
+  recovery criteria of the verification article. The correlated-residual
+  cells are run (reduced, 150 datasets per cell); the bootstrap cell is
+  declared but not yet run. Its `small_variance` cell
+  of 2026-10-17 is corrected in the write-up: it ran with the base
+  random-effect variances, not a slope SD of 0.1.
+
 # latents 1.3.4
 
 * No change to the package's functions. A new article, "Verification and

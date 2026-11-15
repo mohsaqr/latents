@@ -259,6 +259,9 @@ one_replicate <- function(cell_name, i) {
   if (length(fit$degenerate_classes %||% character()) > 0L) {
     return(list(rows = failure("degenerate covariance"), r3 = NULL))
   }
+  # `residual_boundary` names a process coordinate or a class's white-noise
+  # SD held at its floor; the reason below covers both (the 2026-11-15 run's
+  # autoregressive misses were all a residual SD at its floor).
   if (length(fit$residual_boundary %||% character()) > 0L) {
     return(list(rows = failure("residual process on its bound"), r3 = NULL))
   }
