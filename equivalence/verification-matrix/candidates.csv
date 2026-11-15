@@ -23,3 +23,4 @@ bootstrap_lrt,mclust bootstrap LRT (2016 paper; vignette),R package,mclust::diab
 bootstrap_lrt,randomLCA (Beath 2017),R package,randomLCA::myocardial,bootstrap LRT p = .001,verified
 bootstrap_lrt,Masyn (2013) Table 25.12 and Stata lcstats,published,Reaven-Miller /10,adjusted LMR p-values,verified
 bootstrap_lrt,Mplus Demo TECH11/TECH14 (JStats),commercial program,mplus-lca-tech11/tech14-s1/s2; lca-boundary-tech11,"TECH11/TECH14 for K = 2, 3",verified
+three_step,Latent GOLD 6.1 step3 on a dynamic latent variable: distal outcome (kit prepared; not run),commercial program,equivalence/latentgold-step3-distal/kit (d01; d02),"three_step(occasion =, method = ""ml""): outcome mean and variance by state, chain held at the lta() estimates",pending

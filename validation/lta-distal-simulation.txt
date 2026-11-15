@@ -1,0 +1,102 @@
+three_step(occasion =) recovery: 100 replicates per cell, 2 cells, 94.5 minutes
+replicates that failed: 0
+gated rows: 24, meeting every gate: 24
+
+        cell        target       method parameter truth mean_estimate      bias
+   separated    occasion 3          bch profile 2   1.0      1.003858  0.003858
+   separated    occasion 3          bch profile 1   0.0      0.010080  0.010080
+   separated occasions 2-3          bch  pair 2-2   2.0      2.007660  0.007660
+   separated occasions 2-3          bch  pair 2-1   1.5      1.519154  0.019154
+   separated occasions 2-3          bch  pair 1-2   0.5      0.496721 -0.003279
+   separated occasions 2-3          bch  pair 1-1   0.0     -0.000549 -0.000549
+   separated    occasion 3           ml profile 2   1.0      1.008380  0.008380
+   separated    occasion 3           ml profile 1   0.0      0.005497  0.005497
+   separated occasions 2-3           ml  pair 2-2   2.0      2.008728  0.008728
+   separated occasions 2-3           ml  pair 2-1   1.5      1.501274  0.001274
+   separated occasions 2-3           ml  pair 1-2   0.5      0.504147  0.004147
+   separated occasions 2-3           ml  pair 1-1   0.0     -0.002002 -0.002002
+   separated    occasion 3        modal profile 2   1.0      0.965855 -0.034145
+   separated    occasion 3        modal profile 1   0.0      0.054611  0.054611
+   separated occasions 2-3        modal  pair 2-2   2.0      1.985014 -0.014986
+   separated occasions 2-3        modal  pair 2-1   1.5      1.344387 -0.155613
+   separated occasions 2-3        modal  pair 1-2   0.5      0.636804  0.136804
+   separated occasions 2-3        modal  pair 1-1   0.0      0.019924  0.019924
+   separated    occasion 3 proportional profile 2   1.0      0.946224 -0.053776
+   separated    occasion 3 proportional profile 1   0.0      0.077900  0.077900
+   separated occasions 2-3 proportional  pair 2-2   2.0      1.972431 -0.027569
+   separated occasions 2-3 proportional  pair 2-1   1.5      1.291476 -0.208524
+   separated occasions 2-3 proportional  pair 1-2   0.5      0.684160  0.184160
+   separated occasions 2-3 proportional  pair 1-1   0.0      0.033388  0.033388
+ overlapping    occasion 3          bch profile 1   0.0      0.004896  0.004896
+ overlapping    occasion 3          bch profile 2   1.0      0.997784 -0.002216
+ overlapping occasions 2-3          bch  pair 1-1   0.0     -0.005875 -0.005875
+ overlapping occasions 2-3          bch  pair 1-2   0.5      0.526751  0.026751
+ overlapping occasions 2-3          bch  pair 2-1   1.5      1.588298  0.088298
+ overlapping occasions 2-3          bch  pair 2-2   2.0      2.002803  0.002803
+ overlapping    occasion 3           ml profile 1   0.0      0.004360  0.004360
+ overlapping    occasion 3           ml profile 2   1.0      0.996865 -0.003135
+ overlapping occasions 2-3           ml  pair 1-1   0.0     -0.006085 -0.006085
+ overlapping occasions 2-3           ml  pair 1-2   0.5      0.563507  0.063507
+ overlapping occasions 2-3           ml  pair 2-1   1.5      1.556250  0.056250
+ overlapping occasions 2-3           ml  pair 2-2   2.0      2.003201  0.003201
+ overlapping    occasion 3        modal profile 1   0.0      0.126349  0.126349
+ overlapping    occasion 3        modal profile 2   1.0      0.893328 -0.106672
+ overlapping occasions 2-3        modal  pair 1-1   0.0      0.075292  0.075292
+ overlapping occasions 2-3        modal  pair 1-2   0.5      0.793365  0.293365
+ overlapping occasions 2-3        modal  pair 2-1   1.5      1.227639 -0.272361
+ overlapping occasions 2-3        modal  pair 2-2   2.0      1.922608 -0.077392
+ overlapping    occasion 3 proportional profile 1   0.0      0.179725  0.179725
+ overlapping    occasion 3 proportional profile 2   1.0      0.845794 -0.154206
+ overlapping occasions 2-3 proportional  pair 1-1   0.0      0.137791  0.137791
+ overlapping occasions 2-3 proportional  pair 1-2   0.5      0.844770  0.344770
+ overlapping occasions 2-3 proportional  pair 2-1   1.5      1.167504 -0.332496
+ overlapping occasions 2-3 proportional  pair 2-2   2.0      1.864565 -0.135435
+    mcse sd_estimate mean_se coverage meets
+ 0.00846      0.0846  0.0783     0.90  TRUE
+ 0.00761      0.0761  0.0701     0.91  TRUE
+ 0.00769      0.0769  0.0746     0.90  TRUE
+ 0.02697      0.2697  0.2625     0.95  TRUE
+ 0.01978      0.1978  0.2019     0.97  TRUE
+ 0.00809      0.0809  0.0751     0.94  TRUE
+ 0.00803      0.0803  0.0765     0.91  TRUE
+ 0.00708      0.0708  0.0675     0.93  TRUE
+ 0.00713      0.0713  0.0728     0.92  TRUE
+ 0.02267      0.2267  0.2133     0.97  TRUE
+ 0.01804      0.1804  0.1746     0.94  TRUE
+ 0.00803      0.0803  0.0733     0.92  TRUE
+ 0.00800      0.0800  0.0751     0.91  TRUE
+ 0.00716      0.0716  0.0666     0.86  TRUE
+ 0.00742      0.0742  0.0728     0.92  TRUE
+ 0.01663      0.1663  0.1648     0.80  TRUE
+ 0.01404      0.1404  0.1436     0.83  TRUE
+ 0.00784      0.0784  0.0732     0.93  TRUE
+ 0.00769      0.0769  0.0728     0.86  TRUE
+ 0.00686      0.0686  0.0641     0.76  TRUE
+ 0.00716      0.0716  0.0705     0.93  TRUE
+ 0.01285      0.1285  0.1318     0.66  TRUE
+ 0.01159      0.1159  0.1191     0.58  TRUE
+ 0.00757      0.0757  0.0711     0.87  TRUE
+ 0.00783      0.0783  0.0751     0.93  TRUE
+ 0.00807      0.0807  0.0802     0.93  TRUE
+ 0.00792      0.0792  0.0829     0.95  TRUE
+ 0.03195      0.3195  0.3111     0.97  TRUE
+ 0.03910      0.3910  0.4525     0.99  TRUE
+ 0.00670      0.0670  0.0815     1.00  TRUE
+ 0.00711      0.0711  0.0664     0.93  TRUE
+ 0.00734      0.0734  0.0739     0.95  TRUE
+ 0.00696      0.0696  0.0742     0.95  TRUE
+ 0.02044      0.2044  0.2275     0.94  TRUE
+ 0.02308      0.2308  0.2486     0.96  TRUE
+ 0.00654      0.0654  0.0744     0.99  TRUE
+ 0.00638      0.0638  0.0633     0.52  TRUE
+ 0.00693      0.0693  0.0696     0.66  TRUE
+ 0.00706      0.0706  0.0733     0.87  TRUE
+ 0.01305      0.1305  0.1273     0.34  TRUE
+ 0.01325      0.1325  0.1398     0.49  TRUE
+ 0.00622      0.0622  0.0723     0.84  TRUE
+ 0.00591      0.0591  0.0573     0.15  TRUE
+ 0.00609      0.0609  0.0640     0.28  TRUE
+ 0.00640      0.0640  0.0660     0.36  TRUE
+ 0.00847      0.0847  0.0893     0.02  TRUE
+ 0.00861      0.0861  0.0954     0.06  TRUE
+ 0.00585      0.0585  0.0650     0.45  TRUE

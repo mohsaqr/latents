@@ -38,12 +38,15 @@
   outcome_center <- mean(values)
   outcome_scale <- stats::sd(values)
   values <- (values - outcome_center) / outcome_scale
-  errors <- .multilpa_error_matrix(pieces)
-  prior <- colMeans(pieces$posteriors)
   # Each unit's fixed weight on each class: the class's share times the
-  # probability that a unit of that class is assigned where this one was.
-  weights <- t(errors[, pieces$modal, drop = FALSE]) *
-    matrix(prior, length(values), pieces$n_classes, byrow = TRUE)
+  # probability that a unit of that class is assigned where this one was. A
+  # transition-aware step three supplies its chain's weights instead.
+  weights <- pieces$ml_weights %||% {
+    errors <- .multilpa_error_matrix(pieces)
+    prior <- colMeans(pieces$posteriors)
+    t(errors[, pieces$modal, drop = FALSE]) *
+      matrix(prior, length(values), pieces$n_classes, byrow = TRUE)
+  }
   log_weights <- log(weights)
   smallest <- 1e-10 * stats::var(values)
   moments <- function(responsibilities, means) {

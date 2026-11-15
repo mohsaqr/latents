@@ -15,7 +15,8 @@ three_step(
   adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none"),
   vcov_type = c("cluster", "independent"),
   variance = c("varying", "equal"),
-  step_one = c("fixed", "estimated")
+  step_one = c("fixed", "estimated"),
+  occasion = NULL
 )
 }
 \arguments{
@@ -79,6 +80,14 @@ fits at either level when their Wald inference is available and their
 measurement was estimated jointly. Staged fits and fits holding a
 measurement block fixed are refused. See
 \emph{Step-one uncertainty}.}
+
+\item{occasion}{For an \code{\link[=lta]{lta()}} fit only: \code{NULL} (default) for the
+occasion-level analysis below, or one or two increasing positions in the
+sequence (the first occasion is 1, counted as \code{lta()} lays the sequence
+out). With one position, a person-level outcome (constant over the
+person's rows) is related to the profile at that occasion; with two, to
+the pair of profiles at the two occasions, a transition when they are
+adjacent. See \emph{Distal outcomes of a transition chain}.}
 }
 \value{
 A data frame. For \code{contrast = "none"}, one row per class (per
@@ -138,6 +147,33 @@ relates the outcome to the profile at that occasion, with the
 group-clustered variance accounting for the repeated occasions. It is a
 marginal profile-outcome analysis, not a model of outcome effects on
 transitions.
+}
+
+\section{Distal outcomes of a transition chain}{
+
+With \code{occasion}, an outcome measured once per person is related to the
+profile of a default \code{\link[=lta]{lta()}} fit (one group class, no covariates) at one
+occasion, or to the pair of profiles at two. Each occasion is classified
+from its own indicators, with the fit's measurement and its profile shares
+pooled over occasions, and one classification-error matrix is pooled over
+the occasions, as in the three-step latent Markov model of \code{\link[=r3step]{r3step()}}. The
+assignments are assumed to err independently across occasions given the
+profiles. The result has \code{level = "persons"} and an \code{occasion} attribute;
+for a pair, \code{class} numbers the cells (the later profile varies fastest)
+and \code{from} and \code{to} (with \code{reference_from} and \code{reference_to} for
+contrasts) name the profiles.
+
+BCH weights a person by the row of the inverse error matrix for the
+occasion's assignment, and for a pair by the product of the two occasions'
+rows; \code{"proportional"} and \code{"modal"} use the occasions' own posteriors and
+assignments, uncorrected. These methods use the persons assigned at every
+chosen occasion. ML treats the assignments at every occasion as indicators
+of the chain with the error rates fixed, holds the chain's initial and
+transition probabilities at the \code{lta()} estimates (as the profile-level ML
+holds the class sizes), and models the outcome given the profile(s) at the
+chosen occasion(s); each person's other occasions inform the profile there,
+so a person whose sequence reaches the occasion but who was not measured at
+it still contributes. Persons are the independent units of the sandwich.
 }
 
 \section{Standard errors}{

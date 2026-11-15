@@ -30,6 +30,20 @@
   (`equivalence/latentgold-step3-markov-groups/`) is prepared but not yet
   run.
 
+* `three_step(occasion =)` relates a person-level distal outcome to the
+  profile an `lta()` chain occupies at one occasion, or to the pair of
+  profiles at two (a transition), by BCH, ML, proportional or modal
+  weighting. Each occasion is classified from its own indicators with one
+  pooled error matrix, as in `r3step()`'s three-step latent Markov model; BCH
+  weights by the inverse error rows (their product for a pair), and ML infers
+  the profile at the chosen occasion from the person's whole sequence through
+  the chain, held at the `lta()` estimates. It agrees with an independent sum
+  over every path of the chain, `optim()` and a numDeriv sandwich
+  (`tests/equivalence/test-lta-distal.R`), and recovers known profile and
+  pair means with nominal coverage (`validation/lta-distal-simulation.R`). A
+  Latent GOLD kit (`equivalence/latentgold-step3-distal/`) is prepared and
+  awaits a Latent GOLD run.
+
 # latents 1.3.4
 
 * No change to the package's functions. A new article, "Verification and

@@ -1,0 +1,28 @@
+//LG6.1//
+version = 6.1
+infile 'd01.dat'
+
+model
+title 'd01-free';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261115 sets=20 tolerance=1e-005 iterations=100;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing includeall;
+   step3 modal ml;
+   output
+      parameters=last standarderrors estimatedvalues;
+variables
+   caseid id;
+   dependent distal continuous;
+   latent State nominal dynamic coding=last posterior=(post1 post2);
+equations
+   State[=0] <- 1;
+   State <- (~tra) 1 | State[-1];
+   distal <- 1 | State;
+   distal | State;
+end model

@@ -173,11 +173,13 @@
 .multilpa_step_categorical_fit <- function(pieces, indicators, tol = 1e-12,
                                            max_iter = 20000L) {
   # The probability that a unit of each class is assigned where this one was.
-  errors <- t(.multilpa_error_matrix(pieces)[, pieces$modal, drop = FALSE])
+  # A transition-aware step three supplies its chain's weights instead.
   sizes <- colMeans(pieces$posteriors)
+  fixed <- pieces$ml_weights %||%
+    (t(.multilpa_error_matrix(pieces)[, pieces$modal, drop = FALSE]) *
+       matrix(sizes, nrow(indicators), length(sizes), byrow = TRUE))
   e_step <- function(sizes, probabilities) {
-    joint <- errors * tcrossprod(indicators, probabilities) *
-      matrix(sizes, nrow(indicators), length(sizes), byrow = TRUE)
+    joint <- fixed * tcrossprod(indicators, probabilities)
     marginal <- rowSums(joint)
     list(responsibilities = joint / marginal, log_likelihood = sum(log(marginal)))
   }

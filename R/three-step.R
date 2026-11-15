@@ -296,6 +296,13 @@
 #'   measurement was estimated jointly. Staged fits and fits holding a
 #'   measurement block fixed are refused. See
 #'   *Step-one uncertainty*.
+#' @param occasion For an [lta()] fit only: `NULL` (default) for the
+#'   occasion-level analysis below, or one or two increasing positions in the
+#'   sequence (the first occasion is 1, counted as `lta()` lays the sequence
+#'   out). With one position, a person-level outcome (constant over the
+#'   person's rows) is related to the profile at that occasion; with two, to
+#'   the pair of profiles at the two occasions, a transition when they are
+#'   adjacent. See *Distal outcomes of a transition chain*.
 #'
 #' @return A data frame. For `contrast = "none"`, one row per class (per
 #'   class and category for a categorical outcome, with `category` after
@@ -342,6 +349,31 @@
 #' group-clustered variance accounting for the repeated occasions. It is a
 #' marginal profile-outcome analysis, not a model of outcome effects on
 #' transitions.
+#'
+#' @section Distal outcomes of a transition chain:
+#' With `occasion`, an outcome measured once per person is related to the
+#' profile of a default [lta()] fit (one group class, no covariates) at one
+#' occasion, or to the pair of profiles at two. Each occasion is classified
+#' from its own indicators, with the fit's measurement and its profile shares
+#' pooled over occasions, and one classification-error matrix is pooled over
+#' the occasions, as in the three-step latent Markov model of [r3step()]. The
+#' assignments are assumed to err independently across occasions given the
+#' profiles. The result has `level = "persons"` and an `occasion` attribute;
+#' for a pair, `class` numbers the cells (the later profile varies fastest)
+#' and `from` and `to` (with `reference_from` and `reference_to` for
+#' contrasts) name the profiles.
+#'
+#' BCH weights a person by the row of the inverse error matrix for the
+#' occasion's assignment, and for a pair by the product of the two occasions'
+#' rows; `"proportional"` and `"modal"` use the occasions' own posteriors and
+#' assignments, uncorrected. These methods use the persons assigned at every
+#' chosen occasion. ML treats the assignments at every occasion as indicators
+#' of the chain with the error rates fixed, holds the chain's initial and
+#' transition probabilities at the `lta()` estimates (as the profile-level ML
+#' holds the class sizes), and models the outcome given the profile(s) at the
+#' chosen occasion(s); each person's other occasions inform the profile there,
+#' so a person whose sequence reaches the occasion but who was not measured at
+#' it still contributes. Persons are the independent units of the sandwich.
 #'
 #' @section Standard errors:
 #' The variance is a sandwich over the `G` independent units (the groups,
@@ -398,12 +430,16 @@ three_step <- function(x, data, outcome,
                                     "bonferroni", "BY", "none"),
                        vcov_type = c("cluster", "independent"),
                        variance = c("varying", "equal"),
-                       step_one = c("fixed", "estimated")) {
+                       step_one = c("fixed", "estimated"),
+                       occasion = NULL) {
   # Whether `variance` was given is read before it is matched: missing() is
   # FALSE once an argument has been reassigned.
   variance_given <- !missing(variance)
+  level_given <- !missing(level)
   step_one <- .latents_match_formal(step_one)
+  chain <- NULL
   finish <- function(result) {
+    if (!is.null(chain)) result <- .lta_distal_label(result, chain$occasion, chain$n_profiles)
     attr(result, "step_one") <- step_one
     result
   }
@@ -470,7 +506,20 @@ three_step <- function(x, data, outcome,
   } else {
     .latents_require("`outcome` must be finite" = all(is.finite(data[[outcome]])))
   }
-  if (.trajectory_is_fit(x)) {
+  if (!is.null(occasion)) {
+    # A person-level outcome of an lta() chain, related to the profile at one
+    # occasion or to the pair of profiles at two (lta-distal.R).
+    if (level_given && !identical(level, "individuals")) {
+      stop(errorCondition(paste(
+        "With `occasion`, the outcome is a person's and is related to the",
+        "person's profile at that occasion; `level = \"groups\"` does not apply."),
+        class = "latents_bad_argument", call = NULL))
+    }
+    chain <- .lta_distal_inputs(x, data, outcome, occasion, method)
+    pieces <- chain$pieces
+    values <- chain$values
+    level <- "persons"
+  } else if (.trajectory_is_fit(x)) {
     # Trajectory models classify persons: one outcome value per person.
     if (identical(level, "groups")) {
       stop(errorCondition(paste(
@@ -833,6 +882,9 @@ three_step <- function(x, data, outcome,
 #' @noRd
 .multilpa_step_weights <- function(pieces, method) {
   classes <- seq_len(pieces$n_classes)
+  # A transition-aware step three supplies its own BCH weights (products of
+  # the inverse error rows over the chosen occasions).
+  if (identical(method, "bch") && !is.null(pieces$step_weights)) return(pieces$step_weights)
   switch(method,
     bch = {
       inverse <- .multilpa_invert_errors(.multilpa_error_matrix(pieces))

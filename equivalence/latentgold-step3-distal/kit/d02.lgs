@@ -1,0 +1,30 @@
+//LG6.1//
+version = 6.1
+infile 'd02.dat'
+
+model
+title 'd02';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261115 sets=20 tolerance=1e-005 iterations=100;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing includeall;
+   step3 modal ml;
+   output
+      parameters=last standarderrors estimatedvalues;
+variables
+   caseid id;
+   dependent distal continuous;
+   latent State nominal dynamic coding=last posterior=(post1 post2 post3);
+equations
+   State[=0] <- (a~fix) 1;
+   State <- (b~fix) (~tra) 1 | State[-1];
+   distal <- 1 | State;
+   distal | State;
+   a = {-0.379844704856 0.031553013444};
+   b = {-1.797653900355 -2.414528968124 -2.246695400776 -2.283783400398 -2.445855750006 -1.624978602971};
+end model
