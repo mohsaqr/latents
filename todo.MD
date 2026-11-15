@@ -24,7 +24,7 @@ its evidence (an external reference, a simulation, or both).
 |---|---|---|---|---|
 | 1 | Coverage cell for correlated residuals (`residual_correlation`), and coverage of the growth bootstrap intervals | add cells to `validation/growth-simulation.R` (new registry rows) | S | 2026-10-19 |
 | 2 | Transition-aware `three_step()` (distal outcomes of an `lta()` profile sequence) and BCH | Latent GOLD `step3` on a dynamic latent variable | M | 2026-10-21 |
-| 3 | Group classes in the three-step latent Markov chain (`r3step()` on `lta(n_group_classes > 1)`) | Latent GOLD step3 with a group latent variable | M | 2026-10-23 |
+| 3 | ~~Group classes in the three-step latent Markov chain (`r3step()` on `lta(n_group_classes > 1)`)~~ **done 2026-11-15** (path-sum likelihood, depmixS4 expanded states, recovery study); Latent GOLD kit `equivalence/latentgold-step3-markov-groups/` prepared, **not yet run** | Latent GOLD step3 with a group latent variable | M | 2026-10-23 |
 | 4 | ~~Standard errors for the ten constrained structures in the homogeneous `lta()` (delta method from the general engine's logits)~~ **done 2026-11-15** (`equivalence/lta-structure-se/`); Mplus/Latent GOLD references pending | numerical Hessian; agreement with the extended engine | S-M | 2026-10-24 |
 | 5 | Multilevel growth bootstrap (match group classes too) | simulation | M | 2026-10-27 |
 | 6 | Vignette sections: growth `predict()`/`r3step()`/correlated residuals; three-step latent Markov | rendered articles, claims tested in tests/equivalence | M | 2026-10-29 |
@@ -386,6 +386,8 @@ classes may add a day to G1-G2.
   latent Markov model; Latent GOLD `step3 modal ml` agrees to its printed
   precision on three designs. Still open: a transition-aware `three_step()`
   (distal outcomes) and BCH, and group classes in the step-three chain. **M**
+  Group classes in the step-three chain: done 2026-11-15 (mixture of
+  chains; Latent GOLD comparison pending a run of its kit).
 - [x] Error bars in `plot(what = "bars")`, `"profiles"` and `"responses"` for
   transition fits (2026-10-17, 0.9.37; `intervals =`).
 - [x] `plot(what = "bars")` on an unconverged or bound-active fit now draws

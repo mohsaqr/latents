@@ -1,0 +1,27 @@
+//LG6.1//
+version = 6.1
+infile 'g01.dat'
+
+model
+title 'g01';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-012 emtolerance=1e-010 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20261115 sets=50 tolerance=1e-005 iterations=100;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   step3 modal ml;
+   output
+      parameters=last standarderrors estimatedvalues;
+variables
+   caseid id;
+   independent w, z;
+   latent GClass nominal 2 coding=last,
+      State nominal dynamic coding=last posterior=(post1 post2);
+equations
+   GClass <- 1;
+   State[=0] <- 1 | GClass + w | GClass;
+   State <- (~tra) 1 | State[-1] GClass + (~tra) z | State[-1] GClass;
+end model

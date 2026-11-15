@@ -11,7 +11,7 @@
 
 #' The data of a three-step latent Markov model
 #'
-#' @param x A covariate-free `lta()` fit with one group class.
+#' @param x A covariate-free `lta()` fit (any number of group classes).
 #' @param data The data frame it was fitted to.
 #' @param initial_covariates,transition_covariates Covariate names.
 #' @return A list with `layout`, `designs`, `emission`, `errors`, `n_profiles`
@@ -20,11 +20,6 @@
 .lta_three_step_inputs <- function(x, data, initial_covariates, transition_covariates) {
   unsupported <- function(message) {
     stop(errorCondition(message, class = "latents_unsupported_three_step", call = NULL))
-  }
-  if (x$n_group_classes > 1L) {
-    unsupported(paste(
-      "A three-step transition model is implemented for one group class: the",
-      "step-three chain would also need the group classes."))
   }
   if (inherits(x, "multilpa_lta") &&
       (length(x$arguments$initial_covariates) > 0L ||
@@ -88,7 +83,10 @@
        emission = .multilpa_sequence_emission(log_density, layout),
        errors = errors, modal = modal, n_profiles = ncol(posteriors),
        informative_groups = seq_len(groups$n) %in% groups$index[observed],
-       n_observations = nrow(posteriors))
+       n_observations = nrow(posteriors),
+       group_posteriors = if (x$n_group_classes > 1L)
+         .lta_three_step_group_posteriors(x, groups),
+       step_one_chain = if (x$n_group_classes > 1L) .lta_three_step_step_one_chain(x))
 }
 
 #' Each occasion's profile posteriors from its own indicators
@@ -322,8 +320,9 @@
 .lta_three_step <- function(x, data, initial_covariates, transition_covariates,
                             ci_level, vcov_type, adjust) {
   inputs <- .lta_three_step_inputs(x, data, initial_covariates, transition_covariates)
+  n_classes <- if (is.null(inputs$group_posteriors)) 1L else ncol(inputs$group_posteriors)
   if (identical(vcov_type, "robust")) {
-    n_coefficients <- (inputs$n_profiles - 1L) *
+    n_coefficients <- n_classes - 1L + n_classes * (inputs$n_profiles - 1L) *
       (ncol(inputs$designs$initial) + inputs$n_profiles *
          ncol(inputs$designs$transition[[1L]]))
     .multilpa_require_clusters(
@@ -332,7 +331,8 @@
       alternative = paste("`vcov_type = \"observed\"` uses the model-based",
                           "information instead."))
   }
-  fitted <- .lta_three_step_fit(inputs, vcov_type)
+  fitted <- if (n_classes > 1L) .lta_three_step_group_fit(inputs, vcov_type) else
+    .lta_three_step_fit(inputs, vcov_type)
   errors <- sqrt(pmax(diag(fitted$covariance), 0))
   statistic <- ifelse(errors > 0, fitted$estimates / errors, NA_real_)
   p_value <- 2 * stats::pnorm(-abs(statistic))
@@ -348,5 +348,6 @@
                        row.names = NULL, stringsAsFactors = FALSE)
   structure(result, vcov_type = vcov_type, adjust = adjust,
             log_likelihood = fitted$log_likelihood,
-            classification_errors = inputs$errors)
+            classification_errors = inputs$errors,
+            group_posteriors = fitted$posteriors)
 }

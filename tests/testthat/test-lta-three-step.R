@@ -80,10 +80,69 @@ test_that("the three-step transition model refuses what it does not define", {
                class = "latents_bad_argument")
 })
 
-test_that("two group classes are refused for the three-step chain", {
+# Two group classes, a stable and a mobile chain, each with its own
+# covariate effects.
+group_fixture <- function(n = 600L, occasions = 4L, seed = 41L) {
+  old <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
+  on.exit(if (is.null(old)) rm(".Random.seed", envir = globalenv()) else
+    assign(".Random.seed", old, globalenv()), add = TRUE)
+  set.seed(seed)
+  g <- 1L + (stats::runif(n) > 0.5)
+  w <- stats::rnorm(n)
+  z <- matrix(stats::rnorm(n * occasions), n)
+  moves <- array(c(-2.0, 0.8, -1.8, -0.6, -0.4, 0.8, -0.2, -0.6), c(2L, 2L, 2L))
+  state <- matrix(NA_integer_, n, occasions)
+  state[, 1L] <- ifelse(stats::runif(n) < stats::plogis(c(1, -1)[g] + 0.8 * w), 1L, 2L)
+  # Sequential by construction: each occasion's state depends on the last.
+  for (t in seq_len(occasions)[-1L]) {  # simulation only
+    from <- state[, t - 1L]
+    logit <- moves[cbind(1L, from, g)] + moves[cbind(2L, from, g)] * z[, t]
+    state[, t] <- ifelse(stats::runif(n) < stats::plogis(logit), 3L - from, from)
+  }
+  data <- data.frame(id = rep(seq_len(n), each = occasions),
+                     time = rep(seq_len(occasions), n), w = rep(w, each = occasions),
+                     z = as.vector(t(z)))
+  s <- as.vector(t(state))
+  data$y1 <- stats::rnorm(length(s), c(-1.5, 1.5)[s], 1)
+  data$y2 <- stats::rnorm(length(s), c(-1.3, 1.3)[s], 1)
+  data
+}
+
+test_that("two group classes give a mixture of step-three chains", {
   skip_on_cran()
-  data <- markov_fixture(n = 160L)
-  fit <- markov_fit(data, n_group_classes = 2)
+  data <- group_fixture()
+  fit <- lta(data, c("y1", "y2"), "id", n_profiles = 2, time = "time", n_group_classes = 2,
+             n_starts = 3, seed = 1)
+  result <- r3step(fit, data, initial_covariates = "w", transition_covariates = "z")
+  expect_named(result, c("block", "group_class", "from", "to", "term", "estimate",
+                         "standard_error", "statistic", "p_value", "p_adjusted",
+                         "conf_low", "conf_high"))
+  # One group logit, then per group class the initial intercept and slope
+  # and two origins' intercept and slope.
+  expect_identical(result$block,
+                   c("group", rep(c("initial", "initial", rep("transition", 4L)), 2L)))
+  expect_identical(result$group_class,
+                   c("group_class_1", rep(c("group_class_1", "group_class_2"), each = 6L)))
+  expect_true(all(is.na(result$p_adjusted[result$term == "(Intercept)"])))
+  expect_true(all(is.finite(result$standard_error)))
+  posteriors <- attr(result, "group_posteriors")
+  expect_identical(dim(posteriors), c(600L, 2L))
+  expect_equal(unname(rowSums(posteriors)), rep(1, 600L), tolerance = 1e-12)
+  # The shifted and rescaled covariate changes only its own slopes.
+  moved <- r3step(fit, transform(data, z = 4 + 2 * z), initial_covariates = "w",
+                  transition_covariates = "z")
+  slope <- result$term == "z"
+  expect_equal(moved$estimate[slope], result$estimate[slope] / 2, tolerance = 1e-5)
+  expect_equal(moved$estimate[!slope & result$term != "(Intercept)"],
+               result$estimate[!slope & result$term != "(Intercept)"], tolerance = 1e-5)
+  expect_equal(attr(moved, "log_likelihood"), attr(result, "log_likelihood"),
+               tolerance = 1e-8)
+  # Without the initial covariate the maximum on these data has a separated
+  # logit (a class that never leaves a profile): refused, by class.
   expect_error(r3step(fit, data, transition_covariates = "z"),
+               class = "latents_boundary_fit")
+  # A mover-stayer step one is still refused.
+  stayers <- markov_fit(data, mover_stayer = TRUE)
+  expect_error(r3step(stayers, data, transition_covariates = "z"),
                class = "latents_unsupported_three_step")
 })

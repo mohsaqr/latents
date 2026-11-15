@@ -63,8 +63,8 @@ group classes then capture between-group differences in membership the
 covariates do not explain. Only for \code{level = "individuals"} on a
 \code{multilpa()} fit.}
 
-\item{initial_covariates, transition_covariates}{For an \code{\link[=lta]{lta()}} fit with
-one group class: covariates of the profile at the first occasion
+\item{initial_covariates, transition_covariates}{For an \code{\link[=lta]{lta()}} fit:
+covariates of the profile at the first occasion
 (constant within a person) and of every transition (read at the
 destination occasion, so they may vary over occasions). Either one fits
 the three-step latent Markov model (see \emph{Transition fits}) instead of
@@ -90,7 +90,12 @@ covariate terms), with the attributes \code{log_likelihood},
 \code{classification_errors} (the step-two error matrix, rows the true
 profile), \code{vcov_type} and \code{adjust}. Initial logits are
 against the last profile, transition logits against staying, as in
-\code{lta(initial_covariates =, transition_covariates =)}.
+\code{lta(initial_covariates =, transition_covariates =)}. When the
+\code{\link[=lta]{lta()}} fit has group classes, a \code{group_class} column follows \code{block};
+the first rows (\code{block = "group"}) are the group-class logits against
+the last group class, and every initial and transition coefficient is
+given per group class. The attribute \code{group_posteriors} holds each
+person's step-three group-class posteriors.
 }
 \description{
 \code{r3step()} regresses membership in the classes of a fitted model on
@@ -126,8 +131,19 @@ with the classification errors fixed and the initial and transition
 logits regressed on the covariates.
 The transition fit's own posteriors are not used, because they draw on a
 person's other occasions and their errors would not be independent across
-occasions as step three assumes. The step-one fit must have one group
-class and no covariates.
+occasions as step three assumes. The step-one fit must have no covariates
+and no stayer class.
+
+When the \code{\link[=lta]{lta()}} fit has group classes, step three is a mixture of such
+chains (the mixed latent Markov model): each person belongs to a latent
+group class, and each group class has its own initial and transition
+coefficients, intercepts and slopes, as in \code{lta(n_group_classes =, initial_covariates =, transition_covariates =)}. The classification
+errors are shared, since the measurement is. The group classes are
+re-estimated in step three, started from the step-one chains and group
+posteriors and matched to the step-one labels, so \code{group_class_1} refers
+to the same class in both steps. With few moves in a group class the
+maximum can lie near a boundary (a class that almost never leaves a
+profile); such estimates come with very large standard errors.
 The step-three chain is homogeneous and first order, even when the
 step-one transition structure varies over occasions or has higher order.
 It uses one classification-error matrix pooled over occasions. Step-one

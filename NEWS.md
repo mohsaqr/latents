@@ -13,6 +13,23 @@
   variance block once, as `multilpa()` does. No Mplus or Latent GOLD
   reference exists for them yet.
 
+* `r3step(initial_covariates =, transition_covariates =)` accepts an `lta()`
+  fit with group classes, which it refused before. Step three is then a
+  mixture of hidden Markov chains for the modal assignments (the mixed
+  latent Markov model), one per group class, with shared classification
+  errors and every initial and transition coefficient per group class; the
+  table gains a `group_class` column and group-class logit rows, and the
+  `group_posteriors` attribute. The group classes are matched to the
+  step-one labels. Its likelihood is checked against a sum over every group
+  class and latent path, and its maximum against depmixS4 on the expanded
+  state space (`tests/equivalence/test-lta-three-step-groups.R`). In 200
+  simulated datasets (`validation/lta-three-step-groups-simulation.R`) 199
+  fit and 11 of 13 coefficients meet both the bias and the coverage gate;
+  a rare-move intercept is biased and a move intercept covers 0.884 (see
+  `validation/LTA_SIMULATION.md`). The Latent GOLD kit
+  (`equivalence/latentgold-step3-markov-groups/`) is prepared but not yet
+  run.
+
 # latents 1.3.4
 
 * No change to the package's functions. A new article, "Verification and

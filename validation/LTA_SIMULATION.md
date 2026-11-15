@@ -64,3 +64,35 @@ variances estimated slightly too small, the downward small-sample bias of a
 maximum-likelihood variance: EII's shared variance (-0.162 SD) and VEE's
 profile-2 variance of `b` (-0.120 SD), with coverage 0.932 and 0.940. Gates
 were not changed after the results.
+
+## Group classes in the three-step latent Markov model (2026-11-15)
+
+`r3step(initial_covariates =, transition_covariates =)` on
+`lta(n_group_classes = 2)`. Script
+[lta-three-step-groups-simulation.R](lta-three-step-groups-simulation.R);
+registry [lta-three-step-groups-simulation-registry.csv](lta-three-step-groups-simulation-registry.csv)
+written before the first replicate. 800 persons, 6 occasions, two group
+classes (.5/.5: a stable chain and a mobile one), initial logit on `w`,
+move logits on time-varying `z`, every coefficient per group class (13 in
+all); step one is `lta(n_group_classes = 2)` without covariates. Gates are
+the verification article's: bias within 3.5 Monte Carlo SE, robust 95%
+coverage in the central 99.9% binomial range, every replicate fitted.
+Robust (default) intervals only (`LTA3G_OBSERVED=0`); run as eight serial
+parts on Windows (`LTA3G_SIM_START`), 200 replicates, the declared count.
+
+| Result | |
+|---|---|
+| Replicates fitted | 199 of 200 (one refused, `latents_boundary_fit`: a separated move logit) |
+| Bias gate | 12 of 13; the stable class's 2->1 move intercept is too negative (-2.06 against -1.80, -3.6 MCSE) |
+| Coverage gate (0.894-0.990) | 12 of 13; the mobile class's 1->2 move intercept covers 0.884 (its SE ratio is 0.99) |
+| Other coverage | 0.910-0.980 |
+
+The bias is that of a rare-move logit: in the stable class few moves are
+observed, and in some replicates the maximum lies near the boundary (a
+class that almost never leaves a profile), which pulls the mean and
+inflates the spread: the mean robust SE over the empirical SD is 0.69-0.80
+for the stable class's initial and 2->1 coefficients and 0.67-0.68 for the
+mobile class's initial logits, with their coverage still 0.92-0.965. The intercept undercoverage is the
+documented property of three-step estimators whose errors treat step one
+as fixed (Bakk, Oberski and Vermunt 2014), as for `r3step()` on a single
+class. Gates were not changed after the results.

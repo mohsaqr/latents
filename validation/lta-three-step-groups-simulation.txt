@@ -1,0 +1,49 @@
+Three-step latent Markov model with group classes: 200 datasets attempted, 199 fitted; R version 4.5.2 (2025-10-31 ucrt)
+Coverage range (central 99.9% binomial, 199 draws at 0.95): 0.894-0.990
+
+Failed replicates:
+  error: The step-three regression has separated or boundary logits, so finite Wald standard errors and tests are unavailable. Check sparse classes and transitions or reduce the membership covariates.
+                           key truth replicates mean_estimate     bias    mcse
+           group 1 (Intercept)   0.0        199       -0.0293 -0.02931 0.02966
+         initial 1 (Intercept)   1.0        199        1.1342  0.13415 0.04149
+                   initial 1 w   0.8        199        0.8916  0.09160 0.03019
+ transition 1 1->2 (Intercept)  -2.0        199       -2.0483 -0.04829 0.01641
+           transition 1 1->2 z   0.8        199        0.8259  0.02587 0.00966
+ transition 1 2->1 (Intercept)  -1.8        199       -2.0570 -0.25698 0.07070
+           transition 1 2->1 z  -0.6        199       -0.6687 -0.06871 0.03794
+         initial 2 (Intercept)  -1.0        199       -1.0949 -0.09488 0.04524
+                   initial 2 w   0.8        199        0.8856  0.08561 0.03196
+ transition 2 1->2 (Intercept)  -0.4        199       -0.3872  0.01281 0.01376
+           transition 2 1->2 z   0.8        199        0.8041  0.00408 0.00832
+ transition 2 2->1 (Intercept)  -0.2        199       -0.2058 -0.00577 0.01144
+           transition 2 2->1 z  -0.6        199       -0.6144 -0.01440 0.00796
+ bias_over_mcse se_ratio_robust coverage_robust coverage_observed bias_ok
+         -0.988           0.994           0.910                NA    TRUE
+          3.234           0.776           0.950                NA    TRUE
+          3.034           0.693           0.965                NA    TRUE
+         -2.942           1.103           0.975                NA    TRUE
+          2.677           1.141           0.980                NA    TRUE
+         -3.635           0.787           0.920                NA   FALSE
+         -1.811           0.798           0.960                NA    TRUE
+         -2.097           0.678           0.930                NA    TRUE
+          2.679           0.672           0.955                NA    TRUE
+          0.931           0.986           0.884                NA    TRUE
+          0.490           1.090           0.970                NA    TRUE
+         -0.505           0.978           0.930                NA    TRUE
+         -1.809           1.018           0.960                NA    TRUE
+ coverage_ok
+        TRUE
+        TRUE
+        TRUE
+        TRUE
+        TRUE
+        TRUE
+        TRUE
+        TRUE
+        TRUE
+       FALSE
+        TRUE
+        TRUE
+        TRUE
+
+Bias gate met: 12 of 13; coverage gate met: 12 of 13

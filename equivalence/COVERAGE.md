@@ -218,6 +218,7 @@ compared.
 | `three_step(contrast = "pairs")`, `adjust`, `vcov_type` | none | internal only: `test-three-step.R`, `test-three-step-clusters.R` | — | — | none |
 | `r3step()` (individual level, `vcov_type = "observed"`) | LG `step3 modal ml` | LG c09 `covariate_ml` | logits, SEs | 5e-5 | covered |
 | `r3step(initial_covariates, transition_covariates)` | LG 6.1 dynamic step 3 | `E/test-latentgold-step3-markov.R` "three-step latent Markov model matches Latent GOLD: …" | LL, every logit, every SE | 5.1e-5 | covered |
+| `r3step(initial_covariates, transition_covariates)` on `lta(n_group_classes > 1)` | depmixS4 (expanded group-class x profile states); path-sum likelihood; LG `step3` with a GClass latent (kit prepared, **not run**) | `tests/equivalence/test-lta-three-step-groups.R`; `E/latentgold-step3-markov-groups/` | LL at our estimates, depmixS4's maximum and its coefficients, gradient | 1e-6 LL; 2e-3 coefficients | partial (no commercial program yet) |
 | `r3step(vcov_type = "robust")` (default), `level = "groups"`, `by_group_class` | none | internal only: `test-growth-r3step.R` | — | — | none |
 | `sensitivity()` | none | internal only | — | — | none |
 
