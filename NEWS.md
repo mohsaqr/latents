@@ -1,5 +1,7 @@
 # latents (development version)
 
+## Latent transition models
+
 * The homogeneous `lta()` (a `multilpa_transitions` fit) has Wald standard
   errors for the ten constrained covariance structures (EII, VII, EVI, VEI,
   EEV, VEV, EVE, VVE, VEE, EVV), which `parameter_inference()`, `vcov()` and
@@ -8,10 +10,13 @@
   carried to the natural table by the delta method. They agree with an
   independent likelihood's numerical Hessian to 1e-5, with the extended
   engine's standard errors to 1e-4 and, for EII and VII, with depmixS4's
-  likelihood; a predeclared simulation checks their coverage
-  (`equivalence/lta-structure-se/`). An EII fit now reports its one shared
-  variance block once, as `multilpa()` does. No Mplus or Latent GOLD
-  reference exists for them yet.
+  likelihood (`equivalence/lta-structure-se/`). In a predeclared coverage
+  study (500 datasets per cell, four cells) every coverage lies in its
+  binomial range and 27 of 29 parameters meet every gate; the two misses are
+  the small-sample bias of a maximum-likelihood variance
+  (`validation/LTA_SIMULATION.md`). An EII fit now reports its one shared
+  variance block once, as `multilpa()` does. Mplus inputs are prepared but
+  not yet run.
 
 * `r3step(initial_covariates =, transition_covariates =)` accepts an `lta()`
   fit with group classes, which it refused before. Step three is then a
@@ -44,16 +49,7 @@
   Latent GOLD kit (`equivalence/latentgold-step3-distal/`) is prepared and
   awaits a Latent GOLD run.
 
-* No change to the package's functions. The growth mixture simulation
-  (`validation/growth-simulation.R`, `validation/GROWTH_SIMULATION.md`)
-  gains predeclared cells for correlated residuals (`residual_correlation =
-  "ar"` and `"brownian"`) and for the coverage of the person-bootstrap
-  intervals of `parameter_inference(method = "bootstrap")`, judged by the
-  recovery criteria of the verification article. The correlated-residual
-  cells are run (reduced, 150 datasets per cell); the bootstrap cell is
-  declared but not yet run. Its `small_variance` cell
-  of 2026-10-17 is corrected in the write-up: it ran with the base
-  random-effect variances, not a slope SD of 0.1.
+## Growth mixture models
 
 * `parameter_inference(method = "bootstrap")` now covers the multilevel growth
   mixture (`mixture_regression(random =, cluster =, n_group_classes =)`),
@@ -68,12 +64,30 @@
   (`validation/growth-simulation-multilevel-bootstrap.R`) is declared but
   not yet run, so the intervals' coverage is not yet established.
 
+## Validation and documentation
+
+* The growth mixture simulation (`validation/growth-simulation.R`,
+  `validation/GROWTH_SIMULATION.md`) gains predeclared cells for correlated
+  residuals (`residual_correlation = "ar"` and `"brownian"`) and for the
+  coverage of the person-bootstrap intervals of
+  `parameter_inference(method = "bootstrap")`, judged by the recovery
+  criteria of the verification article. The correlated-residual cells are
+  run (reduced, 150 datasets per cell): Brownian motion meets every
+  criterion; the autoregressive cell is unbiased and covered but misses the
+  availability criterion (8 of 150 fits put a white-noise SD on its floor).
+  The bootstrap cell is declared but not yet run. Its `small_variance` cell
+  of 2026-10-17 is corrected in the write-up: it ran with the base
+  random-effect variances, not a slope SD of 0.1.
+
 * Articles: "Growth mixture models" gains sections on `r3step()` for a growth
   mixture, `predict()` for new persons and correlated residuals
   (`residual_correlation`); "Latent transition analysis" gains the three-step
   latent Markov model (`r3step(initial_covariates =, transition_covariates =)`).
   Each statement of agreement is registered in `equivalence/CLAIMS.csv` with
   its test, and the counts are read from the verification matrix at build.
+
+* Every commercial-program kit prepared but not yet run is registered in
+  `equivalence/CLAIMS.csv` as a gap, so none is silent.
 
 # latents 1.3.4
 

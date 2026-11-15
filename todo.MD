@@ -22,13 +22,13 @@ its evidence (an external reference, a simulation, or both).
 
 | # | Item | Reference / evidence | Size | Target |
 |---|---|---|---|---|
-| 1 | Coverage cell for correlated residuals (`residual_correlation`), and coverage of the growth bootstrap intervals | add cells to `validation/growth-simulation.R` (new registry rows) | S | 2026-10-19 |
+| 1 | ~~Coverage cell for correlated residuals (`residual_correlation`)~~ **done 2026-11-15** (reduced run, 150/500 per cell: Brownian passes; AR unbiased and covered, misses availability); coverage of the growth bootstrap intervals **declared, not yet run** (`GROWTH_SIM_STUDY=bootstrap`) | add cells to `validation/growth-simulation.R` (new registry rows) | S | 2026-10-19 |
 | 2 | ~~Transition-aware `three_step()` (distal outcomes of an `lta()` profile sequence) and BCH~~ **done 2026-11-15** (`three_step(occasion =)`, BCH/ML/proportional/modal, one occasion or a pair); path-sum + optim + numDeriv oracle, predeclared recovery study. **Open:** the Latent GOLD run of `equivalence/latentgold-step3-distal/` (kit prepared, LG not on this machine) | Latent GOLD `step3` on a dynamic latent variable | M | 2026-10-21 |
 | 3 | ~~Group classes in the three-step latent Markov chain (`r3step()` on `lta(n_group_classes > 1)`)~~ **done 2026-11-15** (path-sum likelihood, depmixS4 expanded states, recovery study); Latent GOLD kit `equivalence/latentgold-step3-markov-groups/` prepared, **not yet run** | Latent GOLD step3 with a group latent variable | M | 2026-10-23 |
 | 4 | ~~Standard errors for the ten constrained structures in the homogeneous `lta()` (delta method from the general engine's logits)~~ **done 2026-11-15** (`equivalence/lta-structure-se/`); Mplus/Latent GOLD references pending | numerical Hessian; agreement with the extended engine | S-M | 2026-10-24 |
-| 5 | Multilevel growth bootstrap (match group classes too) | simulation | M | 2026-10-27 |
+| 5 | Multilevel growth bootstrap (match group classes too): code and matching **done 2026-11-15** (brute-force relabelling oracle); coverage simulation **declared, not yet run** (`validation/growth-simulation-multilevel-bootstrap.R`) | simulation | M | 2026-10-27 |
 | 6 | ~~Vignette sections: growth `predict()`/`r3step()`/correlated residuals; three-step latent Markov~~ **Done 2026-11-15** (growth-mixture.Rmd, lta.Rmd; CLAIMS.csv rows; r3step coverage test in tests/equivalence/test-growth-r3step.R). Extend when items 1-3 and 5 land | rendered articles, claims tested in tests/equivalence | M | 2026-10-29 |
-| 7 | G6: binary and count growth mixtures (adaptive quadrature) | Latent GOLD, GLMMadaptive | L | November |
+| 7 | G6: binary and count growth mixtures (adaptive quadrature): **started 2026-11-15, unfinished**, kept off the release line (branch `wip/g6-glmm-growth`): one-class lme4/GLMMadaptive references exist, tests failing, recovery not established | Latent GOLD, GLMMadaptive | L | November |
 
 ## Priority E — Equivalence 2.0 (plan, set 2026-10-17)
 
