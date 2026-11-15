@@ -58,9 +58,11 @@ test_that("every backed claim names a test that exists", {
 test_that("unbacked claims are explained and do not grow unnoticed", {
   unbacked <- subset(claims, test_file == "NONE")
   expect_true(all(nzchar(unbacked$note)))
-  # Two: the `boundary = "fix"` convention described as the one Mplus
+  # Four: the `boundary = "fix"` convention described as the one Mplus
   # follows, which states a convention rather than a numerical agreement;
-  # and the Latent GOLD kit for group classes in the three-step latent Markov
-  # model, prepared but not yet run (a registered gap).
-  expect_identical(nrow(unbacked), 2L)
+  # and three registered gaps, kits prepared but not yet run for want of the
+  # program: Latent GOLD for group classes in the three-step latent Markov
+  # model, Latent GOLD for three_step(occasion =), and Mplus for the
+  # constrained structures of the homogeneous lta().
+  expect_identical(nrow(unbacked), 4L)
 })
