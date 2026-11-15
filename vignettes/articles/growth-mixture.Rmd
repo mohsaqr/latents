@@ -16,6 +16,26 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7.5,
                       fig.height = 4.6, fig.align = "center", dpi = 96)
 old_options <- options(width = 90)
 has_ggplot <- requireNamespace("ggplot2", quietly = TRUE)
+# The counts in "How this was checked" are read from the source repository at
+# build time: the verification matrix (equivalence/verification-matrix/) and
+# the stored growth simulation (validation/).
+root <- normalizePath(getwd())
+while (!file.exists(file.path(root, "DESCRIPTION")) && dirname(root) != root) {
+  root <- dirname(root)
+}
+evidence <- utils::read.csv(file.path(root, "equivalence", "verification-matrix",
+                                      "evidence.csv"), stringsAsFactors = FALSE)
+evidence <- evidence[evidence$current, ]
+tests_in <- function(file) sum(evidence$location == file)
+checks_in <- function(file, item = "") {
+  sum(evidence$checks[evidence$location == file & grepl(item, evidence$item, fixed = TRUE)])
+}
+failed_in <- function(file) sum(evidence$failed[evidence$location == file])
+simulation <- utils::read.csv(file.path(root, "validation", "growth-simulation-r3step.csv"),
+                              stringsAsFactors = FALSE)
+separated <- simulation[simulation$cell != "weak", ]
+coverage <- tapply(separated$covered, separated$cell, mean, na.rm = TRUE)
+weak_coverage <- mean(simulation$covered[simulation$cell == "weak"], na.rm = TRUE)
 ```
 
 When the same people are measured repeatedly, a single average trajectory
@@ -165,6 +185,88 @@ three_step(trajectory_classes, data = growth_scores, outcome = "motivation",
            contrast = "pairs")
 ```
 
+## Predictors of the class, in three steps
+
+`membership` estimates the trajectories and the covariate's effect together,
+so adding a covariate can move the classes. `r3step()` keeps the classes of a
+model fitted without it: each student is assigned to their most likely class,
+and a multinomial logistic regression of that assignment on the covariate is
+estimated with the classification errors held at the values the model implies
+(Vermunt 2010). The covariate must take one value per
+student.
+
+```{r r3step}
+r3step(trajectory_classes, data = growth_scores, covariates = "motivation")
+```
+
+```{r check-r3step, include = FALSE}
+slopes <- get_results(trajectory_classes, "coefficients")
+slopes <- slopes[slopes$term == "wave", ]
+stable <- which.min(abs(slopes$estimate))
+improving <- which.max(slopes$estimate)
+declining <- which.min(slopes$estimate)
+covariate <- r3step(trajectory_classes, growth_scores, "motivation")
+covariate <- covariate[covariate$term == "motivation", ]
+stopifnot(stable == 3L,
+          covariate$estimate[covariate$outcome == sprintf("class_%d", improving)] > 0,
+          covariate$estimate[covariate$outcome == sprintf("class_%d", declining)] < 0,
+          all(covariate$p_value < 0.001))
+```
+
+The coefficients are log odds against the last class, here the stable one.
+More motivated students are more likely to be in the improving class and less
+likely to be in the declining class than in the stable class. The standard
+errors are a sandwich over students by default (`vcov_type = "observed"` gives
+the model-based ones). Like every three-step estimator, `r3step()` treats the
+classification errors as known; with weakly separated classes its intervals
+are too narrow (see *How this was checked*).
+
+## Predicting for new students
+
+`predict()` applies the fitted model to new students. With `newdata`, every
+student is treated as new: the class trajectories and the membership logits
+come from the fit, and each student is classified from their own scores.
+Suppose three students have been tested on the first three waves only:
+
+```{r new-students}
+early <- subset(growth_scores, student %in% c(1, 50, 120) & wave <= 2)
+early$student <- early$student + 1000  # new students
+predict(fit, early, type = "posterior")
+```
+
+```{r check-new-students, include = FALSE}
+placed <- predict(fit, early, type = "posterior")
+class_slopes <- get_results(fit, "coefficients")
+class_slopes <- class_slopes[class_slopes$term == "wave", ]
+truth <- as.character(early$trajectory[!duplicated(early$student)])
+direction <- c(improving = "up", declining = "down")[truth]
+fitted_direction <- ifelse(class_slopes$estimate[match(placed$class, class_slopes$class)] > 1,
+                           "up", "down")
+stopifnot(min(placed$probability) > 0.95, identical(unname(direction), fitted_direction))
+```
+
+Three tests are enough to place each of them with a posterior probability
+above 0.95, and in the class whose trajectory matches how they were
+simulated. The other types give the curves:
+
+- `"class_response"`: every class's trajectory at each row, with the
+  student's prior probability of the class from `membership`. The outcome is
+  not needed, so the rows can be future waves.
+- `"response"`: the trajectories averaged with those prior probabilities.
+- `"class_conditional"` and `"conditional"`: the student's own curve,
+  adding their predicted random effects to each class trajectory, and its
+  average over the posterior probabilities.
+- `"random_effects"`: the predicted random effects under every class.
+
+```{r new-students-curves}
+future <- data.frame(student = 1001, wave = 3:6, motivation = early$motivation[1])
+predict(fit, future, type = "class_response")
+predict(fit, early, type = "conditional")
+```
+
+Without `newdata`, `predict()` returns the same quantities for the fitted
+students.
+
 ## Seeing the classes
 
 The trajectory view shows each class's mean trajectory with its confidence
@@ -262,6 +364,80 @@ enumerate_regressions(score ~ wave, growth_schools, n_classes = 2,
                       n_starts = 3, seed = 1)
 ```
 
+## Correlated residuals
+
+The random effects make all of a person's measurements correlated to the same
+degree. Measurements close in time are often more alike than distant ones: a
+good day tends to be followed by another. `residual_correlation` adds a
+process to the residuals that is shared by the classes (Proust-Lima,
+Philipps and Liquet 2017):
+
+- `"ar"`, a continuous-time autoregressive process, with covariance
+  $\sigma^2 e^{-\rho |t - s|}$ between times $t$ and $s$, so the correlation
+  decays with the distance in time;
+- `"brownian"`, Brownian motion, with covariance $\sigma^2 \min(t, s)$, a
+  deviation that wanders and accumulates.
+
+`residual_time` names the time of the process, by default the first numeric
+variable of `random` or of the predictors; the times need not be equally
+spaced. The data below are simulated: 200 people rated their mood on six
+days, following one of two courses (rising or falling), with a random
+intercept and day-to-day residuals following an autoregressive process with
+correlation 0.6 between consecutive days.
+
+```{r diary}
+set.seed(31)
+n <- 200
+days <- 0:5
+kind <- sample(1:2, n, replace = TRUE, prob = c(0.55, 0.45))
+diary <- data.frame(person = rep(seq_len(n), each = length(days)),
+                    day = rep(days, n))
+process <- unlist(lapply(seq_len(n), function(i) {
+  stats::filter(rnorm(length(days), 0, 0.8), 0.6, method = "recursive")
+}))
+k <- kind[diary$person]
+diary$mood <- c(1, 4)[k] + c(0.5, -0.3)[k] * diary$day +
+  rnorm(n)[diary$person] + process + rnorm(nrow(diary), 0, 0.5)
+
+mood <- function(correlation) {
+  mixture_regression(mood ~ day, diary, n_classes = 2, id = "person",
+                     class_level = "group", random = "intercept",
+                     random_covariance = "equal", variance = "equal",
+                     residual_correlation = correlation, n_starts = 3, seed = 1)
+}
+independent <- mood("none")
+autoregressive <- mood("ar")
+brownian <- mood("brownian")
+compare_models(independent = independent, autoregressive = autoregressive,
+               brownian = brownian)
+```
+
+The autoregressive process is preferred by BIC. Its rate $\rho$ and standard
+deviation $\sigma$ are reported with the random effects:
+
+```{r diary-random}
+get_results(autoregressive, "random")
+get_results(independent, "random")
+```
+
+```{r check-diary, include = FALSE}
+criteria <- BIC(independent, autoregressive, brownian)
+stopifnot(which.min(criteria$BIC) == 2L)
+variance_of <- function(x) {
+  table <- get_results(x, "random")
+  table$estimate[table$parameter == "variance" & table$term == "(Intercept)"]
+}
+stopifnot(variance_of(independent) > variance_of(autoregressive))
+```
+
+Without the process, the random intercept absorbs part of the correlation
+between days, and its variance is larger. A process the data cannot separate
+from the residual variance or the random effects stays on its bound, with a
+warning and no standard error; class-specific residual variances
+(`variance = "varying"`) make that more likely. `predict()` adds the
+process to the conditional predictions of the observed rows, and it needs
+`residual_time` in `newdata`.
+
 ## Choices and warnings
 
 - **Random effects.** `random = "intercept"` lets students differ in level
@@ -290,6 +466,43 @@ group classes coincide. Against
 one to three classes, shared, proportional and diagonal covariances and
 membership covariates, the likelihoods agree at `hlme`'s own estimates and
 `mixture_regression()` reaches at least `hlme`'s maximum.
+
+The other features of this article are checked in the same way. The counts
+below are read from the package's verification matrix when this article is
+built, and count only checks run on the current source.
+
+- **Predictions.** Given `hlme`'s estimates, on new persons and three
+  configurations, `predict()` reproduces `lcmm`'s `predictY()`, `predictClass()` and `predictRE()`:
+  the class and averaged trajectories to a relative tolerance of
+  $10^{-8}$, the posterior probabilities, own curves and random effects to
+  $10^{-6}$
+  (`r tests_in("equivalence/test-growth-predict-lcmm.R")` tests,
+  `r checks_in("equivalence/test-growth-predict-lcmm.R")` checks,
+  `r failed_in("equivalence/test-growth-predict-lcmm.R")` failed). The own
+  curves are also compared with a dense empirical Bayes computation.
+- **Correlated residuals.** The likelihood equals that of `hlme(cor = AR(time))` and `hlme(cor = BM(time))`
+  at `hlme`'s estimates to a relative tolerance of $10^{-8}$, with the same
+  number of parameters, and `mixture_regression()` reaches the same maximum
+  to $10^{-4}$
+  (`r tests_in("equivalence/test-growth-correlated-lcmm.R")` tests,
+  `r checks_in("equivalence/test-growth-correlated-lcmm.R")` checks,
+  `r failed_in("equivalence/test-growth-correlated-lcmm.R")` failed). It
+  also equals a likelihood computed from the dense covariance matrix of each
+  person's measurements. The coverage of its intervals has not yet been
+  studied by simulation.
+- **Three-step regression.** The estimates of `r3step()` on a growth mixture equal the maximum of the fixed-error likelihood written out from Vermunt (2010),
+  found by a general-purpose optimizer (to a relative tolerance of $10^{-5}$),
+  and its observed-information standard
+  errors equal those from that optimizer's Hessian (to $10^{-3}$)
+  (`r checks_in("tests/equivalence/test-growth-r3step.R", "maximizes")` checks). In
+  a predeclared simulation of `r format(max(simulation$replicate), big.mark = ",")` datasets per design
+  (`validation/GROWTH_SIMULATION.md`), the 95% intervals for the covariate's
+  slope covered the true value in
+  `r sprintf("%.1f%%", 100 * min(coverage))` to
+  `r sprintf("%.1f%%", 100 * max(coverage))` of the datasets with separated
+  classes, and in `r sprintf("%.1f%%", 100 * weak_coverage)` with weakly
+  separated classes, where the classification errors are themselves
+  uncertain.
 
 ## References
 

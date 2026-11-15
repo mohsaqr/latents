@@ -12,6 +12,16 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
                       fig.height = 4.5, fig.align = "center", dpi = 96)
 old_options <- options(digits = 3, width = 100)
+# The Latent GOLD counts are read from the verification matrix of the source
+# repository (equivalence/verification-matrix/) at build time.
+root <- normalizePath(getwd())
+while (!file.exists(file.path(root, "DESCRIPTION")) && dirname(root) != root) {
+  root <- dirname(root)
+}
+evidence <- utils::read.csv(file.path(root, "equivalence", "verification-matrix",
+                                      "evidence.csv"), stringsAsFactors = FALSE)
+markov <- evidence[evidence$current &
+                     evidence$location == "equivalence/test-latentgold-step3-markov.R", ]
 ```
 
 Latent transition analysis (LTA) estimates latent states at successive
@@ -211,6 +221,63 @@ either extension. Extended models provide transition and initial-state logit
 coefficients, with Wald standard errors when supported by the fitted model,
 and occasion-specific probability summaries.
 
+## Covariates of the transitions, in three steps
+
+`transition_covariates` estimates the profiles, the transitions and the
+covariate effects together, so a covariate can change the profiles it is
+meant to predict. The three-step latent Markov model keeps the profiles of a
+model fitted without covariates (Vermunt 2010; Di Mari, Oberski and Vermunt
+2016). `r3step()` with `initial_covariates` or `transition_covariates` on a
+covariate-free `lta()` fit with one group class:
+
+1. takes the profiles of the fitted model;
+2. classifies every occasion from its own indicators and assigns it to its
+   most likely profile, recording how often each profile is assigned to
+   each other one (the classification errors);
+3. fits a hidden Markov model to the assigned profiles, with the
+   classification errors held fixed and the initial-profile and transition
+   logits regressed on the covariates.
+
+Step two uses each occasion's own indicators rather than the transition
+model's posteriors, which draw on a person's other occasions: their errors
+would not be independent across occasions, as step three assumes. The
+coefficients use the coding of `lta()`: initial logits against the last
+profile, transition logits against staying.
+
+```{r three-step}
+three <- r3step(homogeneous, course_engagement,
+                transition_covariates = "previous_grade")
+three
+attr(three, "classification_errors")
+```
+
+```{r check-three-step, include = FALSE}
+errors <- attr(three, "classification_errors")
+three_slopes <- subset(three, term == "previous_grade")
+stopifnot(min(diag(errors)) > 0.95,
+          all(three_slopes$conf_low < 0 & three_slopes$conf_high > 0),
+          all(sign(three_slopes$estimate) == sign(slopes$estimate)))
+```
+
+The occasions are classified with few errors (above 95% correct for both
+profiles), and, as in the one-step model, the coefficients of previous grade
+are positive and their intervals include zero. The standard errors are a
+sandwich over students by default; `vcov_type = "observed"` gives the
+model-based ones. A covariate in `initial_covariates` must take one value
+per student, since it predicts the profile at the first occasion;
+`transition_covariates` are read at the destination occasion and may change
+over occasions. The step-three chain is homogeneous and first order,
+whatever the transition structure of the step-one model, and the step-one
+model must have one group class and the same measurement at every occasion.
+
+The step-three likelihood equals a sum over every path of profiles, written out independently, and its estimate is a maximum of that sum. Against
+Latent GOLD 6.1's `step3` on a dynamic latent variable, on
+`r nrow(markov)` simulated designs with two and three profiles and sequences
+of unequal length, the log likelihood, every coefficient and every standard error agree within Latent GOLD's printed rounding
+(the standard errors with `vcov_type = "observed"`, the information Latent
+GOLD reports; `r sum(markov$checks)` checks, `r sum(markov$failed)` failed, counted from
+the verification matrix when this article is built).
+
 ## Assumptions
 
 - By default the next profile depends only on the current profile and the
@@ -220,6 +287,16 @@ and occasion-specific probability summaries.
   `measurement = "occasion"`.
 - Indicators are independent within a profile (the default diagonal
   covariance; `covariance_model = "full"` or a non-diagonal `model` relaxes it).
+
+## References
+
+Di Mari, R., Oberski, D. L., & Vermunt, J. K. (2016). Bias-adjusted
+three-step latent Markov modeling with covariates. *Structural Equation
+Modeling*, 23(5), 649--660. https://doi.org/10.1080/10705511.2016.1191015
+
+Vermunt, J. K. (2010). Latent class modeling with covariates: Two improved
+three-step approaches. *Political Analysis*, 18(4), 450--469.
+https://doi.org/10.1093/pan/mpq025
 
 ```{r restore-options, include = FALSE}
 options(old_options)

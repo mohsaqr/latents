@@ -32,6 +32,7 @@ tests/equivalence,test-growth-mixture.R,.,growth,numDeriv / dense likelihood,ind
 tests/equivalence,test-growth-multilevel-bootstrap.R,brute-force,growth,brute-force relabelling search,independent code
 tests/equivalence,test-growth-multilevel-bootstrap.R,.,growth,simulation (known parameters),simulation recovery
 tests/equivalence,test-growth-predict.R,.,growth,numDeriv / dense likelihood,independent code
+tests/equivalence,test-growth-r3step.R,stored growth simulation,three_step,growth simulation (validation/),internal
 tests/equivalence,test-growth-r3step.R,.,three_step,reference optimizer,independent code
 tests/equivalence,test-inference-fixed-measurement.R,.,multilpa,numDeriv / dense likelihood,independent code
 tests/equivalence,test-latents-controls.R,.,multilca,glca,R package

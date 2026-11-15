@@ -27,7 +27,7 @@ its evidence (an external reference, a simulation, or both).
 | 3 | ~~Group classes in the three-step latent Markov chain (`r3step()` on `lta(n_group_classes > 1)`)~~ **done 2026-11-15** (path-sum likelihood, depmixS4 expanded states, recovery study); Latent GOLD kit `equivalence/latentgold-step3-markov-groups/` prepared, **not yet run** | Latent GOLD step3 with a group latent variable | M | 2026-10-23 |
 | 4 | ~~Standard errors for the ten constrained structures in the homogeneous `lta()` (delta method from the general engine's logits)~~ **done 2026-11-15** (`equivalence/lta-structure-se/`); Mplus/Latent GOLD references pending | numerical Hessian; agreement with the extended engine | S-M | 2026-10-24 |
 | 5 | Multilevel growth bootstrap (match group classes too) | simulation | M | 2026-10-27 |
-| 6 | Vignette sections: growth `predict()`/`r3step()`/correlated residuals; three-step latent Markov | rendered articles, claims tested in tests/equivalence | M | 2026-10-29 |
+| 6 | ~~Vignette sections: growth `predict()`/`r3step()`/correlated residuals; three-step latent Markov~~ **Done 2026-11-15** (growth-mixture.Rmd, lta.Rmd; CLAIMS.csv rows; r3step coverage test in tests/equivalence/test-growth-r3step.R). Extend when items 1-3 and 5 land | rendered articles, claims tested in tests/equivalence | M | 2026-10-29 |
 | 7 | G6: binary and count growth mixtures (adaptive quadrature) | Latent GOLD, GLMMadaptive | L | November |
 
 ## Priority E — Equivalence 2.0 (plan, set 2026-10-17)

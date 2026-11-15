@@ -68,6 +68,13 @@
   (`validation/growth-simulation-multilevel-bootstrap.R`) is declared but
   not yet run, so the intervals' coverage is not yet established.
 
+* Articles: "Growth mixture models" gains sections on `r3step()` for a growth
+  mixture, `predict()` for new persons and correlated residuals
+  (`residual_correlation`); "Latent transition analysis" gains the three-step
+  latent Markov model (`r3step(initial_covariates =, transition_covariates =)`).
+  Each statement of agreement is registered in `equivalence/CLAIMS.csv` with
+  its test, and the counts are read from the verification matrix at build.
+
 # latents 1.3.4
 
 * No change to the package's functions. A new article, "Verification and

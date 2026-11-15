@@ -50,3 +50,31 @@ test_that("r3step on a growth mixture maximizes the fixed-error likelihood", {
   expect_equal(ours$standard_error, sqrt(diag(solve(reference$hessian))),
                tolerance = 1e-3)
 })
+
+test_that("the stored growth simulation: r3step coverage meets its predeclared gate", {
+  # validation/growth-simulation.R, run on a registry fixed before the first
+  # replicate (validation/GROWTH_SIMULATION.md). The growth-mixture article
+  # reports this coverage; the gate (95% intervals covering in 0.925-0.975 of
+  # the datasets, at least 98% available) was set before the run. Under weak
+  # separation the coverage falls below it, and the article says so.
+  path <- test_path("..", "..", "validation", "growth-simulation-r3step.csv")
+  skip_if_not(file.exists(path), "the stored growth simulation is not available")
+  rows <- utils::read.csv(path, stringsAsFactors = FALSE)
+  registry <- utils::read.csv(test_path("..", "..", "validation",
+                                        "growth-simulation-registry.csv"))
+  expect_setequal(unique(rows$cell), registry$cell)
+  replicates <- max(rows$replicate)
+  expect_identical(replicates, 1000L)
+  for (cell in registry$cell) {
+    own <- rows[rows$cell == cell, ]
+    available <- sum(!is.na(own$covered)) / replicates
+    coverage <- mean(own$covered, na.rm = TRUE)
+    if (identical(cell, "weak")) {
+      expect_lt(coverage, 0.925, label = cell)
+    } else {
+      expect_gte(available, 0.98, label = cell)
+      expect_gte(coverage, 0.925, label = cell)
+      expect_lte(coverage, 0.975, label = cell)
+    }
+  }
+})
