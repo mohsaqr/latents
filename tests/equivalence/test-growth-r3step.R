@@ -62,6 +62,9 @@ test_that("the stored growth simulation: r3step coverage meets its predeclared g
   rows <- utils::read.csv(path, stringsAsFactors = FALSE)
   registry <- utils::read.csv(test_path("..", "..", "validation",
                                         "growth-simulation-registry.csv"))
+  # r3step() is estimated in the wald study only; the correlated and
+  # bootstrap studies declare their own cells and have no r3step rows.
+  registry <- registry[registry$study == "wald", ]
   expect_setequal(unique(rows$cell), registry$cell)
   replicates <- max(rows$replicate)
   expect_identical(replicates, 1000L)
