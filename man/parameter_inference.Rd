@@ -82,7 +82,11 @@ where the information is singular.
 reports every other parameter conditional on them, as Mplus does. The
 held probabilities are left out of the table and named in the
 \code{fixed_at_bound} attribute; a covariate fit keeps their rows with \code{NA}
-standard errors.}
+standard errors. A homogeneous transition fit (\code{\link[=lta]{lta()}}) holds its
+response, initial and transition probabilities on the bound the same
+way; a general one (covariates, occasion-specific measurement, second
+order, stayers) holds nothing, and \code{method = "bootstrap"} is the
+alternative there.}
 }
 \value{
 A data frame with one row per reported parameter. For a profile,
@@ -186,8 +190,11 @@ estimate columns, \code{estimated} and, for a second-order fit, \code{previous}.
 \code{estimated} is \code{FALSE} for a logit the likelihood does not identify (see
 \emph{Occasions without data} under \code{\link[=lta]{lta()}}); such a row has \code{NA} standard
 error and test. The bootstrap rebases the initial logits when the
-reference profile moves. A transition fit of either kind with a parameter
-at a bound is refused under either \code{boundary}.
+reference profile moves. Under \code{boundary = "fix"} a homogeneous transition
+fit holds the probabilities on their bound and leaves their rows out (named
+in \code{fixed_at_bound}); a general one, a variance on its bound and an empty
+group class are refused under either value. The bootstrap refits each
+resample and reports percentile intervals for a fit on its bound.
 }
 
 \section{Growth mixtures}{

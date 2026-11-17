@@ -408,6 +408,12 @@ passed, so the fit has one observation per unit and no second level.
 Raised by \code{\link[=multilpa]{multilpa()}} on every such fit and once by an
 \code{\link[=enumerate_classes]{enumerate_classes()}} grid; \code{suppressMessages()} or a
 \code{latents_single_level} handler silences it.}
+\item{\code{latents_single_start}}{A message, not a warning: one or more
+converged candidates of an \code{\link[=enumerate_classes]{enumerate_classes()}}, \code{\link[=enumerate_lpa]{enumerate_lpa()}}
+or \code{\link[=enumerate_lca]{enumerate_lca()}} grid, fitted from two or more starts, reached
+their best log likelihood from one start only, so a higher maximum may exist that no start found.
+The message names them; refit those you consider with
+more \code{n_starts}. Raised once per grid.}
 \item{\code{latents_bootstrap_dropped}}{Some resamples did not produce a
 usable fit and were excluded from the interval. Raised by
 \code{parameter_inference(method = "bootstrap")}; the message states how

@@ -112,7 +112,10 @@ class grid also has the AvePP summaries at each level in its candidates
 table, \code{\link[=get_deltas]{get_deltas()}} and \code{\link[=get_knees]{get_knees()}}, and a \code{summary()} that prints
 one screen of the evidence; a transition or family grid's \code{summary()}
 is its candidates table. Invalid arguments are refused with the
-classed conditions listed on \link{latents-conditions}.
+classed conditions listed on \link{latents-conditions}. When a converged
+candidate fitted from two or more starts reached its best log
+likelihood from one of them only, a
+\code{latents_single_start} message names it once per grid.
 }
 \description{
 \code{enumerate_classes()} fits every candidate in a grid of class counts

@@ -634,10 +634,10 @@ parameter_inference.multilpa_lta <-function(x, data = NULL, level = 0.95,
                                              boundary = c("error", "fix")) {
   .latents_require("`level` must be a single finite number in (0, 1)" =
     is.numeric(level) && length(level) == 1L && is.finite(level) && level > 0 && level < 1)
-  # Transition inference holds nothing at a bound, and a fit with an active
-  # bound is refused (`latents_boundary_fit`) either way; so "fix" and "error"
-  # agree wherever a table is returned.
-  .latents_match_formal(boundary)
+  # Transition inference holds nothing at a bound: a bound-active fit is
+  # refused (`latents_boundary_fit`) under either value, and "fix" only
+  # changes the refusal's wording.
+  boundary <- .latents_match_formal(boundary)
   adjust <- .latents_match_formal(adjust)
   if (identical(.latents_match_formal(method), "bootstrap")) {
     return(.lta_bootstrap_dispatch(x, data, level, iter, n_starts, max_iter, tol,
@@ -646,7 +646,7 @@ parameter_inference.multilpa_lta <-function(x, data = NULL, level = 0.95,
   if (!is.null(data)) .lta_check_data(x, data)
   vcov_type <- .latents_weighted_vcov(.latents_is_weighted(x), .latents_match_formal(vcov_type),
                                       missing(vcov_type), bootstrap = TRUE)
-  inference <- .lta_inference(x, vcov_type, step)
+  inference <- .lta_inference(x, vcov_type, step, boundary)
   table <- rbind(
     cbind(block = "transition", .lta_coefficient_table(x, "transition", level, vcov_type, inference)[,
       c("group_class", "from", "to", "term", "estimate", "standard_error",

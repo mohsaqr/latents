@@ -96,7 +96,10 @@ utils::globalVariables("statistic")
 #'   table, [get_deltas()] and [get_knees()], and a `summary()` that prints
 #'   one screen of the evidence; a transition or family grid's `summary()`
 #'   is its candidates table. Invalid arguments are refused with the
-#'   classed conditions listed on [latents-conditions].
+#'   classed conditions listed on [latents-conditions]. When a converged
+#'   candidate fitted from two or more starts reached its best log
+#'   likelihood from one of them only, a
+#'   `latents_single_start` message names it once per grid.
 #'
 #' @seealso [get_candidate()], [bootstrap_lrt()] to test one class count
 #'   against the next, [enumerate_regressions()] for mixture regressions.
@@ -159,7 +162,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
                           if (missing(model)) NULL else model, seed, list(...),
                           match.call(), cores = cores, verbose = verbose))
     result$type <- "lta"
-    return(result)
+    return(.latents_single_start_notice(result))
   }
   if (!identical(family, "profiles")) {
     # Group-class families have no individual profiles and no covariance
@@ -174,7 +177,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
                                   n_group_classes, between_variance, seed, list(...),
                                   match.call(), cores = cores))
     result$type <- "family"
-    return(result)
+    return(.latents_single_start_notice(result))
   }
   if (!missing(between_variance)) {
     stop(errorCondition(
@@ -308,7 +311,7 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
   class(result) <- "multilpa_enumeration"
   result$type <- type %||% .latents_enumeration_measurement_type(vars, extra)
   names(result$fits) <- .latents_candidate_names(result)
-  result
+  .latents_single_start_notice(result)
 }
 
 #' A candidate's call as the caller would have written it
@@ -647,6 +650,7 @@ summary.multilpa_enumeration <- function(object, ...) {
                  n_converged = sum(grid$converged),
                  n_failed = sum(is.na(grid$log_likelihood)),
                  n_boundary = sum(grid$boundary %in% TRUE),
+                 single_start = .latents_single_start(object),
                  call = object$call)
   result$criteria <- result$best
   # Every table the fit can produce, built once here, so `get_results()` on the
@@ -831,7 +835,7 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
   # and whether their classes are separated. The tables themselves have their
   # own verbs; the print is the reading of them (review 2026-11-02: the print
   # was seven truncated tables and pointed to a 5,000-line list).
-  .multilpa_print_enumeration_warnings(grid, best)
+  .multilpa_print_enumeration_warnings(grid, best, x$single_start)
   shown <- best[, intersect(c("criterion", "convention", "candidate", "value"),
                             names(best)), drop = FALSE]
   cat("\n-- lowest value of each criterion ", strrep("-", 32L), "\n", sep = "")
@@ -866,9 +870,10 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
 #' * Candidates with a class whose average posterior is below 0.8.
 #' @param grid The candidates table.
 #' @param best The table of the lowest value of each criterion.
+#' @param once The single-start candidates, from `.latents_single_start()`.
 #' @return `NULL`, invisibly. Called for the printing.
 #' @noRd
-.multilpa_print_enumeration_warnings <- function(grid, best) {
+.multilpa_print_enumeration_warnings <- function(grid, best, once = character()) {
   lines <- character()
   converged <- grid[grid$converged %in% TRUE, , drop = FALSE]
   chosen <- unique(best$candidate[!is.na(best$candidate)])
@@ -890,13 +895,8 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
         "classification quality."), paste(chosen, collapse = ", ")))
     }
   }
-  once <- converged$candidate[converged$n_best_replicated %in% 1L]
   if (length(once) > 0L) {
-    named <- if (length(once) > 6L) c(utils::head(once, 6L), "...") else once
-    lines <- c(lines, sprintf(paste(
-      "%d of %d candidates reached their best log likelihood from one start",
-      "only (%s); refit those you consider with more starts."),
-      length(once), nrow(converged), paste(named, collapse = ", ")))
+    lines <- c(lines, .latents_single_start_text(once, nrow(converged)))
   }
   below <- (converged$avepp_below %||% 0) > 0 | (converged$group_avepp_below %||% 0) > 0
   if (any(below %in% TRUE)) {
@@ -909,6 +909,71 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
   cat(paste0("! ", strwrap(lines, width = 76L, exdent = 2L, simplify = FALSE) |>
                vapply(paste, character(1), collapse = "\n  ")), sep = "\n")
   invisible(NULL)
+}
+
+#' Candidates whose best log likelihood was reached by one start only
+#'
+#' A best solution that no second start reproduced may sit below a higher
+#' maximum that no start found (Masyn, 2013); its criteria then compare a
+#' local maximum with the other candidates' global ones. A candidate fitted
+#' from one start is left out: no replication was asked for (owner,
+#' 2026-11-17).
+#' @param candidate,converged,n_best_replicated The grid's columns.
+#' @param n_starts The number of starts each candidate ran to the end.
+#' @return A character vector of candidate names, possibly empty.
+#' @noRd
+.latents_single_start_candidates <- function(candidate, converged, n_best_replicated,
+                                             n_starts) {
+  candidate[converged %in% TRUE & n_best_replicated %in% 1L &
+              !is.na(n_starts) & n_starts >= 2L]
+}
+
+#' The single-start candidates of an enumeration result
+#' @param result An enumeration result with `table` and named `fits`, in the
+#'   same order.
+#' @return A character vector of candidate names, possibly empty.
+#' @noRd
+.latents_single_start <- function(result) {
+  n_starts <- vapply(result$fits, function(fit) {
+    if (is.null(fit)) NA_integer_ else
+      as.integer(.multilpa_replication_table(fit)$n_starts)
+  }, integer(1))
+  .latents_single_start_candidates(names(result$fits), result$table$converged,
+                                   result$table$n_best_replicated, n_starts)
+}
+
+#' The sentence naming the single-start candidates
+#' @param once Their names, from `.latents_single_start_candidates()`.
+#' @param n_converged The number of converged candidates.
+#' @return A string.
+#' @noRd
+.latents_single_start_text <- function(once, n_converged) {
+  named <- if (length(once) > 6L) c(utils::head(once, 6L), "...") else once
+  sprintf(paste(
+    "%d of %d candidates reached their best log likelihood from one start",
+    "only (%s); refit those you consider with more starts."),
+    length(once), n_converged, paste(named, collapse = ", "))
+}
+
+#' Say, once per grid, which candidates rest on one start
+#'
+#' The grid's table carries `n_best_replicated`, but a reader who goes
+#' straight to `as.data.frame()` or `get_results(x, "best")` never sees a
+#' note about it; a local maximum then decides the comparison unnoticed
+#' (case-esm-lca 2026-11-17: at five starts 3x2 stopped at -7694.998,
+#' below its maximum -7678.145, and ICL chose 2x2). A message, not a
+#' warning: the grid is valid, and the remedy is the caller's choice.
+#' @param result An enumeration result with `table` and named `fits`.
+#' @return `result`, unchanged, after signalling a
+#'   `latents_single_start` message when any candidate qualifies.
+#' @noRd
+.latents_single_start_notice <- function(result) {
+  once <- .latents_single_start(result)
+  if (length(once) > 0L) {
+    .multilpa_notice(.latents_single_start_text(once, sum(result$table$converged %in% TRUE)),
+                     class = "latents_single_start")
+  }
+  result
 }
 
 #' The columns of an enumeration grid worth printing

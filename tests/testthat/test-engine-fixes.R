@@ -70,9 +70,10 @@ test_that("transition parameter_inference() uses the caller's step in its table"
   expect_lt(max(abs(stats::plogis(fit$transition_coefficients) - 0.5)), 0.25)
   inference <- .lta_inference
   steps <- numeric()
-  local_mocked_bindings(.lta_inference = function(fit, vcov_type, step = 1e-4) {
+  local_mocked_bindings(.lta_inference = function(fit, vcov_type, step = 1e-4,
+                                                  boundary = "error") {
     steps <<- c(steps, step)
-    inference(fit, vcov_type, step)
+    inference(fit, vcov_type, step, boundary)
   })
   coarse <- parameter_inference(fit, step = 1e-2)
   fine <- parameter_inference(fit, step = 1e-4)

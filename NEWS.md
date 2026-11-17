@@ -1,3 +1,21 @@
+# latents 1.3.5
+
+* `parameter_inference(boundary = "fix")`, `vcov()` and `confint()` now hold
+  response, initial and transition probabilities on their bound in an
+  `lta()` fit without covariates, occasion-specific measurement, second order
+  or stayers, and report the other parameters conditionally on them, as for
+  profile models. Before, such a fit was refused under either value. Other
+  transition fits are still refused; the message points to
+  `method = "bootstrap"`.
+* Rerun `get_results()` on such a fit: its profile table now reports the
+  standard errors of the means and variances, conditional on the held
+  probabilities as in profile models, where it reported `NA`.
+* `enumerate_classes()`, `enumerate_lpa()` and `enumerate_lca()` now say,
+  in one message per grid, which candidates fitted from several starts
+  reached their best log likelihood from one of them only, so a higher maximum may exist; refit those with more
+  `n_starts` before comparing their criteria. The message has class
+  `latents_single_start`. Results are unchanged.
+
 # latents 1.3.4
 
 * No change to the package's functions. A new article, "Verification and

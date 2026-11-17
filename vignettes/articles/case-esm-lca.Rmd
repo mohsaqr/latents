@@ -78,56 +78,82 @@ started from several random values. A rare answer can drive a response
 probability to its lower bound, and too many profiles or classes for the data
 show up as starts that fail to reach the same maximum.
 
+
 ## How many profiles and classes
 
 `enumerate_classes()` fits every combination of two to four profiles and one
-to three student classes, each from five random starts, and reports the
-information criteria and the diagnostics of each fit. It does not choose a
-model.
+to three student classes, each from twenty random starts with a tight
+convergence tolerance, and reports the information criteria and the
+diagnostics of each fit. It does not choose a model.
 
 ```{r enumerate}
 candidates <- enumerate_classes(student_esm, vars = activities,
                                 categorical = activities, id = "student",
                                 n_profiles = 2:4, n_group_classes = 1:3,
-                                n_starts = 5, seed = 1)
+                                n_starts = 20, tol = 1e-10, seed = 1)
 as.data.frame(candidates)
 get_results(candidates, "best")
 ```
 
+```{r enumerate-values, include = FALSE}
+grid <- as.data.frame(candidates)
+bic_choice <- subset(grid, bic_groups == min(bic_groups))
+icl_choice <- subset(grid, icl_individual == min(icl_individual))
+awe_choice <- subset(grid, awe_individual == min(awe_individual))
+clc_choice <- subset(grid, clc_individual == min(clc_individual))
+single_start <- with(subset(grid, n_best_replicated == 1), candidate)
+# The text below names these choices; stop if the results ever change.
+stopifnot(with(bic_choice, candidate) == "classes4_groups3",
+          with(icl_choice, candidate) == "classes3_groups2",
+          with(awe_choice, candidate) == "classes3_groups2",
+          with(clc_choice, candidate) == "classes3_groups2",
+          identical(single_start, c("classes3_groups3", "classes4_groups3")))
+```
+
 The criteria disagree, and the diagnostics explain why. BIC with the number of
 students keeps falling up to the largest model in the grid, four profiles and
-three classes. Most of the larger models reach their best solution from only
-one of the five starts (`n_best_replicated`), so their low BIC rests on
-solutions that the starts do not replicate. The criteria that also penalize
-classification uncertainty (ICL, AWE and CLC counted over prompts) choose two
-profiles and two classes, a model whose best solution recurs in four of the
-five starts.
+three classes. That model and the one with three profiles and three classes
+reach their best solution from a single start (`n_best_replicated`), so their
+low BIC rests on solutions that the starts do not replicate. The criteria that
+also penalize classification uncertainty (ICL, AWE and CLC counted over
+prompts) choose three profiles and two classes, a model whose best solution
+recurs in `r with(icl_choice, n_best_replicated)` of the twenty starts.
 
-The ICL plot shows the same choice across the grid.
+The number of starts is part of the analysis on these data. With five starts
+and the default tolerance, the three-profile, two-class model stops at a lower
+maximum of the likelihood, and the same criteria then choose two profiles and
+two classes.
+
+The ICL plot shows the choice across the grid.
 
 ```{r icl-plot}
 plot_enumeration(candidates, what = "icl_individual")
 ```
 
-The plot marks the minimum at two profiles and two classes, and the analysis
+The plot marks the minimum at three profiles and two classes, and the analysis
 continues with that model.
 
 ## The chosen model
 
-`multilca()` fits it, treating every item as categorical, with ten random
+`multilca()` fits it, treating every item as categorical, with twenty random
 starts and a tight convergence tolerance, which the standard errors below need.
 
 ```{r fit}
 lca <- multilca(student_esm, vars = activities, id = "student",
-                n_profiles = 2, n_group_classes = 2, n_starts = 10,
+                n_profiles = 3, n_group_classes = 2, n_starts = 20,
                 tol = 1e-10, seed = 1)
 get_results(lca, "model")
 ```
 
-The fit converges, and six of the ten starts reach the best log likelihood of
--7740.
+```{r fit-values, include = FALSE}
+fit_summary <- get_results(lca, "model")
+```
 
-## Two activity profiles
+The fit converges, and `r with(fit_summary, n_best_replicated)` of the twenty
+starts reach the best log likelihood of
+`r with(fit_summary, round(log_likelihood))`.
+
+## Three activity profiles
 
 The `"responses"` table gives the probability of each answer in each profile,
 with a "no" and a "yes" row for every item. The "yes" rows carry the
@@ -137,15 +163,42 @@ information, since the two probabilities of an item sum to one.
 get_results(lca, "responses")
 ```
 
-The two profiles differ mainly in media use. At prompts in profile 1, students
-used social media with probability 0.765, watched TV or played video games with
-probability 0.396, and listened to music with probability 0.364. In profile 2
-the same probabilities are 0.119, 0.147 and 0.075. Profile 2 is slightly more
-likely to include time with friends (0.157 against 0.106), walking (0.138
-against 0.096) and a part-time job (0.051 against 0.010), and both profiles
-report sports at 0.07. Profile 1 is therefore a media-heavy pattern, and
-profile 2 a pattern of little media use with the remaining activities at
-their usual low rates.
+```{r profile-values, include = FALSE}
+yes <- subset(get_results(lca, "responses"), category == "yes")
+answer <- function(k, item) {
+  with(subset(yes, profile == k & indicator == item), sprintf("%.3f", probability))
+}
+job_profile <- with(subset(yes, indicator == "part_time_job" & probability > 0.9),
+                    profile)
+media_profile <- with(subset(yes, indicator == "on_social_media" & probability > 0.5),
+                      profile)
+low_profile <- with(yes, setdiff(unique(profile), c(job_profile, media_profile)))
+job_others <- with(subset(yes, profile == job_profile & indicator != "part_time_job"),
+                   max(probability))
+# The text below names the profiles by these patterns; stop if they change.
+stopifnot(length(job_profile) == 1L, length(media_profile) == 1L,
+          length(low_profile) == 1L, job_others < 0.05)
+```
+
+The three profiles differ in media use and in work. At prompts in profile
+`r media_profile`, students used social media with probability
+`r answer(media_profile, "on_social_media")`, watched TV or played video games
+with probability `r answer(media_profile, "tv_video_games")`, and listened to
+music with probability `r answer(media_profile, "listened_music")`. In profile
+`r low_profile` the same probabilities are
+`r answer(low_profile, "on_social_media")`,
+`r answer(low_profile, "tv_video_games")` and
+`r answer(low_profile, "listened_music")`, and time with friends
+(`r answer(low_profile, "time_with_friends")` against
+`r answer(media_profile, "time_with_friends")`) and walking
+(`r answer(low_profile, "walking")` against `r answer(media_profile, "walking")`)
+are somewhat more likely. Both report sports at about 0.07. At prompts in
+profile `r job_profile` students worked at a part-time job with probability
+`r answer(job_profile, "part_time_job")` and reported every other activity
+with probability below 0.05. Profile `r media_profile` is therefore a
+media-heavy pattern, profile `r low_profile` a pattern of little media use
+with the remaining activities at their usual low rates, and profile
+`r job_profile` a pattern of work with little else.
 
 The response plot draws the same probabilities, one line per profile across
 the items.
@@ -154,8 +207,9 @@ the items.
 plot_responses(lca)
 ```
 
-The lines separate on the three media items and nearly coincide on sports, so
-the media items carry almost all of the difference between the profiles.
+The media-heavy and low-media lines separate on the three media items and
+nearly coincide on sports, while the work profile stands apart on the
+part-time job item.
 
 ## Two student classes
 
@@ -167,23 +221,43 @@ get_results(lca, "counts")
 get_results(lca, "profile_probabilities")
 ```
 
-```{r class-label-checks, include = FALSE}
-student_mix <- as.data.frame(get_results(lca, "profile_probabilities"))
-media_in_class1 <- subset(student_mix, group_class == 1 & profile == 1)
-low_media_in_class2 <- subset(student_mix, group_class == 2 & profile == 2)
-stopifnot(nrow(media_in_class1) == 1L, nrow(low_media_in_class2) == 1L,
-          abs(media_in_class1$group_class_probability - 0.416) < 0.001,
-          abs(media_in_class1$probability - 0.565) < 0.001,
-          abs(low_media_in_class2$group_class_probability - 0.584) < 0.001,
-          abs(low_media_in_class2$probability - 0.974) < 0.001)
+```{r class-values, include = FALSE}
+counts <- subset(get_results(lca, "counts"), level == "individuals")
+size <- function(k) {
+  with(subset(counts, class == k), sprintf("%.1f%%", 100 * effective_proportion))
+}
+mix <- get_results(lca, "profile_probabilities")
+media_class <- with(subset(mix, profile == media_profile & probability > 0.5),
+                    group_class)
+other_class <- with(mix, setdiff(unique(group_class), media_class))
+share <- function(g, k) {
+  with(subset(mix, group_class == g & profile == k), sprintf("%.3f", probability))
+}
+class_size <- function(g) {
+  with(subset(mix, group_class == g & profile == media_profile),
+       sprintf("%.1f%%", 100 * group_class_probability))
+}
+work_share <- function(g) {
+  with(subset(mix, group_class == g & profile == job_profile), probability)
+}
+work_ratio <- work_share(other_class) / work_share(media_class)
+# The text below describes the classes by these patterns; stop if they change.
+stopifnot(length(media_class) == 1L, length(other_class) == 1L, work_ratio > 3)
 ```
 
-The low-media profile holds 73.7% of prompts and the media-heavy profile
-26.3%. The student classes differ sharply in their mix. In class 2, which holds
-58.4% of students, 0.974 of prompts fall in the low-media profile. In class 1,
-with 41.6% of students, the media-heavy profile is the more common, at 0.565.
+The low-media profile holds `r size(low_profile)` of prompts, the media-heavy
+profile `r size(media_profile)` and the work profile `r size(job_profile)`.
+The student classes differ sharply in their mix. In class `r other_class`,
+which holds `r class_size(other_class)` of students,
+`r share(other_class, low_profile)` of prompts fall in the low-media profile,
+`r share(other_class, job_profile)` in the work profile and only
+`r share(other_class, media_profile)` in the media-heavy one. In class
+`r media_class`, with `r class_size(media_class)` of students, the media-heavy
+profile is the more common, at `r share(media_class, media_profile)`, and the
+work profile almost absent, at `r share(media_class, job_profile)`.
 Media-heavy leisure is therefore concentrated in a minority of students, and
 for them it is the usual pattern, while most students almost never report it.
+Part-time work appears mainly among the students of the low-media class.
 
 The probability plot compares the two mixes.
 
@@ -191,9 +265,9 @@ The probability plot compares the two mixes.
 plot_prevalence(lca)
 ```
 
-Class 2 runs close to one on the low-media profile and close to zero on the
-media-heavy one; class 1 divides its prompts more evenly, with the larger
-share on the media-heavy profile.
+Class `r other_class` runs close to one on the low-media profile and close to
+zero on the media-heavy one; class `r media_class` divides its prompts between
+those two profiles, with the larger share on the media-heavy profile.
 
 ## Classification certainty
 
@@ -207,13 +281,28 @@ get_results(lca, "entropy")
 get_results(lca, "classification")
 ```
 
-Relative entropy is 0.668 for prompts and 0.877 for students. A single prompt
-answers eight yes/no questions, which leaves its profile uncertain; a student
-contributes many prompts, which pins down the class. The average posterior
-probability is 0.926 for prompts assigned to the low-media profile and 0.859
-for the media-heavy one, and 0.980 and 0.960 for the two student classes.
-Conclusions about students are therefore well supported, while an analysis of
-individual prompts should carry the posterior probabilities forward.
+```{r classification-values, include = FALSE}
+entropy <- get_results(lca, "entropy")
+relative <- function(at) {
+  with(subset(entropy, level == at), sprintf("%.3f", relative_entropy))
+}
+assigned <- get_results(lca, "classification")
+posterior <- function(at, k) {
+  with(subset(assigned, level == at & class == k), sprintf("%.3f", average_posterior))
+}
+```
+
+Relative entropy is `r relative("individuals")` for prompts and
+`r relative("groups")` for students. A single prompt answers eight yes/no
+questions, which leaves its profile less certain; a student contributes many
+prompts, which pins down the class. The average posterior probability is
+`r posterior("individuals", job_profile)` for prompts assigned to the work
+profile, `r posterior("individuals", low_profile)` for the low-media profile
+and `r posterior("individuals", media_profile)` for the media-heavy one, and
+`r posterior("groups", other_class)` and `r posterior("groups", media_class)`
+for the two student classes. Conclusions about students are therefore well
+supported, while an analysis of individual prompts should carry the posterior
+probabilities forward.
 
 ## Local independence
 
@@ -226,34 +315,77 @@ shown.
 get_results(lca, "residuals") |> head(10)
 ```
 
-The largest residual is 0.171, between sports and walking in the media-heavy
-profile, followed by friends and walking (0.140) and music and walking (0.133)
-in the same profile. Physical and social activities occur together more often
-than two profiles allow, which is a limit of a two-profile model and one reason
-BIC rewards larger models: extra profiles can absorb this association.
+```{r residual-values, include = FALSE}
+residuals <- get_results(lca, "residuals")
+largest <- head(residuals, 1)
+walking <- subset(residuals, profile == sprintf("profile_%d", media_profile) &
+                    indicator_2 == "walking") |> head(3)
+# The text below names these pairs; stop if the results ever change.
+stopifnot(with(largest, profile) == sprintf("profile_%d", job_profile),
+          with(largest, indicator_1) == "on_social_media",
+          with(largest, indicator_2) == "walking",
+          identical(with(walking, indicator_1),
+                    c("sports", "time_with_friends", "listened_music")))
+pair <- function(rows, item) {
+  with(subset(rows, indicator_1 == item), sprintf("%.3f", residual))
+}
+```
+
+The largest residual, `r pair(largest, "on_social_media")`, links social media
+and walking in the work profile, which holds about
+`r with(largest, round(effective_n))` prompts, so it rests on few
+observations. Next, in the media-heavy profile, come sports and walking
+(`r pair(walking, "sports")`), friends and walking
+(`r pair(walking, "time_with_friends")`) and music and walking
+(`r pair(walking, "listened_music")`). Physical and social activities occur
+together more often than three profiles allow, which is one reason BIC rewards
+larger models: extra profiles can absorb this association.
 
 ## Uncertainty in the response probabilities
 
 `parameter_inference()` gives standard errors and 95% Wald intervals for every
-parameter. The intervals of the "yes" probabilities, in the rows whose `term`
-ends in `:yes`, show how firmly the profiles are distinguished.
+parameter. Several response probabilities lie on their bound: the work profile
+reports TV or games, music and sports with probability zero and a part-time
+job with probability one, and the low-media profile reports a part-time job
+with probability zero. Wald inference does not apply at a bound, so
+`boundary = "fix"` holds these probabilities at their values, leaves them out
+of the table and reports the other parameters conditionally on them. The
+intervals of the "yes" probabilities, in the rows whose `term` ends in `:yes`,
+show how firmly the profiles are distinguished.
 
 ```{r inference}
-parameter_inference(lca)
+parameter_inference(lca, boundary = "fix")
 ```
 
-The profiles are clearly separated on the media items: the interval for
-social media is 0.689 to 0.826 in the media-heavy profile and 0.086 to 0.162 in
-the low-media profile. On sports the two intervals overlap almost entirely.
-The part-time-job probability in the media-heavy profile has an interval
-starting at 0.004, close to zero, because very few of its prompts report
-a job.
+```{r inference-values, include = FALSE}
+inference <- parameter_inference(lca, boundary = "fix")
+interval <- function(k, item) {
+  with(subset(inference, outcome == sprintf("profile_%d", k) &
+                term == paste0(item, ":yes")),
+       sprintf("%.3f to %.3f", conf_low, conf_high))
+}
+sports <- subset(inference, term == "sports:yes")
+# The text below says the sports intervals overlap; stop if they ever do not.
+stopifnot(nrow(sports) == 2L,
+          with(sports, max(conf_low) < min(conf_high)))
+```
+
+The profiles are clearly separated on the media items: the interval for social
+media is `r interval(media_profile, "on_social_media")` in the media-heavy
+profile and `r interval(low_profile, "on_social_media")` in the low-media
+profile. On sports the two intervals overlap almost entirely. The part-time
+job probability in the media-heavy profile has an interval of
+`r interval(media_profile, "part_time_job")`, close to zero, because very few
+of its prompts report a job.
 
 ## Adding affect
 
 A mixed model adds three affect ratings (happy, relaxed, exhausted, each from
 1 to 7) as continuous indicators. `worried` is left out because about half of
-its ratings are 1, which can push a profile's variance to its lower bound.
+its ratings are 1, which can push a profile's variance to its lower bound. The
+same happens to `exhausted` with three profiles: one profile collects the
+prompts rated 1 and its variance reaches the bound, so the mixed model is
+fitted with two profiles and two classes.
 
 ```{r mixed}
 mixed <- multilpa(student_esm,
@@ -277,20 +409,23 @@ indicators it is given, so the choice of indicators is part of the question.
 
 ## Interpretation
 
-Students' leisure at non-study prompts falls into two patterns, one defined by
-social media, TV and music and one with little media use. The distinction that
-matters most is between students: a majority almost never reports the
-media-heavy pattern, and a minority reports it at more than half of their
-prompts. That student-level result is well supported by the classification
-diagnostics, while the assignment of any single prompt is uncertain.
+Students' leisure at non-study prompts falls into three patterns: one defined
+by social media, TV and music, one with little media use, and a small one of
+part-time work with little else. The distinction that matters most is between
+students: a majority almost never reports the media-heavy pattern, and a
+minority reports it at more than half of their prompts. Part-time work appears
+mainly among the majority. That student-level result is well supported by the
+classification diagnostics, while the assignment of any single prompt is less
+certain.
 
 ## Limitations
 
 The data contain only prompts at which the student had not studied, so the
-patterns describe leisure time, not the whole day. The two-profile model leaves
-association between physical and social activities within its profiles, and
-larger models fit better by BIC but are not stable across starts on these
-data. Prompts are treated as independent given the student's class, so the
+patterns describe leisure time, not the whole day. The three-profile model
+leaves association between physical and social activities within its
+profiles, and larger models fit better by BIC but are not stable across starts
+on these data. The choice of three profiles itself depends on enough starts:
+with few, the model stops at a lower maximum and two profiles are chosen. Prompts are treated as independent given the student's class, so the
 model ignores the order of prompts within a day. The associations are
 observational and say nothing about causes.
 

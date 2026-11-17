@@ -348,18 +348,21 @@ parameter_inference.multilpa_transitions <-function(x, data = NULL, level = 0.95
     "`level` must be a single number in (0, 1)" =
       is.numeric(level) && length(level) == 1L && is.finite(level) &&
       level > 0 && level < 1)
-  # Nothing is held at a bound here and a bound-active fit is refused, so
-  # "fix" and "error" agree wherever a table is returned.
-  .latents_match_formal(boundary)
+  # Under "fix" the probabilities on their bound are held there and the rest is
+  # inferred conditionally on them, as for profile fits; their rows leave the
+  # table and are named in the `fixed_at_bound` attribute.
+  boundary <- .latents_match_formal(boundary)
   adjust <- .latents_match_formal(adjust)
   if (identical(.latents_match_formal(method), "bootstrap")) {
     return(.lta_bootstrap_dispatch(x, data, level, iter, n_starts, max_iter, tol,
                                    seed, adjust))
   }
   vcov_type <- .latents_match_formal(vcov_type)
-  inference <- .multilpa_transition_covariance(x, data, step, vcov_type)
+  inference <- .multilpa_transition_covariance(x, data, step, vcov_type, boundary)
   estimates <- .multilpa_transition_encode(x, "natural")
-  covariance <- inference$covariance
+  kept <- !names(estimates) %in% inference$held$natural
+  estimates <- estimates[kept]
+  covariance <- inference$covariance[kept, kept, drop = FALSE]
   standard_errors <- sqrt(pmax(diag(covariance), 0))
   critical <- .inference_critical(level, "upper")
   statistic <- unname(estimates / standard_errors)
@@ -389,8 +392,68 @@ parameter_inference.multilpa_transitions <-function(x, data = NULL, level = 0.95
   attributes(result) <- c(attributes(result), list(
     covariance = covariance,
     covariance_unconstrained = inference$covariance_unconstrained,
-    level = level, step = step, method = "wald", vcov_type = vcov_type))
+    level = level, step = step, method = "wald", vcov_type = vcov_type,
+    # Character even when empty, as on profile fits: the label helper's
+    # ifelse() turns zero rows into logical(0).
+    fixed_at_bound = if (length(inference$held$natural) == 0L) character() else
+      .multilpa_parameter_names(.multilpa_transition_labels(
+        inference$held$natural, inference$view))))
   result
+}
+
+#' Transition-fit coordinates held on their bound under `boundary = "fix"`
+#'
+#' Each probability vector of a transition fit (an item's categories within a
+#' profile, a group class's initial distribution, a transition row) is
+#' parameterised by logits against its last entry, and is held by the rule of
+#' `.multilpa_response_bound()`: a probability on the floor has its logit held;
+#' when the last entry is on the floor every logit runs off, and holding the
+#' largest pins the vector; a probability whose every sibling is on the floor
+#' sits on the upper bound and leaves the table with them. Group-class shares
+#' are not held: an empty group class is refused, as in profile fits.
+#' @param x A `multilpa_transitions` fit.
+#' @return A list of `natural` and `unconstrained` names, spelled as
+#'   `.multilpa_transition_encode()` spells them.
+#' @noRd
+.lta_transition_bound <- function(x) {
+  floor <- .multilpa_probability_floor(x)
+  row_bound <- function(probabilities, natural, logit) {
+    size <- length(probabilities)
+    at <- probabilities <= floor
+    held <- at | (sum(at) - at) == size - 1L
+    largest <- seq_len(size) == which.max(probabilities)
+    list(natural = natural[held],
+         unconstrained = logit[(at | (at[[size]] & largest))[-size]])
+  }
+  profiles <- seq_len(x$n_profiles)
+  kept <- profiles[-x$n_profiles]
+  blocks <- x$response_probabilities %||% list()
+  response <- unlist(lapply(names(blocks), function(indicator) {
+    block <- blocks[[indicator]]
+    categories <- colnames(block)
+    lapply(seq_len(nrow(block)), function(profile) {
+      row_bound(block[profile, ],
+                sprintf("response[%d,%s,%s]", profile, indicator, categories),
+                sprintf("response_logit[%d,%s,%s]", profile, indicator,
+                        categories[-length(categories)]))
+    })
+  }), recursive = FALSE)
+  types <- seq_len(x$n_group_classes)
+  initial <- lapply(types, function(type) {
+    row_bound(x$initial_probabilities[type, ],
+              sprintf("initial_probability[%d,%d]", type, profiles),
+              sprintf("initial_logit[%d,%d]", type, kept))
+  })
+  transition <- unlist(lapply(types, function(type) {
+    lapply(profiles, function(from) {
+      row_bound(x$transition_probabilities[from, , type],
+                sprintf("transition_probability[%d,%d,%d]", type, from, profiles),
+                sprintf("transition_logit[%d,%d,%d]", type, from, kept))
+    })
+  }), recursive = FALSE)
+  rows <- c(response, initial, transition)
+  list(natural = unlist(lapply(rows, `[[`, "natural")) %||% character(),
+       unconstrained = unlist(lapply(rows, `[[`, "unconstrained")) %||% character())
 }
 
 #' Covariance of a transition fit's parameters
@@ -398,16 +461,18 @@ parameter_inference.multilpa_transitions <-function(x, data = NULL, level = 0.95
 #' @param data Optional fitting data.
 #' @param step Finite-difference step.
 #' @param vcov_type `"observed"`, `"robust"` or `"opg"`.
+#' @param boundary `"error"` or `"fix"`, for the wording of a bound refusal.
 #' @return A list with `covariance` (natural), `covariance_unconstrained` and
 #'   the measurement `view`.
 #' @noRd
-.multilpa_transition_covariance <- function(x, data, step, vcov_type) {
+.multilpa_transition_covariance <- function(x, data, step, vcov_type,
+                                            boundary = "error") {
   # Checked here, where both parameter_inference() and vcov() arrive: vcov()
   # passed any `step` on unchecked, and 0 divided by zero.
   .latents_require(
     "`step` must be a single positive number" =
       is.numeric(step) && length(step) == 1L && is.finite(step) && step > 0)
-  .multilpa_check_transition_regularity(x, vcov_type)
+  .multilpa_check_transition_regularity(x, vcov_type, boundary)
   x_matrix <- x$indicator_data
   if (is.null(x_matrix)) x_matrix <- matrix(numeric(0), x$n_observations, 0L)
   x_matrix <- matrix(as.numeric(x_matrix), nrow(x_matrix), ncol(x_matrix))
@@ -452,17 +517,28 @@ parameter_inference.multilpa_transitions <-function(x, data = NULL, level = 0.95
     scale[n_means + seq_along(covariance_scale)] <- covariance_scale
   }
   start <- unname(theta)
+  ## A held logit is a constant of the likelihood, not a parameter: it stays at
+  ## its fitted value in every evaluation, only the free coordinates are
+  ## differenced and inverted, and its rows and columns of the covariance are
+  ## zero. With nothing held this is the full information, unchanged.
+  held <- if (identical(boundary, "fix")) .lta_transition_bound(x) else
+    list(natural = character(), unconstrained = character())
+  stopifnot("held coordinates must be coordinates of the fit" =
+              all(held$unconstrained %in% names(theta)))
+  free <- which(!names(theta) %in% held$unconstrained)
+  free_scale <- scale[free]
+  at <- function(displacement) replace(start, free, start[free] + displacement * free_scale)
   information <- .multilpa_observed_hessian(
-    function(displacement) negative(start + displacement * scale),
-    function(displacement) gradient(start + displacement * scale) * scale,
-    scale, step,
+    function(displacement) negative(at(displacement)),
+    function(displacement) gradient(at(displacement))[free] * free_scale,
+    free_scale, step,
     cache_key = list(path = "transitions", fit = x, indicators = centred,
-                     codes = codes, start = start))
+                     codes = codes, start = start, free = free))
   scaled_inverse <- information$inverse
   if (vcov_type %in% c("robust", "opg")) {
     scores <- sweep(.multilpa_transition_group_scores(start, centred, layout, view,
-                                                      widths, codes),
-                    2L, scale, "*")
+                                                      widths, codes)[, free, drop = FALSE],
+                    2L, free_scale, "*")
     .inference_require_rank(scores[
       .multilpa_inference_groups(x, observed_only = TRUE), , drop = FALSE],
       "The contributing group scores are rank deficient; robust or OPG inference is unavailable.")
@@ -472,19 +548,49 @@ parameter_inference.multilpa_transitions <-function(x, data = NULL, level = 0.95
     } else .inference_sandwich(scaled_inverse, cross,
                                 sum(.multilpa_inference_groups(x)))
   }
-  covariance_unconstrained <- scaled_inverse * tcrossprod(scale)
-  dimnames(covariance_unconstrained) <- list(names(theta), names(theta))
+  covariance_unconstrained <- matrix(0, length(theta), length(theta),
+                                     dimnames = list(names(theta), names(theta)))
+  covariance_unconstrained[free, free] <- scaled_inverse * tcrossprod(free_scale)
   jacobian <- .multilpa_transition_jacobian(x, view)
-  list(covariance = .inference_delta_covariance(jacobian, covariance_unconstrained),
-       covariance_unconstrained = covariance_unconstrained, view = view)
+  covariance <- .inference_delta_covariance(jacobian, covariance_unconstrained)
+  dimnames(covariance) <- rep(list(names(.multilpa_transition_encode(x, "natural"))), 2L)
+  list(covariance = covariance,
+       covariance_unconstrained = covariance_unconstrained[free, free, drop = FALSE],
+       view = view, held = held)
+}
+
+#' Refuse Wald inference for a transition fit with a parameter on its bound
+#'
+#' Says what can be done instead: `boundary = "fix"` where the bound is one it
+#' holds (`holdable`), and always the bootstrap, which refits each resample
+#' and needs no curvature at the bound.
+#' @param message What sits on its bound.
+#' @param holdable Whether `boundary = "fix"` would hold this bound.
+#' @return Does not return; raises `latents_boundary_fit`.
+#' @noRd
+.lta_refuse_bound <- function(message, holdable = FALSE) {
+  stop(errorCondition(paste(c(
+    message,
+    if (holdable) paste(
+      "`boundary = \"fix\"` holds it there and reports the other parameters",
+      "conditionally on it."),
+    paste("`parameter_inference(fit, data, method = \"bootstrap\")` gives",
+          "percentile intervals for such a fit.")), collapse = " "),
+    class = "latents_boundary_fit", call = NULL))
 }
 
 #' Refuse Wald inference where it is not defined for a transition fit
+#'
+#' Under `boundary = "fix"` a response, initial or transition probability on
+#' its bound is held (`.lta_transition_bound()`) rather than refused; a
+#' variance or covariance on its bound and an empty group class are refused
+#' under either value.
 #' @param x A `multilpa_transitions` fit.
 #' @param vcov_type The requested covariance.
+#' @param boundary The requested `boundary`.
 #' @return `NULL`, invisibly; raises on the first broken condition.
 #' @noRd
-.multilpa_check_transition_regularity <- function(x, vcov_type) {
+.multilpa_check_transition_regularity <- function(x, vcov_type, boundary = "error") {
   refuse <- function(message, class) {
     stop(errorCondition(message, class = class, call = NULL))
   }
@@ -505,9 +611,16 @@ parameter_inference.multilpa_transitions <-function(x, data = NULL, level = 0.95
       "%d groups and %d parameters."), n_groups, x$n_parameters),
       "latents_too_few_groups")
   }
-  if (isTRUE(x$boundary)) {
-    refuse("Wald inference is unavailable for a bound-active fit.",
-           "latents_boundary_fit")
+  fix <- identical(boundary, "fix")
+  covariance_bound <- length(x$means) > 0L &&
+    .multilpa_covariance_boundary(x, x$min_variance)
+  if (covariance_bound) {
+    .lta_refuse_bound(paste(
+      "Wald inference is unavailable when a variance or a covariance eigenvalue",
+      "sits at `min_variance`."))
+  }
+  if (isTRUE(x$boundary) && !fix && !isTRUE(x$probability_boundary)) {
+    .lta_refuse_bound("Wald inference is unavailable for a bound-active fit.")
   }
   if (any(x$empty_transition_rows)) {
     refuse(paste(
@@ -523,14 +636,17 @@ parameter_inference.multilpa_transitions <-function(x, data = NULL, level = 0.95
       "latents_boundary_fit")
   }
   floor <- .multilpa_probability_floor(x)
-  probabilities <- c(unlist(x$response_probabilities, use.names = FALSE),
-                     x$initial_probabilities, x$transition_probabilities,
-                     x$group_probabilities)
-  if (any(probabilities <= floor)) {
-    refuse(paste(
+  if (any(x$group_probabilities <= floor)) {
+    .lta_refuse_bound(
+      "Wald inference requires every group class to have a positive share.")
+  }
+  holdable <- c(unlist(x$response_probabilities, use.names = FALSE),
+                x$initial_probabilities, x$transition_probabilities)
+  if (!fix && (any(holdable <= floor) || isTRUE(x$probability_boundary))) {
+    .lta_refuse_bound(paste(
       "Wald inference is unavailable when a probability sits at its lower",
       "bound: its logit is at minus infinity, where the likelihood has no",
-      "curvature to invert."), "latents_boundary_fit")
+      "curvature to invert."), holdable = TRUE)
   }
   invisible(NULL)
 }
@@ -568,22 +684,28 @@ parameter_inference.multilpa_transitions <-function(x, data = NULL, level = 0.95
 #' @export
 vcov.multilpa_transitions <-function(object, data = NULL, step = 1e-4,
                                       vcov_type = c("observed", "robust", "opg"),
-                                      scale = c("natural", "unconstrained"), ...) {
+                                      scale = c("natural", "unconstrained"),
+                                      boundary = c("error", "fix"), ...) {
   # `type = "robust"`, the name the general transition fit uses, used to fall
   # into `...` and return the observed-information covariance without a word.
   .latents_warn_unused_arguments(list(...), "vcov()",
                                  "Choose the covariance with `vcov_type =`.")
   vcov_type <- .latents_match_formal(vcov_type)
   scale <- .latents_match_formal(scale)
-  inference <- .multilpa_transition_covariance(object, data, step, vcov_type)
+  boundary <- .latents_match_formal(boundary)
+  inference <- .multilpa_transition_covariance(object, data, step, vcov_type,
+                                               boundary)
+  # Held coordinates are constants of the conditional likelihood, so they are
+  # left out on both scales, as parameter_inference() leaves out their rows.
   if (identical(scale, "unconstrained")) {
     covariance <- inference$covariance_unconstrained
     names_used <- .multilpa_parameter_names(.multilpa_transition_labels(
       rownames(covariance), inference$view))
   } else {
-    covariance <- inference$covariance
+    kept <- !rownames(inference$covariance) %in% inference$held$natural
+    covariance <- inference$covariance[kept, kept, drop = FALSE]
     names_used <- .multilpa_parameter_names(.multilpa_transition_labels(
-      names(.multilpa_transition_encode(object, "natural")), inference$view))
+      rownames(covariance), inference$view))
   }
   dimnames(covariance) <- list(names_used, names_used)
   covariance

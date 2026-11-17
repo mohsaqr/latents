@@ -22,6 +22,9 @@
   "latents_extreme_coefficients",
   # Not a defect: a single-level fixture is a deliberate `id = NULL`.
   "latents_single_level",
+  # Nor is a grid fitted from a handful of starts whose larger candidates
+  # reach their best log likelihood once (a message, muffled the same way).
+  "latents_single_start",
   "latents_empty_transition_row",
   "latents_cross_level_criteria",
   "latents_weak_transition_support"

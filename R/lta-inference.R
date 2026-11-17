@@ -480,10 +480,27 @@
   scales
 }
 
+#' Why `boundary = "fix"` does not apply to a general transition fit
+#'
+#' The general engine (covariates, occasion-specific measurement, second
+#' order, stayers) parameterises transitions and initial states by regression
+#' coefficients, so a probability at zero for some rows is not one coordinate
+#' that can be held. Homogeneous fits hold their bounds
+#' (`.lta_transition_bound()`).
+#' @param boundary The requested `boundary`.
+#' @return A sentence, or `character()` under `"error"`.
+#' @noRd
+.lta_general_fix_note <- function(boundary) {
+  if (!identical(boundary, "fix")) return(character())
+  paste("`boundary = \"fix\"` holds bounds in homogeneous transition models;",
+        "this one (covariates, occasion-specific measurement, second order or",
+        "stayers) has none it can hold.")
+}
+
 #' Estimation-scale covariance of a general transition fit
 #' @noRd
 .lta_inference <- function(fit, vcov_type = c("observed", "robust", "opg"),
-                           step = 1e-4) {
+                           step = 1e-4, boundary = "error") {
   vcov_type <- .latents_match_formal(vcov_type)
   if (!is.numeric(step) || length(step) != 1L || !is.finite(step) || step <= 0) {
     stop(errorCondition("`step` must be a positive finite number.",
@@ -493,15 +510,16 @@
     any(block$count_dispersion <= .latents_min_dispersion * (1 + 1e-6)) ||
       any(block$count_means <= 1e-8)
   }, logical(1)))) {
-    stop(errorCondition("A count parameter is at its boundary; Wald inference does not apply.",
-                        class = "latents_boundary_fit", call = NULL))
+    .lta_refuse_bound(c(
+      "A count parameter is at its boundary; Wald inference does not apply.",
+      .lta_general_fix_note(boundary)))
   }
   if (any(vapply(fit$measurement, function(block) {
     any(unlist(block$response_probabilities) <= 1e-6)
   }, logical(1)))) {
-    stop(errorCondition(paste(
-      "A response probability sits at its bound; Wald inference does not apply."),
-      class = "latents_boundary_fit", call = NULL))
+    .lta_refuse_bound(c(
+      "A response probability sits at its bound; Wald inference does not apply.",
+      .lta_general_fix_note(boundary)))
   }
   if (!isTRUE(fit$converged)) {
     stop(errorCondition("Inference requires a converged fit.",
@@ -515,10 +533,10 @@
       class = "latents_boundary_fit", call = NULL))
   }
   if (isTRUE(fit$boundary)) {
-    stop(errorCondition(paste(
+    .lta_refuse_bound(c(paste(
       "A variance or covariance eigenvalue sits at min_variance, or a transition",
       "or initial probability at zero; Wald inference does not apply."),
-      class = "latents_boundary_fit", call = NULL))
+      .lta_general_fix_note(boundary)))
   }
   theta <- .lta_theta(fit)
   names(theta) <- .lta_names(fit)

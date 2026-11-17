@@ -361,7 +361,7 @@ its treatment.
 | flexmix | the Gaussian M-step divides by $n$ minus the rank, so its fixed point is not the maximum likelihood estimate | the step is replaced in the comparison |
 | R3STEP, in latents and Mplus | intervals for class intercepts treat the first step as fixed | reported as a property of the method |
 | lcmm 2.2.2 | returns no subject-specific predictions | comparisons use lcmm 2.2.1 |
-| latents | `parameter_inference(boundary = "fix")` is not applied to transition fits, which are refused when a probability lies on its bound | recorded as an open defect |
+| latents | `parameter_inference(boundary = "fix")` held nothing in transition fits, which were refused when a probability lay on its bound | homogeneous transition fits now hold it; their conditional standard errors agree with a numerical Hessian of the likelihood over the free coordinates; general transition fits still refuse |
 
 # References
 

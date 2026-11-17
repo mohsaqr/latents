@@ -795,7 +795,11 @@
 #'   reports every other parameter conditional on them, as Mplus does. The
 #'   held probabilities are left out of the table and named in the
 #'   `fixed_at_bound` attribute; a covariate fit keeps their rows with `NA`
-#'   standard errors.
+#'   standard errors. A homogeneous transition fit ([lta()]) holds its
+#'   response, initial and transition probabilities on the bound the same
+#'   way; a general one (covariates, occasion-specific measurement, second
+#'   order, stayers) holds nothing, and `method = "bootstrap"` is the
+#'   alternative there.
 #'
 #' @return A data frame with one row per reported parameter. For a profile,
 #'   class or covariate fit the columns are `level` (`"measurement"`,
@@ -878,8 +882,11 @@
 #' `estimated` is `FALSE` for a logit the likelihood does not identify (see
 #' *Occasions without data* under [lta()]); such a row has `NA` standard
 #' error and test. The bootstrap rebases the initial logits when the
-#' reference profile moves. A transition fit of either kind with a parameter
-#' at a bound is refused under either `boundary`.
+#' reference profile moves. Under `boundary = "fix"` a homogeneous transition
+#' fit holds the probabilities on their bound and leaves their rows out (named
+#' in `fixed_at_bound`); a general one, a variance on its bound and an empty
+#' group class are refused under either value. The bootstrap refits each
+#' resample and reports percentile intervals for a fit on its bound.
 #'
 #' @section Growth mixtures:
 #' For a growth mixture ([mixture_regression()] with `random`) the table has

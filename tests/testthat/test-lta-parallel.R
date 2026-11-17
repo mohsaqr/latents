@@ -118,7 +118,11 @@ test_that("transition grids match serial and direct fits for both searches and e
                      lapply(direct, function(result) {
                        lta_parallel_without_calls(result$value)
                      }))
-    expect_identical(serial$conditions,
+    # The grid relays each candidate's conditions; its own single-start
+    # notice (test-single-start-notice.R) has no counterpart in a direct fit.
+    relayed <- grep("reached their best log likelihood from one start",
+                    serial$conditions, fixed = TRUE, invert = TRUE, value = TRUE)
+    expect_identical(relayed,
                      unlist(lapply(direct, `[[`, "conditions"),
                             use.names = FALSE) |> as.character())
   }))

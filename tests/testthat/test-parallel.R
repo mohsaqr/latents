@@ -617,5 +617,6 @@ test_that("a seeded multilevel LCA grid prepared on workers is identical to one 
   expect_match(progress[1L], "^Preparing 4 candidates on 2 workers\\.")
   expect_match(progress[2L], "^Fitting 12 starts on 2 workers\\.")
   expect_match(progress[3L], "^Done in ")
-  expect_no_message(lca_grid(cores = 2, verbose = FALSE))
+  expect_no_message(quietly(lca_grid(cores = 2, verbose = FALSE),
+                            classes = "latents_single_start"))
 })
