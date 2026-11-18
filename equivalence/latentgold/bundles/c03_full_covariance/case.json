@@ -1,0 +1,406 @@
+{
+  "schema": "prova.verification-case/1",
+  "title": "c03_full_covariance",
+  "description": "Two-level, two correlated continuous indicators, class-specific full covariance.",
+  "covers": [
+    "multilpa()"
+  ],
+  "generator": "latents equivalence/latentgold/export-bundle.R",
+  "created_at": "2026-11-18",
+  "sides": [
+    {
+      "id": "latents",
+      "name": "latents",
+      "version": "1.3.5",
+      "primary": true,
+      "source": "live",
+      "run_at": "2026-11-18",
+      "platform": "R version 4.6.2 (2026-10-29), aarch64-apple-darwin23"
+    },
+    {
+      "id": "latentgold",
+      "name": "Latent GOLD",
+      "version": "6.1",
+      "authority": "commercial",
+      "source": "retained",
+      "run_at": "2026-10-19",
+      "platform": "Wine Devel 11.17 on macOS 26.3.1, arm64",
+      "licence": "free academic single-user licence",
+      "command": "lg61.exe <case>.lgs /b /o <case>.lst"
+    }
+  ],
+  "sections": [
+    {
+      "id": "code",
+      "title": "Code",
+      "items": [
+        {
+          "side": "latents",
+          "path": "latents/script.R",
+          "bytes": 360,
+          "sha256": "2b10e0a508ed338642cffd4578bdf14bd7ff74db7006428836caaf5c63138931",
+          "label": "Script",
+          "type": "code",
+          "language": "r",
+          "run": {
+            "engine": "r",
+            "result": "result",
+            "reads": [
+              "data/c03.dat"
+            ]
+          }
+        },
+        {
+          "side": "latentgold",
+          "path": "latentgold/c03_full_covariance.lgs",
+          "bytes": 886,
+          "sha256": "a3c7c295314e099856465040b08e5568d361fbd47e0bb1b874d0382b9906c933",
+          "label": "Syntax",
+          "type": "code",
+          "language": "latentgold"
+        }
+      ]
+    },
+    {
+      "id": "output",
+      "title": "Raw output",
+      "items": [
+        {
+          "side": "latents",
+          "path": "latents/console.txt",
+          "bytes": 12134,
+          "sha256": "e97249859c1e57c289da181abbebadc38a33855a8d2b3838c769a7dbc7ac1504",
+          "label": "R console",
+          "type": "text"
+        },
+        {
+          "side": "latentgold",
+          "path": "latentgold/c03_full_covariance.lst",
+          "bytes": 7406,
+          "sha256": "ee194f45f8f05c1fecbe30cfad8a55fc877716ba4e796e93ab5c69c9e5187323",
+          "label": "Listing",
+          "type": "listing",
+          "encoding": "latin1"
+        },
+        {
+          "side": "latentgold",
+          "path": "latentgold/c03_full_covariance_posteriors.txt",
+          "bytes": 92327,
+          "sha256": "98153b2d863694b8e3911be1a19d905e8568a9b7ce76eef9076ebfb343f25cc6",
+          "label": "Classification file",
+          "type": "table",
+          "encoding": "latin1"
+        }
+      ]
+    },
+    {
+      "id": "data",
+      "title": "Data",
+      "items": [
+        {
+          "path": "data/c03.dat",
+          "bytes": 28136,
+          "sha256": "d68c63628fccd6d91fa6ef442eaa18f628ae9c59cb3d2dba795b81e899a9e519",
+          "label": "Data",
+          "type": "table",
+          "rows": 600,
+          "columns": ["id", "g", "profile", "group_class", "y1", "y2"],
+          "origin": "From the comparison kit, equivalence/latentgold/cases.R."
+        }
+      ]
+    }
+  ],
+  "comparisons": [
+    {
+      "quantity": "aic",
+      "kind": "information criterion",
+      "values": {
+        "latentgold": 3622.7708,
+        "latents": 3622.77084058977
+      },
+      "baseline": "latentgold",
+      "difference": 4.05897699238267e-05,
+      "measure": "absolute",
+      "tolerance": 0.00017,
+      "status": "agree",
+      "note": "Latent GOLD's `AIC (based on LL)`, on 600 cases.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c03_full_covariance.lst"
+        }
+      }
+    },
+    {
+      "quantity": "bic_individual",
+      "kind": "information criterion",
+      "values": {
+        "latentgold": 3679.9309,
+        "latents": 3679.93092610758
+      },
+      "baseline": "latentgold",
+      "difference": 2.61075797425292e-05,
+      "measure": "absolute",
+      "tolerance": 0.00017,
+      "status": "agree",
+      "note": "Latent GOLD's `BIC (based on LL)`, on 600 cases.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c03_full_covariance.lst"
+        }
+      }
+    },
+    {
+      "quantity": "caic_individual",
+      "kind": "information criterion",
+      "values": {
+        "latentgold": 3692.9309,
+        "latents": 3692.93092610758
+      },
+      "baseline": "latentgold",
+      "difference": 2.61075797425292e-05,
+      "measure": "absolute",
+      "tolerance": 0.00017,
+      "status": "agree",
+      "note": "Latent GOLD's `CAIC (based on LL)`, on 600 cases.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c03_full_covariance.lst"
+        }
+      }
+    },
+    {
+      "quantity": "sabic_individual",
+      "kind": "information criterion",
+      "values": {
+        "latentgold": 3638.6595,
+        "latents": 3638.65948758426
+      },
+      "baseline": "latentgold",
+      "difference": 1.24157390928303e-05,
+      "measure": "absolute",
+      "tolerance": 0.00017,
+      "status": "agree",
+      "note": "Latent GOLD's `SABIC (based on LL)`, on 600 cases.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c03_full_covariance.lst"
+        }
+      }
+    },
+    {
+      "quantity": "n_observations",
+      "kind": "sample size",
+      "values": {
+        "latentgold": 600,
+        "latents": 600
+      },
+      "baseline": "latentgold",
+      "difference": 0,
+      "measure": "absolute",
+      "tolerance": 0,
+      "status": "agree",
+      "note": "Latent GOLD's `Number of cases`.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c03_full_covariance.lst"
+        }
+      }
+    },
+    {
+      "quantity": "bic_groups",
+      "kind": "information criterion",
+      "values": {
+        "latentgold": 3649.9973,
+        "latents": 3649.99731989866
+      },
+      "baseline": "latentgold",
+      "difference": 1.98986572286231e-05,
+      "measure": "absolute",
+      "tolerance": 0.00017,
+      "status": "agree",
+      "note": "Latent GOLD's `BIC (based on LL,Ngroups)`, on 60 groups.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c03_full_covariance.lst"
+        }
+      }
+    },
+    {
+      "quantity": "caic_groups",
+      "kind": "information criterion",
+      "values": {
+        "latentgold": 3662.9973,
+        "latents": 3662.99731989866
+      },
+      "baseline": "latentgold",
+      "difference": 1.98986572286231e-05,
+      "measure": "absolute",
+      "tolerance": 0.00017,
+      "status": "agree",
+      "note": "Latent GOLD's `CAIC (based on LL,Ngroups)`, on 60 groups.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c03_full_covariance.lst"
+        }
+      }
+    },
+    {
+      "quantity": "sabic_groups",
+      "kind": "information criterion",
+      "values": {
+        "latentgold": 3609.1089,
+        "latents": 3609.10888780083
+      },
+      "baseline": "latentgold",
+      "difference": 1.21991674859601e-05,
+      "measure": "absolute",
+      "tolerance": 0.00017,
+      "status": "agree",
+      "note": "Latent GOLD's `SABIC (based on LL,Ngroups)`, on 60 groups.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c03_full_covariance.lst"
+        }
+      }
+    },
+    {
+      "quantity": "n_groups",
+      "kind": "sample size",
+      "values": {
+        "latentgold": 60,
+        "latents": 60
+      },
+      "baseline": "latentgold",
+      "difference": 0,
+      "measure": "absolute",
+      "tolerance": 0,
+      "status": "agree",
+      "note": "Latent GOLD's `Number of groups`.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c03_full_covariance.lst"
+        }
+      }
+    },
+    {
+      "quantity": "log likelihood",
+      "kind": "likelihood",
+      "values": {
+        "latentgold": -1798.3854,
+        "latents": -1798.38542029488
+      },
+      "baseline": "latentgold",
+      "difference": 2.02948849619133e-05,
+      "measure": "absolute",
+      "tolerance": 6e-05,
+      "status": "agree",
+      "note": "",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c03_full_covariance.lst"
+        }
+      }
+    },
+    {
+      "quantity": "parameters",
+      "kind": "parameter count",
+      "values": {
+        "latentgold": 13,
+        "latents": 13
+      },
+      "baseline": "latentgold",
+      "difference": 0,
+      "measure": "absolute",
+      "tolerance": 0,
+      "status": "agree",
+      "note": "",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c03_full_covariance.lst"
+        }
+      }
+    },
+    {
+      "quantity": "posteriors: individuals (largest difference)",
+      "kind": "posterior",
+      "values": {
+        "latentgold": 0,
+        "latents": 6.64970867370052e-07
+      },
+      "baseline": "latentgold",
+      "difference": 6.64970867370052e-07,
+      "measure": "absolute",
+      "tolerance": 0.0001000005,
+      "status": "agree",
+      "note": "600 rows; Latent GOLD class order 2,1.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c03_full_covariance.lst"
+        }
+      }
+    },
+    {
+      "quantity": "posteriors: groups (largest difference)",
+      "kind": "posterior",
+      "values": {
+        "latentgold": 0,
+        "latents": 5.50477195992993e-07
+      },
+      "baseline": "latentgold",
+      "difference": 5.50477195992993e-07,
+      "measure": "absolute",
+      "tolerance": 0.0001000005,
+      "status": "agree",
+      "note": "60 groups; Latent GOLD class order 1,2.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c03_full_covariance.lst"
+        }
+      }
+    },
+    {
+      "quantity": "group class 1 proportion",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.58291148575,
+        "latents": 0.58291150049558
+      },
+      "baseline": "latentgold",
+      "difference": 1.47455796462026e-08,
+      "measure": "absolute",
+      "tolerance": 0.0001000005,
+      "status": "agree",
+      "note": "Mean of Latent GOLD's group posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c03_full_covariance_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "group class 2 proportion",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.41708847994,
+        "latents": 0.41708849950442
+      },
+      "baseline": "latentgold",
+      "difference": 1.95644204725731e-08,
+      "measure": "absolute",
+      "tolerance": 0.0001000005,
+      "status": "agree",
+      "note": "Mean of Latent GOLD's group posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c03_full_covariance_posteriors.txt"
+        }
+      }
+    }
+  ],
+  "id": "latentgold/c03_full_covariance",
+  "comparison_source": {
+    "file": "equivalence/latentgold/comparison.csv",
+    "version": "1.3.2",
+    "recorded_at": "2026-11-14 13:52:11 UTC"
+  }
+}

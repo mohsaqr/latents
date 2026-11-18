@@ -1,0 +1,271 @@
+
+> data <- utils::read.delim("../data/c06.dat", na.strings = ".")
+
+> fit <- multilpa(data, c("y1", "y2", "y3"), "g", n_profiles = 2, n_group_classes = 2, missing = "fiml", 
++     n_starts = 50, max_iter = 200000, tol = 1e-14, seed = 1)
+
+> print(fit)
+Two-level latent profile analysis: 2 profiles, 2 group classes
+600 individuals in 60 groups; varying diagonal residual covariance (VVI)
+Log likelihood: -2502.783104 | AIC: 5035.566 | BIC (groups): 5066.981
+Converged: TRUE | iterations: 27 | best log likelihood reached by 50 of 50 starts (50 converged)
+Smallest standardized Gaussian eigenvalue: 0.4698 (profiles, profile_2); Gaussian mass: 280.8; weight effective n: 318.7.
+
+Class sizes   profile_1 53.2% (319)   profile_2 46.8% (281)
+Group classes group_class_1 52.7% (32)   group_class_2 47.3% (28)
+
+Means
+ indicator profile_1 profile_2
+        y1     1.820    -0.076
+        y2     1.490    -0.095
+        y3     0.899     0.069
+
+Variances and standard errors: get_results(x, "profiles").
+Every other table: get_results(x, what = ), or get_results(x, "all").
+
+> summary(fit)
+Two-level latent profile analysis: 2 profiles, 2 group classes
+Individuals: 600; groups: 60; parameters: 15; converged: TRUE
+Log likelihood: -2502.783104; AIC: 5035.566
+BIC (groups): 5066.981; BIC (individuals): 5101.520
+Best likelihood replicated in 50/50 starts (absolute tolerance 0.0016).
+
+-- profiles --------------------------------------------------------
+ profile indicator     mean variance standard_deviation mean_standard_error
+       1        y1  1.81957   0.9841             0.9920             0.07326
+       1        y2  1.49041   1.2589             1.1220             0.08293
+       1        y3  0.89869   1.1519             1.0733             0.06981
+       2        y1 -0.07648   0.8542             0.9242             0.07504
+       2        y2 -0.09451   1.0504             1.0249             0.07348
+       2        y3  0.06907   1.0217             1.0108             0.07228
+ variance_standard_error
+                 0.09578
+                 0.12812
+                 0.10439
+                 0.09344
+                 0.10034
+                 0.09920
+
+-- responses -------------------------------------------------------
+   (no rows)
+
+-- covariances -----------------------------------------------------
+ profile indicator indicator_2 covariance
+       1        y1          y1     0.9841
+       1        y2          y1     0.0000
+       1        y3          y1     0.0000
+       1        y1          y2     0.0000
+       1        y2          y2     1.2589
+       1        y3          y2     0.0000
+       1        y1          y3     0.0000
+       1        y2          y3     0.0000
+       1        y3          y3     1.1519
+       2        y1          y1     0.8542
+   ... 8 more rows.  get_results(x, what = "covariances")
+
+-- gaussian_diagnostics --------------------------------------------
+  context   profile gaussian_mass positive_rows weight_effective_n
+ profiles profile_1         319.2           600              356.5
+ profiles profile_2         280.8           600              318.7
+ min_variance_ratio min_standardized_eigenvalue boundary
+             0.5412                      0.5412    FALSE
+             0.4698                      0.4698    FALSE
+
+-- profile_probabilities -------------------------------------------
+ group_class profile probability group_class_probability
+           1       1      0.8602                  0.5271
+           1       2      0.1398                  0.5271
+           2       1      0.1663                  0.4729
+           2       2      0.8337                  0.4729
+
+-- counts ----------------------------------------------------------
+       level class effective_count effective_proportion
+ individuals     1          319.21               0.5320
+ individuals     2          280.79               0.4680
+      groups     1           31.62               0.5271
+      groups     2           28.38               0.4729
+
+-- posteriors ------------------------------------------------------
+ row group profile posterior modal
+   1     1       1    0.9967  TRUE
+   2     1       1    0.9990  TRUE
+   3     1       1    0.5726  TRUE
+   4     1       1    0.9832  TRUE
+   5     1       1    0.9925  TRUE
+   6     1       1    0.7923  TRUE
+   7     1       1    0.5545  TRUE
+   8     1       1    0.9351  TRUE
+   9     1       1    0.9862  TRUE
+  10     1       1    0.9819  TRUE
+   ... 1190 more rows.  get_results(x, what = "posteriors")
+
+-- group_posteriors ------------------------------------------------
+ group group_size log_likelihood group_class posterior modal
+     1         10         -46.53           1 9.988e-01  TRUE
+     2         10         -50.11           1 1.601e-02 FALSE
+     3         10         -39.42           1 9.963e-01  TRUE
+     4         10         -46.31           1 3.076e-02 FALSE
+     5         10         -40.90           1 5.633e-04 FALSE
+     6         10         -51.49           1 1.104e-01 FALSE
+     7         10         -40.11           1 9.950e-01  TRUE
+     8         10         -44.02           1 8.718e-05 FALSE
+     9         10         -45.97           1 4.390e-02 FALSE
+    10         10         -43.03           1 9.986e-01  TRUE
+   ... 110 more rows.  get_results(x, what = "group_posteriors")
+
+-- assignments -----------------------------------------------------
+ g     y1      y2      y3 profile group_class uncertainty posterior_profile_1
+ 1 1.7756  2.0576      NA       1           1    0.003309              0.9967
+ 1 1.5626  2.7872  1.0836       1           1    0.001032              0.9990
+ 1 1.3278  0.2491 -2.4818       1           1    0.427399              0.5726
+ 1 1.5315  1.3354      NA       1           1    0.016835              0.9832
+ 1 0.6600  1.8759  2.6122       1           1    0.007531              0.9925
+ 1 1.6654 -0.7951  0.2390       1           1    0.207683              0.7923
+ 1 0.5389 -0.1378  0.8397       1           1    0.445544              0.5545
+ 1 0.9994  1.8856 -1.0846       1           1    0.064911              0.9351
+ 1 2.3415  0.5652 -0.1526       1           1    0.013841              0.9862
+ 1 0.9414  2.7612 -1.0463       1           1    0.018080              0.9819
+ posterior_profile_2
+            0.003309
+            0.001032
+            0.427399
+            0.016835
+            0.007531
+            0.207683
+            0.445544
+            0.064911
+            0.013841
+            0.018080
+   ... 590 more rows.  get_results(x, what = "assignments")
+
+-- classification --------------------------------------------------
+       level class n_modal proportion_modal estimated_n estimated_proportion
+ individuals     1     321           0.5350      319.21               0.5320
+ individuals     2     279           0.4650      280.79               0.4680
+      groups     1      32           0.5333       31.62               0.5271
+      groups     2      28           0.4667       28.38               0.4729
+ average_posterior odds_correct_classification
+            0.9261                       11.02
+            0.9214                       13.32
+            0.9770                       38.15
+            0.9872                       85.82
+
+-- average_posteriors ----------------------------------------------
+       level assigned_class class n_assigned average_posterior
+ individuals              1     1        321           0.92609
+ individuals              1     2        321           0.07391
+ individuals              2     1        279           0.07863
+ individuals              2     2        279           0.92137
+      groups              1     1         32           0.97702
+      groups              1     2         32           0.02298
+      groups              2     1         28           0.01282
+      groups              2     2         28           0.98718
+
+-- classification_errors -------------------------------------------
+       level true_class assigned_class probability
+ individuals          1              1     0.93127
+ individuals          1              2     0.06873
+ individuals          2              1     0.08449
+ individuals          2              2     0.91551
+      groups          1              1     0.98865
+      groups          1              2     0.01135
+      groups          2              1     0.02591
+      groups          2              2     0.97409
+
+-- bch_weights -----------------------------------------------------
+       level unit assigned_class class   weight
+ individuals    1              1     1  1.08116
+ individuals    1              1     2 -0.08116
+ individuals    2              1     1  1.08116
+ individuals    2              1     2 -0.08116
+ individuals    3              1     1  1.08116
+ individuals    3              1     2 -0.08116
+ individuals    4              1     1  1.08116
+ individuals    4              1     2 -0.08116
+ individuals    5              1     1  1.08116
+ individuals    5              1     2 -0.08116
+   ... 1310 more rows.  get_results(x, what = "bch_weights")
+
+-- entropy ---------------------------------------------------------
+       level n_classes n_units entropy_sum relative_entropy
+ individuals         2     600     111.472           0.7320
+      groups         2      60       3.221           0.9226
+
+-- replication -----------------------------------------------------
+ n_starts n_screened n_converged n_failed n_best_replicated share tolerance
+       50          0          50        0                50     1  0.001605
+ best_start log_likelihood
+          1          -2503
+
+-- residuals -------------------------------------------------------
+   profile indicator_1 indicator_2     kind observed expected residual
+ profile_2          y2          y3 gaussian -0.08868        0 -0.08868
+ profile_1          y1          y2 gaussian  0.04775        0  0.04775
+ profile_1          y1          y3 gaussian  0.03275        0  0.03275
+ profile_2          y1          y3 gaussian  0.03187        0  0.03187
+ profile_1          y2          y3 gaussian  0.02269        0  0.02269
+ profile_2          y1          y2 gaussian  0.01216        0  0.01216
+ effective_n statistic df p_value p_adjusted
+       218.9   -1.3065 NA  0.1914     0.8557
+       254.5    0.7578 NA  0.4486     0.8557
+       259.0    0.5241 NA  0.6002     0.8557
+       225.0    0.4750 NA  0.6348     0.8557
+       246.1    0.3539 NA  0.7234     0.8557
+       226.5    0.1818 NA  0.8557     0.8557
+
+-- information_criteria --------------------------------------------
+ log_likelihood n_parameters  aic  kic bic_groups bic_individual sabic_groups
+          -2503           15 5036 5054       5067           5102         5020
+ sabic_individual caic_groups caic_individual awe_groups awe_individual
+             5054        5082            5117       5393           5463
+ icl_groups icl_individual clc_groups clc_individual
+       5287           5322       5226           5226
+
+-- model -----------------------------------------------------------
+ n_observations n_informative n_groups n_profiles n_group_classes centering
+            600           600       60          2               2      none
+ scaling covariance_structure n_parameters n_parameters_with_measurement
+    none                  VVI           15                            15
+ log_likelihood  aic bic_groups bic_individual converged iterations boundary
+          -2503 5036       5067           5102      TRUE         27    FALSE
+ small_classes best_start n_best_replicated weights
+         FALSE          1                50    <NA>
+
+-- stages ----------------------------------------------------------
+ stage group_classes fixed log_likelihood parameters
+ joint             2  <NA>          -2503         15
+ parameters_with_measurement converged
+                          15      TRUE
+
+-- starts ----------------------------------------------------------
+ start log_likelihood converged iterations error boundary
+     1          -2503      TRUE         27  <NA>    FALSE
+     2          -2503      TRUE         27  <NA>    FALSE
+     3          -2503      TRUE         24  <NA>    FALSE
+     4          -2503      TRUE         33  <NA>    FALSE
+     5          -2503      TRUE         27  <NA>    FALSE
+     6          -2503      TRUE         27  <NA>    FALSE
+     7          -2503      TRUE         27  <NA>    FALSE
+     8          -2503      TRUE         20  <NA>    FALSE
+     9          -2503      TRUE         24  <NA>    FALSE
+    10          -2503      TRUE         27  <NA>    FALSE
+   ... 40 more rows.  get_results(x, what = "starts")
+
+-- data ------------------------------------------------------------
+ g     y1      y2      y3
+ 1 1.7756  2.0576      NA
+ 1 1.5626  2.7872  1.0836
+ 1 1.3278  0.2491 -2.4818
+ 1 1.5315  1.3354      NA
+ 1 0.6600  1.8759  2.6122
+ 1 1.6654 -0.7951  0.2390
+ 1 0.5389 -0.1378  0.8397
+ 1 0.9994  1.8856 -1.0846
+ 1 2.3415  0.5652 -0.1526
+ 1 0.9414  2.7612 -1.0463
+   ... 590 more rows.  get_results(x, what = "data")
+
+21 tables above, truncated to fit. get_results(x, what = ) returns any
+of them whole, and get_results(x, what = "all") returns every one.
+
+> result <- data.frame(quantity = "log likelihood", value = as.numeric(logLik(fit)))

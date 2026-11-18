@@ -1,0 +1,322 @@
+c12.dat
+File name:	c12.dat	
+File size:	49946 bytes  1422 records	
+File date:	2026-Sep-22 10:31:12 PM	
+Syntax:	c12_course_engagement.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Max. BVR	Class.Err.	Entropy R²	
+c12_course_engagement	2-GClass  2-Cluster	-8439.8164	17046.6087	16925.6328	16948.6328	23	36.8310	0.0164	0.9368	
+c12_course_engagement - LL = -8439.8164
+2-GClass  2-Cluster Syntax Model	
+					
+Number of groups	106				
+Number of cases	1422				
+Number of parameters (Npar)	23				
+Activated Constraints	0				
+Random Seed	20260922				
+Best Start Seed	1117002				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-8439.8164				
+Log-prior	0.0000				
+Log-posterior	-8439.8164				
+BIC (based on LL)	17046.6087				
+AIC (based on LL)	16925.6328				
+AIC3 (based on LL)	16948.6328				
+CAIC (based on LL)	17069.6087				
+SABIC (based on LL)	16973.5458				
+BIC (based on LL,Ngroups)	16986.8919				
+CAIC (based on LL,Ngroups)	17009.8919				
+SABIC (based on LL,Ngroups)	16914.2266				
+					
+					
+Classification Statistics	GClass	Cluster			
+Classification errors	0.0156	0.0164			
+Reduction of errors (Lambda)	0.9521	0.9605			
+Entropy R-squared	0.9337	0.9368			
+Standard R-squared	0.9452	0.9492			
+Classification log-likelihood	-8504.3595				
+Entropy	64.5431				
+CLC	17008.7190				
+AWE	17411.6707				
+ICL-BIC	17175.6948				
+					
+GClass  Classification Table	Modal				
+Latent	1	2	Total		
+1	33.9145	0.5670	34.4814		
+2	1.0855	70.4330	71.5186		
+Total	35.0000	71.0000	106.0000		
+					
+GClass  Classification Table	Proportional				
+Latent	1	2	Total		
+1	33.2072	1.2742	34.4814		
+2	1.2742	70.2443	71.5186		
+Total	34.4814	71.5186	106.0000		
+					
+Cluster  Classification Table	Modal				
+Latent	1	2	Total		
+1	575.3098	12.5945	587.9042		
+2	10.6902	823.4055	834.0958		
+Total	586.0000	836.0000	1422.0000		
+					
+Cluster  Classification Table	Proportional				
+Latent	1	2	Total		
+1	570.3841	17.5202	587.9042		
+2	17.5202	816.5756	834.0958		
+Total	587.9042	834.0958	1422.0000		
+					
+Files					
+Infile	C:\lgkit\c12.dat	
+					
+Options					
+threads	10				
+algorithm					
+tolerance	1e-10				
+emtolerance	1e-08				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20260922				
+sets	100				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+bivariate residuals	marginal				
+identification	no				
+validation LL	no				
+sample size BIC	    1422				
+predictionstatistics	no				
+outfile					
+file name	c12_course_engagement_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Group ID	g	106			
+Latent					
+GClass	Nominal	Group	2		
+Cluster	Nominal	Case	2		
+ 					
+Dependent					
+browse	Continuous				
+lectures	Continuous				
+forum_read	Continuous				
+forum_post	Continuous				
+attendance	Continuous				
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20260922 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile probmeans=posterior
+      bivariateresiduals estimatedvalues=model;
+   outfile 'c12_course_engagement_posteriors.txt' classification keep id g;
+variables
+   groupid g;
+   dependent browse continuous, lectures continuous, forum_read continuous, forum_post continuous, attendance continuous;
+   latent
+      GClass group nominal 2,
+      Cluster nominal 2;
+equations
+   GClass <- 1;
+   Cluster <- 1 + GClass;
+   browse <- 1 + Cluster;
+   lectures <- 1 + Cluster;
+   forum_read <- 1 + Cluster;
+   forum_post <- 1 + Cluster;
+   attendance <- 1 + Cluster;
+   browse | Cluster;
+   lectures | Cluster;
+   forum_read | Cluster;
+   forum_post | Cluster;
+   attendance | Cluster;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+GClass(1)	<-	1			0.0000	.	.	.	11.3015	1	0.00078				
+GClass(2)	<-	1			0.7295	0.2170	3.3618	0.00078							
+															
+Cluster(1)	<-	1			0.0000	.	.	.	102.3998	1	4.5e-24				
+Cluster(2)	<-	1			-1.5824	0.1564	-10.1193	4.5e-24							
+Cluster(1)	<-	GClass(1)			0.0000	.	.	.	320.9360	1	9.1e-72				
+Cluster(2)	<-	GClass(1)			0.0000	.	.	.							
+Cluster(1)	<-	GClass(2)			0.0000	.	.	.							
+Cluster(2)	<-	GClass(2)			2.8830	0.1609	17.9147	9.1e-72							
+															
+browse	<-	1			-0.7656	0.0312	-24.5294	7.2e-133	601.6938	1	7.2e-133				
+browse	<-	Cluster(1)			0.0000	.	.	.	1005.6503	1	1.1e-220				
+browse	<-	Cluster(2)			1.3052	0.0412	31.7120	1.1e-220							
+															
+lectures	<-	1			-0.6065	0.0309	-19.6079	1.3e-85	384.4712	1	1.3e-85				
+lectures	<-	Cluster(1)			0.0000	.	.	.	525.3627	1	2.9e-116				
+lectures	<-	Cluster(2)			1.0339	0.0451	22.9208	2.9e-116							
+															
+forum_read	<-	1			-0.8792	0.0262	-33.5384	1.3e-246	1124.8266	1	1.3e-246				
+forum_read	<-	Cluster(1)			0.0000	.	.	.	1788.9545	1	6.4e-391				
+forum_read	<-	Cluster(2)			1.4990	0.0354	42.2960	6.4e-391							
+															
+forum_post	<-	1			-0.7527	0.0277	-27.1913	8.2e-163	739.3663	1	8.2e-163				
+forum_post	<-	Cluster(1)			0.0000	.	.	.	1006.3809	1	7.4e-221				
+forum_post	<-	Cluster(2)			1.2832	0.0404	31.7235	7.4e-221							
+															
+attendance	<-	1			-0.9207	0.0264	-34.8378	6.5e-266	1213.6736	1	6.5e-266				
+attendance	<-	Cluster(1)			0.0000	.	.	.	2172.2709	1	3.4e-474				
+attendance	<-	Cluster(2)			1.5697	0.0337	46.6076	3.4e-474							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+browse			|	Cluster(1)	0.5285	0.0322	16.4034	1.8e-60	661.9371	2	1.8e-144	1.9995	1	0.16	
+browse			|	Cluster(2)	0.5899	0.0295	20.0065	4.8e-89							
+lectures			|	Cluster(1)	0.5384	0.0321	16.7768	3.6e-63	687.0423	2	6.5e-150	33.3405	1	7.7e-9	
+lectures			|	Cluster(2)	0.8447	0.0421	20.0637	1.5e-89							
+forum_read			|	Cluster(1)	0.3631	0.0228	15.9309	3.9e-57	632.7954	2	3.9e-138	12.7844	1	0.00035	
+forum_read			|	Cluster(2)	0.4815	0.0244	19.7356	1.1e-86							
+forum_post			|	Cluster(1)	0.4212	0.0261	16.1513	1.1e-58	655.5354	2	4.5e-143	37.6687	1	8.4e-10	
+forum_post			|	Cluster(2)	0.6888	0.0348	19.7835	4.1e-87							
+attendance			|	Cluster(1)	0.3736	0.0228	16.3945	2.1e-60	645.5451	2	6.6e-141	0.1239	1	0.72	
+attendance			|	Cluster(2)	0.3841	0.0196	19.6398	7.1e-86							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+GClass	<-	1			GClass	1	2	11.3015	1	0.00078	
+	
+Cluster	<-	1			Cluster	1	2	102.3998	1	4.5e-24	
+Cluster	<-	 GClass			GClass	1	2	320.9360	1	9.1e-72	
+					Cluster	1	2	320.9360	1	9.1e-72	
+	
+browse	<-	 Cluster			Cluster	1	2	1005.6503	1	1.1e-220	
+	
+lectures	<-	 Cluster			Cluster	1	2	525.3627	1	2.9e-116	
+	
+forum_read	<-	 Cluster			Cluster	1	2	1788.9545	1	6.4e-391	
+	
+forum_post	<-	 Cluster			Cluster	1	2	1006.3809	1	7.4e-221	
+	
+attendance	<-	 Cluster			Cluster	1	2	2172.2709	1	3.4e-474	
+Variances	
+browse			|	Cluster	Cluster	1	2	1.9995	1	0.16	
+lectures			|	Cluster	Cluster	1	2	33.3405	1	7.7e-9	
+forum_read			|	Cluster	Cluster	1	2	12.7844	1	0.00035	
+forum_post			|	Cluster	Cluster	1	2	37.6687	1	8.4e-10	
+attendance			|	Cluster	Cluster	1	2	0.1239	1	0.72	
+Profile
+ 	GClass	 	 	 	Cluster	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	1	s.e.	2	s.e.	Overall	s.e.	
+Size	0.3253	0.0476	0.6747	0.0476	0.4143	0.0302	0.5857	0.0302	 	 	
+browse	 	
+Mean	-0.5431	0.0382	0.2602	0.0293	-0.7656	0.0312	0.5396	0.0271	-0.0011	0.0439	
+lectures	 	
+Mean	-0.4303	0.0344	0.2061	0.0301	-0.6065	0.0309	0.4274	0.0325	-0.0009	0.0383	
+forum_read	 	
+Mean	-0.6237	0.0389	0.2989	0.0298	-0.8792	0.0262	0.6198	0.0247	-0.0012	0.0482	
+forum_post	 	
+Mean	-0.5340	0.0361	0.2558	0.0302	-0.7527	0.0277	0.5305	0.0295	-0.0011	0.0434	
+attendance	 	
+Mean	-0.6531	0.0401	0.3130	0.0293	-0.9207	0.0264	0.6490	0.0223	-0.0013	0.0498	
+	
+ 	GClass	 	 	 	Cluster	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	1	s.e.	2	s.e.	 	 	
+Cluster	 	
+1	0.8295	0.0221	0.2141	0.0155	.	.	.	.	 	 	
+2	0.1705	0.0221	0.7859	0.0155	.	.	.	.	 	 	
+ProbMeans-Posterior
+	GClass		Cluster		
+	1	2	1	2	
+Overall	0.3253	0.6747	0.4134	0.5866	
+Dependent					
+browse					
+-3.140 - -0.910	0.6011	0.3989	0.9184	0.0816	
+-0.900 - -0.260	0.4604	0.5396	0.6636	0.3364	
+-0.250 - 0.260	0.2946	0.7054	0.3233	0.6767	
+0.270 - 0.910	0.1660	0.8340	0.1181	0.8819	
+0.920 - 2.490	0.0970	0.9030	0.0425	0.9575	
+lectures					
+-2.910 - -0.860	0.5232	0.4768	0.7544	0.2456	
+-0.850 - -0.270	0.4352	0.5648	0.6493	0.3507	
+-0.260 - 0.230	0.2907	0.7093	0.3893	0.6107	
+0.240 - 0.830	0.2180	0.7820	0.2282	0.7718	
+0.840 - 3.220	0.1509	0.8491	0.0437	0.9563	
+forum_read					
+-2.730 - -0.920	0.6313	0.3687	0.9667	0.0333	
+-0.910 - -0.300	0.5275	0.4725	0.7723	0.2277	
+-0.290 - 0.280	0.2770	0.7230	0.2794	0.7206	
+0.290 - 0.930	0.1154	0.8846	0.0370	0.9630	
+0.940 - 2.810	0.0652	0.9348	0.0058	0.9942	
+forum_post					
+-2.610 - -0.870	0.5477	0.4523	0.8534	0.1466	
+-0.860 - -0.340	0.4982	0.5018	0.7047	0.2953	
+-0.330 - 0.240	0.3229	0.6771	0.3918	0.6082	
+0.250 - 0.880	0.1521	0.8479	0.1027	0.8973	
+0.890 - 3.100	0.1009	0.8991	0.0185	0.9815	
+attendance					
+-2.450 - -0.960	0.6407	0.3593	0.9949	0.0051	
+-0.950 - -0.230	0.5428	0.4572	0.8003	0.1997	
+-0.220 - 0.340	0.2053	0.7947	0.2357	0.7643	
+0.350 - 0.890	0.1141	0.8859	0.0385	0.9615	
+0.900 - 2.410	0.1182	0.8818	0.0001	0.9999	
+Bivariate Residuals
+Dependent	browse	lectures	forum_read	forum_post	attendance	
+browse	.					
+lectures	0.7594	.				
+forum_read	4.5790	0.0767	.			
+forum_post	0.6025	0.2411	1.4727	.		
+attendance	25.4419	29.0171	36.8310	23.2618	.	
+Twolevel	browse	lectures	forum_read	forum_post	attendance	
+Group	1.1391	1.0914	0.8565	1.0139	0.9449	
+Pairs	1.1834	0.0127	0.7326	0.0580	0.0566	
+EstimatedValues-Model
+ 	GClass	
+ 	1	s.e.	2	s.e.	
+ 	0.3253	0.0476	0.6747	0.0476	
+	
+ 	Cluster	
+GClass	1	s.e.	2	s.e.	
+1	0.8295	0.0221	0.1705	0.0221	
+2	0.2141	0.0155	0.7859	0.0155	
+	
+ 	browse	
+Cluster	Mean	s.e.	 	 	
+1	-0.7656	0.0312	 	 	
+2	0.5396	0.0271	 	 	
+	
+ 	lectures	
+Cluster	Mean	s.e.	 	 	
+1	-0.6065	0.0309	 	 	
+2	0.4274	0.0325	 	 	
+	
+ 	forum_read	
+Cluster	Mean	s.e.	 	 	
+1	-0.8792	0.0262	 	 	
+2	0.6198	0.0247	 	 	
+	
+ 	forum_post	
+Cluster	Mean	s.e.	 	 	
+1	-0.7527	0.0277	 	 	
+2	0.5305	0.0295	 	 	
+	
+ 	attendance	
+Cluster	Mean	s.e.	 	 	
+1	-0.9207	0.0264	 	 	
+2	0.6490	0.0223	 	 	

@@ -1,0 +1,33 @@
+//LG6.1//
+version = 6.1
+infile 'c10.dat'
+
+model
+title 'c10_lta';
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20260922 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile probmeans=posterior
+      bivariateresiduals estimatedvalues=model;
+   outfile 'c10_lta_posteriors.txt' classification keep id t;
+variables
+   caseid g;
+   dependent y1 continuous, y2 continuous;
+   latent
+      State nominal dynamic 2;
+equations
+   State[=0] <- 1;
+   State <- 1 | State[-1];
+   y1 <- 1 + State;
+   y2 <- 1 + State;
+   y1 | State;
+   y2 | State;
+end model
+

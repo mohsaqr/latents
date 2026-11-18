@@ -1,3 +1,10 @@
+# latents 1.3.6
+
+* No change to the package. The verification material gains comparison bundles
+  for the Latent GOLD cases (`equivalence/latentgold/export-bundle.R`), each
+  holding the latents script, the Latent GOLD syntax, both programs' output, the
+  data and the compared quantities.
+
 # latents 1.3.5
 
 * `parameter_inference(boundary = "fix")`, `vcov()` and `confint()` now hold

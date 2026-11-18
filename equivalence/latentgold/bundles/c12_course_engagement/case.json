@@ -1,0 +1,786 @@
+{
+  "schema": "prova.verification-case/1",
+  "title": "c12_course_engagement",
+  "description": "The package's own bundled data: 1,422 enrolments in 106 students, five indicators, 2 profiles x 2 group classes. This is the model the README reports.",
+  "covers": [
+    "multilpa()"
+  ],
+  "generator": "latents equivalence/latentgold/export-bundle.R",
+  "created_at": "2026-11-18",
+  "sides": [
+    {
+      "id": "latents",
+      "name": "latents",
+      "version": "1.3.5",
+      "primary": true,
+      "source": "live",
+      "run_at": "2026-11-18",
+      "platform": "R version 4.6.2 (2026-10-29), aarch64-apple-darwin23"
+    },
+    {
+      "id": "latentgold",
+      "name": "Latent GOLD",
+      "version": "6.1",
+      "authority": "commercial",
+      "source": "retained",
+      "run_at": "2026-10-19",
+      "platform": "Wine Devel 11.17 on macOS 26.3.1, arm64",
+      "licence": "free academic single-user licence",
+      "command": "lg61.exe <case>.lgs /b /o <case>.lst"
+    }
+  ],
+  "sections": [
+    {
+      "id": "code",
+      "title": "Code",
+      "items": [
+        {
+          "side": "latents",
+          "path": "latents/script.R",
+          "bytes": 392,
+          "sha256": "998520fd8ba34f5f108f02abad54f294170006d81ac715a424c34e13915a2c97",
+          "label": "Script",
+          "type": "code",
+          "language": "r",
+          "run": {
+            "engine": "r",
+            "result": "result",
+            "reads": [
+              "data/c12.dat"
+            ]
+          }
+        },
+        {
+          "side": "latentgold",
+          "path": "latentgold/c12_course_engagement.lgs",
+          "bytes": 1135,
+          "sha256": "e31830f04132b25870dc7cce270bcf5616353908890b94547af1c2a4db7332ee",
+          "label": "Syntax",
+          "type": "code",
+          "language": "latentgold"
+        }
+      ]
+    },
+    {
+      "id": "output",
+      "title": "Raw output",
+      "items": [
+        {
+          "side": "latents",
+          "path": "latents/console.txt",
+          "bytes": 14827,
+          "sha256": "9fede60930c27b42ca03cd75bed70c723ff511395e502d16dce1618ce83f7077",
+          "label": "R console",
+          "type": "text"
+        },
+        {
+          "side": "latentgold",
+          "path": "latentgold/c12_course_engagement.lst",
+          "bytes": 10700,
+          "sha256": "76535387111895f668eaabab90d437fb600cbdda689a12ac93ccb633afcb9918",
+          "label": "Listing",
+          "type": "listing",
+          "encoding": "latin1"
+        },
+        {
+          "side": "latentgold",
+          "path": "latentgold/c12_course_engagement_posteriors.txt",
+          "bytes": 207857,
+          "sha256": "9860b9e44db7db9845df52ff71b8bd8f01709458ce3cba184800c5802bc3b276",
+          "label": "Classification file",
+          "type": "table",
+          "encoding": "latin1"
+        }
+      ]
+    },
+    {
+      "id": "data",
+      "title": "Data",
+      "items": [
+        {
+          "path": "data/c12.dat",
+          "bytes": 49946,
+          "sha256": "26b06e5dd9be0c96918f1530c8add57ef758373279d4a575bac31cbb9e21dd5e",
+          "label": "Data",
+          "type": "table",
+          "rows": 1422,
+          "columns": ["id", "g", "browse", "lectures", "forum_read", "forum_post", "attendance"],
+          "origin": "From the comparison kit, equivalence/latentgold/cases.R."
+        }
+      ]
+    }
+  ],
+  "comparisons": [
+    {
+      "quantity": "aic",
+      "kind": "information criterion",
+      "values": {
+        "latentgold": 16925.6328,
+        "latents": 16925.6328480268
+      },
+      "baseline": "latentgold",
+      "difference": 4.80268281535245e-05,
+      "measure": "absolute",
+      "tolerance": 0.00017,
+      "status": "agree",
+      "note": "Latent GOLD's `AIC (based on LL)`, on 1422 cases.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement.lst"
+        }
+      }
+    },
+    {
+      "quantity": "bic_individual",
+      "kind": "information criterion",
+      "values": {
+        "latentgold": 17046.6087,
+        "latents": 17046.6086990652
+      },
+      "baseline": "latentgold",
+      "difference": 9.34818672249094e-07,
+      "measure": "absolute",
+      "tolerance": 0.00017,
+      "status": "agree",
+      "note": "Latent GOLD's `BIC (based on LL)`, on 1422 cases.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement.lst"
+        }
+      }
+    },
+    {
+      "quantity": "caic_individual",
+      "kind": "information criterion",
+      "values": {
+        "latentgold": 17069.6087,
+        "latents": 17069.6086990652
+      },
+      "baseline": "latentgold",
+      "difference": 9.34818672249094e-07,
+      "measure": "absolute",
+      "tolerance": 0.00017,
+      "status": "agree",
+      "note": "Latent GOLD's `CAIC (based on LL)`, on 1422 cases.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement.lst"
+        }
+      }
+    },
+    {
+      "quantity": "sabic_individual",
+      "kind": "information criterion",
+      "values": {
+        "latentgold": 16973.5458,
+        "latents": 16973.5457870442
+      },
+      "baseline": "latentgold",
+      "difference": 1.29558211483527e-05,
+      "measure": "absolute",
+      "tolerance": 0.00017,
+      "status": "agree",
+      "note": "Latent GOLD's `SABIC (based on LL)`, on 1422 cases.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement.lst"
+        }
+      }
+    },
+    {
+      "quantity": "n_observations",
+      "kind": "sample size",
+      "values": {
+        "latentgold": 1422,
+        "latents": 1422
+      },
+      "baseline": "latentgold",
+      "difference": 0,
+      "measure": "absolute",
+      "tolerance": 0,
+      "status": "agree",
+      "note": "Latent GOLD's `Number of cases`.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement.lst"
+        }
+      }
+    },
+    {
+      "quantity": "bic_groups",
+      "kind": "information criterion",
+      "values": {
+        "latentgold": 16986.8919,
+        "latents": 16986.8919471914
+      },
+      "baseline": "latentgold",
+      "difference": 4.71914063382428e-05,
+      "measure": "absolute",
+      "tolerance": 0.00017,
+      "status": "agree",
+      "note": "Latent GOLD's `BIC (based on LL,Ngroups)`, on 106 groups.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement.lst"
+        }
+      }
+    },
+    {
+      "quantity": "caic_groups",
+      "kind": "information criterion",
+      "values": {
+        "latentgold": 17009.8919,
+        "latents": 17009.8919471914
+      },
+      "baseline": "latentgold",
+      "difference": 4.71914063382428e-05,
+      "measure": "absolute",
+      "tolerance": 0.00017,
+      "status": "agree",
+      "note": "Latent GOLD's `CAIC (based on LL,Ngroups)`, on 106 groups.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement.lst"
+        }
+      }
+    },
+    {
+      "quantity": "sabic_groups",
+      "kind": "information criterion",
+      "values": {
+        "latentgold": 16914.2266,
+        "latents": 16914.2266281527
+      },
+      "baseline": "latentgold",
+      "difference": 2.81526808976196e-05,
+      "measure": "absolute",
+      "tolerance": 0.00017,
+      "status": "agree",
+      "note": "Latent GOLD's `SABIC (based on LL,Ngroups)`, on 106 groups.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement.lst"
+        }
+      }
+    },
+    {
+      "quantity": "n_groups",
+      "kind": "sample size",
+      "values": {
+        "latentgold": 106,
+        "latents": 106
+      },
+      "baseline": "latentgold",
+      "difference": 0,
+      "measure": "absolute",
+      "tolerance": 0,
+      "status": "agree",
+      "note": "Latent GOLD's `Number of groups`.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement.lst"
+        }
+      }
+    },
+    {
+      "quantity": "log likelihood",
+      "kind": "likelihood",
+      "values": {
+        "latentgold": -8439.8164,
+        "latents": -8439.81642401341
+      },
+      "baseline": "latentgold",
+      "difference": 2.40134140767623e-05,
+      "measure": "absolute",
+      "tolerance": 6e-05,
+      "status": "agree",
+      "note": "",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement.lst"
+        }
+      }
+    },
+    {
+      "quantity": "parameters",
+      "kind": "parameter count",
+      "values": {
+        "latentgold": 23,
+        "latents": 23
+      },
+      "baseline": "latentgold",
+      "difference": 0,
+      "measure": "absolute",
+      "tolerance": 0,
+      "status": "agree",
+      "note": "",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement.lst"
+        }
+      }
+    },
+    {
+      "quantity": "posteriors: individuals (largest difference)",
+      "kind": "posterior",
+      "values": {
+        "latentgold": 0,
+        "latents": 4.99979592505362e-07
+      },
+      "baseline": "latentgold",
+      "difference": 4.99979592505362e-07,
+      "measure": "absolute",
+      "tolerance": 0.0001000005,
+      "status": "agree",
+      "note": "1422 rows; Latent GOLD class order 2,1.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement.lst"
+        }
+      }
+    },
+    {
+      "quantity": "mean: profile 1 browse",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.539577436950575,
+        "latents": 0.539577434467426
+      },
+      "baseline": "latentgold",
+      "difference": 2.48314890871626e-09,
+      "measure": "absolute",
+      "tolerance": 0.000100000782040595,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "mean: profile 2 browse",
+      "kind": "estimate",
+      "values": {
+        "latentgold": -0.765599580278295,
+        "latents": -0.76559958536474
+      },
+      "baseline": "latentgold",
+      "difference": 5.08644537600134e-09,
+      "measure": "absolute",
+      "tolerance": 0.000100001241918985,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "variance: profile 1 browse",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.589871458094328,
+        "latents": 0.589871447089153
+      },
+      "baseline": "latentgold",
+      "difference": 1.10051745494388e-08,
+      "measure": "absolute",
+      "tolerance": 0.000100000909407648,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "variance: profile 2 browse",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.528468577898881,
+        "latents": 0.528468576210328
+      },
+      "baseline": "latentgold",
+      "difference": 1.68855307514093e-09,
+      "measure": "absolute",
+      "tolerance": 0.000100001600296039,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "mean: profile 1 lectures",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.427403219573546,
+        "latents": 0.427403204607188
+      },
+      "baseline": "latentgold",
+      "difference": 1.49663586523907e-08,
+      "measure": "absolute",
+      "tolerance": 0.000100000743109121,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "mean: profile 2 lectures",
+      "kind": "estimate",
+      "values": {
+        "latentgold": -0.606485156102302,
+        "latents": -0.606485155666037
+      },
+      "baseline": "latentgold",
+      "difference": 4.36265246150924e-10,
+      "measure": "absolute",
+      "tolerance": 0.000100001121993013,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "variance: profile 1 lectures",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.844692226198209,
+        "latents": 0.844692244409057
+      },
+      "baseline": "latentgold",
+      "difference": 1.82108476076692e-08,
+      "measure": "absolute",
+      "tolerance": 0.000100000864347666,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "variance: profile 2 lectures",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.538373309072521,
+        "latents": 0.538373319576309
+      },
+      "baseline": "latentgold",
+      "difference": 1.05037885056447e-08,
+      "measure": "absolute",
+      "tolerance": 0.000100001388516592,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "mean: profile 1 forum_read",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.619824975846972,
+        "latents": 0.619824974551799
+      },
+      "baseline": "latentgold",
+      "difference": 1.29517307989602e-09,
+      "measure": "absolute",
+      "tolerance": 0.000100000809785988,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "mean: profile 2 forum_read",
+      "kind": "estimate",
+      "values": {
+        "latentgold": -0.879213558795532,
+        "latents": -0.879213550389014
+      },
+      "baseline": "latentgold",
+      "difference": 8.40651759315136e-09,
+      "measure": "absolute",
+      "tolerance": 0.000100001310528378,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "variance: profile 1 forum_read",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.48147420169591,
+        "latents": 0.481474211139507
+      },
+      "baseline": "latentgold",
+      "difference": 9.44359701549047e-09,
+      "measure": "absolute",
+      "tolerance": 0.000100000989737597,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "variance: profile 2 forum_read",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.363113096629804,
+        "latents": 0.363113099944467
+      },
+      "baseline": "latentgold",
+      "difference": 3.31466309955175e-09,
+      "measure": "absolute",
+      "tolerance": 0.000100001877484229,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "mean: profile 1 forum_post",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.530488932322153,
+        "latents": 0.530488927368757
+      },
+      "baseline": "latentgold",
+      "difference": 4.95339580464105e-09,
+      "measure": "absolute",
+      "tolerance": 0.000100000787469912,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "mean: profile 2 forum_post",
+      "kind": "estimate",
+      "values": {
+        "latentgold": -0.752688160767101,
+        "latents": -0.752688154240309
+      },
+      "baseline": "latentgold",
+      "difference": 6.52679255086497e-09,
+      "measure": "absolute",
+      "tolerance": 0.000100001198968829,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "variance: profile 1 forum_post",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.688789451614059,
+        "latents": 0.688789449419791
+      },
+      "baseline": "latentgold",
+      "difference": 2.19426798953037e-09,
+      "measure": "absolute",
+      "tolerance": 0.000100000888066806,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "variance: profile 2 forum_post",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.421162486844994,
+        "latents": 0.421162487337107
+      },
+      "baseline": "latentgold",
+      "difference": 4.92113350070156e-10,
+      "measure": "absolute",
+      "tolerance": 0.000100001643138219,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "mean: profile 1 attendance",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.649049924075331,
+        "latents": 0.64904991344414
+      },
+      "baseline": "latentgold",
+      "difference": 1.06311907055456e-08,
+      "measure": "absolute",
+      "tolerance": 0.000100000805541822,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "mean: profile 2 attendance",
+      "kind": "estimate",
+      "values": {
+        "latentgold": -0.920659750473786,
+        "latents": -0.920659751199629
+      },
+      "baseline": "latentgold",
+      "difference": 7.25843718463182e-10,
+      "measure": "absolute",
+      "tolerance": 0.000100001358365414,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "variance: profile 1 attendance",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.384126240178368,
+        "latents": 0.384126242783009
+      },
+      "baseline": "latentgold",
+      "difference": 2.60464139145711e-09,
+      "measure": "absolute",
+      "tolerance": 0.000100001050923354,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "variance: profile 2 attendance",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.37362944450542,
+        "latents": 0.373629438829686
+      },
+      "baseline": "latentgold",
+      "difference": 5.67573449350434e-09,
+      "measure": "absolute",
+      "tolerance": 0.000100001951588327,
+      "status": "agree",
+      "note": "Recomputed from Latent GOLD's posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "posteriors: groups (largest difference)",
+      "kind": "posterior",
+      "values": {
+        "latentgold": 0,
+        "latents": 4.92795817347291e-07
+      },
+      "baseline": "latentgold",
+      "difference": 4.92795817347291e-07,
+      "measure": "absolute",
+      "tolerance": 0.0001000005,
+      "status": "agree",
+      "note": "106 groups; Latent GOLD class order 1,2.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement.lst"
+        }
+      }
+    },
+    {
+      "quantity": "group class 1 proportion",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.325296674871801,
+        "latents": 0.325296679044124
+      },
+      "baseline": "latentgold",
+      "difference": 4.17232293159486e-09,
+      "measure": "absolute",
+      "tolerance": 0.0001000005,
+      "status": "agree",
+      "note": "Mean of Latent GOLD's group posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    },
+    {
+      "quantity": "group class 2 proportion",
+      "kind": "estimate",
+      "values": {
+        "latentgold": 0.674703339599318,
+        "latents": 0.674703320955876
+      },
+      "baseline": "latentgold",
+      "difference": 1.86434423454784e-08,
+      "measure": "absolute",
+      "tolerance": 0.0001000005,
+      "status": "agree",
+      "note": "Mean of Latent GOLD's group posteriors.",
+      "sources": {
+        "latentgold": {
+          "path": "latentgold/c12_course_engagement_posteriors.txt"
+        }
+      }
+    }
+  ],
+  "id": "latentgold/c12_course_engagement",
+  "comparison_source": {
+    "file": "equivalence/latentgold/comparison.csv",
+    "version": "1.3.2",
+    "recorded_at": "2026-11-14 13:52:11 UTC"
+  }
+}

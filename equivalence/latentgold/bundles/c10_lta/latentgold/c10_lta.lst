@@ -1,0 +1,238 @@
+c10.dat
+File name:	c10.dat	
+File size:	23715 bytes  480 records	
+File date:	2026-Sep-22 9:09:23 PM	
+Syntax:	c10_lta.lgs	
+		LL	BIC(LL)	AIC(LL)	AIC3(LL)	Npar	Max. BVR	Class.Err.	Entropy R²	
+c10_lta	2-State	-1531.7834	3116.2292	3085.5668	3096.5668	11	0.3303	.	.	
+c10_lta - LL = -1531.7834
+2-State Syntax Model	
+					
+Number of cases	120				
+Number of time points	480				
+Number of parameters (Npar)	11				
+Activated Constraints	0				
+Random Seed	20260922				
+Best Start Seed	193168				
+					
+Log-likelihood Statistics					
+Log-likelihood (LL)	-1531.7834				
+Log-prior	0.0000				
+Log-posterior	-1531.7834				
+BIC (based on LL)	3116.2292				
+AIC (based on LL)	3085.5668				
+AIC3 (based on LL)	3096.5668				
+CAIC (based on LL)	3127.2292				
+SABIC (based on LL)	3081.4524				
+					
+					
+Classification Statistics	State				
+Classification errors	0.0805				
+Reduction of errors (Lambda)	0.8383				
+Entropy R-squared	0.7134				
+Standard R-squared	0.7619				
+Classification log-likelihood	-1623.8430				
+Entropy	92.0596				
+CLC	3247.6859				
+AWE	3386.0107				
+ICL-BIC	3300.3483				
+					
+State  Classification Table	Modal				
+Latent	1	2	Total		
+1	219.7454	19.3824	239.1278		
+2	19.2546	221.6176	240.8722		
+Total	239.0000	241.0000	480.0000		
+					
+State  Classification Table	Proportional				
+Latent	1	2	Total		
+1	210.5565	28.5713	239.1278		
+2	28.5713	212.3010	240.8722		
+Total	239.1278	240.8722	480.0000		
+					
+Files					
+Infile	C:\lgkit\c10.dat	
+					
+Options					
+threads	10				
+algorithm					
+tolerance	1e-10				
+emtolerance	1e-08				
+emiterations	5000				
+nriterations	500				
+algorithm	NR				
+MstepNR	no				
+startvalues					
+seed	20260922				
+sets	100				
+tolerance	1e-05				
+iterations	250				
+bayes					
+categorical	0				
+variances	0				
+latent	0				
+poisson	0				
+quadrature					
+nodes	10				
+missing	excludeall				
+output					
+parameters	first				
+standard errors	standard				
+bivariate residuals	marginal				
+identification	no				
+validation LL	no				
+sample size BIC	     120				
+predictionstatistics	no				
+outfile					
+file name	c10_lta_posteriors.txt	
+classification	posterior				
+prediction	no				
+simulation	no				
+seed	0				
+individualcoefficients	no				
+logdensities	no				
+id	no				
+					
+Variable Detail					
+Latent					
+State	Nominal	Dynamic	2		
+ 					
+Case ID	g	120			
+Dependent					
+y1	Continuous				
+y2	Continuous				
+Syntax
+options
+   maxthreads=all;
+   algorithm
+      tolerance=1e-010 emtolerance=1e-008 emiterations=5000 nriterations=500;
+   startvalues
+      seed=20260922 sets=100 tolerance=1e-005 iterations=250;
+   bayes
+      categorical=0 variances=0 latent=0 poisson=0;
+   missing excludeall;
+   output
+      parameters=first standarderrors profile probmeans=posterior
+      bivariateresiduals estimatedvalues=model;
+   outfile 'c10_lta_posteriors.txt' classification keep id t;
+variables
+   caseid g;
+   dependent y1 continuous, y2 continuous;
+   latent
+      State nominal dynamic 2;
+equations
+   State[=0] <- 1;
+   State <- 1 | State[-1];
+   y1 <- 1 + State;
+   y2 <- 1 + State;
+   y1 | State;
+   y2 | State;
+Parameters
+Regression Parameters	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+State[=0](1)	<-	1			0.0000	.	.	.	0.2946	1	0.59				
+State[=0](2)	<-	1			0.1262	0.2325	0.5427	0.59							
+															
+State(1)	<-	1	|	State[-1](1)	0.0000	.	.	.	42.6471	2	5.5e-10	42.5849	1	6.8e-11	
+State(2)	<-	1	|	State[-1](1)	-1.0960	0.2216	-4.9459	7.6e-7							
+State(1)	<-	1	|	State[-1](2)	0.0000	.	.	.							
+State(2)	<-	1	|	State[-1](2)	0.9764	0.2167	4.5062	6.6e-6							
+															
+y1	<-	1			1.8742	0.0954	19.6355	7.7e-86	385.5523	1	7.7e-86				
+y1	<-	State(1)			0.0000	.	.	.	283.9648	1	1.0e-63				
+y1	<-	State(2)			-1.8821	0.1117	-16.8513	1.0e-63							
+															
+y2	<-	1			1.5282	0.0800	19.0984	2.6e-81	364.7475	1	2.6e-81				
+y2	<-	State(1)			0.0000	.	.	.	239.8739	1	4.2e-54				
+y2	<-	State(2)			-1.6826	0.1086	-15.4879	4.2e-54							
+	
+Variances	
+term	coef	s.e.	z-value	p-value	Wald(0)	df	p-value	Wald(=)	df	p-value	
+y1			|	State(1)	1.0254	0.1277	8.0307	9.7e-16	125.0649	2	7.0e-28	0.2877	1	0.59	
+y1			|	State(2)	0.9376	0.1122	8.3570	6.4e-17							
+y2			|	State(1)	0.9116	0.1036	8.7980	1.4e-18	128.8267	2	1.1e-28	0.0045	1	0.95	
+y2			|	State(2)	0.9017	0.1136	7.9346	2.1e-15							
+Paired Comparisons
+Paired Comparisons	
+term	comparison	Wald	df	p-value	
+State[=0]	<-	1			State[=0]	1	2	0.2946	1	0.59	
+	
+State	<-	1	|	State[-1]	State[-1]	1	2	42.5849	1	6.8e-11	
+					State	1	2	42.6471	2	5.5e-10	
+	
+y1	<-	 State			State	1	2	283.9648	1	1.0e-63	
+	
+y2	<-	 State			State	1	2	239.8739	1	4.2e-54	
+Variances	
+y1			|	State	State	1	2	0.2877	1	0.59	
+y2			|	State	State	1	2	0.0045	1	0.95	
+Profile
+ 	State	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	Overall	s.e.	
+Size	0.4978	0.0428	0.5022	0.0428	 	 	
+y1	 	
+Mean	1.8742	0.0954	-0.0080	0.0838	0.9290	0.0752	
+y2	 	
+Mean	1.5282	0.0800	-0.1545	0.0889	0.6832	0.0691	
+	
+ 	State[-1]	 	 	 	 	 	
+ 	1	s.e.	2	s.e.	 	 	
+State	 	
+1	0.7495	0.0416	0.2736	0.0431	 	 	
+2	0.2505	0.0416	0.7264	0.0431	 	 	
+Profile-Longitudinal
+ 	 	State	 	 	 	
+ 	Time	1	2	Overall	Observed	
+y1	 	
+Mean	1	1.8742	-0.0080	0.8738	0.9085	
+ 	2	1.8742	-0.0080	0.9266	1.0331	
+ 	3	1.8742	-0.0080	0.9518	0.8058	
+ 	4	1.8742	-0.0080	0.9637	0.9713	
+y2	 	
+Mean	1	1.5282	-0.1545	0.6338	0.5900	
+ 	2	1.5282	-0.1545	0.6811	0.7485	
+ 	3	1.5282	-0.1545	0.7036	0.6807	
+ 	4	1.5282	-0.1545	0.7143	0.7159	
+ProbMeans-Posterior
+	State		
+	1	2	
+Overall	0.4982	0.5018	
+Dependent			
+y1			
+-2.519 - -0.264	0.0367	0.9633	
+-0.259 - 0.443	0.1990	0.8010	
+0.498 - 1.339	0.4677	0.5323	
+1.339 - 2.157	0.8216	0.1784	
+2.161 - 5.078	0.9659	0.0341	
+y2			
+-2.446 - -0.449	0.0497	0.9503	
+-0.433 - 0.265	0.1974	0.8026	
+0.271 - 1.069	0.5174	0.4826	
+1.083 - 1.789	0.7830	0.2170	
+1.793 - 3.968	0.9434	0.0566	
+Bivariate Residuals
+Dependent	y1	y2	
+y1	.		
+y2	0.3303	.	
+Longitudinal	y1	y2	
+Time	0.7265	0.1732	
+Lag1	0.1203	0.1574	
+Lag2	0.0510	0.3050	
+EstimatedValues-Model
+ 	State[=0]	
+ 	1	s.e.	2	s.e.	
+ 	0.4685	0.0579	0.5315	0.0579	
+	
+ 	State	
+State[-1]	1	s.e.	2	s.e.	
+1	0.7495	0.0416	0.2505	0.0416	
+2	0.2736	0.0431	0.7264	0.0431	
+	
+ 	y1	
+State	Mean	s.e.	 	 	
+1	1.8742	0.0954	 	 	
+2	-0.0080	0.0838	 	 	
+	
+ 	y2	
+State	Mean	s.e.	 	 	
+1	1.5282	0.0800	 	 	
+2	-0.1545	0.0889	 	 	
