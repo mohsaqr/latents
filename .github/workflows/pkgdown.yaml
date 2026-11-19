@@ -26,6 +26,22 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Fetch the equivalence material (private repository mohsaqr/equivalence)
+        uses: actions/checkout@v5
+        with:
+          repository: mohsaqr/equivalence
+          ssh-key: ${{ secrets.EQUIVALENCE_DEPLOY_KEY }}
+          path: .equivalence-repo
+          sparse-checkout: latents/local/equivalence
+
+      # The folder must really be at ./equivalence: its tests reach the package with `..`.
+      - name: Put it in place
+        run: |
+          mv .equivalence-repo/latents/local/equivalence equivalence
+          rm -rf .equivalence-repo
+          test -f equivalence/run.R
+        shell: bash
+
       - uses: r-lib/actions/setup-pandoc@v2
 
       - uses: r-lib/actions/setup-r@v2

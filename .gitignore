@@ -60,3 +60,8 @@ validation/matrix-refresh-2026-10-28/*.rds
 # Internal planning/review notes: local only, never published by pkgdown
 Astra.md
 ROADMAP.md
+
+# The verification material lives in the private repository mohsaqr/equivalence (latents/local/equivalence);
+# it is copied here for a run (sh ../equivalence/restore.sh latents .) and is not committed.
+/equivalence/
+.equivalence-repo/

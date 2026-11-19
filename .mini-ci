@@ -9,6 +9,10 @@ node system
 job test   Rscript equivalence/cvs/test-local.R
 job check  Rscript -e 'r <- rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "never"); print(r); if (r$status != 0 || length(r$errors) || length(r$warnings)) quit(status = 1)'
 
+# equivalence/ is not committed here: it is copied from the private repository mohsaqr/equivalence
+# (sh ../equivalence/restore.sh latents .) and sent with the run.
+include equivalence
+
 # simulab draws the Monte Carlo datasets of the equivalence suite; it is a local package.
 sibling ../simulab
 
@@ -51,3 +55,10 @@ fetch tmp/kits
 # The local copy of each report comes back too.
 report cvs
 fetch tmp/cvs
+
+# Prova Verify: capture of the equivalence tests (both folders), run as
+#   mini-ci -- Rscript ../equivalence/latents/import-tests.R capture [file-regex]
+include ../equivalence/latents/import-tests.R
+include ../equivalence/import-tests-common.R
+include ../prova/reporters/verify-capture.R
+fetch .ci/verify-capture

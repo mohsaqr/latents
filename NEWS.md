@@ -1,3 +1,13 @@
+# latents 1.3.7
+
+* No change to the package. The verification material (`equivalence/`: the
+  comparison kits, the retained Latent GOLD, Mplus, SAS and Stata output, the
+  harness and its test files) moves to the repository `mohsaqr/equivalence`,
+  which holds the verification material of all the packages. `equivalence/` here
+  is no longer committed: it is copied from that repository for a run
+  (`sh ../equivalence/restore.sh latents .`), and the ci jobs and the
+  `equivalence` and `pkgdown` workflows fetch it.
+
 # latents 1.3.6
 
 * No change to the package. The verification material gains comparison bundles

@@ -44,3 +44,4 @@
 ^winbox-.*$
 ^\.mini-ci$
 ^\.ci$
+^\.equivalence-repo$
