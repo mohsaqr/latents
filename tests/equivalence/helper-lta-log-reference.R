@@ -1,4 +1,21 @@
 # Independent pre-scaling log-space implementation, retained only for tests.
+# Base R only: this file is reference code and does not call latents.
+
+# Row-wise log-sum-exp of a numeric matrix: one value per row, -Inf for a row
+# whose entries are all -Inf. Subtracting the row maximum keeps exp() finite.
+.lta_reference_log_sum_exp <- function(values) {
+  stopifnot("`values` must be a numeric matrix" = is.matrix(values) && is.numeric(values))
+  top <- if (ncol(values) == 0L) rep(-Inf, nrow(values)) else
+    do.call(pmax, lapply(seq_len(ncol(values)), function(column) values[, column]))
+  finite <- is.finite(top)
+  out <- rep(-Inf, nrow(values))
+  if (any(finite)) {
+    out[finite] <- top[finite] +
+      log(rowSums(exp(values[finite, , drop = FALSE] - top[finite])))
+  }
+  out
+}
+
 .lta_log_reference <- function(emission, layout, log_initial, log_transition) {
   n_groups <- nrow(layout$slot)
   n_profiles <- ncol(log_initial)
@@ -10,12 +27,12 @@
   }
   forward_step <- function(state, transition) {
     matrix(vapply(seq_len(n_profiles), function(to) {
-      .latents_log_sum_exp(state + transition[, , to])
+      .lta_reference_log_sum_exp(state + transition[, , to])
     }, numeric(n_groups)), n_groups, n_profiles)
   }
   backward_step <- function(state, transition) {
     matrix(vapply(seq_len(n_profiles), function(from) {
-      .latents_log_sum_exp(state + matrix(transition[, from, ], n_groups, n_profiles))
+      .lta_reference_log_sum_exp(state + matrix(transition[, from, ], n_groups, n_profiles))
     }, numeric(n_groups)), n_groups, n_profiles)
   }
   alpha <- Reduce(function(previous, t) {
@@ -29,14 +46,14 @@
   if (!is.list(alpha)) alpha <- list(alpha)
   if (!is.list(beta)) beta <- list(beta)
   list(alpha = alpha, beta = beta,
-       log_scaled = .latents_log_sum_exp(alpha[[layout$n_occasions]]))
+       log_scaled = .lta_reference_log_sum_exp(alpha[[layout$n_occasions]]))
 }
 
 
 .lta_moments_reference <- function(pass, emission, layout, transition,
                                        weights, n_observations) {
   stopifnot(
-    "`pass` must be the list `.multilpa_forward_backward()` returns" =
+    "`pass` must be a forward-backward pass: alpha, beta and log_scaled" =
       is.list(pass) && all(c("alpha", "beta", "log_scaled") %in% names(pass)),
     "`weights` must give one group-class posterior per group" =
       is.numeric(weights) && length(weights) == nrow(layout$slot),

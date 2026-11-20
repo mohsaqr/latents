@@ -1,5 +1,7 @@
 # Comparisons with independent references moved from tests/testthat/test-transitions-numerics.R,
 # so that they run in CI's equivalence job rather than under R CMD check.
+# Package side: the expected transition counts get_results(fit, "transitions")
+# reports (the same numbers as fit$transition_counts).
 
 # Expected transition counts from first principles: every state path of every
 # group, weighted by its own complete-data likelihood. Shares only the model
@@ -60,19 +62,30 @@ test_that("expected counts match explicit path enumeration", {
   cases <- list(list(profiles = 2L, types = 1L),
                 list(profiles = 3L, types = 1L),
                 list(profiles = 2L, types = 2L))
-  deviations <- vapply(cases, function(case) {
+  # One row per case, group class and move: the expected counts get_results()
+  # reports, and the enumerated ones.
+  tables <- lapply(cases, function(case) {
     fit <- quietly(lta(
       data, c("y1", "y2"), "g", n_profiles = case$profiles, time = "t",
       n_group_classes = case$types, n_starts = 1, seed = 4, max_iter = 25))
     reference <- .enumerate_transition_counts(continuous, fit$group_index,
                                               data$t, fit)
-    recursion <- lapply(seq_len(case$types), function(type) {
-      matrix(fit$transition_counts[, , type], case$profiles, case$profiles)
-    })
-    max(abs(unlist(recursion, use.names = FALSE) -
-              unlist(reference, use.names = FALSE)))
-  }, numeric(1))
+    setting <- sprintf("%d profiles, %d group classes", case$profiles, case$types)
+    enumerated <- do.call(rbind, lapply(seq_len(case$types), function(type) {
+      counts <- reference[[type]]
+      data.frame(setting = setting, group_class = type, from = as.vector(row(counts)),
+                 to = as.vector(col(counts)), expected_count = as.vector(counts))
+    }))
+    list(actual = cbind(setting = setting, get_results(fit, "transitions")),
+         expected = enumerated)
+  })
   # Measured at 1.8e-15 on counts whose largest entry is about twenty, so the
   # bound below is the observed deviation with an order of magnitude of room.
-  expect_lt(max(deviations), 2e-14)
+  # Absolute: many counts are of order 1e-12 (moves the data barely support).
+  expect_reference(do.call(rbind, lapply(tables, `[[`, "actual")),
+                   do.call(rbind, lapply(tables, `[[`, "expected")),
+                   reference = "independent: expected counts enumerated over every state path, base R",
+                   covers = c("lta()", "get_results.multilpa_transitions()"),
+                   quantity = "expected transition counts", tolerance = 2e-14,
+                   measure = "absolute", key = c("setting", "group_class", "from", "to"))
 })

@@ -48,10 +48,12 @@ test_that("restricted cross-level pseudo likelihood ignores zero-weight groups (
   plain <- fit(sets$data)
   padded <- fit(sets$padded)
   expect_equal(padded$log_likelihood, plain$log_likelihood, tolerance = 1e-10)
-  # The reported likelihood is sum_j w_j log L_j at the reported estimates.
+  # The reported likelihood is sum_j w_j log L_j at the reported estimates,
+  # with the group weights normalised to the number of groups.
   data <- sets$data
   index <- match(data$g, unique(data$g))
-  weights <- .latents_sampling_weights(data, "w", index, 24L)
+  unit_weights <- data$w[!duplicated(data$g)]
+  weights <- unit_weights * length(unit_weights) / sum(unit_weights)
   x <- as.matrix(data[c("y1", "y2")])
   row_density <- vapply(1:2, function(k) {
     plain$profile_prevalences[k] *
@@ -68,5 +70,9 @@ test_that("restricted cross-level pseudo likelihood ignores zero-weight groups (
   }, numeric(24L))
   direct <- sum(weights * (log(rowSums(group_density)) +
                              as.vector(rowsum(log(rowSums(row_density)), index))))
-  expect_equal(plain$log_likelihood, direct, tolerance = 1e-10)
+  expect_reference(as.numeric(logLik(plain)), direct,
+                   reference = "independent: weighted restricted cross-level pseudo likelihood, stats::dnorm()",
+                   covers = c("multilpa()", "logLik.multilpa_cross_level()"),
+                   quantity = "weighted log likelihood, restricted cross-level",
+                   tolerance = 1e-10, measure = "relative")
 })

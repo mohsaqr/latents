@@ -40,9 +40,18 @@ test_that("conditional curves match a dense empirical Bayes computation", {
       as.vector(mean + z %*% effects)
     }), use.names = FALSE)
   }))
-  expect_equal(ours$fitted, dense, tolerance = 1e-8)
+  # Persons in id order, which is the row order of `new`: rows 1..n per class.
+  expect_reference(ours,
+                   data.frame(row = rep(seq_len(nrow(new)), 2L),
+                              class = rep(c("class_1", "class_2"), each = nrow(new)),
+                              fitted = dense),
+                   reference = "independent: dense empirical Bayes prediction, base R",
+                   covers = c("mixture_regression()", "predict.latents_growth_mixture()"),
+                   quantity = "class-conditional fitted values", tolerance = 1e-8,
+                   measure = "relative", key = c("row", "class"))
   # Each person's dense posterior under the membership prior.
-  dense_posterior <- t(vapply(split(new, new$id), function(person) {
+  persons <- split(new, new$id)
+  dense_posterior <- t(vapply(persons, function(person) {
     z <- cbind(1, person$time)
     prior <- exp(c(0, sum(params$gamma[, 2L] * c(1, person$age[1L]))))
     log_joint <- log(prior / sum(prior)) + vapply(seq_len(2L), function(k) {
@@ -56,7 +65,14 @@ test_that("conditional curves match a dense empirical Bayes computation", {
     }, numeric(1))
     exp(log_joint - max(log_joint)) / sum(exp(log_joint - max(log_joint)))
   }, numeric(2)))
-  posterior <- predict(fit, new, type = "posterior")
-  expect_equal(unname(as.matrix(posterior[c("posterior_class_1", "posterior_class_2")])),
-               unname(dense_posterior), tolerance = 1e-8)
+  # Absolute: a separated person's posterior runs down to 1e-7 and below,
+  # where a relative measure would judge the last bits of a near-zero number.
+  expect_reference(predict(fit, new, type = "posterior"),
+                   data.frame(id = as.integer(names(persons)),
+                              posterior_class_1 = dense_posterior[, 1L],
+                              posterior_class_2 = dense_posterior[, 2L]),
+                   reference = "independent: dense empirical Bayes prediction, base R",
+                   covers = c("mixture_regression()", "predict.latents_growth_mixture()"),
+                   quantity = "posterior class probabilities", tolerance = 1e-8,
+                   measure = "absolute", key = "id")
 })

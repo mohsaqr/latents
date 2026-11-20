@@ -50,36 +50,48 @@ ordinal_dense <- function(fit, data, design) {
 }
 
 test_that("one class is MASS::polr(method = \"logistic\")", {
-  skip_if_not_installed("MASS")
+  skip_without_reference("MASS")
   data <- ordinal_rows()
   data$o <- 0.3 * data$w
   fit <- mixture_regression(y ~ x + w + offset(o), data, n_classes = 1,
                             family = "ordinal", n_starts = 1, seed = 1)
   reference <- MASS::polr(y ~ x + w + offset(o), data = data, method = "logistic",
                           Hess = TRUE, control = list(reltol = 1e-14, maxit = 1000))
-  expect_equal(fit$log_likelihood, as.numeric(stats::logLik(reference)),
-               tolerance = 1e-8)
-  expect_equal(unname(fit$params$thresholds[, 1L]), unname(reference$zeta),
-               tolerance = 1e-5)
-  expect_equal(unname(fit$params$beta[, 1L]), unname(stats::coef(reference)),
-               tolerance = 1e-5)
-  # Both are the observed information at the same estimate, polr's by
-  # optimHess() on its analytic gradient and ours by differencing the
-  # analytic scores, so the errors agree to differencing error.
-  coefficients <- get_results(fit, "coefficients")
+  expect_reference(as.numeric(logLik(fit)), as.numeric(stats::logLik(reference)),
+                   reference = "MASS",
+                   covers = c("mixture_regression()", "logLik.latents_mixture_regression()"),
+                   quantity = "log likelihood, one class", tolerance = 1e-8, measure = "relative")
+  coefficients <- as.data.frame(get_results(fit, "coefficients"))
   expect_identical(coefficients$term,
                    c("threshold:never|rarely", "threshold:rarely|often",
                      "threshold:often|always", "x", "w"))
-  expect_equal(coefficients$std_error,
-               unname(sqrt(diag(stats::vcov(reference)))[
-                 c(names(reference$zeta), names(stats::coef(reference)))]),
-               tolerance = 1e-3)
+  # polr's thresholds and coefficients under the term labels of get_results().
+  terms <- c(paste0("threshold:", names(reference$zeta)), names(stats::coef(reference)))
+  # 1e-5, the original tolerance: polr's BFGS stops at its own reltol.
+  expect_reference(coefficients,
+                   data.frame(term = terms,
+                              estimate = unname(c(reference$zeta, stats::coef(reference)))),
+                   reference = "MASS",
+                   covers = c("mixture_regression()", "get_results.latents_mixture_regression()"),
+                   quantity = "thresholds and coefficients, one class", tolerance = 1e-5,
+                   measure = "relative", key = "term")
+  # Both are the observed information at the same estimate, polr's by
+  # optimHess() on its analytic gradient and ours by differencing the
+  # analytic scores, so the errors agree to differencing error (1e-3).
+  expect_reference(coefficients,
+                   data.frame(term = terms,
+                              std_error = unname(sqrt(diag(stats::vcov(reference)))[
+                                c(names(reference$zeta), names(stats::coef(reference)))])),
+                   reference = "MASS",
+                   covers = c("mixture_regression()", "get_results.latents_mixture_regression()"),
+                   quantity = "standard errors, one class", tolerance = 1e-3,
+                   measure = "relative", key = "term")
 })
 
 test_that("the analytic scores are the gradient of the log likelihood", {
   skip_on_cran()
-  skip_if_not_installed("numDeriv")
-  check <- function(fit) {
+  skip_without_reference("numDeriv")
+  check <- function(fit, setting) {
     theta <- latents:::.mixture_pack(fit$spec, fit$params) + 0.03
     value <- function(v) {
       latents:::.mixture_expectation(
@@ -88,15 +100,23 @@ test_that("the analytic scores are the gradient of the log likelihood", {
     params <- latents:::.mixture_unpack(fit$spec, theta, fit$params)
     scores <- latents:::.mixture_unit_scores(
       fit$spec, params, latents:::.mixture_expectation(fit$spec, params))
-    expect_equal(unname(colSums(scores)), numDeriv::grad(value, theta), tolerance = 1e-6)
+    # Scaled: numDeriv's error is absolute near zero, so a relative measure
+    # would judge the rounding noise of a near-zero entry. 1e-6, the original.
+    expect_reference(unname(colSums(scores)), numDeriv::grad(value, theta),
+                     reference = "numDeriv", covers = "mixture_regression()",
+                     quantity = sprintf("score at a point off the optimum, %s", setting),
+                     tolerance = 1e-6, measure = "scaled",
+                     note = "Package side: the internal analytic scores (.mixture_unit_scores) behind vcov(); reference: numDeriv::grad() of the package's likelihood.")
     # The packed coordinates round-trip to ordered thresholds.
     expect_equal(latents:::.mixture_pack(fit$spec, params), theta, tolerance = 1e-12)
   }
   check(mixture_regression(y ~ x + w, ordinal_rows(), n_classes = 2, family = "ordinal",
-                           common = ~ w, n_starts = 2, seed = 1))
+                           common = ~ w, n_starts = 2, seed = 1),
+        "rows, a common slope")
   check(mixture_regression(y ~ wave, ordinal_persons(), n_classes = 2,
                            family = "ordinal", id = "person", class_level = "group",
-                           n_starts = 2, seed = 1))
+                           n_starts = 2, seed = 1),
+        "classes of persons")
 })
 
 
@@ -106,7 +126,12 @@ test_that("the likelihood is the dense mixture of plogis differences", {
   fit <- mixture_regression(y ~ x + w, data, n_classes = 2, family = "ordinal",
                             common = ~ w, n_starts = 3, seed = 1)
   design <- cbind(x = data$x, w = data$w)
-  expect_equal(fit$log_likelihood, ordinal_dense(fit, data, design), tolerance = 1e-10)
+  # The same sum of logs computed twice: only the order of the additions differs.
+  expect_reference(as.numeric(logLik(fit)), ordinal_dense(fit, data, design),
+                   reference = "independent: ordinal mixture likelihood from plogis() differences, base R",
+                   covers = c("mixture_regression()", "logLik.latents_mixture_regression()"),
+                   quantity = "log likelihood, two classes", tolerance = 1e-10,
+                   measure = "relative")
   expect_identical(fit$n_parameters, length(coef(fit)))
   expect_identical(fit$n_parameters, 10L)
 })

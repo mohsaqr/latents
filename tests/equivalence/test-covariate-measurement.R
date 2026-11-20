@@ -13,9 +13,16 @@
   frame
 }
 
+# Log multinomial probabilities, the last category the reference: base R.
+.cov_log_softmax <- function(design, coefficients) {
+  scores <- cbind(design %*% coefficients, 0)
+  largest <- apply(scores, 1L, max)
+  scores - largest - log(rowSums(exp(scores - largest)))
+}
+
 # The two-level covariate likelihood, from the definition.
 .cov_independent_likelihood <- function(fit, data) {
-  continuous <- .multilpa_continuous_names(fit)
+  continuous <- fit$continuous %||% fit$vars
   x <- if (length(continuous)) as.matrix(data[continuous]) else
     matrix(0, nrow(data), 0L)
   density <- vapply(seq_len(fit$n_profiles), function(profile) {
@@ -37,12 +44,12 @@
       }, numeric(nrow(data))))
     gaussian + categorical
   }, numeric(nrow(data)))
-  group_prior <- exp(.multilpa_log_softmax(fit$group_design, fit$group_coefficients))
+  group_prior <- exp(.cov_log_softmax(fit$group_design, fit$group_coefficients))
   sum(vapply(seq_len(fit$n_groups), function(group) {
     rows <- which(fit$group_index == group)
     log(sum(vapply(seq_len(fit$n_group_classes), function(class) {
-      prior <- exp(.multilpa_log_softmax(fit$profile_design[[class]],
-                                         fit$profile_coefficients))
+      prior <- exp(.cov_log_softmax(fit$profile_design[[class]],
+                                    fit$profile_coefficients))
       group_prior[group, class] *
         exp(sum(log(rowSums(exp(density[rows, , drop = FALSE]) *
                               prior[rows, , drop = FALSE]))))
@@ -62,14 +69,21 @@ test_that("every measurement model reproduces the likelihood written from its de
          extra = list(categorical = c("q", "r"), covariance_model = "full")),
     list(label = "categorical only", vars = c("q", "r"),
          extra = list(categorical = c("q", "r"))))
-  invisible(lapply(cases, function(case) {
-    fit <- quietly(do.call(multilpa, c(list(
+  fits <- lapply(cases, function(case) {
+    quietly(do.call(multilpa, c(list(
       data, case$vars, "g", 2L, 2L, profile_covariates = "z",
       n_starts = 1, seed = 3, max_iter = 50), case$extra)))
-    expect_equal(fit$log_likelihood, .cov_independent_likelihood(fit, data),
-                 tolerance = 1e-10, label = case$label)
-    expect_false(is.unsorted(fit$log_likelihood_history))
-  }))
+  })
+  labels <- vapply(cases, \(case) case$label, character(1))
+  names(fits) <- labels
+  expect_false(any(vapply(fits, \(fit) is.unsorted(fit$log_likelihood_history), logical(1))))
+  # The same sum of logs computed twice; only the order of the additions differs.
+  expect_reference(vapply(fits, \(fit) as.numeric(logLik(fit)), numeric(1)),
+                   vapply(fits, \(fit) .cov_independent_likelihood(fit, data), numeric(1)),
+                   reference = "independent: two-level covariate mixture likelihood, base R",
+                   covers = c("multilpa()", "logLik.multilpa_covariates()"),
+                   quantity = "log likelihood by measurement model", tolerance = 1e-10,
+                   measure = "relative")
 })
 
 test_that("full-covariance standard errors match an independent information matrix", {
@@ -77,21 +91,26 @@ test_that("full-covariance standard errors match an independent information matr
   fit <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L,
     profile_covariates = "z", n_starts = 1, seed = 1, covariance_model = "full",
     max_iter = 2000, tol = 1e-11))
-  theta <- .multilpa_cov_encode(fit)
+  theta <- latents:::.multilpa_cov_encode(fit)
   x <- sweep(as.matrix(data[c("y1", "y2")]), 2L, fit$center, "-")
   negative <- function(values) {
-    pieces <- .multilpa_cov_decode(values, fit)
-    -.multilpa_cov_expectation(x, fit$group_index, pieces$parameters,
-                               fit$profile_design, fit$group_design,
-                               pieces$beta, pieces$gamma)$log_likelihood
+    pieces <- latents:::.multilpa_cov_decode(values, fit)
+    -latents:::.multilpa_cov_expectation(x, fit$group_index, pieces$parameters,
+                                         fit$profile_design, fit$group_design,
+                                         pieces$beta, pieces$gamma)$log_likelihood
   }
   independent <- solve(stats::optimHess(theta, negative))
   # `theta` is the estimation-scale encoding, so the comparison must ask for
   # that scale. `vcov()` now defaults to natural units, agreeing with
   # `confint()` and `parameter_inference()` on the same fit.
   package <- vcov(fit, data, scale = "unconstrained")
-  expect_equal(sqrt(diag(package)), sqrt(diag(independent)),
-               tolerance = 1e-5, ignore_attr = TRUE)
+  # 1e-5 relative, the original tolerance: optimHess() without a gradient
+  # takes second finite differences of the likelihood.
+  expect_reference(sqrt(diag(package)), unname(sqrt(diag(independent))), reference = "stats",
+                   covers = c("multilpa()", "vcov.multilpa_covariates()"),
+                   quantity = "standard errors, full covariance, unconstrained scale",
+                   tolerance = 1e-5, measure = "relative",
+                   note = "Reference: the inverse of stats::optimHess() of the package's internal covariate likelihood (.multilpa_cov_expectation) at the estimate.")
   expect_true(isTRUE(all.equal(package, t(package))))
   expect_gt(min(eigen(package, symmetric = TRUE, only.values = TRUE)$values), 0)
 })

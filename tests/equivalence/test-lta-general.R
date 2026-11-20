@@ -3,8 +3,14 @@
 # second order, covariance structures. References: an exact sum over every
 # profile path (independent of the forward-backward code), numerical
 # derivatives, external fits (depmixS4, LMest, Mplus) bundled as fixtures.
+# The path sums build each group's initial and transition probabilities from
+# the fitted coefficients with the package's internal link functions
+# (.lta_log_initial, .lta_log_transition); the sum over paths, the densities
+# and the mixing are written here.
 
 lta_references <- readRDS(test_path("fixtures", "lta-references.rds"))
+
+lta_path_reference <- "independent: exact sum over every profile path, base R"
 
 # Small two-profile panel with a time-varying covariate and a group-level one.
 lta_small <- local({
@@ -34,15 +40,15 @@ lta_brute_force <- function(fit, data) {
   n_states <- fit$n_profiles
   occasions <- max(data$time)
   paths <- as.matrix(expand.grid(rep(list(seq_len(n_states)), occasions)))
-  parameters <- .lta_parameters(fit)
+  parameters <- latents:::.lta_parameters(fit)
   sum(vapply(split(data, data$id), function(rows) {
     rows <- rows[order(rows$time), ]
     j <- match(rows$id[1L], fit$group_ids)
-    initial <- exp(.lta_log_initial(fit$designs$initial[j, , drop = FALSE],
-                                    matrix(parameters$initial[, , 1L],
-                                           ncol(fit$designs$initial))))
+    initial <- exp(latents:::.lta_log_initial(fit$designs$initial[j, , drop = FALSE],
+                                              matrix(parameters$initial[, , 1L],
+                                                     ncol(fit$designs$initial))))
     move <- lapply(seq_len(occasions)[-1L], function(t) {
-      exp(.lta_log_transition(fit$designs$transition[[t - 1L]][j, , drop = FALSE],
+      exp(latents:::.lta_log_transition(fit$designs$transition[[t - 1L]][j, , drop = FALSE],
                               array(parameters$transition[, , , 1L],
                                     dim(parameters$transition)[1:3])))[1L, , ]
     })
@@ -59,9 +65,26 @@ lta_brute_force <- function(fit, data) {
   }, numeric(1)))
 }
 
+# The package's analytic scores (the internal .lta_group_scores behind the
+# standard errors of lta()) against numDeriv::grad() of the package's
+# likelihood at `theta`. The bound is the original test's: an absolute
+# difference of at most 1e-5 (1 + the largest |numerical gradient|), loose
+# because the Richardson differences of a likelihood of this size carry an
+# error far above machine precision.
+lta_check_scores <- function(fit, theta, setting) {
+  analytic <- colSums(latents:::.lta_group_scores(theta, fit))
+  numeric_gradient <- numDeriv::grad(\(v) latents:::.lta_expectation(
+    fit$x, fit$codes, fit$layout, fit$designs, latents:::.lta_unpack(v, fit),
+    fit$occasion_of_row)$log_likelihood, theta)
+  expect_reference(analytic, numeric_gradient, reference = "numDeriv", covers = "lta()",
+                   quantity = sprintf("score at a perturbed point, %s", setting),
+                   tolerance = 1e-5 * (1 + max(abs(numeric_gradient))), measure = "absolute",
+                   note = "Package side: the internal analytic scores (.lta_group_scores) behind vcov() of lta(); reference: numDeriv::grad() of the package's likelihood (.lta_expectation).")
+}
+
 test_that("analytic scores equal numerical derivatives in every extension", {
   skip_on_cran()
-  skip_if_not_installed("numDeriv")
+  skip_without_reference("numDeriv")
   fits <- list(
     # Two group classes on 60 groups: a class can have a move that never
     # occurs. The scores are checked at a perturbed point regardless.
@@ -74,15 +97,16 @@ test_that("analytic scores equal numerical derivatives in every extension", {
                            n_starts = 2, seed = 1, max_iter = 20), "latents_boundary"),
     second = lta(lta_small, "y", "id", n_profiles = 2, time = "time", order = 2,
                  n_starts = 2, seed = 1, max_iter = 20))
-  lapply(fits, \(fit) {
+  # Each point is drawn from the same seed, as in the original test.
+  perturbed <- function(fit) {
     set.seed(2)
-    theta <- coef(fit) + stats::rnorm(length(coef(fit)), 0, 0.05)
-    analytic <- colSums(.lta_group_scores(theta, fit))
-    numeric_gradient <- numDeriv::grad(\(v) .lta_expectation(
-      fit$x, fit$codes, fit$layout, fit$designs, .lta_unpack(v, fit),
-      fit$occasion_of_row)$log_likelihood, theta)
-    expect_lt(max(abs(analytic - numeric_gradient)), 1e-5 * (1 + max(abs(numeric_gradient))))
-  })
+    coef(fit) + stats::rnorm(length(coef(fit)), 0, 0.05)
+  }
+  lta_check_scores(fits$covariates, perturbed(fits$covariates),
+                   "two group classes, covariate transitions and initial distribution")
+  lta_check_scores(fits$occasion, perturbed(fits$occasion),
+                   "occasion-varying transitions and measurement")
+  lta_check_scores(fits$second, perturbed(fits$second), "second-order transitions")
 })
 
 test_that("occasion-specific measurement agrees with Mplus (bundled fixture)", {
@@ -97,9 +121,18 @@ test_that("occasion-specific measurement agrees with Mplus (bundled fixture)", {
   fit <- lta(long, paste0("u", 1:3), "person", n_profiles = 2, time = "occasion",
              categorical = paste0("u", 1:3), measurement = "occasion", n_starts = 5,
              seed = 1, tol = 1e-10)
+  mplus_note <- paste("Read from tests/equivalence/fixtures/lta-references.rds,",
+                      "element mplus_measurement:", ref$source)
   # Mplus prints the likelihood to three decimals.
-  expect_lt(abs(fit$log_likelihood - ref$log_likelihood), 5e-3)
-  expect_identical(fit$n_parameters, ref$n_parameters)
+  expect_reference(as.numeric(logLik(fit)), ref$log_likelihood, reference = "Mplus",
+                   covers = c("lta()", "logLik.multilpa_lta()"),
+                   quantity = "log likelihood, occasion-specific binary measurement",
+                   tolerance = 5e-3, measure = "absolute", note = mplus_note)
+  # A count of free parameters: equal or not.
+  expect_reference(attr(logLik(fit), "df"), ref$n_parameters, reference = "Mplus",
+                   covers = c("lta()", "logLik.multilpa_lta()"),
+                   quantity = "number of parameters, occasion-specific binary measurement",
+                   tolerance = 0, measure = "absolute", note = mplus_note)
 })
 
 test_that("missing indicators (FIML) in the extended model match the exact path sum", {
@@ -112,15 +145,15 @@ test_that("missing indicators (FIML) in the extended model match the exact path 
   fit <- lta(data, "y", "id", n_profiles = 2, time = "time",
              transition_covariates = "z", initial_covariates = "w", missing = "fiml",
              n_starts = 3, seed = 1, tol = 1e-10)
-  p <- .lta_parameters(fit)
+  p <- latents:::.lta_parameters(fit)
   m <- fit$measurement[[1L]]
   paths <- as.matrix(expand.grid(rep(list(1:2), 4L)))
   exact <- sum(vapply(split(data, data$id), \(rows) {
     rows <- rows[order(rows$time), ]
     j <- match(rows$id[1L], fit$group_ids)
-    initial <- exp(.lta_log_initial(fit$designs$initial[j, , drop = FALSE],
-                                    matrix(p$initial[, , 1L], ncol(fit$designs$initial))))
-    moves <- lapply(2:4, \(t) exp(.lta_log_transition(
+    initial <- exp(latents:::.lta_log_initial(fit$designs$initial[j, , drop = FALSE],
+                                              matrix(p$initial[, , 1L], ncol(fit$designs$initial))))
+    moves <- lapply(2:4, \(t) exp(latents:::.lta_log_transition(
       fit$designs$transition[[t - 1L]][j, , drop = FALSE],
       array(p$transition[, , , 1L], dim(p$transition)[1:3])))[1L, , ])
     observed <- !is.na(rows$y)
@@ -130,14 +163,12 @@ test_that("missing indicators (FIML) in the extended model match the exact path 
                           sqrt(m$variances[s[observed], 1L])))
     })))
   }, numeric(1)))
-  expect_equal(fit$log_likelihood, exact, tolerance = 1e-9)
-  skip_if_not_installed("numDeriv")
-  theta <- coef(fit) + 0.05
-  analytic <- colSums(.lta_group_scores(theta, fit))
-  numeric_gradient <- numDeriv::grad(\(v) .lta_expectation(
-    fit$x, fit$codes, fit$layout, fit$designs, .lta_unpack(v, fit),
-    fit$occasion_of_row)$log_likelihood, theta)
-  expect_lt(max(abs(analytic - numeric_gradient)), 1e-5 * (1 + max(abs(numeric_gradient))))
+  expect_reference(as.numeric(logLik(fit)), exact, reference = lta_path_reference,
+                   covers = c("lta()", "logLik.multilpa_lta()"),
+                   quantity = "log likelihood, missing indicators (FIML) with covariates",
+                   tolerance = 1e-9, measure = "relative")
+  skip_without_reference("numDeriv")
+  lta_check_scores(fit, coef(fit) + 0.05, "missing indicators (FIML) with covariates")
 })
 
 
@@ -147,7 +178,10 @@ test_that("covariate transitions and initial distribution match the exact path s
              transition_covariates = "z", initial_covariates = "w",
              n_starts = 3, seed = 1, tol = 1e-10)
   expect_true(fit$converged)
-  expect_equal(fit$log_likelihood, lta_brute_force(fit, lta_small), tolerance = 1e-9)
+  expect_reference(as.numeric(logLik(fit)), lta_brute_force(fit, lta_small),
+                   reference = lta_path_reference, covers = c("lta()", "logLik.multilpa_lta()"),
+                   quantity = "log likelihood, covariate transitions and initial distribution",
+                   tolerance = 1e-9, measure = "relative")
   # 2 means + 2 variances + 2 initial + 2 origins x 2 terms.
   expect_identical(fit$n_parameters, 10L)
   coefficients <- get_results(fit, "transition_coefficients")
@@ -163,7 +197,10 @@ test_that("occasion-varying transitions and measurement match the exact path sum
   fit <- lta(lta_small, "y", "id", n_profiles = 2, time = "time",
              transitions = "occasion", measurement = "occasion", n_starts = 3,
              seed = 1, tol = 1e-10)
-  expect_equal(fit$log_likelihood, lta_brute_force(fit, lta_small), tolerance = 1e-9)
+  expect_reference(as.numeric(logLik(fit)), lta_brute_force(fit, lta_small),
+                   reference = lta_path_reference, covers = c("lta()", "logLik.multilpa_lta()"),
+                   quantity = "log likelihood, occasion-varying transitions and measurement",
+                   tolerance = 1e-9, measure = "relative")
   # 4 occasions x (2 means + 2 variances) + 1 initial + 3 occasions x 2 origins.
   expect_identical(fit$n_parameters, 23L)
   table <- get_results(fit, "transitions")
@@ -184,7 +221,7 @@ test_that("second-order transitions match the exact path sum and nest first orde
   expect_equal(second$n_parameters, first$n_parameters + 4)
   n_states <- 2L
   paths <- as.matrix(expand.grid(rep(list(1:2), 4L)))
-  p <- .lta_parameters(second)
+  p <- latents:::.lta_parameters(second)
   pi0 <- exp(c(p$initial[1, 1, 1], 0))
   pi0 <- pi0 / sum(pi0)
   move1 <- function(a, b) {
@@ -204,7 +241,10 @@ test_that("second-order transitions match the exact path sum and nest first orde
         prod(stats::dnorm(rows$y, block$means[s, 1L], sqrt(block$variances[s, 1L])))
     })))
   }, numeric(1)))
-  expect_equal(second$log_likelihood, exact, tolerance = 1e-9)
+  expect_reference(as.numeric(logLik(second)), exact, reference = lta_path_reference,
+                   covers = c("lta()", "logLik.multilpa_lta()"),
+                   quantity = "log likelihood, second-order transitions",
+                   tolerance = 1e-9, measure = "relative")
   expect_identical(nrow(get_results(second, "second_order_transitions")), 8L)
 })
 
@@ -221,10 +261,26 @@ test_that("covariate transitions agree with depmixS4 (bundled fixture)", {
   fit <- lta(long, items, "subject", n_profiles = 2, time = "occasion",
              categorical = items, transition_covariates = "x", n_starts = 5,
              seed = 1, tol = 1e-10)
-  expect_equal(fit$log_likelihood, ref$log_likelihood, tolerance = 1e-7)
-  expect_identical(fit$n_parameters, ref$n_parameters)
-  expect_equal(sort(abs(fit$transition_coefficients["x", 1L, , 1L])),
-               sort(abs(ref$slopes)), tolerance = 1e-3, ignore_attr = TRUE)
+  depmix_note <- paste("Read from tests/equivalence/fixtures/lta-references.rds,",
+                       "element depmix_covariate:", ref$source)
+  expect_reference(as.numeric(logLik(fit)), ref$log_likelihood, reference = "depmixS4",
+                   covers = c("lta()", "logLik.multilpa_lta()"),
+                   quantity = "log likelihood, covariate transitions",
+                   tolerance = 1e-7, measure = "relative", note = depmix_note)
+  # A count of free parameters: equal or not.
+  expect_reference(attr(logLik(fit), "df"), ref$n_parameters, reference = "depmixS4",
+                   covers = c("lta()", "logLik.multilpa_lta()"),
+                   quantity = "number of parameters, covariate transitions",
+                   tolerance = 0, measure = "absolute", note = depmix_note)
+  # The covariate slope of each move. The two programs label the profiles
+  # independently, so the absolute slopes are compared in increasing order.
+  # 1e-3 relative, the original tolerance: depmixS4 stops at its own
+  # convergence criterion, and slopes converge more slowly than the likelihood.
+  expect_reference(sort(abs(unname(fit$transition_coefficients["x", 1L, , 1L]))),
+                   sort(abs(unname(ref$slopes))), reference = "depmixS4", covers = "lta()",
+                   quantity = "absolute covariate slopes of the two moves, in increasing order",
+                   tolerance = 1e-3, measure = "relative", key = c("smaller", "larger"),
+                   note = depmix_note)
 })
 
 test_that("occasion-varying transitions agree with LMest (bundled fixture)", {
@@ -241,8 +297,17 @@ test_that("occasion-varying transitions agree with LMest (bundled fixture)", {
   fit <- lta(long, items, "subject", n_profiles = ref$K, time = "occasion",
              categorical = items, transitions = "occasion", n_starts = 5, seed = 1,
              tol = 1e-10)
-  expect_equal(fit$log_likelihood, ref$log_likelihood, tolerance = 1e-8)
-  expect_identical(fit$n_parameters, ref$n_parameters)
+  lmest_note <- paste("Read from tests/equivalence/fixtures/lta-references.rds,",
+                      "element lmest_occasion:", ref$source)
+  expect_reference(as.numeric(logLik(fit)), ref$log_likelihood, reference = "LMest",
+                   covers = c("lta()", "logLik.multilpa_lta()"),
+                   quantity = "log likelihood, occasion-varying transitions",
+                   tolerance = 1e-8, measure = "relative", note = lmest_note)
+  # A count of free parameters: equal or not.
+  expect_reference(attr(logLik(fit), "df"), ref$n_parameters, reference = "LMest",
+                   covers = c("lta()", "logLik.multilpa_lta()"),
+                   quantity = "number of parameters, occasion-varying transitions",
+                   tolerance = 0, measure = "absolute", note = lmest_note)
 })
 
 test_that("mover-stayer: the stayer class never moves and matches the exact path sum", {
@@ -271,7 +336,7 @@ test_that("mover-stayer: the stayer class never moves and matches the exact path
   expect_equal(stayers$probability, as.numeric(stayers$from == stayers$to))
   # 4 measurement + 1 class weight + 2 initial (one per class) + 2 mover moves.
   expect_identical(fit$n_parameters, 9L)
-  p <- .lta_parameters(fit)
+  p <- latents:::.lta_parameters(fit)
   m <- fit$measurement[[1L]]
   paths <- as.matrix(expand.grid(rep(list(1:2), occasions)))
   shares <- lapply(1:2, \(h) {
@@ -292,7 +357,10 @@ test_that("mover-stayer: the stayer class never moves and matches the exact path
         fit$group_probabilities[2L] * shares[[2L]][s[1L]] * all(s == s[1L]) * density
     })))
   }, numeric(1)))
-  expect_equal(fit$log_likelihood, exact, tolerance = 1e-9)
+  expect_reference(as.numeric(logLik(fit)), exact, reference = lta_path_reference,
+                   covers = c("lta()", "logLik.multilpa_lta()"),
+                   quantity = "log likelihood, mover-stayer",
+                   tolerance = 1e-9, measure = "relative")
   # Stayers and movers that never leave a profile are hard to separate in a
   # small sample, so the fit may sit on a boundary; standard errors follow
   # that flag either way.

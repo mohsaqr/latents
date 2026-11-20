@@ -54,12 +54,18 @@ dense_log_likelihood <- function(fit, data) {
 
 test_that("the correlated likelihood equals a dense computation", {
   data <- correlated_fixture()
-  for (kind in c("ar", "brownian")) {  # two settings of one check
+  # Two settings of one check, each its own declared quantity.
+  invisible(lapply(c("ar", "brownian"), function(kind) {
     fit <- correlated_fit(data, kind)
-    expect_equal(fit$log_likelihood, dense_log_likelihood(fit, data), tolerance = 1e-9)
+    # 1e-9, the original tolerance: a log determinant and a solve per person.
+    expect_reference(as.numeric(logLik(fit)), dense_log_likelihood(fit, data),
+                     reference = "independent: dense marginal likelihood with a correlated residual process, base R",
+                     covers = c("mixture_regression()", "logLik.latents_growth_mixture()"),
+                     quantity = sprintf("log likelihood, residual correlation %s", kind),
+                     tolerance = 1e-9, measure = "relative")
     expect_identical(fit$n_parameters,
                      correlated_fit(data, "ar")$n_parameters - (kind == "brownian"))
-  }
+  }))
   plain <- mixture_regression(y ~ time, data, n_classes = 2, id = "id",
                               class_level = "group", random = ~ 1, membership = ~ age,
                               n_starts = 2, seed = 1, vcov_type = "none")
@@ -73,6 +79,7 @@ test_that("conditional predictions add the empirical Bayes effects with the proc
   new <- subset(data, id <= 4)
   ours <- predict(fit, new, type = "class_conditional")
   params <- fit$params
+  # Persons in id order, which is the row order of `new`: rows 1..n per class.
   dense <- unlist(lapply(1:2, function(k) {
     unlist(lapply(split(new, new$id), function(person) {
       t <- person$time
@@ -84,7 +91,14 @@ test_that("conditional predictions add the empirical Bayes effects with the proc
       mean + g * sum(solve(v, person$y - mean))
     }), use.names = FALSE)
   }))
-  expect_equal(ours$fitted, dense, tolerance = 1e-8)
+  expect_reference(ours,
+                   data.frame(row = rep(seq_len(nrow(new)), 2L),
+                              class = rep(c("class_1", "class_2"), each = nrow(new)),
+                              fitted = dense),
+                   reference = "independent: dense empirical Bayes prediction with an AR residual process, base R",
+                   covers = c("mixture_regression()", "predict.latents_growth_mixture()"),
+                   quantity = "class-conditional fitted values", tolerance = 1e-8,
+                   measure = "relative", key = c("row", "class"))
   expect_identical(nrow(simulate(fit, nsim = 2, seed = 3)), nrow(data))
   expect_equal(simulate(fit, nsim = 1, seed = 3), simulate(fit, nsim = 1, seed = 3))
   expect_error(predict(fit, subset(new, select = -time), type = "conditional"),

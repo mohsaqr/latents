@@ -10,5 +10,9 @@ test_that("direct effects fit correlated full-rank covariates by weighted QR", {
              search = "kmeans", tol = 1e-10)
   reference <- stats::coef(stats::lm(y ~ z + w, data))
   estimates <- c(as.vector(fit$means), unname(fit$direct_effects))
-  expect_lt(max(abs(estimates - unname(reference))), 1e-6)
+  # The intercept is the profile mean; the direct effects are the slopes.
+  expect_reference(estimates, reference, reference = "stats", covers = "lpa()",
+                   quantity = "regression coefficients through direct effects, nearly collinear predictors",
+                   tolerance = 1e-6, measure = "absolute", key = c("(Intercept)", "z", "w"),
+                   note = "Reference: stats::lm(y ~ z + w).")
 })

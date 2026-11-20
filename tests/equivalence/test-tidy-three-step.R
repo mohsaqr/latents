@@ -37,8 +37,8 @@ test_that("the pairwise standard error agrees with a cluster bootstrap", {
   # between the two class means would miss by more than the resampling noise.
   data <- .tidy_step_data(separation = 0.8)
   fit <- .tidy_step_fit(data)
-  pieces <- .multilpa_level_assignments(fit, "individuals")
-  weights <- .multilpa_step_weights(pieces, "bch")
+  pieces <- latents:::.multilpa_level_assignments(fit, "individuals")
+  weights <- latents:::.multilpa_step_weights(pieces, "bch")
   analytic <- three_step(fit, data, "y", contrast = "pairs")
 
   # Resample whole groups, holding the step-one weights fixed, which is exactly
@@ -54,12 +54,22 @@ test_that("the pairwise standard error agrees with a cluster bootstrap", {
     means[[2L]] - means[[1L]]
   })
 
-  ratio <- stats::sd(replicates) / analytic$standard_error
-  expect_gt(ratio, 0.90)
-  expect_lt(ratio, 1.16)
+  # The original bounds put the ratio bootstrap / analytic in [0.90, 1.16].
+  # Relative 0.1 is the lower bound on both sides (it holds the ratio to
+  # [0.90, 1.11]); it is a Monte Carlo spread of 600 replicates, hence loose.
+  expect_reference(analytic$standard_error, stats::sd(replicates),
+                   reference = "independent: cluster bootstrap of BCH-weighted class means (600 replicates)",
+                   covers = "three_step()", quantity = "standard error of the class 2 - class 1 difference",
+                   tolerance = 0.1, measure = "relative",
+                   note = "Reference: whole groups resampled with the package's step-one BCH weights (.multilpa_step_weights) held fixed.")
   # Treating the two class means as independent would inflate the ratio past
-  # that bound, which is what makes this a calibration and not a tautology.
+  # 1.16, which is what makes this a calibration and not a tautology. A ratio
+  # above 1.16 is a relative difference above 0.16 / 1.16.
   means <- three_step(fit, data, "y")
   independent <- sqrt(sum(means$standard_error^2))
-  expect_gt(stats::sd(replicates) / independent, 1.16)
+  expect_differs(independent, stats::sd(replicates),
+                 reference = "independent: cluster bootstrap of BCH-weighted class means (600 replicates)",
+                 covers = "three_step()",
+                 quantity = "standard error of the difference with the class means taken as independent",
+                 tolerance = 0.16 / 1.16, measure = "relative")
 })

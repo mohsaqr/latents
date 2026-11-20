@@ -32,13 +32,17 @@ test_that("paired mixed measurement retains direct-effect inference through data
   # when independent categorical, ordinal and count blocks are present.
   reference <- stats::lm(y ~ z, data = shifted_data, weights = weight)
   means <- shifted_inference$parameter == "mean"
-  expect_equal(shifted_inference$estimate[c(which(means), which(direct_rows))],
-               unname(stats::coef(reference)), tolerance = 1e-8)
-  frame <- .multilpa_resolve_data(shifted, NULL)
+  # 1e-8 relative, the original tolerance: the fit stops at tol = 1e-12.
+  expect_reference(shifted_inference$estimate[c(which(means), which(direct_rows))],
+                   unname(stats::coef(reference)), reference = "stats",
+                   covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "weighted regression of y beside categorical, ordinal and count blocks",
+                   tolerance = 1e-8, measure = "relative", key = c("(Intercept)", "z"))
+  frame <- latents:::.multilpa_resolve_data(shifted, NULL)
   expect_equal(predict(shifted, frame, type = "density"),
                predict(shifted, shifted_data, type = "density"), tolerance = 1e-10)
   refitted <- do.call(multilpa, c(list(data = frame, n_starts = 1, seed = 1,
-    tol = 1e-12), .multilpa_refit_arguments(shifted)))
+    tol = 1e-12), latents:::.multilpa_refit_arguments(shifted)))
   expect_equal(refitted$log_likelihood, shifted$log_likelihood, tolerance = 1e-9)
   expect_equal(refitted$n_parameters, shifted$n_parameters)
   expect_equal(attr(parameter_inference(refitted), "covariance"),

@@ -49,16 +49,28 @@ test_that("mixed full-covariance FIML agrees with exhaustive latent assignments"
     list(rows = rows, likelihood = sum(masses),
          group = colSums(masses) / sum(masses), subject = t(subject) / sum(masses))
   })
-  expectation <- .multilpa_expectation(x, group, parameters, codes)
-  expect_equal(expectation$log_likelihood,
-               sum(vapply(references, function(r) log(r$likelihood), numeric(1))),
-               tolerance = 1e-12)
-  expect_equal(expectation$group_posteriors,
-               do.call(rbind, lapply(references, `[[`, "group")), tolerance = 1e-12)
-  invisible(lapply(references, function(r) {
-    expect_equal(expectation$subject_posteriors[r$rows, , drop = FALSE], r$subject,
-                 tolerance = 1e-12)
-  }))
+  expectation <- latents:::.multilpa_expectation(x, group, parameters, codes)
+  # The groups' enumerated posteriors, put back in row order.
+  enumerated_rows <- unlist(lapply(references, `[[`, "rows"))
+  subject <- do.call(rbind, lapply(references, `[[`, "subject"))[order(enumerated_rows), ]
+  labels <- list(paste("row", seq_len(nrow(x))), c("profile_1", "profile_2"))
+  enumerated <- "independent: exhaustive latent assignments with direct densities, base R"
+  note <- "Package side: the internal E-step (.multilpa_expectation) behind multilpa() with mixed continuous and categorical indicators under FIML."
+  expect_reference(expectation$log_likelihood,
+                   sum(vapply(references, function(r) log(r$likelihood), numeric(1))),
+                   reference = enumerated, covers = "multilpa()",
+                   quantity = "log likelihood, mixed full-covariance FIML",
+                   tolerance = 1e-12, measure = "relative", note = note)
+  expect_reference(unname(expectation$group_posteriors),
+                   do.call(rbind, lapply(references, `[[`, "group")),
+                   reference = enumerated, covers = "multilpa()",
+                   quantity = "group-class posteriors, mixed full-covariance FIML",
+                   tolerance = 1e-12, measure = "relative", note = note)
+  expect_reference(matrix(expectation$subject_posteriors, nrow(x), dimnames = labels),
+                   matrix(subject, nrow(x), dimnames = labels),
+                   reference = enumerated, covers = "multilpa()",
+                   quantity = "profile posteriors, mixed full-covariance FIML",
+                   tolerance = 1e-12, measure = "relative", note = note)
 })
 
 test_that("bounded multinomial M-steps satisfy the constrained optimum", {
@@ -69,7 +81,7 @@ test_that("bounded multinomial M-steps satisfy the constrained optimum", {
   grid$third <- 1 - grid$first - grid$second
   feasible <- as.matrix(grid[grid$third >= .15, ])
   invisible(lapply(list(c(0, 1, 19), c(3, 7, 10), c(1, 1, 1), c(0, 0, 0)), function(counts) {
-    probabilities <- .multilpa_bound_probabilities(counts, .15)
+    probabilities <- latents:::.multilpa_bound_probabilities(counts, .15)
     expect_equal(sum(probabilities), 1, tolerance = 1e-14)
     expect_true(all(probabilities >= .15))
     optimum <- sum(counts * log(probabilities))

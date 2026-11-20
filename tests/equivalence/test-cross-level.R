@@ -47,35 +47,54 @@ cross_level_reference <- function(fit, data) {
   }, numeric(1)))
 }
 
+cross_level_formula <- "independent: manifest cross-level likelihood from the published formula (Houle et al., 2026), stats::dnorm()"
+
 test_that("full cross-level likelihood equals the published formula", {
   fit <- multilpa(cross_level_data, cross_level_vars, "team", n_profiles = 2,
                   n_group_classes = 2, family = "full_cross_level", tol = 1e-10,
                   seed = 1)
   expect_true(fit$converged)
-  expect_equal(fit$log_likelihood, cross_level_reference(fit, cross_level_data),
-               tolerance = 1e-8)
+  expect_reference(as.numeric(logLik(fit)), cross_level_reference(fit, cross_level_data),
+                   reference = cross_level_formula,
+                   covers = c("multilpa()", "logLik.multilpa_cross_level()"),
+                   quantity = "log likelihood, full cross-level",
+                   tolerance = 1e-8, measure = "relative")
   expect_true(all(diff(fit$log_likelihood_history) >=
                     -1e-10 * (1 + abs(fit$log_likelihood))))
   # 2*2 profile means + 2*2 variances + 2*(2-1) prevalences + 2*2 group means
   # + 2*2 group-mean variances + 1 class weight.
-  expect_identical(fit$n_parameters, 19L)
+  expect_reference(as.numeric(fit$n_parameters), 19,
+                   reference = "independent: parameter count from the model definition",
+                   covers = "multilpa()", quantity = "number of parameters, full cross-level",
+                   tolerance = 0, measure = "absolute")
 })
 
 test_that("restricted cross-level is the product of its two profile models", {
   fit <- multilpa(cross_level_data, cross_level_vars, "team", n_profiles = 2,
                   n_group_classes = 2, family = "restricted_cross_level", seed = 1)
-  expect_equal(fit$log_likelihood, cross_level_reference(fit, cross_level_data),
-               tolerance = 1e-6)
+  # 1e-6, the original tolerance: the fit runs at the default convergence
+  # tolerance, and the reference re-estimates the prevalences as the mean
+  # posterior at the reported estimates.
+  expect_reference(as.numeric(logLik(fit)), cross_level_reference(fit, cross_level_data),
+                   reference = cross_level_formula,
+                   covers = c("multilpa()", "logLik.multilpa_cross_level()"),
+                   quantity = "log likelihood, restricted cross-level",
+                   tolerance = 1e-6, measure = "relative")
   individual <- withCallingHandlers(
     lpa(cross_level_data, cross_level_vars, n_profiles = 2, seed = 1),
     latents_single_level = \(m) invokeRestart("muffleMessage"))
   expect_equal(get_results(fit, "starts")$log_likelihood[1L],
                individual$log_likelihood, tolerance = 1e-6)
-  expect_identical(fit$n_parameters, 18L)
+  # 2*2 profile means + 2*2 variances + (2-1) shared prevalence + 2*2 group
+  # means + 2*2 group-mean variances + 1 class weight.
+  expect_reference(as.numeric(fit$n_parameters), 18,
+                   reference = "independent: parameter count from the model definition",
+                   covers = "multilpa()", quantity = "number of parameters, restricted cross-level",
+                   tolerance = 0, measure = "absolute")
 })
 
 test_that("the full cross-level EM reaches a stationary point of the formula", {
-  skip_if_not_installed("numDeriv")
+  skip_without_reference("numDeriv")
   fit <- multilpa(cross_level_data, cross_level_vars, "team", n_profiles = 2,
                   n_group_classes = 2, family = "full_cross_level", tol = 1e-12,
                   max_iter = 5000, seed = 1)
@@ -90,5 +109,15 @@ test_that("the full cross-level EM reaches a stationary point of the formula", {
     moved$profile_means[] <- v[9:12]
     cross_level_reference(moved, cross_level_data)
   }
-  expect_lt(max(abs(numDeriv::grad(at, theta))), 1e-3)
+  parameters <- c(sprintf("group mean [%d]", 1:4), sprintf("log group-mean variance [%d]", 1:4),
+                  sprintf("profile mean [%d]", 1:4))
+  # A maximum has a zero gradient: the package side is that zero, the
+  # reference the numerical gradient of the published formula at the fitted
+  # point. The original bound, max |gradient| < 1e-3, absolute.
+  expect_reference(setNames(rep(0, 12L), parameters),
+                   setNames(numDeriv::grad(at, theta), parameters), reference = "numDeriv",
+                   covers = "multilpa()",
+                   quantity = "gradient of the published likelihood at the full cross-level maximum",
+                   tolerance = 1e-3, measure = "absolute",
+                   note = "Reference: numDeriv::grad() of cross_level_reference(), the published formula written in this file.")
 })

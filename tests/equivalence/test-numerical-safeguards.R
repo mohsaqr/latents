@@ -14,10 +14,22 @@ test_that("an unbalanced-group update agrees with exhaustive assignments", {
   expect_warning(
     fit <- multilpa(data, "x", "group", 2L, 2L, n_starts = 1L,
                       start = parameters, max_iter = 1L), "did not converge")
-  expect_equal(unname(fit$group_probabilities), reference$group_probabilities,
-               tolerance = 1e-10)
-  expect_equal(unname(fit$profile_probabilities), reference$profile_probabilities,
-               tolerance = 1e-10)
-  expect_equal(unname(fit$means), unname(reference$means), tolerance = 1e-10)
-  expect_equal(unname(fit$variances), unname(reference$variances), tolerance = 1e-10)
+  # One EM update whose posteriors enumerate every latent assignment of each group.
+  enumerated <- "independent: one EM update from exhaustive latent assignments (helper-independent-likelihood.R)"
+  expect_reference(unname(fit$group_probabilities), reference$group_probabilities,
+                   reference = enumerated, covers = "multilpa()",
+                   quantity = "group-class probabilities after one update, unbalanced groups",
+                   tolerance = 1e-10, measure = "relative")
+  expect_reference(unname(fit$profile_probabilities), unname(reference$profile_probabilities),
+                   reference = enumerated, covers = "multilpa()",
+                   quantity = "profile probabilities after one update, unbalanced groups",
+                   tolerance = 1e-10, measure = "relative")
+  expect_reference(unname(fit$means), unname(reference$means),
+                   reference = enumerated, covers = "multilpa()",
+                   quantity = "means after one update, unbalanced groups",
+                   tolerance = 1e-10, measure = "relative")
+  expect_reference(unname(fit$variances), unname(reference$variances),
+                   reference = enumerated, covers = "multilpa()",
+                   quantity = "variances after one update, unbalanced groups",
+                   tolerance = 1e-10, measure = "relative")
 })

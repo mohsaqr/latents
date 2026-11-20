@@ -75,6 +75,8 @@ r2_partial_theta <- function(fit) {
     })))
 }
 
+shared_reference <- "independent: profile likelihood of a shared NB dispersion, stats::dnbinom() maximised by stats::optimize()"
+
 test_that("the NB M-step keeps a shared interior dispersion that beats the floor (C2-1)", {
   counts <- r2_shared_counts()
   weight <- cbind(rep(c(1, 0), c(200, 50)), rep(c(0, 1), c(200, 50)))
@@ -87,10 +89,16 @@ test_that("the NB M-step keeps a shared interior dispersion that beats the floor
   expect_lt(sum(colSums(weight * (outer(counts$y, means, "-")^2 - counts$y))), 0)
   interior <- r2_shared_alpha(counts$y, rep(1:2, c(200, 50)))
   start <- list(means = means, dispersion = rep(interior, 2))
-  solved <- .latents_negative_binomial_maximize(counts$y, weight, means, rep(interior, 2),
-                                                shared = TRUE)
+  solved <- latents:::.latents_negative_binomial_maximize(counts$y, weight, means, rep(interior, 2),
+                                                          shared = TRUE)
   expect_gte(objective(solved), objective(start) - 1e-8)
-  expect_equal(solved$dispersion, rep(interior, 2), tolerance = 1e-5)
+  # optimize() stops at its own tolerance (1e-10 on the log scale) and the
+  # M-step at its own; 1e-5 relative, the original test's tolerance.
+  expect_reference(solved$dispersion, rep(interior, 2), reference = shared_reference,
+                   covers = c("lpa()", "multilpa()"),
+                   quantity = "shared NB dispersion of the M-step, known classes",
+                   tolerance = 1e-5, measure = "relative", key = c("class 1", "class 2"),
+                   note = "Package side: the internal negative-binomial M-step (.latents_negative_binomial_maximize, shared = TRUE) of lpa()/multilpa(count_dispersion = \"equal\").")
 })
 
 test_that("lpa() fits a shared NB dispersion at its interior maximum (C2-1)", {
@@ -100,8 +108,12 @@ test_that("lpa() fits a shared NB dispersion at its interior maximum (C2-1)", {
              count_dispersion = "equal", n_profiles = 2, n_starts = 5, seed = 1)
   classes <- max.col(fit$subject_posteriors)
   expect_true(fit$converged)
-  expect_equal(unname(fit$count_dispersion[, "y"]),
-               rep(r2_shared_alpha(counts$y, classes), 2), tolerance = 1e-5)
+  # The classes are separated, so the profile likelihood on the modal classes
+  # is the maximum; 1e-5 relative, the original test's tolerance.
+  expect_reference(unname(fit$count_dispersion[, "y"]),
+                   rep(r2_shared_alpha(counts$y, classes), 2), reference = shared_reference,
+                   covers = "lpa()", quantity = "shared NB dispersion of lpa(), modal classes",
+                   tolerance = 1e-5, measure = "relative", key = c("profile 1", "profile 2"))
 })
 
 test_that("lta() fits a shared NB dispersion at its interior maximum (C2-1)", {
@@ -122,9 +134,12 @@ test_that("lta() fits a shared NB dispersion at its interior maximum (C2-1)", {
                      n_starts = 3, seed = 1), "latents_boundary")
   # The states are separated, so the hand profile likelihood on the true
   # states is the maximum. The old rule returned the 1e-8 floor and a log
-  # likelihood 23.5 lower.
-  expect_equal(unname(fit$measurement[[1L]]$count_dispersion[, "k"]),
-               rep(r2_shared_alpha(data$k, state), 2), tolerance = 1e-4)
+  # likelihood 23.5 lower. 1e-4 relative, the original test's tolerance: the
+  # hand reference uses the true states, the fit its posteriors.
+  expect_reference(unname(fit$measurement[[1L]]$count_dispersion[, "k"]),
+                   rep(r2_shared_alpha(data$k, state), 2), reference = shared_reference,
+                   covers = "lta()", quantity = "shared NB dispersion of lta(), true states",
+                   tolerance = 1e-4, measure = "relative", key = c("state 1", "state 2"))
 })
 
 test_that("a half-observed pair contributes its observed item to the likelihood (C2-2)", {
@@ -133,17 +148,26 @@ test_that("a half-observed pair contributes its observed item to the likelihood 
   expect_false(is.null(attr(fit$categorical_data, "latents_partial")))
   grid <- fit$categorical_levels[["u1:u2"]]
   theta <- r2_partial_theta(fit)
-  expect_equal(sum(r2_partial_rows(theta, data, grid)), as.numeric(logLik(fit)),
-               tolerance = 1e-10)
-  # The fit is a stationary point of the hand likelihood.
-  skip_if_not_installed("numDeriv")
+  expect_reference(as.numeric(logLik(fit)), sum(r2_partial_rows(theta, data, grid)),
+                   reference = "independent: observed-data likelihood with half-observed pairs, base R (r2_partial_rows)",
+                   covers = c("lca()", "logLik.multilpa()"),
+                   quantity = "log likelihood with a half-observed local-dependence pair",
+                   tolerance = 1e-10, measure = "relative")
+  # The fit is a stationary point of the hand likelihood: the package's claim
+  # is a zero gradient; numDeriv's gradient there, to the original absolute
+  # bound 1e-4 (the fit stops at tol 1e-13 on the likelihood, not on the
+  # gradient).
+  skip_without_reference("numDeriv")
   gradient <- getExportedValue("numDeriv", "grad")(function(t) sum(r2_partial_rows(t, data, grid)), theta)
-  expect_lt(max(abs(gradient)), 1e-4)
+  expect_reference(rep(0, length(theta)), gradient, reference = "numDeriv", covers = "lca()",
+                   quantity = "gradient of the hand likelihood at the fit",
+                   tolerance = 1e-4, measure = "absolute",
+                   note = "Package side: the zero gradient that the fitted maximum claims; reference: numDeriv::grad() of the independent hand likelihood r2_partial_rows().")
 })
 
 test_that("observed and robust SEs with half-observed pairs match numDeriv (C2-2)", {
   skip_on_cran()
-  skip_if_not_installed("numDeriv")
+  skip_without_reference("numDeriv")
   hessian <- getExportedValue("numDeriv", "hessian")
   jacobian <- getExportedValue("numDeriv", "jacobian")
   data <- r2_partial_data()
@@ -162,19 +186,30 @@ test_that("observed and robust SEs with half-observed pairs match numDeriv (C2-2
   map <- jacobian(natural, theta)
   keys <- unlist(lapply(list(list("u1:u2", grid), list("u3", c("0", "1")), list("u4", c("0", "1"))),
     function(item) unlist(lapply(1:2, function(k) paste(item[[1]], k, item[[2]], sep = "|")))))
-  compare <- function(table, covariance) {
-    expected <- sqrt(diag(map %*% covariance %*% t(map)))
+  # The delta-method standard errors of the response probabilities, from the
+  # numerical information of the hand likelihood.
+  reference_table <- function(covariance) {
+    data.frame(key = keys, standard_error = sqrt(diag(map %*% covariance %*% t(map))))
+  }
+  # The package's table, keyed item|class|category like the reference.
+  package_table <- function(table) {
     rows <- subset(table, parameter == "response" & level == "measurement")
     parts <- strsplit(rows$term, ":", fixed = TRUE)
     plain <- function(x) gsub("%3A", ":", x, fixed = TRUE)
-    rows$key <- paste(plain(vapply(parts, `[`, "", 1)), sub("profile_", "", rows$outcome),
-                      plain(vapply(parts, `[`, "", 2)), sep = "|")
-    at <- match(keys, rows$key)
-    usable <- !is.na(at) & is.finite(rows$standard_error[at]) & expected > 1e-6
-    expect_gte(sum(usable), 16L)
-    max(abs(rows$standard_error[at][usable] / expected[usable] - 1))
+    data.frame(key = paste(plain(vapply(parts, `[`, "", 1)), sub("profile_", "", rows$outcome),
+                           plain(vapply(parts, `[`, "", 2)), sep = "|"),
+               standard_error = rows$standard_error)
   }
-  expect_lt(compare(as.data.frame(parameter_inference(fit, boundary = "fix")), observed), 1e-6)
-  expect_lt(compare(as.data.frame(parameter_inference(fit, vcov_type = "robust",
-                                                      boundary = "fix")), robust), 1e-6)
+  covers <- c("lca()", "parameter_inference.multilpa()")
+  note <- "Reference: numDeriv::hessian()/jacobian() of the independent hand likelihood r2_partial_rows(), mapped to probabilities by the delta method."
+  # 1e-6 relative per standard error, the original test's bound on |ratio - 1|.
+  expect_reference(package_table(as.data.frame(parameter_inference(fit, boundary = "fix"))),
+                   reference_table(observed), reference = "numDeriv", covers = covers,
+                   quantity = "observed-information standard errors of the response probabilities",
+                   tolerance = 1e-6, measure = "relative", key = "key", note = note)
+  expect_reference(package_table(as.data.frame(parameter_inference(fit, vcov_type = "robust",
+                                                                   boundary = "fix"))),
+                   reference_table(robust), reference = "numDeriv", covers = covers,
+                   quantity = "robust standard errors of the response probabilities",
+                   tolerance = 1e-6, measure = "relative", key = "key", note = note)
 })

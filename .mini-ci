@@ -43,6 +43,9 @@ job equivalence-v  R CMD INSTALL . && Rscript equivalence/run.R '^verification-'
 job equivalence-r  R CMD INSTALL . && Rscript equivalence/run.R '^simulab-recovery$'
 # The numerical references of the package's own models (tests/equivalence/).
 job equivalence-t  R CMD INSTALL . && Rscript equivalence/run.R --dir=tests/equivalence
+# Prova Verify: the same files as declared comparisons (../equivalence/STANDARD.md), recorded in
+# .ci/verify-capture/capture.json; then, on the Mac: sh ../equivalence/push.sh latents
+job verify  Rscript -e 'source("tests/equivalence/helper-verify.R"); verify_tests(lib = "~/equiv-lib")'
 job harness      R CMD INSTALL . && Rscript equivalence/harness/test-harness.R && LATENTS_EQUIVALENCE_REQUIRE_ALL=true LATENTS_EQUIVALENCE_OUTPUT=tmp/equivalence Rscript equivalence/harness/run.R
 job sweep        R CMD INSTALL . && Rscript equivalence/argument-sweep/run.R
 fetch tmp/equivalence

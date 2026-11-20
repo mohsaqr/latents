@@ -49,14 +49,23 @@ test_that("the step-three likelihood is the fixed-error mixture of Vermunt (2010
                       stats::dnorm(data$y, means[t], sds[t]), numeric(nrow(data)))
     sum(log(rowSums(terms)))
   }
-  invisible(lapply(c("varying", "equal"), \(variance) {
-    step <- .multilpa_step_ml_fit(.multilpa_level_assignments(fit, "individuals"), data$y,
-                                  variance)
+  pieces <- latents:::.multilpa_level_assignments(fit, "individuals")
+  steps <- lapply(c(varying = "varying", equal = "equal"),
+                  \(variance) latents:::.multilpa_step_ml_fit(pieces, data$y, variance))
+  ml_note <- "Package side: the internal step-three ML fit (.multilpa_step_ml_fit) behind three_step(method = 'ml')."
+  # The same likelihood summed twice; only the order of the additions differs.
+  expect_reference(vapply(steps, \(step) step$log_likelihood, numeric(1)),
+                   vapply(steps, \(step) log_likelihood(step$means, sqrt(step$variances)), numeric(1)),
+                   reference = "independent: Vermunt (2010) fixed-error step-three likelihood, base R",
+                   covers = "three_step()", quantity = "step-three log likelihood by variance model",
+                   tolerance = 1e-10, measure = "relative", note = ml_note)
+  # The estimate is stationary for this likelihood: a step of 1e-4 standard
+  # deviations in any mean changes it only at second order. Each entry is the
+  # central-difference slope in standard-deviation units; the original bound
+  # on its size, 1e-4 absolute.
+  slopes <- vapply(steps, \(step) {
     sds <- sqrt(step$variances)
-    expect_equal(log_likelihood(step$means, sds), step$log_likelihood, tolerance = 1e-10)
-    # The estimate is stationary for this likelihood: a step of 1e-4 standard
-    # deviations in any mean changes it only at second order.
-    slopes <- vapply(1:3, \(t) {
+    vapply(1:3, \(t) {
       h <- 1e-4 * sds[t]
       up <- step$means
       up[t] <- up[t] + h
@@ -64,8 +73,13 @@ test_that("the step-three likelihood is the fixed-error mixture of Vermunt (2010
       down[t] <- down[t] - h
       (log_likelihood(up, sds) - log_likelihood(down, sds)) / (2 * h) * sds[t]
     }, numeric(1))
-    expect_lt(max(abs(slopes)), 1e-4)
-  }))
+  }, numeric(3))
+  rownames(slopes) <- sprintf("class_%d", 1:3)
+  expect_reference(slopes, matrix(0, 3L, 2L, dimnames = dimnames(slopes)),
+                   reference = "independent: Vermunt (2010) fixed-error step-three likelihood, base R",
+                   covers = "three_step()",
+                   quantity = "standardised slope of the likelihood at the step-three means",
+                   tolerance = 1e-4, measure = "absolute", note = ml_note)
 })
 
 test_that("the step-three model reaches the best of many random starts", {
@@ -86,7 +100,14 @@ test_that("the step-three model reaches the best of many random starts", {
     stats::optim(start, log_likelihood, method = "BFGS",
                  control = list(fnscale = -1, maxit = 2000, reltol = 1e-14))$value
   }, numeric(1)))
-  step <- .multilpa_step_ml_fit(pieces, case$y, "varying")
+  step <- latents:::.multilpa_step_ml_fit(pieces, case$y, "varying")
   expect_gt(step$log_likelihood, -880.5)
-  expect_gt(step$log_likelihood, best - 1e-6 * (1 + abs(best)))
+  # The best of 20 BFGS maximisations of the likelihood written above. The
+  # original bound was one-sided, 1e-6 * (1 + |best|) below the best; 1e-6
+  # relative on both sides is no looser.
+  expect_reference(step$log_likelihood, best,
+                   reference = "independent: stats::optim() over 20 random starts of the step-three likelihood",
+                   covers = "three_step()", quantity = "step-three log likelihood, heavy-tailed outcome",
+                   tolerance = 1e-6, measure = "relative",
+                   note = "Package side: the internal step-three ML fit (.multilpa_step_ml_fit) behind three_step(method = 'ml').")
 })

@@ -115,10 +115,11 @@ test_that("held-measurement standard errors match an independent numerical infor
                    start = starting_values(stage, what = "measurement"),
                    fixed = "measurement", seed = 11, tol = 1e-12)
   information <- parameter_inference(held, prepared$data)
-  free <- .multilpa_free_index(held, "unconstrained")
-  free_natural <- .multilpa_free_index(held, "natural")
+  free <- latents:::.multilpa_free_index(held, "unconstrained")
+  free_natural <- latents:::.multilpa_free_index(held, "natural")
   fitted_free <- unname(coef(held, scale = "unconstrained"))[free]
   held_log_variances <- as.vector(t(log(held$variances)))
+  enumeration <- "independent: exhaustive enumeration of the latent assignments (helper-independent-likelihood.R)"
 
   loglik <- function(values) {
     enumerated_conditional_loglik(held$means, held_log_variances, values[1:2],
@@ -126,20 +127,29 @@ test_that("held-measurement standard errors match an independent numerical infor
   }
   # The held blocks really are in the likelihood, at the values they were held
   # at: an independent enumeration of the same model reproduces the fit.
-  expect_equal(loglik(fitted_free), held$log_likelihood, tolerance = 1e-10)
+  expect_reference(as.numeric(logLik(held)), loglik(fitted_free), reference = enumeration,
+                   covers = c("multilpa()", "logLik.multilpa()"),
+                   quantity = "log likelihood, measurement held", tolerance = 1e-10,
+                   measure = "relative")
 
   # Analytic conditional score against numerical differentiation of the
   # independent conditional log likelihood, away from the optimum.
   centers <- colMeans(prepared$x)
   centred <- held
   centred$means <- sweep(held$means, 2L, centers, "-")
-  restore <- .multilpa_restore_held(coef(centred, scale = "unconstrained"), free)
+  restore <- latents:::.multilpa_restore_held(coef(centred, scale = "unconstrained"), free)
   centred_x <- sweep(prepared$x, 2L, centers, "-")
   point <- fitted_free + c(0.13, -0.09, 0.21)
-  analytic_score <- -.multilpa_score(restore(point), centred_x, held)[free]
+  analytic_score <- -latents:::.multilpa_score(restore(point), centred_x, held)[free]
   numerical_score <- central_difference_gradient(loglik, point)
-  expect_equal(analytic_score, numerical_score, tolerance = 1e-7)
-  expect_lt(max(abs(analytic_score - numerical_score)), 1e-7)
+  # 1e-7 absolute, the original bound (it also had 1e-7 relative on the
+  # vector): the error of a central difference with step 1e-5.
+  expect_reference(unname(analytic_score), numerical_score,
+                   reference = "independent: central differences of the enumerated likelihood",
+                   covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "score off the optimum, measurement held", tolerance = 1e-7,
+                   measure = "absolute",
+                   note = "Package side: the internal analytic score (.multilpa_score) behind parameter_inference().")
 
   # Analytic observed information against second central differences of the
   # independent negative conditional log likelihood. Achieved agreement in the
@@ -147,13 +157,20 @@ test_that("held-measurement standard errors match an independent numerical infor
   numerical_information <- central_difference_hessian(
     function(values) -loglik(values), fitted_free)
   analytic_information <- unname(attr(information, "hessian"))
-  expect_equal(numerical_information, analytic_information, tolerance = 1e-6)
+  # Scaled: second differences carry an absolute error, so an entry near zero
+  # would be judged on rounding noise by a relative measure. 1e-6, the original
+  # tolerance: the truncation error of second differences with step 5e-4.
+  expect_reference(analytic_information, numerical_information,
+                   reference = "independent: second central differences of the enumerated likelihood",
+                   covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "observed information, measurement held", tolerance = 1e-6,
+                   measure = "scaled")
 
   # The delta-method map restricted to the free coordinates, against a
   # numerical Jacobian of the natural coefficients.
   natural_from_free <- function(values) {
     model <- held
-    decoded <- .multilpa_decode(restore(values), held)
+    decoded <- latents:::.multilpa_decode(restore(values), held)
     model[names(decoded)] <- decoded
     unname(coef(model))[free_natural]
   }
@@ -164,17 +181,28 @@ test_that("held-measurement standard errors match an independent numerical infor
     moved_down[index] <- moved_down[index] - 1e-6
     (natural_from_free(moved_up) - natural_from_free(moved_down)) / 2e-6
   }, numeric(length(free_natural)))
-  expect_equal(numerical_jacobian,
-               unname(.multilpa_inference_jacobian(held)[free_natural, free, drop = FALSE]),
-               tolerance = 1e-8)
+  # Scaled: a derivative against central differences, with entries near zero.
+  # 1e-8, the original tolerance.
+  expect_reference(unname(latents:::.multilpa_inference_jacobian(held)[free_natural, free, drop = FALSE]),
+                   numerical_jacobian,
+                   reference = "independent: central differences of the natural coefficients",
+                   covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "delta-method Jacobian, measurement held", tolerance = 1e-8,
+                   measure = "scaled",
+                   note = "Package side: the internal Jacobian (.multilpa_inference_jacobian) behind parameter_inference(); reference: central differences of coef() through the package's decoder (.multilpa_decode).")
 
   # Standard errors assembled entirely from the independent pieces. Achieved
   # agreement in the session that wrote this test: 1.28e-07 relative.
   independent_errors <- sqrt(pmax(diag(
     numerical_jacobian %*% solve(numerical_information) %*% t(numerical_jacobian)), 0))
-  expect_equal(information$standard_error, independent_errors, tolerance = 1e-6)
-  expect_lt(max(abs(information$standard_error - independent_errors) /
-                  information$standard_error), 1e-6)
+  # 1e-6 relative, the original tolerance (on each error and on the vector).
+  expect_reference(information$standard_error, independent_errors,
+                   reference = "independent: delta method from the numerical information and Jacobian",
+                   covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "standard errors, measurement held", tolerance = 1e-6,
+                   measure = "relative",
+                   key = paste(information$level, information$outcome, information$term,
+                               information$parameter))
 })
 
 test_that("holding only the means leaves the variances estimated and correct", {
@@ -192,20 +220,30 @@ test_that("holding only the means leaves the variances estimated and correct", {
   information <- parameter_inference(held, prepared$data)
   # The variances are estimated here and are reported; the means are not.
   expect_setequal(subset(information, level == "measurement")$parameter, "variance")
-  expect_equal(length(.multilpa_free_index(held, "unconstrained")),
+  expect_equal(length(latents:::.multilpa_free_index(held, "unconstrained")),
                held$n_parameters)
 
-  free <- .multilpa_free_index(held, "unconstrained")
+  free <- latents:::.multilpa_free_index(held, "unconstrained")
   fitted_free <- unname(coef(held, scale = "unconstrained"))[free]
   loglik <- function(values) {
     enumerated_conditional_loglik(held$means, values[1:4], values[5:6],
                                   values[[7L]], prepared$x, prepared$group)
   }
-  expect_equal(loglik(fitted_free), held$log_likelihood, tolerance = 1e-10)
+  expect_reference(as.numeric(logLik(held)), loglik(fitted_free),
+                   reference = "independent: exhaustive enumeration of the latent assignments (helper-independent-likelihood.R)",
+                   covers = c("multilpa()", "logLik.multilpa()"),
+                   quantity = "log likelihood, means held", tolerance = 1e-10,
+                   measure = "relative")
 
   numerical_information <- central_difference_hessian(
     function(values) -loglik(values), fitted_free)
-  expect_equal(numerical_information, unname(attr(information, "hessian")),
-               tolerance = 1e-5)
+  # Scaled: second differences carry an absolute error, so an entry near zero
+  # would be judged on rounding noise by a relative measure. 1e-5, the original
+  # tolerance: the truncation error of second differences with step 5e-4.
+  expect_reference(unname(attr(information, "hessian")), numerical_information,
+                   reference = "independent: second central differences of the enumerated likelihood",
+                   covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "observed information, means held", tolerance = 1e-5,
+                   measure = "scaled")
   expect_true(all(is.finite(information$standard_error)))
 })

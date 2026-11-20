@@ -33,8 +33,12 @@ review_lta_fit <- function(..., gaps = FALSE,
             "latents_thin_profiles"))
 }
 
+# The group log likelihoods summed over every profile path, written from the
+# model's definition: softmax links, Gaussian, categorical, adjacent-category
+# ordinal and Poisson / negative-binomial densities. The coefficient vector is
+# split into its blocks by the package's internal .lta_unpack().
 review_lta_exact <- function(theta, fit) {
-  p <- .lta_unpack(theta, fit)
+  p <- latents:::.lta_unpack(theta, fit)
   softmax <- function(v) exp(v - max(v)) / sum(exp(v - max(v)))
   K <- fit$n_profiles
   vapply(seq_len(fit$n_groups), function(g) {
@@ -71,7 +75,7 @@ review_lta_exact <- function(theta, fit) {
             d <- d * softmax(logits)[o]
           }
           k <- fit$extra_data$count[row, 1L]
-          if (!is.na(k)) d <- d * if (.latents_negative_binomial(fit$extra_data))
+          if (!is.na(k)) d <- d * if (latents:::.latents_negative_binomial(fit$extra_data))
             dnbinom(k, size = 1 / b$count_dispersion[state, 1L], mu = b$count_means[state, 1L]) else
               dpois(k, b$count_means[state, 1L])
           d
@@ -93,29 +97,60 @@ test_that("all general LTA extensions match independent path likelihoods and sco
     list(count_model = "negative_binomial", count_dispersion = "varying", weights = "weight"),
     # Skipped grid positions (no row, no covariate) with occasion transitions.
     list(gaps = TRUE, transitions = "occasion", n_group_classes = 2L))
-  lapply(variants, function(arguments) {
+  settings <- c("two group classes", "occasion transitions and measurement",
+                "second order, occasion transitions, mover-stayer",
+                "negative binomial, equal dispersion",
+                "negative binomial, varying dispersion, weighted",
+                "skipped grid positions, occasion transitions, two group classes")
+  # One row per group (and parameter) and variant: the package's values and
+  # the path-sum references, compared below in one table each.
+  cells <- function(values, setting) {
+    values <- as.matrix(values)
+    data.frame(setting = setting, group = as.vector(row(values)),
+               parameter = as.vector(col(values)), value = as.vector(values))
+  }
+  results <- Map(function(arguments, setting) {
     fit <- do.call(review_lta_fit, arguments)
-    theta <- .lta_theta(fit)
+    theta <- latents:::.lta_theta(fit)
     theta[] <- sin(seq_along(theta)) / 3
     # Evaluate away from an optimized point: no stationary score can hide a
     # missing block. Finite coordinates keep all exact-path masses positive.
     exact <- review_lta_exact(theta, fit)
-    expectation <- .lta_expectation(fit$x, fit$codes, fit$layout, fit$designs,
-      .lta_unpack(theta, fit), fit$occasion_of_row, extra = fit$extra_data)
-    expect_equal(unname(expectation$group_log_likelihood), exact, tolerance = 1e-11)
+    expectation <- latents:::.lta_expectation(fit$x, fit$codes, fit$layout, fit$designs,
+      latents:::.lta_unpack(theta, fit), fit$occasion_of_row, extra = fit$extra_data)
     numeric_scores <- vapply(seq_along(theta), function(k) {
       plus <- minus <- theta
       plus[k] <- plus[k] + 1e-5
       minus[k] <- minus[k] - 1e-5
       (review_lta_exact(plus, fit) - review_lta_exact(minus, fit)) / 2e-5
     }, numeric(fit$n_groups)) * (unname(fit$sampling_weights) %||% 1)
-    expect_equal(unname(.lta_group_scores(theta, fit)), numeric_scores, tolerance = 2e-7)
+    # Unit checks: the coefficient vector round-trips and the data guard holds.
     expect_equal(length(theta), fit$n_parameters)
-    expect_equal(.lta_pack(.lta_unpack(theta, fit), fit$variance_model, fit$extra_data),
+    expect_equal(latents:::.lta_pack(latents:::.lta_unpack(theta, fit), fit$variance_model,
+                                     fit$extra_data),
                  unname(theta), tolerance = 1e-12)
-    expect_invisible(.lta_check_data(fit, review_lta_data(isTRUE(arguments$gaps))))
+    expect_invisible(latents:::.lta_check_data(fit, review_lta_data(isTRUE(arguments$gaps))))
     changed <- review_lta_data(isTRUE(arguments$gaps))
     changed$k[1L] <- changed$k[1L] + 1
-    expect_error(.lta_check_data(fit, changed), class = "latents_bad_inference_data")
-  })
+    expect_error(latents:::.lta_check_data(fit, changed), class = "latents_bad_inference_data")
+    list(likelihood = cells(unname(expectation$group_log_likelihood), setting),
+         exact = cells(exact, setting),
+         scores = cells(unname(latents:::.lta_group_scores(theta, fit)), setting),
+         numeric_scores = cells(numeric_scores, setting))
+  }, variants, settings)
+  stack <- function(part) do.call(rbind, unname(lapply(results, `[[`, part)))
+  expect_reference(stack("likelihood"), stack("exact"),
+                   reference = "independent: exact sum over every profile path, base R",
+                   covers = "lta()", quantity = "group log likelihood away from the optimum",
+                   tolerance = 1e-11, measure = "relative", key = c("setting", "group", "parameter"),
+                   note = "Package side: the internal forward-backward likelihood (.lta_expectation) of lta().")
+  # Central differences (step 1e-5) of the exact path likelihood. Scaled by
+  # max(1, |reference|): a group's score on a parameter it barely informs is
+  # near zero, where the differences' absolute error, not a relative one,
+  # is what can be judged.
+  expect_reference(stack("scores"), stack("numeric_scores"),
+                   reference = "independent: central differences of the exact path likelihood, base R",
+                   covers = "lta()", quantity = "group scores away from the optimum",
+                   tolerance = 2e-7, measure = "scaled", key = c("setting", "group", "parameter"),
+                   note = "Package side: the internal analytic scores (.lta_group_scores) behind vcov() of lta().")
 })

@@ -17,7 +17,12 @@ test_that("near-Poisson negative-binomial dispersion reaches the profile maximum
   expect_true(isTRUE(fit$converged))
   # Before the fix the Newton step stalled at 4.2e-7 against 1.4e-5.
   fitted <- log(as.vector(fit$count_dispersion))
-  expect_equal(fitted, reference$maximum, tolerance = 1e-4)
+  # optimize() is an independent maximiser of the profile likelihood written
+  # above; 1e-4 relative on log alpha (about -11), the original tolerance.
+  expect_reference(fitted, reference$maximum,
+                   reference = "independent: NB2 profile likelihood in the dispersion, maximised by stats::optimize()",
+                   covers = "lpa()", quantity = "log dispersion, near-Poisson counts, one profile",
+                   tolerance = 1e-4, measure = "relative")
   expect_gte(profile(fitted), reference$objective - 1e-8)
   expect_true(all(is.finite(diag(vcov(fit)))))
 })
@@ -32,8 +37,15 @@ test_that("the negative-binomial M-step ascends from either side of an indefinit
   }, c(log(1e-9), 0), maximum = TRUE, tol = 1e-12)$maximum
   # Starts below the maximum (where the objective is convex in log alpha) and
   # above it (the moment start, whose first full step overshot) both arrive.
-  invisible(lapply(c(1e-8, 1e-7, 0.05, 1), function(start) {
-    point <- .latents_negative_binomial_maximize(y, posteriors, mean(y) * 1.01, start)
-    expect_equal(log(point$dispersion), reference, tolerance = 1e-4)
-  }))
+  starts <- c(1e-8, 1e-7, 0.05, 1)
+  reached <- vapply(starts, function(start) {
+    point <- latents:::.latents_negative_binomial_maximize(y, posteriors, mean(y) * 1.01, start)
+    log(point$dispersion)
+  }, numeric(1))
+  # The same maximum from every start; 1e-4 relative, the original tolerance.
+  expect_reference(reached, rep(reference, length(starts)),
+                   reference = "independent: NB2 profile likelihood in the dispersion, maximised by stats::optimize()",
+                   covers = "lpa()", quantity = "log dispersion of the M-step from each start",
+                   tolerance = 1e-4, measure = "relative", key = sprintf("start %g", starts),
+                   note = "Package side: the internal negative-binomial M-step (.latents_negative_binomial_maximize) behind lpa(count_model = \"negative_binomial\").")
 })

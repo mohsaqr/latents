@@ -1,5 +1,9 @@
 # Comparisons with independent references moved from tests/testthat/test-transitions.R,
 # so that they run in CI's equivalence job rather than under R CMD check.
+# Reference: the likelihood summed over every state path of every group and
+# group class (.transition_enumerate() below), base R.
+
+enumeration_reference <- "independent: likelihood enumerated over every state path, base R"
 
 .transition_fixture <- function(n_groups = 9L, occasions = 4L, seed = 99L) {
   set.seed(seed)
@@ -52,17 +56,21 @@ test_that("the recursion reproduces the likelihood enumeration gives", {
   cases <- list(
     list(profiles = 2L, types = 1L), list(profiles = 3L, types = 1L),
     list(profiles = 2L, types = 2L), list(profiles = 3L, types = 2L))
-  invisible(lapply(cases, function(case) {
+  # One row per case: the package's log likelihood and the enumerated one.
+  results <- do.call(rbind, lapply(cases, function(case) {
     fit <- quietly(lta(
       data, c("y1", "y2"), "g", n_profiles = case$profiles, time = "t",
       n_group_classes = case$types, n_starts = 1, seed = 4, max_iter = 25))
-    expect_equal(fit$log_likelihood,
-                 .transition_enumerate(continuous, NULL, fit$group_index,
-                                       data$t, fit),
-                 tolerance = 1e-10,
-                 label = sprintf("%d profiles, %d group classes",
-                                 case$profiles, case$types))
+    data.frame(setting = sprintf("%d profiles, %d group classes", case$profiles, case$types),
+               actual = as.numeric(logLik(fit)),
+               expected = .transition_enumerate(continuous, NULL, fit$group_index, data$t, fit))
   }))
+  expect_reference(data.frame(setting = results$setting, log_likelihood = results$actual),
+                   data.frame(setting = results$setting, log_likelihood = results$expected),
+                   reference = enumeration_reference,
+                   covers = c("lta()", "logLik.multilpa_transitions()"),
+                   quantity = "log likelihood, continuous indicators",
+                   tolerance = 1e-10, measure = "relative", key = "setting")
 })
 
 test_that("enumeration agrees for categorical, mixed and incomplete indicators", {
@@ -70,18 +78,26 @@ test_that("enumeration agrees for categorical, mixed and incomplete indicators",
   mixed <- quietly(lta(
     data, c("y1", "y2", "c1"), "g", n_profiles = 2L, time = "t",
     categorical = "c1", n_starts = 1, seed = 8, max_iter = 25))
-  expect_equal(mixed$log_likelihood,
-               .transition_enumerate(as.matrix(data[, c("y1", "y2")]),
-                                     mixed$categorical_data, mixed$group_index,
-                                     data$t, mixed), tolerance = 1e-10)
+  expect_reference(as.numeric(logLik(mixed)),
+                   .transition_enumerate(as.matrix(data[, c("y1", "y2")]),
+                                         mixed$categorical_data, mixed$group_index,
+                                         data$t, mixed),
+                   reference = enumeration_reference,
+                   covers = c("lta()", "logLik.multilpa_transitions()"),
+                   quantity = "log likelihood, mixed continuous and categorical indicators",
+                   tolerance = 1e-10, measure = "relative")
 
   pure <- quietly(lta(
     data, "c1", "g", n_profiles = 2L, time = "t", categorical = "c1",
     n_starts = 1, seed = 8, max_iter = 25))
-  expect_equal(pure$log_likelihood,
-               .transition_enumerate(matrix(numeric(0), nrow(data), 0L),
-                                     pure$categorical_data, pure$group_index,
-                                     data$t, pure), tolerance = 1e-10)
+  expect_reference(as.numeric(logLik(pure)),
+                   .transition_enumerate(matrix(numeric(0), nrow(data), 0L),
+                                         pure$categorical_data, pure$group_index,
+                                         data$t, pure),
+                   reference = enumeration_reference,
+                   covers = c("lta()", "logLik.multilpa_transitions()"),
+                   quantity = "log likelihood, categorical indicator only",
+                   tolerance = 1e-10, measure = "relative")
   expect_identical(pure$measurement_model, "categorical")
 
   incomplete <- data
@@ -90,10 +106,14 @@ test_that("enumeration agrees for categorical, mixed and incomplete indicators",
   fiml <- quietly(lta(
     incomplete, c("y1", "y2", "c1"), "g", n_profiles = 2L, time = "t",
     categorical = "c1", missing = "fiml", n_starts = 1, seed = 8, max_iter = 25))
-  expect_equal(fiml$log_likelihood,
-               .transition_enumerate(as.matrix(incomplete[, c("y1", "y2")]),
-                                     fiml$categorical_data, fiml$group_index,
-                                     incomplete$t, fiml), tolerance = 1e-10)
+  expect_reference(as.numeric(logLik(fiml)),
+                   .transition_enumerate(as.matrix(incomplete[, c("y1", "y2")]),
+                                         fiml$categorical_data, fiml$group_index,
+                                         incomplete$t, fiml),
+                   reference = enumeration_reference,
+                   covers = c("lta()", "logLik.multilpa_transitions()"),
+                   quantity = "log likelihood, incomplete mixed indicators (FIML)",
+                   tolerance = 1e-10, measure = "relative")
 })
 
 test_that("groups of one occasion contribute an initial state and no transition", {
@@ -105,8 +125,11 @@ test_that("groups of one occasion contribute an initial state and no transition"
     seed = 7, max_iter = 25))
   expect_identical(unname(fit$sequence_lengths[10L]), 1L)
   expect_equal(sum(fit$transition_counts), sum(fit$sequence_lengths - 1L))
-  expect_equal(fit$log_likelihood,
-               .transition_enumerate(as.matrix(short[, c("y1", "y2")]), NULL,
-                                     fit$group_index, short$t, fit),
-               tolerance = 1e-10)
+  expect_reference(as.numeric(logLik(fit)),
+                   .transition_enumerate(as.matrix(short[, c("y1", "y2")]), NULL,
+                                         fit$group_index, short$t, fit),
+                   reference = enumeration_reference,
+                   covers = c("lta()", "logLik.multilpa_transitions()"),
+                   quantity = "log likelihood, a group of one occasion",
+                   tolerance = 1e-10, measure = "relative")
 })

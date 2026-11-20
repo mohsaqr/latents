@@ -31,10 +31,24 @@ test_that("OPG standard errors reproduce glca on the same data", {
   fit <- multilca(data, vars = .lca_items, id = "g", n_profiles = 2,
                   n_group_classes = 2, profile_covariates = "z", n_starts = 1,
                   seed = 1)
-  expect_equal(fit$log_likelihood, -4486.5647, tolerance = 1e-7)
+  glca_note <- "glca 1.4.2 output typed into the test (see the comment above); no provenance fixture."
+  # glca prints the log likelihood to four decimals: 1e-7 relative, the original test's tolerance.
+  expect_reference(as.numeric(logLik(fit)), -4486.5647, reference = "glca",
+                   covers = c("multilca()", "logLik.multilpa_covariates()"),
+                   quantity = "log likelihood, two-level LCA with a covariate",
+                   tolerance = 1e-7, measure = "relative", note = glca_note)
   opg <- subset(parameter_inference(fit, vcov_type = "opg"), level == "profile")
-  expect_equal(sort(opg$standard_error), sort(c(0.16569, 0.16736, 0.13636)),
-               tolerance = 2e-3)
+  # glca names its two intercepts by its own class order; they are paired with
+  # latents' by size, as the original test did by sorting both. 2e-3 relative,
+  # the original tolerance: glca's errors are printed to five digits and glca
+  # stops its EM at its own criterion.
+  expect_reference(opg[c("term", "standard_error")],
+                   data.frame(term = c("group_class_1", "group_class_2", "z"),
+                              standard_error = c(0.16736, 0.16569, 0.13636)),
+                   reference = "glca",
+                   covers = c("multilca()", "parameter_inference.multilpa_covariates()"),
+                   quantity = "OPG standard errors of the class logits",
+                   tolerance = 2e-3, measure = "relative", key = "term", note = glca_note)
   # The observed information is what the curvature says; glca does not use it.
   observed <- subset(parameter_inference(fit), level == "profile" & term == "z")
   expect_lt(observed$standard_error, subset(opg, term == "z")$standard_error)

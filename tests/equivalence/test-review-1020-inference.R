@@ -39,9 +39,17 @@ test_that("direct-effect inference transforms the full covariance across predict
   mle_variance <- sum(stats::residuals(reference)^2) / nrow(data)
   reference_covariance <- summary(reference)$cov.unscaled * mle_variance
   inferred <- parameter_inference(shifted)
-  expect_equal(unname(attr(inferred, "covariance")[c(1, 3, 4), c(1, 3, 4)]),
-               unname(reference_covariance), tolerance = 2e-7)
-  expect_equal(inferred$estimate[c(1, 3, 4)], unname(stats::coef(reference)), tolerance = 2e-7)
+  # The one-class fit is this regression. 2e-7 relative, the original
+  # tolerance: the fit stops at tol = 1e-12 on the likelihood.
+  expect_reference(unname(attr(inferred, "covariance")[c(1, 3, 4), c(1, 3, 4)]),
+                   unname(reference_covariance), reference = "stats",
+                   covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "covariance of intercept and direct effects, shifted predictors",
+                   tolerance = 2e-7, measure = "relative")
+  expect_reference(inferred$estimate[c(1, 3, 4)], unname(stats::coef(reference)), reference = "stats",
+                   covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "intercept and direct effects, shifted predictors",
+                   tolerance = 2e-7, measure = "relative", key = c("(Intercept)", "z", "w"))
   # Independently form the normal-model sandwich in the original predictor
   # coordinates, then apply the known intercept transformation.
   reference <- stats::lm(y ~ z + w, data)
@@ -56,9 +64,13 @@ test_that("direct-effect inference transforms the full covariance across predict
   reference_covariance <- inverse %*% crossprod(unit_scores) %*% inverse * 20 / 19
   order <- c(1, 4, 2, 3)
   reference_covariance <- transform %*% reference_covariance[order, order] %*% t(transform)
-  expect_equal(unname(attr(parameter_inference(shifted, vcov_type = "robust"),
-                            "covariance_unconstrained")),
-               unname(reference_covariance), tolerance = 2e-7)
+  expect_reference(unname(attr(parameter_inference(shifted, vcov_type = "robust"),
+                               "covariance_unconstrained")),
+                   unname(reference_covariance),
+                   reference = "independent: CR1 sandwich of the normal regression, base R",
+                   covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "robust covariance, unconstrained scale, shifted predictors",
+                   tolerance = 2e-7, measure = "relative")
 })
 
 test_that("direct-effect charts use target-specific observations and preserve public covariates", {
@@ -75,18 +87,51 @@ test_that("direct-effect charts use target-specific observations and preserve pu
   expect_true(fit$converged)
   inference <- parameter_inference(fit)
   references <- list(a = stats::lm(a ~ z, data), b = stats::lm(b ~ z + w, data))
-  invisible(lapply(names(references), function(indicator) {
-    reference <- references[[indicator]]
-    variance <- mean(stats::residuals(reference)^2)
-    rows <- which((inference$parameter == "mean" & inference$term == indicator) |
-      (inference$parameter == "direct_effect" & startsWith(inference$term, paste0(indicator, ":"))))
-    expect_equal(inference$estimate[rows], unname(stats::coef(reference)), tolerance = 2e-6)
-    expect_equal(unname(attr(inference, "covariance")[rows, rows]),
-                 unname(summary(reference)$cov.unscaled * variance), tolerance = 2e-6)
-  }))
+  # One row per indicator and coefficient: the intercept (the profile mean)
+  # and the direct effects of that indicator, in the order lm() reports them.
+  rows_of <- function(indicator) {
+    which((inference$parameter == "mean" & inference$term == indicator) |
+            (inference$parameter == "direct_effect" &
+               startsWith(inference$term, paste0(indicator, ":"))))
+  }
+  coefficient_table <- function(values_of) {
+    do.call(rbind, lapply(names(references), function(indicator) {
+      data.frame(indicator = indicator,
+                 coefficient = names(stats::coef(references[[indicator]])),
+                 estimate = values_of(indicator))
+    }))
+  }
+  covariance_table <- function(matrix_of) {
+    do.call(rbind, lapply(names(references), function(indicator) {
+      values <- matrix_of(indicator)
+      terms <- names(stats::coef(references[[indicator]]))
+      data.frame(indicator = indicator,
+                 row = rep(terms, times = length(terms)),
+                 column = rep(terms, each = length(terms)),
+                 covariance = as.vector(values))
+    }))
+  }
+  # Each Gaussian indicator of a one-profile fit is its own regression on the
+  # rows where it is observed. 2e-6 relative, the original tolerance.
+  expect_reference(coefficient_table(\(indicator) inference$estimate[rows_of(indicator)]),
+                   coefficient_table(\(indicator) unname(stats::coef(references[[indicator]]))),
+                   reference = "stats", covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "intercepts and direct effects by indicator, FIML",
+                   tolerance = 2e-6, measure = "relative", key = c("indicator", "coefficient"))
+  expect_reference(covariance_table(\(indicator) {
+                     rows <- rows_of(indicator)
+                     unname(attr(inference, "covariance")[rows, rows])
+                   }),
+                   covariance_table(\(indicator) {
+                     reference <- references[[indicator]]
+                     summary(reference)$cov.unscaled * mean(stats::residuals(reference)^2)
+                   }),
+                   reference = "stats", covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "covariance of intercepts and direct effects by indicator, FIML",
+                   tolerance = 2e-6, measure = "relative", key = c("indicator", "row", "column"))
   expect_identical(colnames(fit$extra_data$direct$covariates), c("z", "w"))
   expect_identical(fit$extra_data$direct$effects$covariate_column, c(1L, 1L, 2L))
-  expect_identical(.multilpa_refit_arguments(fit)$direct_effects, c("a ~ z", "b ~ z + w"))
+  expect_identical(latents:::.multilpa_refit_arguments(fit)$direct_effects, c("a ~ z", "b ~ z + w"))
   expect_equal(predict(fit, newdata = data, type = "posterior"),
                predict(fit, type = "posterior"), tolerance = 1e-12)
 })

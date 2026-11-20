@@ -2,23 +2,34 @@
 # so that they run in CI's equivalence job rather than under R CMD check.
 
 test_that("constant raw outcomes can have identified regression residuals (A03)", {
-  .latents_local_seed(1027)
+  latents:::.latents_local_seed(1027)
   data <- data.frame(y = rep(2, 60), x = seq(-2, 3, length.out = 60),
                      o = stats::rnorm(60), w = 1)
-  invisible(lapply(list(y ~ 0 + x, y ~ 1 + offset(o)), function(formula) {
+  formulas <- list(y ~ 0 + x, y ~ 1 + offset(o))
+  cases <- expand.grid(formula = seq_along(formulas), weighted = c(FALSE, TRUE))
+  tables <- lapply(seq_len(nrow(cases)), function(row) {
+    formula <- formulas[[cases$formula[row]]]
+    weighted <- cases$weighted[row]
     reference <- stats::lm(formula, data)
-    invisible(lapply(c(FALSE, TRUE), function(weighted) {
-      fit <- mixture_regression(formula, data, 1, n_starts = 0, vcov_type = "none",
-                                 weights = if (weighted) "w" else NULL)
-      expect_true(fit$converged)
-      expect_equal(as.numeric(fit$params$beta), unname(stats::coef(reference)),
-                    tolerance = 1e-10)
-      expect_equal(unname(fit$params$sigma2), mean(stats::residuals(reference)^2),
-                    tolerance = 1e-10)
-      expect_equal(as.numeric(logLik(fit)), as.numeric(logLik(reference)),
-                    tolerance = 1e-10)
-    }))
-  }))
+    fit <- mixture_regression(formula, data, 1, n_starts = 0, vcov_type = "none",
+                              weights = if (weighted) "w" else NULL)
+    expect_true(fit$converged)
+    case <- data.frame(formula = deparse(formula), weighted = weighted)
+    # Each formula has one coefficient.
+    list(actual = data.frame(case, coefficient = as.numeric(fit$params$beta),
+                             residual_variance = unname(fit$params$sigma2),
+                             log_likelihood = as.numeric(logLik(fit))),
+         expected = data.frame(case, coefficient = unname(stats::coef(reference)),
+                               residual_variance = mean(stats::residuals(reference)^2),
+                               log_likelihood = as.numeric(stats::logLik(reference))))
+  })
+  # stats::lm(): the maximum-likelihood residual variance is the mean squared residual.
+  expect_reference(do.call(rbind, lapply(tables, `[[`, "actual")),
+                   do.call(rbind, lapply(tables, `[[`, "expected")),
+                   reference = "stats",
+                   covers = c("mixture_regression()", "logLik.latents_mixture_regression()"),
+                   quantity = "one-class Gaussian regression of a constant outcome",
+                   tolerance = 1e-10, measure = "relative", key = c("formula", "weighted"))
   expect_error(mixture_regression(y ~ 1, data, 1, n_starts = 0),
                 class = "latents_bad_data")
   # The residual-scale check must follow the public empty-sample refusal.

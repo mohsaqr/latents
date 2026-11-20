@@ -55,10 +55,15 @@ test_that("slopes by group class reproduce the likelihood written from its defin
   data <- .slopes_fixture()
   fit <- .slopes_fit(data)
   expect_identical(fit$profile_slopes, "group_class")
-  expect_equal(fit$log_likelihood, .slopes_likelihood(fit, data), tolerance = 1e-10)
   shared <- .slopes_fit(data, profile_slopes = "shared")
-  expect_equal(shared$log_likelihood, .slopes_likelihood(shared, data),
-               tolerance = 1e-10)
+  fits <- list(group_class = fit, shared = shared)
+  # The same likelihood summed twice; only the order of the additions differs.
+  expect_reference(vapply(fits, \(model) as.numeric(logLik(model)), numeric(1)),
+                   vapply(fits, \(model) .slopes_likelihood(model, data), numeric(1)),
+                   reference = "independent: two-level likelihood with group-class slopes, base R",
+                   covers = c("multilpa()", "logLik.multilpa_covariates()"),
+                   quantity = "log likelihood by slope model", tolerance = 1e-10,
+                   measure = "relative")
 })
 
 test_that("scores and standard errors with slopes by group class match numerical ones", {
@@ -66,24 +71,37 @@ test_that("scores and standard errors with slopes by group class match numerical
   fit <- .slopes_fit(data)
   skip_if_not(fit$converged, "no start converged on this fixture")
   x <- sweep(as.matrix(data[c("y1", "y2")]), 2L, fit$center, "-")
-  theta <- .multilpa_cov_encode(fit)
+  theta <- latents:::.multilpa_cov_encode(fit)
   negative <- function(value) {
-    pieces <- .multilpa_cov_decode(value, fit)
-    -.multilpa_cov_expectation(x, fit$group_index, pieces$parameters,
-                               fit$profile_design, fit$group_design,
-                               pieces$beta, pieces$gamma, NULL)$log_likelihood
+    pieces <- latents:::.multilpa_cov_decode(value, fit)
+    -latents:::.multilpa_cov_expectation(x, fit$group_index, pieces$parameters,
+                                         fit$profile_design, fit$group_design,
+                                         pieces$beta, pieces$gamma, NULL)$log_likelihood
   }
   set.seed(9)
   away <- theta + 0.05 * stats::rnorm(length(theta))
-  analytic <- colSums(.multilpa_cov_group_scores(away, x, fit, NULL))
+  analytic <- colSums(latents:::.multilpa_cov_group_scores(away, x, fit, NULL))
   numerical <- vapply(seq_along(away), function(index) {
     step <- replace(numeric(length(away)), index, 1e-5)
     -(negative(away + step) - negative(away - step)) / 2e-5
   }, numeric(1))
-  expect_lt(max(abs(analytic - numerical)), 1e-5)
   reported <- sqrt(diag(vcov(fit, scale = "unconstrained")))
+  coordinates <- names(reported)
+  # 1e-5 absolute, the original bound: a central difference with step 1e-5
+  # carries a truncation and rounding error of that order.
+  expect_reference(unname(analytic), numerical,
+                   reference = "independent: central differences (step 1e-5) of the covariate likelihood",
+                   covers = "multilpa()", quantity = "score off the maximum, slopes by group class",
+                   tolerance = 1e-5, measure = "absolute", key = coordinates,
+                   note = "Package side: the internal analytic group scores (.multilpa_cov_group_scores) behind vcov(); reference: central differences of the package's internal likelihood (.multilpa_cov_expectation).")
   reference <- sqrt(diag(solve(stats::optimHess(theta, negative))))
-  expect_lt(max(abs(reported - reference) / reference), 1e-4)
+  # 1e-4 relative, the original bound: optimHess() without a gradient takes
+  # second finite differences of the likelihood.
+  expect_reference(reported, unname(reference), reference = "stats",
+                   covers = c("multilpa()", "vcov.multilpa_covariates()"),
+                   quantity = "standard errors, slopes by group class, unconstrained scale",
+                   tolerance = 1e-4, measure = "relative",
+                   note = "Reference: the inverse of stats::optimHess() of the package's internal covariate likelihood (.multilpa_cov_expectation) at the estimate.")
   expect_equal(parameter_inference(fit, data)$standard_error,
                parameter_inference(fit)$standard_error)
 })

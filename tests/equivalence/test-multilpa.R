@@ -39,8 +39,12 @@ test_that("explicit starts give the independently calculated initial likelihood"
                    class = "latents_thin_profiles"),
     "converg|iteration"
   )
-  expect_equal(fit$log_likelihood_history[1L], expected_log_likelihood,
-               tolerance = 1e-10)
+  # The likelihood at the explicit starts, before the first EM step: direct
+  # products of normal densities, summed over the group classes.
+  expect_reference(fit$log_likelihood_history[1L], expected_log_likelihood,
+                   reference = "independent: two-level mixture likelihood by direct probability arithmetic, base R",
+                   covers = "multilpa()", quantity = "log likelihood at the explicit starts",
+                   tolerance = 1e-10, measure = "relative")
   expect_false(fit$converged)
   expect_equal(fit$iterations, 1L)
   expect_length(fit$log_likelihood_history, 2L)

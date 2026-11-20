@@ -8,7 +8,13 @@ test_that("weighted Gaussian residuals use the fitted distribution's weights", {
   scatter <- crossprod(residual * d$w, residual)
   expected <- scatter[1, 2] / sqrt(prod(diag(scatter)))
   actual <- get_results(fit, "residuals")
-  expect_equal(actual$observed, expected, tolerance = 1e-12)
+  # The weighted correlation of the residuals about the fitted means, by hand.
+  expect_reference(actual[c("indicator_1", "indicator_2", "observed")],
+                   data.frame(indicator_1 = "a", indicator_2 = "b", observed = expected),
+                   reference = "independent: weighted residual correlation, base R",
+                   covers = c("multilpa()", "get_results.multilpa()"),
+                   quantity = "weighted Gaussian residual correlation, one profile",
+                   tolerance = 1e-12, measure = "relative", key = c("indicator_1", "indicator_2"))
   expect_lt(actual$observed, -0.7)
   expect_equal(actual$effective_n, sum(fit$sampling_weights))
 })
@@ -21,7 +27,13 @@ test_that("weighted categorical residuals use weighted cell counts", {
   independent <- outer(rowSums(counts), colSums(counts)) / sum(counts)
   expected <- sqrt(sum((counts - independent)^2 / independent) / sum(counts))
   actual <- get_results(fit, "residuals")
-  expect_equal(actual$observed, expected, tolerance = 1e-12)
+  # Cramer's V of the weighted cell counts, from xtabs().
+  expect_reference(actual[c("indicator_1", "indicator_2", "observed")],
+                   data.frame(indicator_1 = "a", indicator_2 = "b", observed = expected),
+                   reference = "independent: Cramer's V of weighted cell counts, stats::xtabs()",
+                   covers = c("multilca()", "get_results.multilpa()"),
+                   quantity = "weighted categorical residual association, one class",
+                   tolerance = 1e-12, measure = "relative", key = c("indicator_1", "indicator_2"))
   expect_equal(actual$expected, 0, tolerance = 1e-12)
 })
 

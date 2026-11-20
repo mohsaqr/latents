@@ -59,51 +59,76 @@ additive_theta <- function(fit) {
 }
 
 test_that("the fitted point is stationary for the dense likelihood", {
-  skip_if_not_installed("numDeriv")
+  skip_without_reference("numDeriv")
   blocks <- additive_blocks(additive_small, c("y1", "y2"), "group")
-  lapply(c("varying", "equal"), \(between_variance) {
+  sides <- lapply(c("varying", "equal"), \(between_variance) {
     fit <- additive_fit_quiet(additive_small, c("y1", "y2"), "group",
                               n_group_classes = 2, family = "additive",
                               between_variance = between_variance,
                               tol = 1e-12, max_iter = 5000, seed = 7)
     expect_false(any(fit$between_zero))
     theta <- additive_theta(fit)
-    expect_equal(additive_dense_loglik(theta, blocks, 2L, 2L, between_variance),
-                 fit$log_likelihood, tolerance = 1e-10)
     gradient <- numDeriv::grad(additive_dense_loglik, theta, blocks = blocks,
                                n_classes = 2L, d = 2L,
                                between_variance = between_variance)
-    expect_lt(max(abs(gradient)), 1e-3)
+    list(log_likelihood = c(as.numeric(logLik(fit)),
+                            additive_dense_loglik(theta, blocks, 2L, 2L, between_variance)),
+         gradient = data.frame(between_variance = between_variance,
+                               parameter = seq_along(theta), gradient = gradient))
   })
+  between_variances <- c("varying", "equal")
+  expect_reference(setNames(vapply(sides, \(side) side$log_likelihood[[1L]], numeric(1)), between_variances),
+                   setNames(vapply(sides, \(side) side$log_likelihood[[2L]], numeric(1)), between_variances),
+                   reference = "independent: dense-covariance mixture likelihood (helper-additive-dense.R)",
+                   covers = c("multilpa()", "logLik.multilpa_additive()"),
+                   quantity = "log likelihood at the fitted point, by between variance",
+                   tolerance = 1e-10, measure = "relative")
+  gradients <- do.call(rbind, lapply(sides, `[[`, "gradient"))
+  # A maximum has a zero gradient: the package side is that zero, the
+  # reference the numerical gradient of the dense likelihood at the fitted
+  # point. The original bound, max |gradient| < 1e-3, absolute.
+  expect_reference(transform(gradients, gradient = 0), gradients, reference = "numDeriv",
+                   covers = "multilpa()",
+                   quantity = "gradient of the dense likelihood at the fitted maximum",
+                   tolerance = 1e-3, measure = "absolute", key = c("between_variance", "parameter"),
+                   note = "Reference: numDeriv::grad() of the dense-covariance likelihood written in this file, which shares no code with the package. Parameters in the order of additive_theta(): means, log within, log between, class logits.")
 })
 
 test_that("the between-variance score equals a numerical derivative", {
-  skip_if_not_installed("numDeriv")
-  stats <- .additive_prepare(additive_small, c("y1", "y2"), "group")
+  skip_without_reference("numDeriv")
+  stats <- latents:::.additive_prepare(additive_small, c("y1", "y2"), "group")
   point <- list(means = rbind(c(-0.5, 0.2), c(1, -0.4)),
                 between = rbind(c(0.2, 0.6), c(0.4, 0.1)),
                 within = c(0.9, 1.2), weights = c(0.3, 0.7))
-  analytic <- .additive_between_score(
-    stats, point, .additive_expectation(stats, point)$posterior)
+  analytic <- latents:::.additive_between_score(
+    stats, point, latents:::.additive_expectation(stats, point)$posterior)
   numeric_score <- matrix(numDeriv::grad(\(v) {
     moved <- point
     moved$between[] <- v
-    .additive_expectation(stats, moved)$log_likelihood
+    latents:::.additive_expectation(stats, moved)$log_likelihood
   }, as.vector(point$between)), 2L)
-  expect_equal(analytic, numeric_score, tolerance = 1e-7)
-  expect_equal(.additive_between_score(
-    stats, point, .additive_expectation(stats, point)$posterior, "equal"),
-    colSums(numeric_score), tolerance = 1e-7)
+  # numDeriv's error is absolute near zero; a relative measure would judge
+  # the rounding noise of a near-zero score. The original tolerance, 1e-7.
+  expect_reference(unname(analytic), numeric_score, reference = "numDeriv",
+                   covers = "multilpa()", quantity = "between-variance score, class by indicator",
+                   tolerance = 1e-7, measure = "scaled",
+                   note = "Package side: the internal between-variance score (.additive_between_score) of the M-step of multilpa(family = 'additive'); reference: numDeriv::grad() of the package's likelihood.")
+  expect_reference(unname(latents:::.additive_between_score(
+    stats, point, latents:::.additive_expectation(stats, point)$posterior, "equal")),
+    colSums(numeric_score), reference = "numDeriv",
+    covers = "multilpa()", quantity = "between-variance score, equal across classes, by indicator",
+    tolerance = 1e-7, measure = "scaled",
+    note = "Package side: the internal between-variance score (.additive_between_score, 'equal') of multilpa(family = 'additive', between_variance = 'equal').")
 })
 
 test_that("with between variances held at zero, EM matches the group-level mixture", {
-  skip_if_not_installed("numDeriv")
-  stats <- .additive_prepare(additive_small, c("y1", "y2"), "group")
+  skip_without_reference("numDeriv")
+  stats <- latents:::.additive_prepare(additive_small, c("y1", "y2"), "group")
   held <- matrix(TRUE, 2L, 2L)
-  structure <- .additive_structure("additive", "varying")
-  start <- .additive_initialize(stats, 2L, structure, 1e-6, 1L)
+  structure <- latents:::.additive_structure("additive", "varying")
+  start <- latents:::.additive_initialize(stats, 2L, structure, 1e-6, 1L)
   start$between[] <- 0
-  fit <- .additive_em(stats, start, structure, 1e-6, 5000L, 1e-13, held)
+  fit <- latents:::.additive_em(stats, start, structure, 1e-6, 5000L, 1e-13, held)
   expect_true(fit$converged)
   expect_true(all(diff(fit$history) >= -1e-9))
   blocks <- additive_blocks(additive_small, c("y1", "y2"), "group")
@@ -122,14 +147,26 @@ test_that("with between variances held at zero, EM matches the group-level mixtu
   }
   theta <- c(as.vector(fit$parameters$means), log(fit$parameters$within[1, ]),
              log(fit$parameters$weights[2] / fit$parameters$weights[1]))
-  expect_equal(mixture(theta), fit$expectation$log_likelihood, tolerance = 1e-10)
-  expect_lt(max(abs(numDeriv::grad(mixture, theta))), 1e-3)
+  note <- "Package side: the internal EM (.additive_em) of multilpa(family = 'additive') with the between variances held at zero."
+  expect_reference(fit$expectation$log_likelihood, mixture(theta),
+                   reference = "independent: group-level Gaussian mixture likelihood, stats::dnorm()",
+                   covers = "multilpa()", quantity = "log likelihood, between variances held at zero",
+                   tolerance = 1e-10, measure = "relative", note = note)
+  # A fixed point of EM has a zero gradient. The original bound,
+  # max |gradient| < 1e-3, absolute.
+  expect_reference(rep(0, length(theta)), numDeriv::grad(mixture, theta), reference = "numDeriv",
+                   covers = "multilpa()",
+                   quantity = "gradient of the group-level mixture at the EM fixed point",
+                   tolerance = 1e-3, measure = "absolute",
+                   note = paste(note, "Reference: numDeriv::grad() of the group-level mixture likelihood written in this test."))
   posterior_reference <- t(vapply(blocks, \(x) {
     joint <- vapply(1:2, \(h) log(fit$parameters$weights[h]) + sum(stats::dnorm(
       x, rep(fit$parameters$means[h, ], each = nrow(x)),
       rep(sqrt(fit$parameters$within[1, ]), each = nrow(x)), log = TRUE)), numeric(1))
     exp(joint - max(joint)) / sum(exp(joint - max(joint)))
   }, numeric(2)))
-  expect_equal(unname(fit$expectation$posterior), posterior_reference,
-               tolerance = 1e-10)
+  expect_reference(unname(fit$expectation$posterior), posterior_reference,
+                   reference = "independent: group-level Gaussian mixture likelihood, stats::dnorm()",
+                   covers = "multilpa()", quantity = "group class posterior, between variances held at zero",
+                   tolerance = 1e-10, measure = "relative", note = note)
 })

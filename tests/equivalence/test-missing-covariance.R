@@ -25,12 +25,25 @@ test_that("full covariance FIML agrees with independent direct Gaussian likeliho
   reference <- optim(c(0, 2, 0, 0, 0), objective, method = "BFGS",
                      control = list(reltol = 1e-13, maxit = 2000))
   expect_equal(reference$convergence, 0L)
-  expect_equal(fit$log_likelihood, -reference$value, tolerance = 1e-9)
-  expect_equal(as.numeric(fit$means), reference$par[1:2], tolerance = 1e-5)
+  optimum <- "independent: bivariate normal FIML likelihood maximised by stats::optim()"
+  expect_reference(fit$log_likelihood, -reference$value, reference = optimum,
+                   covers = "multilpa()", quantity = "FIML log likelihood, full covariance",
+                   tolerance = 1e-9, measure = "relative")
+  # BFGS stops at a relative change of 1e-13 in the objective, which fixes the
+  # parameters only to about its square root: 1e-5, the original tolerance.
+  # Scaled, not relative: the mean of x is near zero (about -0.05), where a
+  # relative measure would judge the optimiser's absolute stopping noise.
+  expect_reference(as.numeric(fit$means), reference$par[1:2], reference = optimum,
+                   covers = "multilpa()", quantity = "FIML means, full covariance",
+                   tolerance = 1e-5, measure = "scaled", key = c("x", "y"))
   expected_covariance <- matrix(c(exp(2 * reference$par[3]),
     tanh(reference$par[5]) * exp(sum(reference$par[3:4])),
     tanh(reference$par[5]) * exp(sum(reference$par[3:4])),
-    exp(2 * reference$par[4])), 2L)
-  expect_equal(unname(fit$covariances[, , 1]), expected_covariance, tolerance = 1e-5)
+    exp(2 * reference$par[4])), 2L, dimnames = list(c("x", "y"), c("x", "y")))
+  fitted_covariance <- matrix(fit$covariances[, , 1], 2L, dimnames = list(c("x", "y"), c("x", "y")))
+  # Same reason for 1e-5 as the means.
+  expect_reference(fitted_covariance, expected_covariance, reference = optimum,
+                   covers = "multilpa()", quantity = "FIML covariance matrix",
+                   tolerance = 1e-5, measure = "relative")
   expect_true(all(diff(fit$log_likelihood_history) >= -1e-9))
 })

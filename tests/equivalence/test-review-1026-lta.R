@@ -1,5 +1,9 @@
 # Comparisons with independent references moved from tests/testthat/test-review-1026-lta.R,
 # so that they run in CI's equivalence job rather than under R CMD check.
+# Reference: every profile path of every person enumerated in base R
+# (review_brute() below), with the densities and links written here.
+
+brute_reference <- "independent: brute-force path enumeration, base R"
 
 review_lta_data <- function(n = 30L, n_occasions = 3L, seed = 1L, stay = 0.75) {
   withr::with_seed(seed, {
@@ -92,12 +96,22 @@ test_that("homogeneous lta() matches the brute-force path sum on unequal sequenc
                         function(g) fit$initial_probabilities[1L, ],
                         function(g, t) fit$transition_probabilities[, , 1L])
   per_person <- vapply(brute, `[[`, numeric(1), "log_likelihood")
-  expect_equal(fit$log_likelihood, sum(per_person), tolerance = 1e-10)
-  expect_equal(unname(fit$group_log_likelihood), per_person, tolerance = 1e-10)
-  expect_equal(unname(fit$subject_posteriors),
-               review_place(brute, rows, nrow(data)), tolerance = 1e-10)
-  expect_equal(unname(fit$transition_counts[, , 1L]),
-               Reduce(`+`, lapply(brute, `[[`, "moves")), tolerance = 1e-10)
+  expect_reference(as.numeric(logLik(fit)), sum(per_person), reference = brute_reference,
+                   covers = c("lta()", "logLik.multilpa_transitions()"),
+                   quantity = "log likelihood, homogeneous, unequal sequences",
+                   tolerance = 1e-10, measure = "relative")
+  expect_reference(unname(fit$group_log_likelihood), unname(per_person), reference = brute_reference,
+                   covers = "lta()", quantity = "per-person log likelihood, homogeneous, unequal sequences",
+                   tolerance = 1e-10, measure = "relative")
+  expect_reference(unname(fit$subject_posteriors), review_place(brute, rows, nrow(data)),
+                   reference = brute_reference, covers = "lta()",
+                   quantity = "occupancy posteriors, homogeneous, unequal sequences",
+                   tolerance = 1e-10, measure = "relative")
+  expect_reference(unname(fit$transition_counts[, , 1L]),
+                   Reduce(`+`, lapply(brute, `[[`, "moves")), reference = brute_reference,
+                   covers = "lta()", quantity = "expected move counts, homogeneous, unequal sequences",
+                   tolerance = 1e-10, measure = "relative")
+  # Unit checks: posteriors and transition rows are distributions.
   expect_equal(unname(rowSums(fit$subject_posteriors)), rep(1, nrow(data)),
                tolerance = 1e-12)
   expect_equal(unname(rowSums(fit$transition_probabilities[, , 1L])), c(1, 1),
@@ -107,7 +121,7 @@ test_that("homogeneous lta() matches the brute-force path sum on unequal sequenc
 test_that("covariate transitions and initial states match the brute-force path sum", {
   data <- review_lta_data(n = 30L, n_occasions = 3L, seed = 5L)
   data <- subset(data, !(id %in% 1:6 & time == 3))
-  fit <- suppressWarnings(lta(
+  fit <- quietly(lta(
     data, vars = c("y1", "y2"), id = "id", n_profiles = 2, time = "time",
     n_starts = 2, seed = 1, transitions = "occasion", transition_covariates = "w",
     initial_covariates = "z"))
@@ -122,14 +136,21 @@ test_that("covariate transitions and initial states match the brute-force path s
     function(g) review_initial(initial, c(1, data$z[rows[[g]][1L]])),
     function(g, t) review_transition(transition, c(as.numeric(2:3 == t),
                                                    data$w[rows[[g]][t]])))
-  expect_equal(fit$log_likelihood, sum(vapply(brute, `[[`, numeric(1), "log_likelihood")),
-               tolerance = 1e-10)
-  expect_equal(unname(fit$subject_posteriors), review_place(brute, rows, nrow(data)),
-               tolerance = 1e-10)
+  expect_reference(as.numeric(logLik(fit)), sum(vapply(brute, `[[`, numeric(1), "log_likelihood")),
+                   reference = brute_reference, covers = c("lta()", "logLik.multilpa_lta()"),
+                   quantity = "log likelihood, covariate transitions and initial states",
+                   tolerance = 1e-10, measure = "relative")
+  expect_reference(unname(fit$subject_posteriors), review_place(brute, rows, nrow(data)),
+                   reference = brute_reference, covers = "lta()",
+                   quantity = "occupancy posteriors, covariate transitions and initial states",
+                   tolerance = 1e-10, measure = "relative")
   pairs <- Reduce(`+`, lapply(fit$expectation$moments[[1L]]$pairs,
                               function(p) apply(p, c(2L, 3L), sum)))
-  expect_equal(pairs, Reduce(`+`, lapply(brute, `[[`, "moves")), tolerance = 1e-10)
-  # Every model-implied transition row is a distribution.
+  expect_reference(unname(pairs), Reduce(`+`, lapply(brute, `[[`, "moves")),
+                   reference = brute_reference, covers = "lta()",
+                   quantity = "expected move counts, covariate transitions and initial states",
+                   tolerance = 1e-10, measure = "relative")
+  # Unit check: every model-implied transition row is a distribution.
   probabilities <- get_results(fit, "transitions")
   totals <- aggregate(probability ~ occasion + from, data = probabilities, FUN = sum)
   expect_equal(totals$probability, rep(1, nrow(totals)), tolerance = 1e-12)
@@ -139,9 +160,9 @@ test_that("second-order and mover-stayer likelihoods match the brute-force path 
   data <- review_lta_data(n = 30L, n_occasions = 4L, seed = 7L, stay = 0.65)
   data <- subset(data, !(id %in% 1:5 & time == 4))
   rows <- review_rows(data)
-  second <- suppressWarnings(lta(data, vars = c("y1", "y2"), id = "id",
-                                 n_profiles = 2, time = "time", n_starts = 2,
-                                 seed = 1, order = 2))
+  second <- quietly(lta(data, vars = c("y1", "y2"), id = "id",
+                        n_profiles = 2, time = "time", n_starts = 2,
+                        seed = 1, order = 2))
   block <- second$measurement[[1L]]
   density <- lapply(rows, function(r) {
     review_gauss(data, block$means, block$variances)[r, , drop = FALSE]
@@ -167,11 +188,14 @@ test_that("second-order and mover-stayer likelihoods match the brute-force path 
     values <- vapply(seq_len(nrow(paths)), function(r) path_log(dens, paths[r, ]), numeric(1))
     max(values) + log(sum(exp(values - max(values))))
   }, numeric(1))
-  expect_equal(second$log_likelihood, sum(brute_second), tolerance = 1e-10)
+  expect_reference(as.numeric(logLik(second)), sum(brute_second), reference = brute_reference,
+                   covers = c("lta()", "logLik.multilpa_lta()"),
+                   quantity = "log likelihood, second-order transitions",
+                   tolerance = 1e-10, measure = "relative")
 
-  stayers <- suppressWarnings(lta(data, vars = c("y1", "y2"), id = "id",
-                                  n_profiles = 2, time = "time", n_starts = 2,
-                                  seed = 1, mover_stayer = TRUE))
+  stayers <- quietly(lta(data, vars = c("y1", "y2"), id = "id",
+                         n_profiles = 2, time = "time", n_starts = 2,
+                         seed = 1, mover_stayer = TRUE))
   block <- stayers$measurement[[1L]]
   density <- lapply(rows, function(r) {
     review_gauss(data, block$means, block$variances)[r, , drop = FALSE]
@@ -185,14 +209,17 @@ test_that("second-order and mover-stayer likelihoods match the brute-force path 
                         function(g, t) moves), `[[`, numeric(1), "log_likelihood")
   }, numeric(length(rows)))
   mixed <- log(exp(by_class) %*% stayers$group_probabilities)
-  expect_equal(stayers$log_likelihood, sum(mixed), tolerance = 1e-10)
+  expect_reference(as.numeric(logLik(stayers)), sum(mixed), reference = brute_reference,
+                   covers = c("lta()", "logLik.multilpa_lta()"),
+                   quantity = "log likelihood, mover-stayer",
+                   tolerance = 1e-10, measure = "relative")
 })
 
 test_that("the brute-force likelihood is invariant to relabelling the profiles", {
   data <- review_lta_data(n = 25L, n_occasions = 3L, seed = 11L)
   fit <- lta(data, vars = c("y1", "y2"), id = "id", n_profiles = 2, time = "time",
              n_starts = 1, seed = 1)
-  permuted <- .lta_permute_transitions(fit, c(2L, 1L), 1L)
+  permuted <- latents:::.lta_permute_transitions(fit, c(2L, 1L), 1L)
   rows <- review_rows(data)
   total <- function(x) {
     density <- review_gauss(data, x$means, x$variances)
@@ -201,8 +228,12 @@ test_that("the brute-force likelihood is invariant to relabelling the profiles",
                             function(g, t) x$transition_probabilities[, , 1L]),
                `[[`, numeric(1), "log_likelihood"))
   }
+  # Unit check: relabelling leaves the enumerated likelihood unchanged.
   expect_equal(total(permuted), total(fit), tolerance = 1e-12)
-  expect_equal(total(fit), fit$log_likelihood, tolerance = 1e-10)
+  expect_reference(as.numeric(logLik(fit)), total(fit), reference = brute_reference,
+                   covers = c("lta()", "logLik.multilpa_transitions()"),
+                   quantity = "log likelihood, homogeneous, equal sequences",
+                   tolerance = 1e-10, measure = "relative")
 })
 
 test_that("the step-three chain matches its brute-force likelihood and numerical scores", {
@@ -212,7 +243,7 @@ test_that("the step-three chain matches its brute-force likelihood and numerical
   data[data$id == 40, c("y1", "y2")] <- NA
   fit <- lta(data, vars = c("y1", "y2"), id = "id", n_profiles = 2, time = "time",
              n_starts = 1, seed = 1, missing = "fiml")
-  inputs <- .lta_three_step_inputs(fit, data, "z", "w")
+  inputs <- latents:::.lta_three_step_inputs(fit, data, "z", "w")
   observed <- rowSums(!is.na(data[c("y1", "y2")])) > 0
   expect_true(all(is.na(inputs$modal[!observed])))
   expect_false(anyNA(inputs$modal[observed]))
@@ -222,16 +253,22 @@ test_that("the step-three chain matches its brute-force likelihood and numerical
   shares <- colMeans(fit$subject_posteriors[observed, ])
   joint <- sweep(exp(review_gauss(data, fit$means, fit$variances)), 2L, shares, "*")
   posterior <- joint / rowSums(joint)
-  expect_equal(.lta_occasion_posteriors(fit), posterior, tolerance = 1e-12)
+  step_note <- "Package side: the internal step-two and step-three routines (.lta_occasion_posteriors, .lta_three_step_inputs, .lta_three_step_evaluate) behind r3step()."
+  expect_reference(unname(latents:::.lta_occasion_posteriors(fit)), unname(posterior),
+                   reference = brute_reference, covers = "r3step()",
+                   quantity = "occasion posteriors of step two, with missing occasions",
+                   tolerance = 1e-12, measure = "relative", note = step_note)
   modal <- max.col(posterior[observed, ], ties.method = "first")
   errors <- outer(1:2, 1:2, Vectorize(function(k, j) {
     sum(posterior[observed, k] * (modal == j)) / sum(posterior[observed, k])
   }))
-  expect_equal(unname(inputs$errors), errors, tolerance = 1e-12)
+  expect_reference(unname(inputs$errors), errors, reference = brute_reference,
+                   covers = "r3step()", quantity = "classification-error matrix, with missing occasions",
+                   tolerance = 1e-12, measure = "relative", note = step_note)
   expect_equal(unname(rowSums(inputs$errors)), c(1, 1), tolerance = 1e-12)
   # Step three at an arbitrary point.
   theta <- c(0.3, -0.4, -1.2, 0.5, -0.8, -0.6)
-  evaluated <- .lta_three_step_evaluate(theta, inputs)
+  evaluated <- latents:::.lta_three_step_evaluate(theta, inputs)
   rows <- review_rows(data)
   emission <- lapply(rows, function(r) {
     t(vapply(r, function(i) if (is.na(inputs$modal[i])) c(0, 0) else
@@ -242,13 +279,22 @@ test_that("the step-three chain matches its brute-force likelihood and numerical
     function(g, t) review_transition(array(theta[3:6], c(2L, 1L, 2L)),
                                      c(1, data$w[rows[[g]][t]]))),
     `[[`, numeric(1), "log_likelihood")
-  expect_equal(evaluated$log_likelihood, brute, tolerance = 1e-10)
+  # Scaled by max(1, |reference|): the wholly missing person's log likelihood
+  # is zero in the package and zero only up to rounding in the path sum, and
+  # the other persons' values are logs of probabilities near zero.
+  expect_reference(evaluated$log_likelihood, brute, reference = brute_reference,
+                   covers = "r3step()", quantity = "per-person step-three log likelihood at a fixed point",
+                   tolerance = 1e-10, measure = "scaled", note = step_note)
   # The wholly missing person contributes neither likelihood nor score.
   expect_equal(evaluated$log_likelihood[40L], 0, tolerance = 1e-12)
   expect_equal(unname(evaluated$scores[40L, ]), rep(0, 6L), tolerance = 1e-12)
-  skip_if_not_installed("numDeriv")
+  skip_without_reference("numDeriv")
   numerical <- numDeriv::jacobian(function(v) {
-    .lta_three_step_evaluate(v, inputs)$log_likelihood
+    latents:::.lta_three_step_evaluate(v, inputs)$log_likelihood
   }, theta)
-  expect_equal(unname(evaluated$scores), numerical, tolerance = 1e-6)
+  # Scaled: numDeriv's error is absolute near zero, and many per-person scores
+  # are near zero (the wholly missing person's are exactly zero).
+  expect_reference(unname(evaluated$scores), numerical, reference = "numDeriv",
+                   covers = "r3step()", quantity = "per-person step-three scores at a fixed point",
+                   tolerance = 1e-6, measure = "scaled", note = step_note)
 })

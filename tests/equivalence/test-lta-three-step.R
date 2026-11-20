@@ -1,5 +1,10 @@
 # Comparisons with independent references moved from tests/testthat/test-lta-three-step.R,
 # so that they run in CI's equivalence job rather than under R CMD check.
+# References: the occasion posteriors, the classification-error matrix and the
+# step-three likelihood written out here from their definitions, the
+# likelihood summed over every profile path.
+
+three_step_reference <- "independent: step-three path likelihood and classification errors, base R"
 
 markov_fixture <- function(n = 200L, occasions = 4L, seed = 12L) {
   old <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())
@@ -46,12 +51,17 @@ test_that("the step-three likelihood equals a sum over every path", {
       stats::dnorm(data$y2, fit$means[k, "y2"], sqrt(fit$variances[k, "y2"]))
   }, numeric(nrow(data)))
   posteriors <- joint / rowSums(joint)
-  expect_equal(unname(latents:::.lta_occasion_posteriors(fit)), unname(posteriors),
-               tolerance = 1e-10)
+  expect_reference(unname(latents:::.lta_occasion_posteriors(fit)), unname(posteriors),
+                   reference = three_step_reference, covers = "r3step()",
+                   quantity = "occasion posteriors of step two", tolerance = 1e-10,
+                   measure = "relative",
+                   note = "Package side: the internal occasion posteriors (.lta_occasion_posteriors) from which r3step() assigns the modal profiles.")
   modal <- max.col(posteriors, ties.method = "first")
-  expect_equal(unname(errors), unname(t(vapply(1:2, function(k) {
+  # D[k, j]: the posterior mass of profile k assigned to profile j.
+  expect_reference(unname(errors), unname(t(vapply(1:2, function(k) {
     vapply(1:2, function(j) sum(posteriors[modal == j, k]), numeric(1)) / sum(posteriors[, k])
-  }, numeric(2)))), tolerance = 1e-10)
+  }, numeric(2)))), reference = three_step_reference, covers = "r3step()",
+  quantity = "classification-error matrix", tolerance = 1e-10, measure = "relative")
   paths <- as.matrix(expand.grid(rep(list(1:2), 4L)))
   coefficient <- function(block, from, term, theta) {
     theta[result$block == block & (is.na(result$from) | result$from == from) &
@@ -77,12 +87,20 @@ test_that("the step-three likelihood equals a sum over every path", {
       })))
     }, numeric(1)))
   }
-  expect_equal(attr(result, "log_likelihood"), path_likelihood(result$estimate),
-               tolerance = 1e-9)
+  expect_reference(attr(result, "log_likelihood"), path_likelihood(result$estimate),
+                   reference = three_step_reference, covers = "r3step()",
+                   quantity = "step-three log likelihood at the estimate", tolerance = 1e-9,
+                   measure = "relative")
   # The estimate is a maximum of that likelihood: its gradient vanishes.
   gradient <- vapply(seq_along(result$estimate), function(j) {
     step <- replace(numeric(nrow(result)), j, 1e-5)
     (path_likelihood(result$estimate + step) - path_likelihood(result$estimate - step)) / 2e-5
   }, numeric(1))
-  expect_lt(max(abs(gradient)), 1e-3)
+  # The original bound, absolute: central differences with step 1e-5 of a sum
+  # of 200 log likelihoods, and the optimiser's own convergence tolerance.
+  expect_reference(gradient, numeric(length(gradient)), reference = three_step_reference,
+                   covers = "r3step()",
+                   quantity = "gradient of the path likelihood at the estimate (zero at a maximum)",
+                   tolerance = 1e-3, measure = "absolute",
+                   key = paste(result$block, result$from, result$term))
 })

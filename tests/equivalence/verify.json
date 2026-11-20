@@ -1,0 +1,329 @@
+{
+  "product": "r-latents",
+  "collection": "equivalence",
+  "title": "Equivalence tests",
+  "references": {
+    "stats": {
+      "authority": "open-source"
+    },
+    "numDeriv": {
+      "authority": "open-source"
+    },
+    "mclust": {
+      "authority": "open-source"
+    },
+    "MASS": {
+      "authority": "open-source"
+    },
+    "mice": {
+      "authority": "open-source"
+    },
+    "lme4": {
+      "authority": "open-source"
+    },
+    "nlme": {
+      "authority": "open-source"
+    },
+    "sandwich": {
+      "authority": "open-source"
+    },
+    "poLCA": {
+      "authority": "open-source"
+    },
+    "glca": {
+      "authority": "open-source"
+    },
+    "depmixS4": {
+      "authority": "open-source"
+    },
+    "flexmix": {
+      "authority": "open-source"
+    },
+    "lcmm": {
+      "authority": "open-source"
+    },
+    "CompQuadForm": {
+      "authority": "open-source"
+    },
+    "mvtnorm": {
+      "authority": "open-source"
+    },
+    "nnet": {
+      "authority": "open-source"
+    },
+    "LMest": {
+      "authority": "open-source"
+    },
+    "mitml": {
+      "authority": "open-source"
+    },
+    "mitools": {
+      "authority": "open-source"
+    },
+    "tidySEM": {
+      "authority": "open-source"
+    },
+    "ordinal": {
+      "authority": "open-source"
+    },
+    "VGAM": {
+      "authority": "open-source"
+    },
+    "multilevLCA": {
+      "authority": "open-source"
+    },
+    "randomLCA": {
+      "authority": "open-source"
+    },
+    "BayesLCA": {
+      "authority": "open-source"
+    },
+    "Rmixmod": {
+      "authority": "open-source"
+    },
+    "EMCluster": {
+      "authority": "open-source"
+    },
+    "mixtools": {
+      "authority": "open-source"
+    },
+    "MoEClust": {
+      "authority": "open-source"
+    },
+    "seqHMM": {
+      "authority": "open-source"
+    },
+    "Latent GOLD": {
+      "authority": "commercial",
+      "version": "6.1",
+      "family": "Latent GOLD"
+    },
+    "Mplus": {
+      "authority": "commercial",
+      "family": "Mplus"
+    }
+  },
+  "exports": {
+    "covered": [
+      "align_labels()",
+      "as.data.frame.latents_bootstrap()",
+      "as.data.frame.latents_family_enumeration()",
+      "as.data.frame.latents_growth_mixture()",
+      "as.data.frame.latents_mixture_regression()",
+      "as.data.frame.latents_pooled()",
+      "as.data.frame.latents_regression_enumeration()",
+      "as.data.frame.latents_sensitivity()",
+      "as.data.frame.latents_table()",
+      "as.data.frame.latents_transition_enumeration()",
+      "as.data.frame.multilpa_additive()",
+      "as.data.frame.multilpa_bootstrap_lrt()",
+      "as.data.frame.multilpa_covariates()",
+      "as.data.frame.multilpa_cross_level()",
+      "as.data.frame.multilpa_diagnostics()",
+      "as.data.frame.multilpa_enumeration()",
+      "as.data.frame.multilpa_lta()",
+      "as.data.frame.multilpa_start()",
+      "as.data.frame.multilpa_transitions()",
+      "as.data.frame.multilpa()",
+      "as.data.frame.summary_latents_growth_mixture()",
+      "as.data.frame.summary_latents_mixture_regression()",
+      "as.data.frame.summary_multilpa_additive()",
+      "as.data.frame.summary_multilpa_bootstrap_lrt()",
+      "as.data.frame.summary_multilpa_covariates()",
+      "as.data.frame.summary_multilpa_enumeration()",
+      "as.data.frame.summary_multilpa_lta()",
+      "as.data.frame.summary_multilpa_transitions()",
+      "as.data.frame.summary_multilpa()",
+      "bootstrap_lrt()",
+      "candidate_fit()",
+      "coef.latents_growth_mixture()",
+      "coef.latents_mixture_regression()",
+      "coef.latents_pooled()",
+      "coef.multilpa_additive()",
+      "coef.multilpa_covariates()",
+      "coef.multilpa_lta()",
+      "coef.multilpa_transitions()",
+      "coef.multilpa()",
+      "compare_models()",
+      "confint.latents_growth_mixture()",
+      "confint.latents_mixture_regression()",
+      "confint.latents_pooled()",
+      "confint.multilpa_additive()",
+      "confint.multilpa_covariates()",
+      "confint.multilpa_transitions()",
+      "confint.multilpa()",
+      "descriptives.data.frame()",
+      "descriptives.multilpa_covariates()",
+      "descriptives.multilpa_transitions()",
+      "descriptives.multilpa()",
+      "descriptives()",
+      "diagnostics()",
+      "enumerate_classes()",
+      "enumerate_lca()",
+      "enumerate_lpa()",
+      "enumerate_regressions()",
+      "fit_staged()",
+      "get_avepp()",
+      "get_best()",
+      "get_candidate()",
+      "get_candidates()",
+      "get_checks()",
+      "get_classification()",
+      "get_deltas()",
+      "get_entropy()",
+      "get_group_tna.multilpa_covariates()",
+      "get_group_tna.multilpa_transitions()",
+      "get_group_tna.multilpa()",
+      "get_group_tna()",
+      "get_knees()",
+      "get_replication()",
+      "get_residuals()",
+      "get_results.latents_comparison()",
+      "get_results.latents_family_enumeration()",
+      "get_results.latents_growth_mixture()",
+      "get_results.latents_mixture_regression()",
+      "get_results.latents_pooled()",
+      "get_results.latents_regression_enumeration()",
+      "get_results.latents_transition_enumeration()",
+      "get_results.multilpa_additive()",
+      "get_results.multilpa_bootstrap_lrt()",
+      "get_results.multilpa_covariates()",
+      "get_results.multilpa_cross_level()",
+      "get_results.multilpa_diagnostics()",
+      "get_results.multilpa_enumeration()",
+      "get_results.multilpa_lta()",
+      "get_results.multilpa_start()",
+      "get_results.multilpa_transitions()",
+      "get_results.multilpa()",
+      "get_results.summary_latents_growth_mixture()",
+      "get_results.summary_latents_mixture_regression()",
+      "get_results.summary_multilpa_additive()",
+      "get_results.summary_multilpa_bootstrap_lrt()",
+      "get_results.summary_multilpa_covariates()",
+      "get_results.summary_multilpa_enumeration()",
+      "get_results.summary_multilpa_lta()",
+      "get_results.summary_multilpa_transitions()",
+      "get_results.summary_multilpa()",
+      "get_results()",
+      "get_tna.multilpa_covariates()",
+      "get_tna.multilpa_transitions()",
+      "get_tna.multilpa()",
+      "get_tna()",
+      "get_tree()",
+      "lca()",
+      "logLik.latents_growth_mixture()",
+      "logLik.latents_mixture_regression()",
+      "logLik.multilpa_additive()",
+      "logLik.multilpa_covariates()",
+      "logLik.multilpa_cross_level()",
+      "logLik.multilpa_lta()",
+      "logLik.multilpa_transitions()",
+      "logLik.multilpa()",
+      "lpa()",
+      "lta()",
+      "mixture_regression()",
+      "multilca()",
+      "multilpa()",
+      "nobs.latents_growth_mixture()",
+      "nobs.latents_mixture_regression()",
+      "nobs.multilpa_additive()",
+      "nobs.multilpa_covariates()",
+      "nobs.multilpa_cross_level()",
+      "nobs.multilpa_lta()",
+      "nobs.multilpa_transitions()",
+      "nobs.multilpa()",
+      "parameter_inference.latents_growth_mixture()",
+      "parameter_inference.multilpa_additive()",
+      "parameter_inference.multilpa_covariates()",
+      "parameter_inference.multilpa_lta()",
+      "parameter_inference.multilpa_transitions()",
+      "parameter_inference.multilpa()",
+      "parameter_inference()",
+      "pool_imputations()",
+      "predict.latents_growth_mixture()",
+      "predict.latents_mixture_regression()",
+      "predict.multilpa()",
+      "r3step()",
+      "sensitivity()",
+      "starting_values()",
+      "summary.latents_family_enumeration()",
+      "summary.latents_growth_mixture()",
+      "summary.latents_mixture_regression()",
+      "summary.latents_pooled()",
+      "summary.latents_regression_enumeration()",
+      "summary.latents_transition_enumeration()",
+      "summary.multilpa_additive()",
+      "summary.multilpa_bootstrap_lrt()",
+      "summary.multilpa_covariates()",
+      "summary.multilpa_cross_level()",
+      "summary.multilpa_diagnostics()",
+      "summary.multilpa_enumeration()",
+      "summary.multilpa_lta()",
+      "summary.multilpa_start()",
+      "summary.multilpa_transitions()",
+      "summary.multilpa()",
+      "three_step()",
+      "vcov.latents_growth_mixture()",
+      "vcov.latents_mixture_regression()",
+      "vcov.latents_pooled()",
+      "vcov.multilpa_additive()",
+      "vcov.multilpa_covariates()",
+      "vcov.multilpa_lta()",
+      "vcov.multilpa_transitions()",
+      "vcov.multilpa()",
+      "simulate.latents_growth_mixture()",
+      "simulate.latents_mixture_regression()"
+    ],
+    "not_numeric": {
+      ".DollarNames.latents_family_enumeration()": "completion of field names in the console",
+      ".DollarNames.latents_transition_enumeration()": "completion of field names in the console",
+      ".DollarNames.multilpa_enumeration()": "completion of field names in the console",
+      "$.latents_family_enumeration()": "list access with a deprecation route for old field names; returns a stored element",
+      "$.latents_transition_enumeration()": "list access with a deprecation route for old field names; returns a stored element",
+      "$.multilpa_enumeration()": "list access with a deprecation route for old field names; returns a stored element",
+      "descriptives.default()": "the default method raises a classed error for an object the generic does not support; it returns no numbers",
+      "get_group_tna.default()": "the default method raises a classed error for an object the generic does not support; it returns no numbers",
+      "get_group_tna.multilpa_lta()": "always raises latents_unsupported_tna for covariate-dependent transitions; returns no numbers",
+      "get_results.default()": "the default method raises a classed error for an object the generic does not support; it returns no numbers",
+      "get_tna.default()": "the default method raises a classed error for an object the generic does not support; it returns no numbers",
+      "get_tna.multilpa_lta()": "always raises latents_unsupported_tna for covariate-dependent transitions; returns no numbers",
+      "overview()": "prints and draws every summary of an object; returns it invisibly",
+      "parameter_inference.default()": "the default method raises a classed error for an object the generic does not support; it returns no numbers",
+      "parameter_inference.multilpa_cross_level()": "always raises latents_unsupported_inference by design (the working likelihood counts the ratings twice); returns no numbers",
+      "plot_all()": "draws a plot (ggplot2); returns no numbers",
+      "plot_avepp()": "draws a plot (ggplot2); returns no numbers",
+      "plot_bars()": "draws a plot (ggplot2); returns no numbers",
+      "plot_classification()": "draws a plot (ggplot2); returns no numbers",
+      "plot_coefficients()": "draws a plot (ggplot2); returns no numbers",
+      "plot_criteria()": "draws a plot (ggplot2); returns no numbers",
+      "plot_deltas()": "draws a plot (ggplot2); returns no numbers",
+      "plot_diagnostics()": "draws a plot (ggplot2); returns no numbers",
+      "plot_entropy()": "draws a plot (ggplot2); returns no numbers",
+      "plot_enumeration()": "draws a plot (ggplot2); returns no numbers",
+      "plot_heatmap()": "draws a plot (ggplot2); returns no numbers",
+      "plot_individuals()": "draws a plot (ggplot2); returns no numbers",
+      "plot_pairs()": "draws a plot (ggplot2); returns no numbers",
+      "plot_parallel()": "draws a plot (ggplot2); returns no numbers",
+      "plot_posteriors()": "draws a plot (ggplot2); returns no numbers",
+      "plot_prevalence()": "draws a plot (ggplot2); returns no numbers",
+      "plot_profiles()": "draws a plot (ggplot2); returns no numbers",
+      "plot_raincloud()": "draws a plot (ggplot2); returns no numbers",
+      "plot_responses()": "draws a plot (ggplot2); returns no numbers",
+      "plot_selection()": "draws a plot (ggplot2); returns no numbers",
+      "plot_sequences()": "draws a plot (ggplot2); returns no numbers",
+      "plot_sizes()": "draws a plot (ggplot2); returns no numbers",
+      "plot_trajectories()": "draws a plot (ggplot2); returns no numbers",
+      "plot_transitions()": "draws a plot (ggplot2); returns no numbers",
+      "plot_tree()": "draws a plot (ggplot2); returns no numbers",
+      "plot_trust()": "draws a plot (ggplot2); returns no numbers",
+      "plot_views()": "draws a plot (ggplot2); returns no numbers",
+      "prior_control()": "returns a list of prior settings for a later fit",
+      "report()": "prints model estimates and diagnostic summaries as text"
+    },
+    "not_yet": {
+      "predict.multilpa_covariates()": "always raises latents_unsupported_prediction: prediction for membership-covariate models is not implemented; once it is, the reference is Bayes rule with the membership logits on new rows (as in test-accessors-covariates.R)",
+      "predict.multilpa_transitions()": "always raises an error: predict() is not implemented for latent transition models (a row class depends on its whole sequence); once it returns forward-backward posteriors for new sequences, the path-enumeration posteriors of test-accessors-transitions.R are the reference",
+      "predict.multilpa_lta()": "as predict.multilpa_transitions()"
+    }
+  }
+}

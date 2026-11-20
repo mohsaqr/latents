@@ -37,15 +37,18 @@ multilevel_fit <- function(data, ...) {
 
 # Dense likelihood: each person's marginal N(X beta_k, Z G Z' + sigma_k^2 I),
 # mixed over classes within the cluster's group class, mixed over group
-# classes per cluster.
+# classes per cluster. The fit has no group-membership covariate, so every
+# cluster's group-class shares are the softmax of the intercept row of
+# `delta`; `random_covariance = "equal"` gives one G for every class.
 multilevel_dense <- function(fit, data) {
   params <- fit$params
-  structure <- latents:::.growth_structure(fit$spec)
-  group_prior <- exp(latents:::.mixture_log_softmax(structure$v, params$delta))
-  covariances <- latents:::.growth_covariances(fit$spec, params)
+  group_logits <- params$delta[1L, ]
+  group_prior <- exp(group_logits - max(group_logits)) /
+    sum(exp(group_logits - max(group_logits)))
+  covariance_g <- params$random_covariance[[1L]]
   dense_log_density <- function(rows, k) {
     x <- cbind(1, rows$wave)
-    covariance <- x %*% covariances[[k]] %*% t(x) +
+    covariance <- x %*% covariance_g %*% t(x) +
       diag(params$sigma2[k], nrow(rows))
     residual <- rows$score - as.vector(x %*% params$beta[, k])
     factor <- chol(covariance)
@@ -53,11 +56,11 @@ multilevel_dense <- function(fit, data) {
               sum(backsolve(factor, residual, transpose = TRUE)^2))
   }
   schools <- split(data, data$school)
-  sum(vapply(seq_along(schools), function(j) {
-    persons <- split(schools[[j]], schools[[j]]$student)
-    by_group_class <- vapply(seq_len(structure$n_group_classes), function(h) {
+  sum(vapply(schools, function(school) {
+    persons <- split(school, school$student)
+    by_group_class <- vapply(seq_along(group_prior), function(h) {
       shares <- exp(params$class_logits[h, ]) / sum(exp(params$class_logits[h, ]))
-      log(group_prior[j, h]) + sum(vapply(persons, function(rows) {
+      log(group_prior[h]) + sum(vapply(persons, function(rows) {
         log(sum(shares * exp(vapply(seq_len(fit$spec$n_classes), function(k) {
           dense_log_density(rows, k)
         }, numeric(1)))))
@@ -69,7 +72,7 @@ multilevel_dense <- function(fit, data) {
 }
 
 test_that("the analytic cluster scores are the likelihood's gradient", {
-  skip_if_not_installed("numDeriv")
+  skip_without_reference("numDeriv")
   data <- multilevel_data()
   fit <- multilevel_fit(data)
   theta <- latents:::.growth_pack(fit$spec, fit$params) + 0.05
@@ -81,8 +84,13 @@ test_that("the analytic cluster scores are the likelihood's gradient", {
   scores <- latents:::.growth_scores(fit$spec, fit$stats, params)
   # One row per cluster: the clusters are the independent units.
   expect_identical(nrow(scores), fit$spec$n_clusters)
-  expect_equal(unname(colSums(scores)), numDeriv::grad(value, theta),
-               tolerance = 1e-6)
+  # Scaled: numDeriv's error is absolute near zero, so a relative measure
+  # would judge the rounding noise of a near-zero entry. 1e-6, the original.
+  expect_reference(unname(colSums(scores)), numDeriv::grad(value, theta),
+                   reference = "numDeriv", covers = "mixture_regression()",
+                   quantity = "cluster score sum at a point off the optimum", tolerance = 1e-6,
+                   measure = "scaled",
+                   note = "Package side: the internal analytic scores (.growth_scores) behind vcov() of the multilevel growth mixture; reference: numDeriv::grad() of the package's likelihood.")
 })
 
 
@@ -91,13 +99,22 @@ test_that("the likelihood equals the dense multilevel likelihood", {
   data <- multilevel_data()
   fit <- multilevel_fit(data)
   expect_s3_class(fit, "latents_growth_mixture")
-  expect_equal(fit$log_likelihood, multilevel_dense(fit, data), tolerance = 1e-10)
+  # The same likelihood summed in another order: 1e-10, the original tolerance.
+  expect_reference(as.numeric(logLik(fit)), multilevel_dense(fit, data),
+                   reference = "independent: dense multilevel growth mixture likelihood, base R",
+                   covers = c("mixture_regression()", "logLik.latents_growth_mixture()"),
+                   quantity = "log likelihood at the estimate", tolerance = 1e-10,
+                   measure = "relative")
   # Off the maximum too.
   moved <- fit
   moved$params$class_logits[1L, 2L] <- moved$params$class_logits[1L, 2L] + 0.3
   moved$params$delta[1L, 2L] <- 0.4
   moved$params$beta[2L, 1L] <- moved$params$beta[2L, 1L] - 0.2
   expectation <- latents:::.growth_expectation(moved$spec, moved$stats, moved$params)
-  expect_equal(expectation$log_likelihood, multilevel_dense(moved, data),
-               tolerance = 1e-10)
+  expect_reference(expectation$log_likelihood, multilevel_dense(moved, data),
+                   reference = "independent: dense multilevel growth mixture likelihood, base R",
+                   covers = "mixture_regression()",
+                   quantity = "log likelihood off the maximum", tolerance = 1e-10,
+                   measure = "relative",
+                   note = "Package side: the internal likelihood (.growth_expectation) that mixture_regression() maximises, at moved parameters.")
 })

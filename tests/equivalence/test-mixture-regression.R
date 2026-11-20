@@ -58,26 +58,50 @@ direct_log_likelihood <- function(fit) {
     })
 }
 
+# One class's regression coefficients (or standard errors) from a vector named
+# by coef(), renamed to the bare term labels lm() and glm() use.
+class_terms <- function(values, k = 1L) {
+  prefix <- sprintf("coefficient.class_%d.", k)
+  kept <- values[startsWith(names(values), prefix)]
+  stats::setNames(unname(kept), substring(names(kept), nchar(prefix) + 1L))
+}
+
 test_that("one class reduces to lm() and glm()", {
   rows <- simulate_rows()
   gaussian <- mixture_regression(y ~ x + w, rows, 1, n_starts = 0, vcov_type = "none")
-  expect_equal(gaussian$log_likelihood,
-               as.numeric(logLik(stats::lm(y ~ x + w, rows))),
-               tolerance = 1e-10)
-  expect_equal(unname(gaussian$params$beta[, 1]),
-               unname(stats::coef(stats::lm(y ~ x + w, rows))),
-               tolerance = 1e-8)
+  linear <- stats::lm(y ~ x + w, rows)
+  expect_reference(as.numeric(logLik(gaussian)), as.numeric(stats::logLik(linear)),
+                   reference = "stats",
+                   covers = c("mixture_regression()", "logLik.latents_mixture_regression()"),
+                   quantity = "log likelihood, one gaussian class", tolerance = 1e-10,
+                   measure = "relative")
+  expect_reference(class_terms(coef(gaussian)), stats::coef(linear), reference = "stats",
+                   covers = c("mixture_regression()", "coef.latents_mixture_regression()"),
+                   quantity = "coefficients, one gaussian class", tolerance = 1e-8,
+                   measure = "relative")
   poisson <- mixture_regression(count ~ x, rows, 1, family = "poisson", n_starts = 0,
                                 vcov_type = "none")
   reference <- stats::glm(count ~ x, stats::poisson(), rows)
-  expect_equal(poisson$log_likelihood, as.numeric(logLik(reference)),
-               tolerance = 1e-9)
-  expect_equal(unname(poisson$params$beta[, 1]), unname(stats::coef(reference)),
-               tolerance = 1e-7)
-  # Standard errors of a one-class model are the GLM's.
+  expect_reference(as.numeric(logLik(poisson)), as.numeric(stats::logLik(reference)),
+                   reference = "stats",
+                   covers = c("mixture_regression()", "logLik.latents_mixture_regression()"),
+                   quantity = "log likelihood, one poisson class", tolerance = 1e-9,
+                   measure = "relative")
+  # glm()'s IRLS stops at its own deviance criterion (1e-8): 1e-7, the original tolerance.
+  expect_reference(class_terms(coef(poisson)), stats::coef(reference), reference = "stats",
+                   covers = c("mixture_regression()", "coef.latents_mixture_regression()"),
+                   quantity = "coefficients, one poisson class", tolerance = 1e-7,
+                   measure = "relative")
+  # Standard errors of a one-class model are the GLM's. 1e-5, the original
+  # tolerance: the observed information is differenced from analytic scores.
   fitted <- mixture_regression(count ~ x, rows, 1, family = "poisson", n_starts = 0)
-  expect_equal(get_results(fitted)$std_error,
-               unname(sqrt(diag(stats::vcov(reference)))), tolerance = 1e-5)
+  expect_reference(as.data.frame(get_results(fitted, "coefficients")),
+                   data.frame(term = names(stats::coef(reference)),
+                              std_error = unname(sqrt(diag(stats::vcov(reference))))),
+                   reference = "stats",
+                   covers = c("mixture_regression()", "get_results.latents_mixture_regression()"),
+                   quantity = "standard errors, one poisson class", tolerance = 1e-5,
+                   measure = "relative", key = "term")
 })
 
 # Moved from tests/testthat/test-mixture-regression.R: comparisons with independent references.
@@ -85,28 +109,31 @@ test_that("one class reduces to lm() and glm()", {
 test_that("the likelihood is the mixture likelihood, in every nesting", {
   skip_on_cran()
   rows <- simulate_rows()
+  # The same sum of logs computed twice: only the order of the additions differs.
+  same_likelihood <- function(fit, setting) {
+    expect_reference(as.numeric(logLik(fit)), direct_log_likelihood(fit),
+                     reference = "independent: mixture likelihood from its definition, base R",
+                     covers = c("mixture_regression()", "logLik.latents_mixture_regression()"),
+                     quantity = sprintf("log likelihood, %s", setting), tolerance = 1e-10,
+                     measure = "relative")
+  }
   single <- mixture_regression(y ~ x, rows, 2, n_starts = 1, seed = 1, vcov_type = "none")
-  expect_equal(single$log_likelihood, direct_log_likelihood(single),
-               tolerance = 1e-10)
+  same_likelihood(single, "two gaussian classes")
   concomitant <- mixture_regression(y ~ x, rows, 2, membership = ~ w, n_starts = 1,
                                     seed = 1, vcov_type = "none")
-  expect_equal(concomitant$log_likelihood,
-               direct_log_likelihood(concomitant), tolerance = 1e-10)
+  same_likelihood(concomitant, "two gaussian classes with a membership covariate")
   grouped <- mixture_regression(passed ~ hours, study_hours, 2, family = "binomial",
                                 id = "student", class_level = "group", n_starts = 1,
                                 seed = 1, vcov_type = "none")
-  expect_equal(grouped$log_likelihood, direct_log_likelihood(grouped),
-               tolerance = 1e-10)
+  same_likelihood(grouped, "binomial, classes of groups")
   two_level <- mixture_regression(score ~ hours, study_hours, 2, id = "student",
                                   n_group_classes = 2, membership = ~ sleep,
                                   group_membership = ~ motivation, n_starts = 1,
                                   seed = 1, vcov_type = "none")
-  expect_equal(two_level$log_likelihood, direct_log_likelihood(two_level),
-               tolerance = 1e-10)
+  same_likelihood(two_level, "two-level gaussian")
   counts <- mixture_regression(count ~ x, rows, 2, family = "poisson", n_starts = 1,
                                seed = 1, vcov_type = "none")
-  expect_equal(counts$log_likelihood, direct_log_likelihood(counts),
-               tolerance = 1e-10)
+  same_likelihood(counts, "two poisson classes")
 })
 
 test_that("binomial counts with several trials are identified row by row", {
@@ -121,8 +148,12 @@ test_that("binomial counts with several trials are identified row by row", {
   })
   fit <- mixture_regression(cbind(successes, failures) ~ x, rows, 2, family = "binomial",
                             n_starts = 1, seed = 1)
-  expect_equal(fit$log_likelihood, direct_log_likelihood(fit),
-               tolerance = 1e-10)
+  expect_reference(as.numeric(logLik(fit)), direct_log_likelihood(fit),
+                   reference = "independent: mixture likelihood from its definition, base R",
+                   covers = c("mixture_regression()", "logLik.latents_mixture_regression()"),
+                   quantity = "log likelihood, binomial counts of eight trials", tolerance = 1e-10,
+                   measure = "relative")
+  # Recovery of the simulated slopes: a unit check, not a reference comparison.
   expect_equal(sort(get_results(fit)$estimate[c(2, 4)]), c(-1, 2),
                tolerance = 0.25)
 })

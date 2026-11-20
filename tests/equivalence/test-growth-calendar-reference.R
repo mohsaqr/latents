@@ -20,21 +20,33 @@ calendar_reference_data <- function(n = 90L, seed = 3L) {
 }
 
 test_that("a one-class calendar-year random slope matches lme4", {
-  skip_if_not_installed("lme4")
+  skip_without_reference("lme4")
   data <- calendar_reference_data()
   data$year <- data$time + 2000
-  fit <- suppressWarnings(mixture_regression(
+  # Boundary notices of a calendar-year random slope are not under test.
+  fit <- quietly(mixture_regression(
     y ~ year, data, n_classes = 1L, id = "id", class_level = "group",
-    random = ~ 1 + year, n_starts = 1L, seed = 1L))
+    random = ~ 1 + year, n_starts = 1L, seed = 1L),
+    c(.multilpa_expected_warnings, "latents_random_boundary"))
   # lme4 on time from zero: the same model, which it fits without warnings.
   reference <- lme4::lmer(y ~ time + (1 + time | id), data = data, REML = FALSE,
                           control = lme4::lmerControl(
                             optCtrl = list(ftol_abs = 1e-15, xtol_abs = 1e-15)))
   expect_true(fit$converged)
   expect_length(fit$degenerate_classes, 0L)
-  expect_lt(abs(fit$log_likelihood - as.numeric(stats::logLik(reference))), 1e-6)
+  # The original bound: an absolute 1e-6 on the log likelihood.
+  expect_reference(as.numeric(logLik(fit)), as.numeric(stats::logLik(reference)),
+                   reference = "lme4",
+                   covers = c("mixture_regression()", "logLik.latents_growth_mixture()"),
+                   quantity = "log likelihood, one class, calendar-year random slope",
+                   tolerance = 1e-6, measure = "absolute")
+  # lme4's fixed effects moved to origin 2000; 1e-5, the original tolerance.
   fixed <- lme4::fixef(reference)
-  coefficients <- as.data.frame(get_results(fit, "coefficients"))
-  expect_equal(coefficients$estimate,
-               unname(c(fixed[1L] - 2000 * fixed[2L], fixed[2L])), tolerance = 1e-5)
+  expect_reference(as.data.frame(get_results(fit, "coefficients")),
+                   data.frame(term = c("(Intercept)", "year"),
+                              estimate = unname(c(fixed[1L] - 2000 * fixed[2L], fixed[2L]))),
+                   reference = "lme4",
+                   covers = c("mixture_regression()", "get_results.latents_growth_mixture()"),
+                   quantity = "fixed effects at origin 2000, one class", tolerance = 1e-5,
+                   measure = "relative", key = "term")
 })

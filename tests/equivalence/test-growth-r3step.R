@@ -46,7 +46,17 @@ test_that("r3step on a growth mixture maximizes the fixed-error likelihood", {
   }
   reference <- stats::optim(c(0, 0), negative_log_likelihood, method = "BFGS",
                             control = list(reltol = 1e-14), hessian = TRUE)
-  expect_equal(ours$estimate, reference$par, tolerance = 1e-5)
-  expect_equal(ours$standard_error, sqrt(diag(solve(reference$hessian))),
-               tolerance = 1e-3)
+  independent <- "independent: Vermunt (2010) fixed-error likelihood, maximised by stats::optim()"
+  # 1e-5, the original tolerance: BFGS stops at its own reltol.
+  expect_reference(ours, data.frame(term = c("(Intercept)", "x"), estimate = reference$par),
+                   reference = independent, covers = c("r3step()", "mixture_regression()"),
+                   quantity = "membership logits of class 1", tolerance = 1e-5,
+                   measure = "relative", key = "term")
+  # 1e-3, the original tolerance: optim()'s Hessian is a finite difference of its gradient.
+  expect_reference(ours,
+                   data.frame(term = c("(Intercept)", "x"),
+                              standard_error = sqrt(diag(solve(reference$hessian)))),
+                   reference = independent, covers = c("r3step()", "mixture_regression()"),
+                   quantity = "standard errors of the membership logits", tolerance = 1e-3,
+                   measure = "relative", key = "term")
 })

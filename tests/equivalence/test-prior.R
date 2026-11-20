@@ -20,14 +20,21 @@ prior_fit <- function(data, code, prior = prior_control(), ...) {
     latents:::.multilpa_structure_arguments(code), list(...))))
 }
 
+# One row per cell of a d x d x K covariance array or a d x K mean matrix.
+prior_cells <- function(code, values) {
+  cells <- expand.grid(lapply(dim(values), seq_len))
+  names(cells) <- c("row", "column", "profile")[seq_along(dim(values))]
+  data.frame(code = code, cells, value = as.vector(values))
+}
+
 test_that("the MAP M-step matches mclust's EM step from the same posteriors", {
-  skip_if_not_installed("mclust")
+  skip_without_reference("mclust")
   skip_on_cran()
   data <- as.matrix(prior_frame())
   set.seed(9)
   z <- matrix(stats::runif(nrow(data) * 3L), nrow(data), 3L)
   z <- z / rowSums(z)
-  invisible(lapply(c("EII", "EEI", "EVI", "VEV", "EEV", "VVV"), function(code) {
+  steps <- lapply(c("EII", "EEI", "EVI", "VEV", "EEV", "VVV"), function(code) {
     # One iteration of mclust's own EM is its M-step from `z`.
     reference <- do.call(mclust::me, list(
       modelName = code, data = data, z = z, prior = mclust::priorControl(),
@@ -39,9 +46,19 @@ test_that("the MAP M-step matches mclust's EM step from the same posteriors", {
     sigma <- ours$covariances %||% array(unlist(lapply(seq_len(3L), function(k) {
       diag(ours$variances[k, ])
     })), c(3L, 3L, 3L))
-    expect_equal(sigma, reference$parameters$variance$sigma, tolerance = 1e-10,
-                 ignore_attr = TRUE, info = code)
-    expect_equal(t(ours$means), reference$parameters$mean, tolerance = 1e-10,
-                 ignore_attr = TRUE, info = code)
-  }))
+    list(actual_sigma = prior_cells(code, array(sigma, c(3L, 3L, 3L))),
+         expected_sigma = prior_cells(code, reference$parameters$variance$sigma),
+         actual_mean = prior_cells(code, t(ours$means)),
+         expected_mean = prior_cells(code, reference$parameters$mean))
+  })
+  stack <- function(part) do.call(rbind, lapply(steps, `[[`, part))
+  note <- "Package side: the internal MAP M-step (.multilpa_prior_maximize) of multilpa(prior = prior_control()), from fixed posteriors; reference: one iteration of mclust::me() with mclust::priorControl()."
+  expect_reference(stack("actual_sigma"), stack("expected_sigma"), reference = "mclust",
+                   covers = "multilpa()", quantity = "MAP covariance matrices, one M-step",
+                   tolerance = 1e-10, measure = "relative",
+                   key = c("code", "row", "column", "profile"), note = note)
+  expect_reference(stack("actual_mean"), stack("expected_mean"), reference = "mclust",
+                   covers = "multilpa()", quantity = "MAP means, one M-step",
+                   tolerance = 1e-10, measure = "relative",
+                   key = c("code", "row", "column"), note = note)
 })

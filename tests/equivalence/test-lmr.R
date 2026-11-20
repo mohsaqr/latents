@@ -1,16 +1,32 @@
 # Comparisons with independent references moved from tests/testthat/test-lmr.R,
 # so that they run in CI's equivalence job rather than under R CMD check.
 
+# The internal Imhof tail (.latents_imhof_upper) gives the VLMR and adjusted
+# LMR p-values of get_results(grid, "lmr").
+imhof_covers <- "get_results.multilpa_enumeration()"
+imhof_note <- "Package side: the internal weighted chi-square tail (.latents_imhof_upper) behind the VLMR and adjusted LMR p-values of get_results(grid, \"lmr\")."
+
 test_that("the Imhof tail matches exact weighted chi-square probabilities", {
-  # One weight, or equal weights, give a scaled chi-square.
-  invisible(lapply(c(0.05, 0.5, 3, 9, 30), \(q) {
-    expect_equal(.latents_imhof_upper(q, 1), stats::pchisq(q, 1, lower.tail = FALSE),
-                 tolerance = 1e-8)
-    expect_equal(.latents_imhof_upper(q, rep(1, 3)),
-                 stats::pchisq(q, 3, lower.tail = FALSE), tolerance = 1e-8)
-    expect_equal(.latents_imhof_upper(q, 2.5), stats::pchisq(q / 2.5, 1, lower.tail = FALSE),
-                 tolerance = 1e-8)
-  }))
+  # One weight, or equal weights, give a scaled chi-square. The original test
+  # compared each statistic alone with testthat's relative 1e-8; kept, per number
+  # (the smallest probability here is 4e-8).
+  statistics <- c(0.05, 0.5, 3, 9, 30)
+  labels <- sprintf("q = %g", statistics)
+  imhof <- function(weights) {
+    vapply(statistics, \(q) latents:::.latents_imhof_upper(q, weights), numeric(1))
+  }
+  expect_reference(imhof(1), stats::pchisq(statistics, 1, lower.tail = FALSE),
+                   reference = "stats", covers = imhof_covers,
+                   quantity = "upper tail, one unit weight (chi-square 1)",
+                   tolerance = 1e-8, measure = "relative", key = labels, note = imhof_note)
+  expect_reference(imhof(rep(1, 3)), stats::pchisq(statistics, 3, lower.tail = FALSE),
+                   reference = "stats", covers = imhof_covers,
+                   quantity = "upper tail, three unit weights (chi-square 3)",
+                   tolerance = 1e-8, measure = "relative", key = labels, note = imhof_note)
+  expect_reference(imhof(2.5), stats::pchisq(statistics / 2.5, 1, lower.tail = FALSE),
+                   reference = "stats", covers = imhof_covers,
+                   quantity = "upper tail, one weight of 2.5 (scaled chi-square 1)",
+                   tolerance = 1e-8, measure = "relative", key = labels, note = imhof_note)
   # Two weights, against the convolution of their distributions: P(a X + b Y >
   # q) with y = t^2, so the chi-square(1) density times dy is 2 dnorm(t) dt,
   # smooth at zero. One weight small, so the tail decays slowly; one
@@ -26,26 +42,46 @@ test_that("the Imhof tail matches exact weighted chi-square probabilities", {
   }
   grid <- expand.grid(q = c(1e-6, 0.5, 5.5, 30, 80), a = c(0.9, 3, 0.01),
                       b = c(0.05, -0.4, -3, 50))
-  expect_equal(mapply(function(q, a, b) .latents_imhof_upper(q, c(a, b)),
-                      grid$q, grid$a, grid$b),
-               mapply(two, grid$q, grid$a, grid$b), tolerance = 1e-10)
+  grid_labels <- with(grid, sprintf("q = %g, weights %g and %g", q, a, b))
+  # Absolute: the tails run down to 1e-16 and below, where the Imhof
+  # integral's accuracy (about 1e-12) is absolute, not relative. The
+  # original test's tolerance, 1e-10.
+  expect_reference(mapply(function(q, a, b) latents:::.latents_imhof_upper(q, c(a, b)),
+                          grid$q, grid$a, grid$b),
+                   mapply(two, grid$q, grid$a, grid$b),
+                   reference = "independent: convolution of two scaled chi-squares, stats::integrate()",
+                   covers = imhof_covers, quantity = "upper tail, two weights",
+                   tolerance = 1e-10, measure = "absolute", key = grid_labels, note = imhof_note)
   # A statistic of zero with weights of both signs has no oscillation to
   # extrapolate: P(a X_m - b Y_k > 0) = P(F(m, k) > b k / (a m)), exactly.
   # Extrapolating partial sums returned 5.6e-7 for 4.2e-7 here.
   cases <- expand.grid(m = c(1, 3), b = c(0.1, 10, 1e4), k = c(1, 3, 6))
-  expect_equal(mapply(function(m, b, k) .latents_imhof_upper(0, c(rep(1, m), rep(-b, k))),
-                      cases$m, cases$b, cases$k),
-               with(cases, stats::pf(b * k / m, m, k, lower.tail = FALSE)),
-               tolerance = 1e-10)
+  # Absolute, as above: the F tails run down to small values where the
+  # accuracy is absolute. The original test's tolerance, 1e-10.
+  expect_reference(mapply(function(m, b, k) latents:::.latents_imhof_upper(0, c(rep(1, m), rep(-b, k))),
+                          cases$m, cases$b, cases$k),
+                   with(cases, stats::pf(b * k / m, m, k, lower.tail = FALSE)),
+                   reference = "stats", covers = imhof_covers,
+                   quantity = "probability of a positive difference of chi-squares (F tail)",
+                   tolerance = 1e-10, measure = "absolute",
+                   key = with(cases, sprintf("m = %g, b = %g, k = %g", m, b, k)), note = imhof_note)
   # The accuracy is absolute: about 1e-12, here on a probability of 4e-7.
-  expect_lt(abs(.latents_imhof_upper(0, c(1, -1e4, -1e4, -1e4)) -
-                  stats::pf(3e4, 1, 3, lower.tail = FALSE)), 1e-12)
+  expect_reference(latents:::.latents_imhof_upper(0, c(1, -1e4, -1e4, -1e4)),
+                   stats::pf(3e4, 1, 3, lower.tail = FALSE),
+                   reference = "stats", covers = imhof_covers,
+                   quantity = "probability of a positive difference, weights 1 and three of -1e4 (F tail)",
+                   tolerance = 1e-12, measure = "absolute", note = imhof_note)
   # The probability does not depend on the weights' units.
-  invisible(lapply(c(1e-12, 1e-6, 1e6), \(size) {
-    expect_equal(.latents_imhof_upper(0, size * c(1, -2)),
-                 stats::pf(2, 1, 1, lower.tail = FALSE), tolerance = 1e-10)
-    expect_equal(.latents_imhof_upper(5 * size, size * c(2, 1, 0.5, -0.4)),
-                 .latents_imhof_upper(5, c(2, 1, 0.5, -0.4)), tolerance = 1e-10)
+  sizes <- c(1e-12, 1e-6, 1e6)
+  expect_reference(vapply(sizes, \(size) latents:::.latents_imhof_upper(0, size * c(1, -2)), numeric(1)),
+                   rep(stats::pf(2, 1, 1, lower.tail = FALSE), length(sizes)),
+                   reference = "stats", covers = imhof_covers,
+                   quantity = "probability of a positive difference, weights 1 and -2 in other units (F tail)",
+                   tolerance = 1e-10, measure = "relative", key = sprintf("units %g", sizes),
+                   note = imhof_note)
+  invisible(lapply(sizes, \(size) {
+    expect_equal(latents:::.latents_imhof_upper(5 * size, size * c(2, 1, 0.5, -0.4)),
+                 latents:::.latents_imhof_upper(5, c(2, 1, 0.5, -0.4)), tolerance = 1e-10)
   }))
 })
 
@@ -65,15 +101,15 @@ test_that("VLMR and adjusted LMR agree with Latent GOLD", {
   models <- quietly(enumerate_lpa(data, paste0("y", 1:4), n_profiles = 2:3,
                                   model = "EEI", n_starts = 50, seed = 1, tol = 1e-12))
   test <- get_results(models, "lmr")
-  within <- function(actual, printed) {
-    expect_true(abs(actual - printed) <= 5e-5, info = format(actual, digits = 10))
-  }
-  within(test$lr, 8.3027)
-  within(test$adjusted_lr, 8.0439)
-  within(test$reference_mean, 4.1216)
-  within(test$reference_sd, 2.8763)
-  within(test$vlmr_p, 0.0848)
-  within(test$almr_p, 0.0941)
+  printed <- c(lr = 8.3027, adjusted_lr = 8.0439, reference_mean = 4.1216,
+               reference_sd = 2.8763, vlmr_p = 0.0848, almr_p = 0.0941)
+  # Latent GOLD prints four decimals: 5e-5 absolute is agreement.
+  expect_reference(vapply(names(printed), \(name) test[[name]], numeric(1)), printed,
+                   reference = "Latent GOLD",
+                   covers = c("enumerate_lpa()", "get_results.multilpa_enumeration()"),
+                   quantity = "VLMR and adjusted LMR, two against three classes, EEI",
+                   tolerance = 5e-5, measure = "absolute",
+                   note = "Latent GOLD 6.1 output typed into the test (the comment above); no listing or syntax file is stored with it.")
   # The adjustment is LR / (1 + 1 / (d log n)), d the added parameters.
   expect_equal(test$adjusted_lr, test$lr / (1 + 1 / (5 * log(500))), tolerance = 1e-12)
 })

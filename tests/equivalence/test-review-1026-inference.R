@@ -29,17 +29,28 @@ review_vvi_loglik <- function(theta, x, rows = seq_len(nrow(x))) {
 
 test_that("observed, robust (CR1) and OPG covariances match independent numDeriv computations", {
   skip_on_cran()
-  skip_if_not_installed("numDeriv")
+  skip_without_reference("numDeriv")
   data <- review_two_profile_data()
   fit <- quietly(multilpa(data, c("a", "b"), "g", n_profiles = 2, n_group_classes = 1,
                           variance_model = "varying", n_starts = 3, seed = 1, tol = 1e-10))
   x <- as.matrix(data[, c("a", "b")])
   theta <- unname(coef(fit, scale = "unconstrained"))
-  expect_equal(review_vvi_loglik(theta, x), fit$log_likelihood, tolerance = 1e-10)
+  # The same likelihood summed twice; only the order of the additions differs.
+  expect_reference(as.numeric(logLik(fit)), review_vvi_loglik(theta, x),
+                   reference = "independent: two-profile VVI mixture likelihood, base R",
+                   covers = c("multilpa()", "logLik.multilpa()"),
+                   quantity = "log likelihood, two profiles VVI", tolerance = 1e-10,
+                   measure = "relative")
 
   observed <- parameter_inference(fit)
   hessian <- numDeriv::hessian(function(t) -review_vvi_loglik(t, x), theta)
-  expect_lt(max(abs(hessian - unname(attr(observed, "hessian")))) / max(abs(hessian)), 1e-6)
+  # The original bound, 1e-6 of the largest entry, now on every entry:
+  # numDeriv's error is absolute, of the order of the entries' scale.
+  expect_reference(unname(attr(observed, "hessian")), hessian, reference = "numDeriv",
+                   covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "observed information, two profiles VVI",
+                   tolerance = 1e-6 * max(abs(hessian)), measure = "absolute",
+                   note = "Reference: numDeriv::hessian() of the independent likelihood written in the test.")
   covariance <- solve(hessian)
   natural <- function(t) {
     weights <- exp(c(t[9], 0)) / sum(exp(c(t[9], 0)))
@@ -47,7 +58,13 @@ test_that("observed, robust (CR1) and OPG covariances match independent numDeriv
   }
   jacobian <- numDeriv::jacobian(natural, theta)
   delta_se <- sqrt(diag(jacobian %*% covariance %*% t(jacobian)))
-  expect_equal(observed$standard_error, delta_se, tolerance = 1e-6)
+  # 1e-6 relative, the original tolerance.
+  expect_reference(observed$standard_error, delta_se, reference = "numDeriv",
+                   covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "standard errors, observed information, two profiles VVI",
+                   tolerance = 1e-6, measure = "relative",
+                   key = paste(observed$level, observed$outcome, observed$term, observed$parameter),
+                   note = "Reference: delta method with numDeriv::hessian() and numDeriv::jacobian() of the independent likelihood.")
 
   # Per-group scores of the independent likelihood, then the CR1 sandwich
   # G / (G - 1) * A^-1 B A^-1 (Cameron and Miller 2015) and the OPG B^-1.
@@ -58,13 +75,24 @@ test_that("observed, robust (CR1) and OPG covariances match independent numDeriv
   meat <- crossprod(scores)
   robust <- parameter_inference(fit, vcov_type = "robust")
   sandwich_covariance <- covariance %*% meat %*% covariance * n_groups / (n_groups - 1)
-  expect_lt(max(abs(sandwich_covariance - unname(attr(robust, "covariance_unconstrained")))) /
-              max(abs(sandwich_covariance)), 1e-6)
-  expect_equal(attr(robust, "scaling_correction"),
-               sum(diag(covariance %*% meat)) / length(theta), tolerance = 1e-6)
+  # The original bounds, 1e-6 of the largest entry, now on every entry.
+  expect_reference(unname(attr(robust, "covariance_unconstrained")), sandwich_covariance,
+                   reference = "numDeriv", covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "robust (CR1) covariance, unconstrained scale",
+                   tolerance = 1e-6 * max(abs(sandwich_covariance)), measure = "absolute",
+                   note = "Reference: CR1 sandwich from numDeriv::grad() group scores and numDeriv::hessian() of the independent likelihood.")
+  # 1e-6 relative, the original tolerance.
+  expect_reference(attr(robust, "scaling_correction"), sum(diag(covariance %*% meat)) / length(theta),
+                   reference = "numDeriv", covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "robust scaling correction", tolerance = 1e-6, measure = "relative",
+                   note = "Reference: trace of A^-1 B over the number of parameters, from numDeriv derivatives of the independent likelihood.")
   opg <- parameter_inference(fit, vcov_type = "opg")
-  expect_lt(max(abs(solve(meat) - unname(attr(opg, "covariance_unconstrained")))) /
-              max(abs(solve(meat))), 1e-6)
+  opg_covariance <- solve(meat)
+  expect_reference(unname(attr(opg, "covariance_unconstrained")), opg_covariance,
+                   reference = "numDeriv", covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "OPG covariance, unconstrained scale",
+                   tolerance = 1e-6 * max(abs(opg_covariance)), measure = "absolute",
+                   note = "Reference: the inverse outer product of numDeriv::grad() group scores of the independent likelihood.")
 
   # Intervals: symmetric for means, log scale for variances, logit scale for
   # interior probabilities.
@@ -86,7 +114,7 @@ test_that("observed, robust (CR1) and OPG covariances match independent numDeriv
 
 test_that("boundary = 'fix' inverts the Hessian of the free coordinates only", {
   skip_on_cran()
-  skip_if_not_installed("numDeriv")
+  skip_without_reference("numDeriv")
   set.seed(31)
   n <- 200L
   state <- sample.int(2L, n, TRUE)
@@ -111,15 +139,23 @@ test_that("boundary = 'fix' inverts the Hessian of the free coordinates only", {
       weights[k] * stats::dnorm(data$y, t[k], sqrt(exp(t[2 + k]))) * response[k, code]
     }, numeric(n)))))
   }
-  expect_equal(loglik(theta), fit$log_likelihood, tolerance = 1e-10)
+  expect_reference(as.numeric(logLik(fit)), loglik(theta),
+                   reference = "independent: two-profile mixed Gaussian-categorical likelihood, base R",
+                   covers = c("multilpa()", "logLik.multilpa()"),
+                   quantity = "log likelihood, response at its bound", tolerance = 1e-10,
+                   measure = "relative")
   hessian <- numDeriv::hessian(function(t) {
     full <- theta
     full[free] <- t
     -loglik(full)
   }, theta[free])
   covariance <- solve(hessian)
-  expect_lt(max(abs(covariance - unname(attr(held, "covariance_unconstrained")))) /
-              max(abs(covariance)), 1e-5)
+  # The original bound, 1e-5 of the largest entry, now on every entry.
+  expect_reference(unname(attr(held, "covariance_unconstrained")), covariance,
+                   reference = "numDeriv", covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "covariance of the free coordinates, boundary = 'fix'",
+                   tolerance = 1e-5 * max(abs(covariance)), measure = "absolute",
+                   note = "Reference: inverse of numDeriv::hessian() of the independent likelihood over the free coordinates.")
 })
 
 test_that("Rubin's rules match hand computation and mice::pool.scalar", {
@@ -134,28 +170,40 @@ test_that("Rubin's rules match hand computation and mice::pool.scalar", {
                parameter = "mean", estimate = estimates[, i],
                standard_error = sqrt(variances[, i]), statistic = c(1, NA, NA))
   })
-  pooled <- .multilpa_rubin(tables, 0.95)
+  pooled <- latents:::.multilpa_rubin(tables, 0.95)
+  rubin_note <- "Package side: the internal Rubin's-rules pooling (.multilpa_rubin) behind pool_imputations()."
   q_bar <- mean(estimates[1, ])
   u_bar <- mean(variances[1, ])
   b <- stats::var(estimates[1, ])
   total <- u_bar + (1 + 1 / m) * b
   riv <- (1 + 1 / m) * b / u_bar
   df <- (m - 1) * (1 + 1 / riv)^2
-  expect_equal(pooled$estimate[1], q_bar)
-  expect_equal(pooled$standard_error[1], sqrt(total))
-  expect_equal(pooled$df[1], df)
-  expect_equal(pooled$fmi[1], (riv + 2 / (df + 3)) / (riv + 1))
-  expect_equal(pooled$conf_low[1], q_bar - stats::qt(0.975, df) * sqrt(total))
-  expect_equal(pooled$p_value[1], 2 * stats::pt(-abs(q_bar / sqrt(total)), df))
+  # testthat's default tolerance of the original test, sqrt(.Machine$double.eps).
+  expect_reference(c(estimate = pooled$estimate[1], standard_error = pooled$standard_error[1],
+                     df = pooled$df[1], fmi = pooled$fmi[1], conf_low = pooled$conf_low[1],
+                     p_value = pooled$p_value[1]),
+                   c(estimate = q_bar, standard_error = sqrt(total), df = df,
+                     fmi = (riv + 2 / (df + 3)) / (riv + 1),
+                     conf_low = q_bar - stats::qt(0.975, df) * sqrt(total),
+                     p_value = 2 * stats::pt(-abs(q_bar / sqrt(total)), df)),
+                   reference = "independent: Rubin's rules by hand (Rubin 1987)",
+                   covers = "pool_imputations()", quantity = "pooled mean of a by hand",
+                   tolerance = sqrt(.Machine$double.eps), measure = "relative", note = rubin_note)
   expect_true(is.na(pooled$p_value[2]))
   # A structural constant: no variance, no missing information, infinite df.
   expect_identical(c(pooled$riv[3], pooled$fmi[3], pooled$df[3]), c(0, 0, Inf))
-  skip_if_not_installed("mice")
+  skip_without_reference("mice")
   reference <- lapply(1:2, function(j) {
     mice::pool.scalar(estimates[j, ], variances[j, ], n = Inf, k = 1)
   })
-  expect_equal(pooled$standard_error[1:2]^2, vapply(reference, `[[`, numeric(1), "t"))
-  expect_equal(pooled$df[1:2], vapply(reference, `[[`, numeric(1), "df"))
-  expect_equal(pooled$riv[1:2], vapply(reference, `[[`, numeric(1), "r"))
-  expect_equal(pooled$fmi[1:2], vapply(reference, `[[`, numeric(1), "fmi"))
+  expect_reference(data.frame(term = c("a", "b"), total_variance = pooled$standard_error[1:2]^2,
+                              df = pooled$df[1:2], riv = pooled$riv[1:2], fmi = pooled$fmi[1:2]),
+                   data.frame(term = c("a", "b"),
+                              total_variance = vapply(reference, `[[`, numeric(1), "t"),
+                              df = vapply(reference, `[[`, numeric(1), "df"),
+                              riv = vapply(reference, `[[`, numeric(1), "r"),
+                              fmi = vapply(reference, `[[`, numeric(1), "fmi")),
+                   reference = "mice", covers = "pool_imputations()",
+                   quantity = "Rubin's rules, two means", tolerance = sqrt(.Machine$double.eps),
+                   measure = "relative", key = "term", note = rubin_note)
 })

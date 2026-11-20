@@ -32,7 +32,12 @@ test_that("one-step covariates recover slopes and have consistent diagnostics", 
   # Profiles are practically observed here: independent binomial ML checks slope.
   target <- as.numeric(k == if (fit$means[1, 1] < 0) 1 else 0)
   independent <- glm(target ~ factor(h) + z, family = binomial())
-  expect_lt(abs(fit$profile_coefficients["z", ] - coef(independent)["z"]), .025)
+  # 0.025 absolute, the original bound: the glm is fitted to the generating
+  # profiles and group indicator, which the mixture only nearly recovers.
+  expect_reference(coef(fit)[["profile.coefficient.profile_1.z"]], coef(independent)[["z"]],
+                   reference = "stats", covers = c("multilpa()", "coef.multilpa_covariates()"),
+                   quantity = "profile slope on z against a binomial glm of the generating profiles",
+                   tolerance = 0.025, measure = "absolute")
   bad <- d
   bad$w[1] <- 20
   expect_error(multilpa(bad, c("y1", "y2"), "group", 2, 2, "z", "w", n_starts = 1), "constant within")

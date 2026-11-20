@@ -77,17 +77,24 @@ test_that("the nested likelihood and both posteriors equal brute-force enumerati
         }, numeric(1)) / total
       }, numeric(2))))
   })
-  expect_equal(fit$log_likelihood,
-               sum(vapply(per_group, `[[`, numeric(1), "log_likelihood")),
-               tolerance = 1e-12)
-  expect_equal(unname(fit$group_posteriors),
-               do.call(rbind, lapply(per_group, `[[`, "group")), tolerance = 1e-12)
-  expect_equal(unname(fit$subject_posteriors),
-               do.call(rbind, lapply(per_group, `[[`, "subject")), tolerance = 1e-12)
+  enumeration <- "independent: brute-force enumeration of class and profile assignments, stats::dnorm()"
+  # The same probabilities summed in another order: rounding only.
+  expect_reference(as.numeric(logLik(fit)),
+                   sum(vapply(per_group, `[[`, numeric(1), "log_likelihood")),
+                   reference = enumeration, covers = c("multilpa()", "logLik.multilpa()"),
+                   quantity = "nested log likelihood", tolerance = 1e-12, measure = "relative")
+  expect_reference(unname(fit$group_posteriors),
+                   do.call(rbind, lapply(per_group, `[[`, "group")),
+                   reference = enumeration, covers = "multilpa()",
+                   quantity = "group class posteriors", tolerance = 1e-12, measure = "relative")
+  expect_reference(unname(fit$subject_posteriors),
+                   do.call(rbind, lapply(per_group, `[[`, "subject")),
+                   reference = enumeration, covers = "multilpa()",
+                   quantity = "profile posteriors of the members", tolerance = 1e-12, measure = "relative")
 })
 
 test_that("one group class is the single-level mixture, at least as high as mclust", {
-  skip_if_not_installed("mclust")
+  skip_without_reference("mclust")
   data <- review_ml_data(seed = 21, n_groups = 15, size = 5)
   two_level <- review_ml_quiet(multilpa(data, c("y1", "y2"), "g", n_profiles = 2,
                                         n_group_classes = 1, n_starts = 3, seed = 1,
@@ -99,17 +106,27 @@ test_that("one group class is the single-level mixture, at least as high as mclu
                                  unname(as.matrix(single$means)),
                                  unname(as.matrix(single$variances)))
   proportions <- unname(as.vector(single$profile_probabilities))
-  expect_equal(single$log_likelihood,
-               sum(log(density %*% proportions)), tolerance = 1e-12)
+  expect_reference(as.numeric(logLik(single)), sum(log(density %*% proportions)),
+                   reference = "independent: diagonal Gaussian mixture likelihood, stats::dnorm()",
+                   covers = c("lpa()", "logLik.multilpa()"),
+                   quantity = "single-level log likelihood at the reported estimates",
+                   tolerance = 1e-12, measure = "relative")
   # mclust's own EM for VVI, started from a split on y1 and run to a tight
   # tolerance, reaches the same maximum.
   y <- as.matrix(data[c("y1", "y2")])
   reference <- mclust::meVVI(y, mclust::unmap(ifelse(y[, "y1"] > 1.25, 2, 1)),
                              control = mclust::emControl(
                                tol = c(1e-12, sqrt(.Machine$double.eps))))
-  expect_equal(single$log_likelihood, reference$loglik, tolerance = 1e-7)
-  expect_identical(as.integer(single$n_parameters),
-                   as.integer(mclust::nMclustParams("VVI", 2, 2)))
+  # 1e-7, the original tolerance: two EMs stopped by their own criteria.
+  expect_reference(as.numeric(logLik(single)), reference$loglik, reference = "mclust",
+                   covers = c("lpa()", "logLik.multilpa()"),
+                   quantity = "VVI log likelihood, two profiles",
+                   tolerance = 1e-7, measure = "relative",
+                   note = "Reference: mclust::meVVI() started from a split on y1.")
+  expect_reference(as.numeric(single$n_parameters), as.numeric(mclust::nMclustParams("VVI", 2, 2)),
+                   reference = "mclust", covers = "lpa()",
+                   quantity = "number of parameters, VVI, two profiles",
+                   tolerance = 0, measure = "absolute")
 })
 
 # Soft class counts with two covariates, one far from zero (x2), for the
@@ -127,28 +144,41 @@ review_newton_counts <- function() {
 
 test_that("the membership Newton step reaches an independent optimizer's minimum", {
   newton <- review_newton_counts()
-  solved <- .multilpa_weighted_logits(newton$design, newton$counts, matrix(0, 3, 2))
+  solved <- latents:::.multilpa_weighted_logits(newton$design, newton$counts, matrix(0, 3, 2))
   expect_true(solved$converged)
   objective <- function(b) {
-    -sum(newton$counts * .multilpa_log_softmax(newton$design, matrix(b, 3, 2)))
+    -sum(newton$counts * latents:::.multilpa_log_softmax(newton$design, matrix(b, 3, 2)))
   }
   reference <- stats::optim(rep(0, 6), objective, method = "BFGS",
                             control = list(reltol = 1e-16, maxit = 5000))
+  # One-sided: the Newton step must be at least as low as BFGS's minimum.
   expect_lte(objective(as.vector(solved$coefficients)), reference$value + 1e-10)
-  expect_equal(as.vector(solved$coefficients), reference$par, tolerance = 1e-2)
+  # 1e-2, the original tolerance: x2 sits at 5 with SD 0.3, so BFGS stops far
+  # from the minimum along the ill-conditioned intercept/x2 direction.
+  # Scaled: some coefficients are near zero, where BFGS's error is absolute.
+  expect_reference(as.vector(solved$coefficients), reference$par, reference = "stats",
+                   covers = c("multilpa()", "lta()"),
+                   quantity = "membership logit coefficients, three categories",
+                   tolerance = 1e-2, measure = "scaled",
+                   key = paste(rep(c("(Intercept)", "x1", "x2"), 2L), rep(c("class 1", "class 2"), each = 3L)),
+                   note = "Package side: the internal weighted multinomial-logit Newton step (.multilpa_weighted_logits) of the covariate M-steps of multilpa() and lta(); reference: stats::optim(method = 'BFGS') on the weighted multinomial log likelihood.")
 })
 
 test_that("the membership Newton step with two categories is glm's weighted logit", {
   newton <- review_newton_counts()
   binary <- cbind(newton$counts[, 1], newton$counts[, 2] + newton$counts[, 3])
-  two <- .multilpa_weighted_logits(newton$design, binary, matrix(0, 3, 1))
+  two <- latents:::.multilpa_weighted_logits(newton$design, binary, matrix(0, 3, 1))
   x1 <- newton$x1
   x2 <- newton$x2
   glm_fit <- stats::glm(binary[, 1] / rowSums(binary) ~ x1 + x2,
                         family = stats::quasibinomial(), weights = rowSums(binary),
                         control = stats::glm.control(epsilon = 1e-14, maxit = 100))
-  expect_equal(as.vector(two$coefficients), unname(stats::coef(glm_fit)),
-               tolerance = 1e-8)
+  expect_reference(setNames(as.vector(two$coefficients), names(stats::coef(glm_fit))),
+                   stats::coef(glm_fit), reference = "stats",
+                   covers = c("multilpa()", "lta()"),
+                   quantity = "membership logit coefficients, two categories",
+                   tolerance = 1e-8, measure = "relative",
+                   note = "Package side: the internal weighted logit Newton step (.multilpa_weighted_logits) of the covariate M-steps of multilpa() and lta(); reference: stats::glm(family = quasibinomial()) with weights.")
 })
 
 test_that("the covariate likelihood equals an independent two-level computation", {
@@ -174,45 +204,81 @@ test_that("the covariate likelihood equals an independent two-level computation"
       omega[j, h] * prod(rowSums(prior * density[rows, ]))
     }, numeric(1)))
   }, numeric(1))
-  expect_equal(fit$log_likelihood, sum(log(per_group)), tolerance = 1e-12)
+  expect_reference(as.numeric(logLik(fit)), sum(log(per_group)),
+                   reference = "independent: two-level covariate mixture likelihood, stats::dnorm()",
+                   covers = c("multilpa()", "logLik.multilpa_covariates()"),
+                   quantity = "log likelihood with profile and group covariates",
+                   tolerance = 1e-12, measure = "relative")
   # (G - 1)(1 + q) + (G + p)(K - 1) membership and 2 K J measurement parameters.
-  expect_identical(as.integer(fit$n_parameters), 2L + 3L + 8L)
+  expect_reference(as.numeric(fit$n_parameters), 2 + 3 + 8,
+                   reference = "independent: parameter count from the model definition",
+                   covers = "multilpa()", quantity = "number of parameters with covariates",
+                   tolerance = 0, measure = "absolute")
   expect_identical(nobs(fit), 20L)
   expect_equal(BIC(fit), fit$bic, tolerance = 1e-12)
 })
 
 test_that("covariate scores and observed information match numerical derivatives", {
-  skip_if_not_installed("numDeriv")
+  skip_without_reference("numDeriv")
   data <- review_ml_covariate_data()
-  check <- function(fit, type) {
+  check <- function(fit, type, label) {
     x <- sweep(as.matrix(data[c("y1", "y2")]), 2L, fit$center, "-")
-    theta <- .multilpa_cov_encode(fit)
+    theta <- latents:::.multilpa_cov_encode(fit)
     log_likelihood <- function(values) {
-      pieces <- .multilpa_cov_decode(values, fit)
-      .multilpa_cov_expectation(x, fit$group_index, pieces$parameters,
-                                fit$profile_design, fit$group_design, pieces$beta,
-                                pieces$gamma, NULL, unname(fit$sampling_weights),
-                                fit$extra_data)$log_likelihood
+      pieces <- latents:::.multilpa_cov_decode(values, fit)
+      latents:::.multilpa_cov_expectation(x, fit$group_index, pieces$parameters,
+                                          fit$profile_design, fit$group_design, pieces$beta,
+                                          pieces$gamma, NULL, unname(fit$sampling_weights),
+                                          fit$extra_data)$log_likelihood
     }
     withr::local_seed(9)
     moved <- theta + stats::rnorm(length(theta), sd = 0.1)
-    expect_equal(unname(colSums(.multilpa_cov_group_scores(moved, x, fit, NULL))),
-                 numDeriv::grad(log_likelihood, moved), tolerance = 1e-6)
     inverse <- solve(-numDeriv::hessian(log_likelihood, theta))
     reference <- if (identical(type, "observed")) inverse else {
-      scores <- .multilpa_cov_group_scores(theta, x, fit, NULL)
+      scores <- latents:::.multilpa_cov_group_scores(theta, x, fit, NULL)
       inverse %*% (crossprod(scores) * nrow(scores) / (nrow(scores) - 1)) %*% inverse
     }
-    expect_equal(unname(.multilpa_cov_covariance(fit, data, 1e-4, type)),
-                 reference, tolerance = 1e-5)
+    cells <- expand.grid(row = seq_along(theta), column = seq_along(theta))
+    list(score = list(
+           actual = data.frame(model = label, parameter = seq_along(theta),
+                               score = unname(colSums(latents:::.multilpa_cov_group_scores(moved, x, fit, NULL)))),
+           expected = data.frame(model = label, parameter = seq_along(theta),
+                                 score = numDeriv::grad(log_likelihood, moved))),
+         covariance = list(
+           actual = data.frame(model = label, cells,
+                               covariance = as.vector(unname(latents:::.multilpa_cov_covariance(fit, data, 1e-4, type)))),
+           expected = data.frame(model = label, cells, covariance = as.vector(reference))))
   }
-  check(review_ml_quiet(multilpa(data, c("y1", "y2"), "g", 2, 2,
-                                 profile_covariates = "x", group_covariates = "gz",
-                                 n_starts = 2, seed = 1)), "observed")
-  check(review_ml_quiet(multilpa(data, c("y1", "y2"), "g", 2, 2,
-                                 profile_covariates = "x", covariance_model = "full",
-                                 n_starts = 2, seed = 1)), "observed")
-  check(review_ml_quiet(multilpa(data, c("y1", "y2"), "g", 2, 2,
-                                 profile_covariates = "x", group_covariates = "gz",
-                                 weights = "wt", n_starts = 2, seed = 1)), "robust")
+  sides <- list(
+    check(review_ml_quiet(multilpa(data, c("y1", "y2"), "g", 2, 2,
+                                   profile_covariates = "x", group_covariates = "gz",
+                                   n_starts = 2, seed = 1)), "observed",
+          "profile and group covariates, observed"),
+    check(review_ml_quiet(multilpa(data, c("y1", "y2"), "g", 2, 2,
+                                   profile_covariates = "x", covariance_model = "full",
+                                   n_starts = 2, seed = 1)), "observed",
+          "profile covariate, full covariance, observed"),
+    check(review_ml_quiet(multilpa(data, c("y1", "y2"), "g", 2, 2,
+                                   profile_covariates = "x", group_covariates = "gz",
+                                   weights = "wt", n_starts = 2, seed = 1)), "robust",
+          "profile and group covariates, weighted, robust"))
+  stack <- function(part, side) do.call(rbind, lapply(sides, \(s) s[[part]][[side]]))
+  note <- "Package side: the internal analytic group scores and covariance (.multilpa_cov_group_scores, .multilpa_cov_covariance) behind vcov() and parameter_inference() of multilpa() with covariates."
+  # numDeriv's error is absolute near zero; a relative measure would judge
+  # the rounding noise of a near-zero score. The original tolerance, 1e-6.
+  expect_reference(stack("score", "actual"), stack("score", "expected"), reference = "numDeriv",
+                   covers = "multilpa()", quantity = "covariate-model score off the optimum",
+                   tolerance = 1e-6, measure = "scaled", key = c("model", "parameter"),
+                   note = paste(note, "Reference: numDeriv::grad() of the package's likelihood."))
+  # 1e-5, the original tolerance: the package's information is a central
+  # difference of the analytic scores with step 1e-4, the reference the
+  # inverse of numDeriv's Hessian (with the sandwich for robust). Relative:
+  # the covariances are of order 1e-5 to 1, so a scaled measure would judge
+  # most of them on an absolute 1e-5, looser than the original test.
+  expect_reference(stack("covariance", "actual"), stack("covariance", "expected"),
+                   reference = "numDeriv",
+                   covers = c("multilpa()", "vcov.multilpa_covariates()", "parameter_inference.multilpa_covariates()"),
+                   quantity = "covariate-model covariance of the estimates",
+                   tolerance = 1e-5, measure = "relative", key = c("model", "row", "column"),
+                   note = paste(note, "Reference: the inverse of minus numDeriv::hessian() of the package's likelihood; for robust, the sandwich with the analytic scores' cross-product, n / (n - 1)."))
 })

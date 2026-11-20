@@ -17,16 +17,18 @@ noise_fit <- function(data, ...) {
 
 test_that("the hypervolume is mclust's", {
   data <- as.matrix(noise_frame())
-  # The axis-aligned box, by hand, is an upper bound on it.
+  # The axis-aligned box, by hand, is an upper bound on it (a unit check).
   box <- sum(log(apply(data, 2L, function(column) diff(range(column)))))
   expect_lte(latents:::.multilpa_log_hypervolume(data), box + 1e-12)
-  skip_if_not_installed("mclust")
-  expect_equal(exp(latents:::.multilpa_log_hypervolume(data)),
-               mclust::hypvol(data), tolerance = 1e-12)
+  skip_without_reference("mclust")
+  expect_reference(exp(latents:::.multilpa_log_hypervolume(data)), mclust::hypvol(data),
+                   reference = "mclust", covers = "multilpa()",
+                   quantity = "hypervolume of the data", tolerance = 1e-12, measure = "relative",
+                   note = "Package side: the internal hypervolume (.multilpa_log_hypervolume) that sets the uniform density of multilpa(noise = TRUE); reference: mclust::hypvol().")
 })
 
 test_that("a noise fit reproduces mclust's EM from the same start", {
-  skip_if_not_installed("mclust")
+  skip_without_reference("mclust")
   skip_on_cran()
   data <- noise_frame()
   x <- as.matrix(data)
@@ -37,7 +39,7 @@ test_that("a noise fit reproduces mclust's EM from the same start", {
   z[cbind(which(!flagged), clusters)] <- 1
   z[flagged, 3L] <- 1
   inverse_volume <- mclust::hypvol(x, reciprocal = TRUE)
-  invisible(lapply(c("VVI", "VEV"), function(code) {
+  runs <- lapply(c("VVI", "VEV"), function(code) {
     run <- function(itmax, tol) {
       do.call(mclust::me, list(modelName = code, data = x, z = z, Vinv = inverse_volume,
                                control = mclust::emControl(itmax = c(itmax, 1e6),
@@ -57,18 +59,42 @@ test_that("a noise fit reproduces mclust's EM from the same start", {
            n_starts = 1L, start = start, tol = 1e-13, max_iter = 20000L,
            noise = TRUE, acceleration = "none"),
       latents:::.multilpa_structure_arguments(code))))
-    expect_equal(fit$log_likelihood, reference$loglik, tolerance = 1e-10, info = code)
-    # Both EMs stop on a relative log likelihood change of 1e-13, which fixes
-    # the estimates only to about sqrt(1e-13) = 3e-7 on a flat maximum: on
-    # Linux under R 4.6.2 the two stopped 1e-7 apart in the noise proportion
-    # with log likelihoods equal to 1e-10. 1e-6 is the stopping rule's bound.
-    expect_equal(fit$noise_probability, reference$parameters$pro[3L],
-                 tolerance = 1e-6, info = code)
-    expect_equal(t(fit$means), reference$parameters$mean, tolerance = 1e-6,
-                 ignore_attr = TRUE, info = code)
-    expect_equal(fit$n_parameters, mclust::nMclustParams(code, 3L, 2L, noise = TRUE),
-                 info = code)
-  }))
+    cells <- expand.grid(variable = c("a", "b", "c"), profile = 1:2, stringsAsFactors = FALSE)
+    list(actual = data.frame(code = code, log_likelihood = fit$log_likelihood,
+                             noise_probability = fit$noise_probability,
+                             n_parameters = fit$n_parameters),
+         expected = data.frame(code = code, log_likelihood = reference$loglik,
+                               noise_probability = reference$parameters$pro[3L],
+                               n_parameters = mclust::nMclustParams(code, 3L, 2L, noise = TRUE)),
+         actual_means = data.frame(code = code, cells, mean = as.vector(t(fit$means))),
+         expected_means = data.frame(code = code, cells,
+                                     mean = as.vector(reference$parameters$mean)))
+  })
+  stack <- function(part) do.call(rbind, lapply(runs, `[[`, part))
+  actual <- stack("actual")
+  expected <- stack("expected")
+  expect_reference(actual[c("code", "log_likelihood")], expected[c("code", "log_likelihood")],
+                   reference = "mclust", covers = "multilpa()",
+                   quantity = "noise-model log likelihood from mclust's start", tolerance = 1e-10,
+                   measure = "relative", key = "code")
+  # Both EMs stop on a relative log likelihood change of 1e-13, which fixes
+  # the estimates only to about sqrt(1e-13) = 3e-7 on a flat maximum: on
+  # Linux under R 4.6.2 the two stopped 1e-7 apart in the noise proportion
+  # with log likelihoods equal to 1e-10. 1e-6 is the stopping rule's bound.
+  expect_reference(actual[c("code", "noise_probability")], expected[c("code", "noise_probability")],
+                   reference = "mclust", covers = "multilpa()",
+                   quantity = "noise proportion from mclust's start", tolerance = 1e-6,
+                   measure = "relative", key = "code")
+  # Same stopping rule, same bound.
+  expect_reference(stack("actual_means"), stack("expected_means"),
+                   reference = "mclust", covers = "multilpa()",
+                   quantity = "profile means of the noise model from mclust's start", tolerance = 1e-6,
+                   measure = "relative", key = c("code", "variable", "profile"))
+  # A count: exact.
+  expect_reference(actual[c("code", "n_parameters")], expected[c("code", "n_parameters")],
+                   reference = "mclust", covers = "multilpa()",
+                   quantity = "number of free parameters of the noise model", tolerance = 0,
+                   key = "code")
 })
 
 # Moved from tests/testthat/test-noise.R: comparisons with independent references.
@@ -83,7 +109,11 @@ test_that("the likelihood is the mixture with a uniform component", {
       x, rep(fit$means[k, ], each = nrow(x)),
       rep(sqrt(fit$variances[k, ]), each = nrow(x)), log = TRUE)))
   }, numeric(nrow(x))), fit$noise_probability / volume)
-  expect_equal(fit$log_likelihood, sum(log(rowSums(densities))), tolerance = 1e-10)
+  # Gaussian densities from stats::dnorm() and the uniform density 1 / volume.
+  expect_reference(fit$log_likelihood, sum(log(rowSums(densities))),
+                   reference = "independent: Gaussian mixture with a uniform component, stats::dnorm()",
+                   covers = "multilpa()", quantity = "log likelihood with a noise component",
+                   tolerance = 1e-10, measure = "relative")
   # Posteriors over the Gaussian profiles and the noise sum to one, and so do
   # the proportions.
   expect_equal(unname(rowSums(fit$subject_posteriors)) + unname(fit$noise_posteriors),

@@ -26,23 +26,38 @@ test_that("a direct effect agrees with Latent GOLD", {
   # 0.0140), the first class's y3 intercept 0.0161 (s.e. 0.0421) and the y3
   # variances 0.9775 and 1.0451 (s.e. 0.0549 and 0.0630).
   fit <- direct_fit()
-  within <- function(actual, printed) {
-    expect_true(all(abs(actual - printed) <= 5e-5),
-                info = paste(format(actual, digits = 8), collapse = " "))
-  }
-  within(fit$log_likelihood, -9396.9944)
-  expect_equal(fit$n_parameters, 18)
-  within(fit$bic, 18925.6267)
+  listing <- "Typed from Latent GOLD 6.1's listing equivalence/latentgold-extra/direct-effects/direct.lst."
+  # 5e-5 absolute: half a unit of the last digit Latent GOLD prints.
+  expect_reference(as.numeric(logLik(fit)), -9396.9944, reference = "Latent GOLD",
+                   covers = c("lpa()", "logLik.multilpa()"),
+                   quantity = "log likelihood, direct effect of z on y3",
+                   tolerance = 5e-5, measure = "absolute", note = listing)
+  expect_reference(fit$n_parameters, 18, reference = "Latent GOLD", covers = "lpa()",
+                   quantity = "number of parameters, direct effect of z on y3",
+                   tolerance = 0, measure = "absolute", note = listing)
+  expect_reference(fit$bic, 18925.6267, reference = "Latent GOLD", covers = "lpa()",
+                   quantity = "BIC, direct effect of z on y3",
+                   tolerance = 5e-5, measure = "absolute", note = listing)
   effects <- get_results(fit, "direct_effects")
   expect_named(effects, c("indicator", "covariate", "estimate", "standard_error",
                           "statistic", "p_value", "conf_low", "conf_high"))
-  within(effects$estimate, 0.7864)
-  within(effects$standard_error, 0.0140)
-  inference <- parameter_inference(fit)
-  y3 <- subset(inference, term == "y3")
+  expect_reference(effects,
+                   data.frame(indicator = "y3", covariate = "z", estimate = 0.7864,
+                              standard_error = 0.0140),
+                   reference = "Latent GOLD", covers = c("lpa()", "get_results.multilpa()"),
+                   quantity = "direct effect of z on y3", tolerance = 5e-5,
+                   measure = "absolute", key = c("indicator", "covariate"), note = listing)
   # Latent GOLD numbers the classes as this fit does here.
-  within(subset(y3, parameter == "mean" & outcome == "profile_1")$estimate, 0.0161)
-  within(subset(y3, parameter == "mean" & outcome == "profile_1")$standard_error, 0.0421)
-  within(subset(y3, parameter == "variance")$estimate, c(0.9775, 1.0451))
-  within(subset(y3, parameter == "variance")$standard_error, c(0.0549, 0.0630))
+  y3 <- subset(parameter_inference(fit),
+               term == "y3" & (parameter == "variance" |
+                                 (parameter == "mean" & outcome == "profile_1")),
+               select = c(outcome, parameter, estimate, standard_error))
+  expect_reference(y3,
+                   data.frame(outcome = c("profile_1", "profile_1", "profile_2"),
+                              parameter = c("mean", "variance", "variance"),
+                              estimate = c(0.0161, 0.9775, 1.0451),
+                              standard_error = c(0.0421, 0.0549, 0.0630)),
+                   reference = "Latent GOLD", covers = c("lpa()", "parameter_inference.multilpa()"),
+                   quantity = "y3 intercept and variances with a direct effect", tolerance = 5e-5,
+                   measure = "absolute", key = c("outcome", "parameter"), note = listing)
 })

@@ -30,18 +30,53 @@ test_that("constrained-structure standard errors match an independent Hessian", 
   data <- structure_data()
   cases <- expand.grid(code = c("VII", "VEI", "EVI", "VEE", "EVE", "EEV", "EVV"),
                        classes = c(1L, 2L), stringsAsFactors = FALSE)
-  invisible(lapply(seq_len(nrow(cases)), function(row) {
+  tables <- lapply(seq_len(nrow(cases)), function(row) {
     code <- cases$code[row]
     fit <- structure_fit_at(code, data, cases$classes[row])
     expect_true(fit$converged, label = code)
     ours <- parameter_inference(fit)
     reference <- reference_structure_se(fit, data)
-    expect_equal(reference$log_likelihood, fit$log_likelihood, tolerance = 1e-10,
-                 info = code)
-    expect_equal(ours$estimate, reference$estimate, tolerance = 1e-10, info = code)
-    informative <- reference$standard_error > 1e-8
-    expect_equal(ours$standard_error[informative],
-                 reference$standard_error[informative], tolerance = 1e-5,
-                 info = sprintf("%s with %d group classes", code, cases$classes[row]))
-  }))
+    keys <- data.frame(code = code, group_classes = cases$classes[row],
+                       ours[c("level", "outcome", "term", "parameter")])
+    list(actual = data.frame(keys, estimate = ours$estimate,
+                             standard_error = ours$standard_error),
+         expected = data.frame(keys, estimate = reference$estimate,
+                               standard_error = reference$standard_error),
+         likelihood = data.frame(code = code, group_classes = cases$classes[row],
+                                 actual = fit$log_likelihood,
+                                 expected = reference$log_likelihood))
+  })
+  actual <- do.call(rbind, lapply(tables, `[[`, "actual"))
+  expected <- do.call(rbind, lapply(tables, `[[`, "expected"))
+  likelihood <- do.call(rbind, lapply(tables, `[[`, "likelihood"))
+  case_key <- c("code", "group_classes")
+  row_key <- c(case_key, "level", "outcome", "term", "parameter")
+  chart <- "independent: structure chart, likelihood and finite-difference Hessian (helper-structure-reference.R)"
+  # The reference's own mixture likelihood at the fitted parameters.
+  expect_reference(data.frame(likelihood[case_key], log_likelihood = likelihood$actual),
+                   data.frame(likelihood[case_key], log_likelihood = likelihood$expected),
+                   reference = chart, covers = "multilpa()",
+                   quantity = "log likelihood, constrained structures", tolerance = 1e-10,
+                   measure = "relative", key = case_key)
+  # Natural parameters decoded from the reference chart: a round trip.
+  expect_reference(actual[c(row_key, "estimate")], expected[c(row_key, "estimate")],
+                   reference = chart, covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "estimates, constrained structures", tolerance = 1e-10,
+                   measure = "relative", key = row_key)
+  # Standard errors from a central-difference Hessian (step 2e-4) of the
+  # reference chart, mapped by a central-difference Jacobian: 1e-5 relative,
+  # the original test's tolerance for the truncation error of the differences.
+  informative <- expected$standard_error > 1e-8
+  expect_reference(actual[informative, c(row_key, "standard_error")],
+                   expected[informative, c(row_key, "standard_error")],
+                   reference = chart, covers = c("multilpa()", "parameter_inference.multilpa()"),
+                   quantity = "standard errors, constrained structures", tolerance = 1e-5,
+                   measure = "relative", key = row_key)
+  # With one group class its probability is fixed at one: no sampling variance.
+  expect_not_comparable(actual[!informative, c(row_key, "standard_error")],
+                        expected[!informative, c(row_key, "standard_error")],
+                        reference = chart, covers = c("multilpa()", "parameter_inference.multilpa()"),
+                        quantity = "standard errors of fixed parameters, constrained structures",
+                        key = row_key,
+                        reason = "A single group class has probability one by definition; its standard error is zero, and the reference's numerical value is rounding noise around zero.")
 })

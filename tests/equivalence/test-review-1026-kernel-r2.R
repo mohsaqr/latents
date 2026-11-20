@@ -2,7 +2,7 @@
 # so that they run in CI's equivalence job rather than under R CMD check.
 
 test_that("K2-1: VEI fits indicators whose scales differ by 1e9, as mclust does", {
-  skip_if_not_installed("mclust")
+  skip_without_reference("mclust")
   # A rate (SD about 0.01) and a population (SD about 1e7). The old code
   # refused every start ("EM likelihood decreased beyond numerical roundoff");
   # mclust::me reaches -3803.70304389.
@@ -22,18 +22,28 @@ test_that("K2-1: VEI fits indicators whose scales differ by 1e9, as mclust does"
                 group_probabilities = 1,
                 variances = t(vapply(1:2, function(k) diag(first$variance$sigma[, , k]),
                                      numeric(2))))
-  fit <- suppressMessages(suppressWarnings(multilpa(
+  fit <- quietly(multilpa(
     as.data.frame(x), colnames(x), id = NULL, n_profiles = 2, model = "VEI",
     start = start, n_starts = 1, tol = 1e-12, max_iter = 20000,
-    acceleration = "none")))
-  expect_equal(fit$log_likelihood, reference$loglik, tolerance = 1e-10)
-  expect_equal(unname(fit$variances),
-               unname(t(vapply(1:2, function(k) diag(reference$parameters$variance$sigma[, , k]),
-                               numeric(2)))), tolerance = 1e-5)
+    acceleration = "none"))
+  # Both EM runs stop at 1e-12 on the likelihood; the original tolerance.
+  expect_reference(as.numeric(logLik(fit)), reference$loglik, reference = "mclust",
+                   covers = c("multilpa()", "logLik.multilpa()"),
+                   quantity = "log likelihood, VEI, scales 1e9 apart", tolerance = 1e-10,
+                   measure = "relative")
+  # Variances to 1e-5 relative, the original tolerance: EM converges slowly in
+  # the parameters once the likelihood has settled.
+  expect_reference(unname(fit$variances),
+                   unname(t(vapply(1:2, function(k) diag(reference$parameters$variance$sigma[, , k]),
+                                   numeric(2)))),
+                   reference = "mclust", covers = "multilpa()",
+                   quantity = "class variances, VEI, scales 1e9 apart", tolerance = 1e-5,
+                   measure = "relative", key = c("profile 1, rate", "profile 2, rate",
+                                                 "profile 1, pop", "profile 2, pop"))
 })
 
 test_that("K2-1, K2-4: VEI, EVE and VVE M-steps are mclust's and unit-free at 1e-9 and 1e9", {
-  skip_if_not_installed("mclust")
+  skip_without_reference("mclust")
   # Measured after the fix (iris, soft species partition): VEI equals
   # mclust::mstep to 4.3e-10 relative at units 1e-9, 1 and 1e9; EVE and VVE
   # reach an objective 1.4e-5 and 0.80 below mclust's at 1 and 1e9, and
@@ -48,12 +58,12 @@ test_that("K2-1, K2-4: VEI, EVE and VVE M-steps are mclust's and unit-free at 1e
   }, numeric(1)))
   m_step <- function(model, scatter, floor) {
     if (model == "VEI") {
-      v <- .multilpa_structure_variances(.multilpa_scatter_diagonals(scatter), weights,
-                                         "VEI", floor)
+      v <- latents:::.multilpa_structure_variances(latents:::.multilpa_scatter_diagonals(scatter), weights,
+                                                   "VEI", floor)
       return(array(unlist(lapply(seq_along(weights), function(k) diag(v[k, ]))),
                    c(4, 4, 3)))
     }
-    .multilpa_structure_covariances(scatter, weights, model, floor)
+    latents:::.multilpa_structure_covariances(scatter, weights, model, floor)
   }
   scatter_at <- function(units) {
     x <- x0 * units
@@ -63,22 +73,41 @@ test_that("K2-1, K2-4: VEI, EVE and VVE M-steps are mclust's and unit-free at 1e
       crossprod(r, r * z[, k])
     })
   }
+  mclust_sigma <- function(model, units) {
+    do.call(mclust::mstep, list(modelName = model, data = x0 * units, z = z),
+            envir = asNamespace("mclust"))$parameters$variance$sigma
+  }
+  # Unit-free: the package against itself at other units.
   invisible(lapply(c("VEI", "EVE", "VVE"), function(model) {
     base <- m_step(model, scatter_at(1), 1e-6)
     invisible(lapply(c(1e-9, 1e9), function(units) {
       scaled <- m_step(model, scatter_at(units), 1e-6 * units^2)
       expect_lt(max(abs(scaled / units^2 - base)) / max(abs(base)), 1e-9)
-      reference <- do.call(mclust::mstep, list(modelName = model, data = x0 * units,
-                                               z = z),
-                           envir = asNamespace("mclust"))$parameters
-      sigma <- reference$variance$sigma
+    }))
+  }))
+  # VEI is mclust's at both scales. One row per units, profile and cell.
+  cells <- function(units, sigma) {
+    data.frame(units = units,
+               expand.grid(row = seq_len(4L), column = seq_len(4L), profile = seq_along(weights)),
+               covariance = as.vector(sigma))
+  }
+  scales <- c(1e-9, 1e9)
+  # 1e-8 relative, the original test's bound (on the largest entry; here per
+  # entry): mclust's VEI M-step is a fixed point solved to its own tolerance.
+  expect_reference(do.call(rbind, lapply(scales, \(units) cells(units, m_step("VEI", scatter_at(units), 1e-6 * units^2)))),
+                   do.call(rbind, lapply(scales, \(units) cells(units, mclust_sigma("VEI", units)))),
+                   reference = "mclust", covers = c("lpa()", "multilpa()"),
+                   quantity = "VEI covariance M-step at units 1e-9 and 1e9", tolerance = 1e-8,
+                   measure = "relative", key = c("units", "profile", "row", "column"),
+                   note = "Package side: the internal axis-parallel M-step (.multilpa_structure_variances) of lpa()/multilpa(model = \"VEI\"); reference: mclust::mstep().")
+  # EVE and VVE: an objective no worse than mclust's wherever mclust returns a
+  # finite covariance (it returns none at 1e-9).
+  invisible(lapply(c("EVE", "VVE"), function(model) {
+    invisible(lapply(scales, function(units) {
+      sigma <- mclust_sigma(model, units)
       if (all(is.finite(sigma))) {
-        if (model == "VEI") {
-          expect_lt(max(abs(scaled - sigma)) / max(abs(sigma)), 1e-8)
-        } else {
-          expect_lte(objective(scaled, scatter_at(units)) -
-                       objective(sigma, scatter_at(units)), 1e-8)
-        }
+        expect_lte(objective(m_step(model, scatter_at(units), 1e-6 * units^2), scatter_at(units)) -
+                     objective(sigma, scatter_at(units)), 1e-8)
       }
     }))
   }))
