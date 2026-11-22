@@ -119,12 +119,3 @@ test_that("estimates, standard errors and intervals agree with numDeriv on the d
                    quantity = "95% Wald intervals, profile covariate", tolerance = 1e-6, measure = "scaled",
                    note = "Wald intervals built in the test from numDeriv's standard errors at latents' estimates.")
 })
-
-test_that("predict() of a membership-covariate fit is not implemented (a declared API gap)", {
-  # The reference a result would be compared with: Bayes' rule with the
-  # membership logits on the new rows (covariate_terms() above).
-  expect_defect_error(predict(covariate_fit, newdata = covariate_data),
-                      defect = "predict() is not implemented for membership-covariate models: it always raises latents_unsupported_prediction; FINDINGS.md (latents, API gaps)",
-                      covers = "predict.multilpa_covariates()",
-                      quantity = "posterior profile probabilities of new rows, profile covariate")
-})

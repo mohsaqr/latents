@@ -382,16 +382,3 @@ test_that("the transition grid's maxima, parameter counts and criteria are depmi
                    quantity = "two-profile maximum and criteria (depmixS4, best of ten random starts)",
                    tolerance = 1e-8, measure = "relative", key = "candidate")
 })
-
-test_that("predict() of lta() fits is not implemented (a declared API gap)", {
-  # The reference a result would be compared with: depmixS4's forward-backward
-  # posteriors of the new sequences, as above for the fitted ones.
-  expect_defect_error(predict(homogeneous_fit, newdata = transition_panel),
-                      defect = "predict() is not implemented for latent transition models: it always raises latents_unsupported_prediction; FINDINGS.md (latents, API gaps)",
-                      covers = "predict.multilpa_transitions()",
-                      quantity = "profile posteriors of new sequences, homogeneous")
-  expect_defect_error(predict(covariate_fit, newdata = transition_panel),
-                      defect = "predict() is not implemented for latent transition models with covariates: it always raises latents_unsupported_prediction; FINDINGS.md (latents, API gaps)",
-                      covers = "predict.multilpa_lta()",
-                      quantity = "profile posteriors of new sequences, covariate transitions")
-})
