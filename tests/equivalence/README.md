@@ -25,5 +25,17 @@ testthat::test_dir("tests/equivalence", load_package = "none")
 ```
 
 They need `numDeriv`, `mclust`, `MASS`, `mice`, `withr` and `knitr` installed.
-The workflow claims read `vignettes/articles/`; the Latent GOLD step-three
-comparison reads `equivalence/latentgold/`.
+The workflow claims read `vignettes/articles/`. Every other file a test reads
+is under this directory and read through `reference_data()`: the stored
+results in `fixtures/` and `data/latentgold-cases.R` (a copy of
+`equivalence/latentgold/cases.R`). The helpers the tests share are here too
+(`helper-*.R`); `helper-expected-warnings.R` and `helper-additive-data.R` are
+copies of the ones in `tests/testthat/`, so that a case re-run in Prova
+carries everything it needs.
+
+Files beside the package's own (`test-outside-*.R`, `test-mplus-classification.R`,
+`test-simulab-recovery.R`) compare accessors and estimators with outside programs
+(depmixS4, tidyLPA, tna, mixtools, flexmix, Mplus output in `fixtures/mplus-avepp.json`,
+written by `fixtures/make-mplus-avepp.R`) and check the recovery of the parameters
+of data drawn by simulab. These also need `depmixS4`, `tidyLPA`, `tna`, `mixtools`,
+`flexmix`, `lme4`, `poLCA` and `simulab`.

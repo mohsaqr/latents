@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # The membership M-step: weighted multinomial logits on soft counts.
 
 test_that("binary soft counts give the weighted logistic regression", {

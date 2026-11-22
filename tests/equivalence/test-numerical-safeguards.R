@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Exhaustive property checks: they run on CI and locally, and are skipped on
 # CRAN to keep the check within its time budget.
 skip_on_cran()

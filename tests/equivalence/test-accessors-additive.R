@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # The accessors of the additive family (multilpa(family = "additive"), Houle
 # et al., 2026) and of the full cross-level family. References: for the
 # additive fit, the dense-covariance likelihood of helper-additive-dense.R,
@@ -151,6 +155,16 @@ test_that("nobs() of the additive fit is the number of groups", {
                    quantity = "number of observations, additive", tolerance = 0)
 })
 
+test_that("nobs() of the additive fit is the number of groups lme4 counts", {
+  skip_without_reference("lme4")
+  # A two-level fit's independent units are its groups: lme4's ngrps() of a
+  # random-intercept model of the same ratings.
+  reference <- lme4::lmer(y1 ~ 1 + (1 | group), accessor_additive_data, REML = FALSE)
+  expect_reference(nobs(accessor_additive_fit), unname(lme4::ngrps(reference)[["group"]]), reference = "lme4",
+                   covers = c("multilpa()", "nobs.multilpa_additive()"),
+                   quantity = "number of observations (groups), additive", tolerance = 0)
+})
+
 # ---- full cross-level family -------------------------------------------------
 
 # 80 teams of six members, two team types with different profile shares (the
@@ -276,6 +290,14 @@ test_that("nobs() of the cross-level fit is the number of teams", {
                    reference = "independent: number of groups in the data",
                    covers = c("multilpa()", "nobs.multilpa_cross_level()"),
                    quantity = "number of observations, cross-level", tolerance = 0)
+})
+
+test_that("nobs() of the cross-level fit is the number of teams lme4 counts", {
+  skip_without_reference("lme4")
+  reference <- lme4::lmer(y1 ~ 1 + (1 | team), accessor_cross_data, REML = FALSE)
+  expect_reference(nobs(accessor_cross_fit), unname(lme4::ngrps(reference)[["team"]]), reference = "lme4",
+                   covers = c("multilpa()", "nobs.multilpa_cross_level()"),
+                   quantity = "number of observations (teams), cross-level", tolerance = 0)
 })
 
 test_that("parameter_inference() refuses the cross-level families", {

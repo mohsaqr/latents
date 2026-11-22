@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # General latent transition model: occasion-varying and covariate-dependent
 # transitions, covariate initial distribution, occasion-specific measurement,
 # second order, covariance structures. References: an exact sum over every
@@ -8,7 +12,7 @@
 # (.lta_log_initial, .lta_log_transition); the sum over paths, the densities
 # and the mixing are written here.
 
-lta_references <- readRDS(test_path("fixtures", "lta-references.rds"))
+lta_references <- readRDS(reference_data("fixtures/lta-references.rds"))
 
 lta_path_reference <- "independent: exact sum over every profile path, base R"
 

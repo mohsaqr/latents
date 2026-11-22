@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # External lme4 comparison retained outside the shipped package tests.
 # Same fixture and assertions as the original round-two growth regression.
 

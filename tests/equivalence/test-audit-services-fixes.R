@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 test_that("weighted Gaussian residuals use the fitted distribution's weights", {
   set.seed(210)
   d <- data.frame(g = 1:120, a = rnorm(120), b = rnorm(120), w = rep(c(1, 10), each = 60))

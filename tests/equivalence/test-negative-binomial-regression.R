@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Negative-binomial regression mixtures, mixture_regression(family =
 # "negative_binomial") (phase E7 of validation/ENGINE_DESIGN.md): the GLM
 # block with NB2 counts under the regression structures. References: one

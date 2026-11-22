@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # The accessors of lta() fits (classes multilpa_transitions and multilpa_lta)
 # and the transition networks get_tna() / get_group_tna() hand to tna, on a
 # simulated panel: 150 sequences of four occasions, two Gaussian indicators,

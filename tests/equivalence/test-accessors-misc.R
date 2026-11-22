@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Accessors and helpers outside the fitting functions: pool_imputations() and the
 # latents_pooled methods; diagnostics() with its tables, get_replication(),
 # get_checks(); starting_values() and the multilpa_start methods; sensitivity();

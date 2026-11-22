@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Wald inference for latent transition models. The analytic score is checked
 # against numerical differentiation of the forward-backward likelihood, and the
 # standard errors against a Hessian of that likelihood alone, so neither is

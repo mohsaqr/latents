@@ -1,9 +1,13 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Comparisons with independent references moved from tests/testthat/test-audit-ml3-optimizer.R,
 # so that they run in CI's equivalence job rather than under R CMD check.
 
 test_that("equal-variance step three reaches the retained higher regular maximum", {
   skip_on_cran()
-  case <- readRDS(test_path("fixtures", "ml3-equal-rare-class.rds"))
+  case <- readRDS(reference_data("fixtures/ml3-equal-rare-class.rds"))
   fit <- latents:::.multilpa_step_ml_fit(case$pieces, case$values, "equal")
   expect_true(fit$converged)
   expect_false(fit$at_floor)

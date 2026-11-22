@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Independent references and edge cases missed by the post-submission additions.
 review_regression_data <- function() {
   withr::with_seed(943, {

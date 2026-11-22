@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # descriptives(): counts, means, standard deviations, ranges and the one-way
 # random-effects intraclass correlation of the model variables, for a data
 # frame and for the data a fit was built from. References: base R's summaries

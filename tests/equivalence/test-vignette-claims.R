@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # The numbers stated in the prose of the workflow-lpa and workflow-lca articles
 # (vignettes/articles/). The articles' own code is extracted and run, so
 # the objects checked here are the ones the text describes, produced by the

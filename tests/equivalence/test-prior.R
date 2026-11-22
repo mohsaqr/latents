@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Maximum a posteriori estimation under mclust's conjugate prior
 # (`multilpa(prior = prior_control())`). The full ten-structure comparison
 # with mclust lives in equivalence/test-mclust-prior.R.

@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Wald inference for the ten covariance structures that constrain the volume,
 # the shape or the orientation across profiles. The reference is
 # helper-structure-reference.R: its own likelihood, its own chart of each

@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # mixture_regression() with one class is a normal linear model fitted by
 # maximum likelihood, so every accessor of its result has an exact reference
 # in stats::lm(): the coefficients, the ML residual standard deviation

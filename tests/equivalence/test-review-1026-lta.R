@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Comparisons with independent references moved from tests/testthat/test-review-1026-lta.R,
 # so that they run in CI's equivalence job rather than under R CMD check.
 # Reference: every profile path of every person enumerated in base R

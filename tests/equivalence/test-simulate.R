@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # simulate() for mixture regressions and growth mixtures. The draws (classes, random effects, residuals) are made
 # inside the function with only nsim and seed as arguments, so the evidence is statistical: Monte Carlo summaries
 # of the simulated outcomes against the moments the fitted model implies, written out in base R from coef().

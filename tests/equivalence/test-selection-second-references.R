@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Second references for model selection (the first are in test-accessors-selection.R, which holds as many
 # references as one case may): Rmixmod for the Gaussian maxima behind compare_models() and bootstrap_lrt(), and
 # randomLCA and glca for the latent class maxima behind enumerate_lca() (poLCA is the first). The fits are those of

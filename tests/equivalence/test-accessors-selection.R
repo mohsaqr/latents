@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Model selection and its accessors: compare_models(), enumerate_lca(),
 # enumerate_classes() (group-class families and transition grids),
 # enumerate_regressions(), get_tree(), bootstrap_lrt() and the bootstrap table
@@ -103,6 +107,10 @@ test_that("enumerate_lca() reaches poLCA's maxima on the carcinoma data", {
   expect_reference(as.data.frame(grid), expected[c("candidate", "bic_individual")],
                    reference = "poLCA", covers = covers, quantity = "BIC per candidate, carcinoma",
                    tolerance = 2e-6, measure = "absolute", key = "candidate")
+  # grid$<candidate> is the candidate's fit.
+  expect_reference(as.numeric(logLik(grid$classes2)), expected$log_likelihood[[2L]], reference = "poLCA",
+                   covers = c("enumerate_lca()", "$.multilpa_enumeration()"),
+                   quantity = "log likelihood of grid$classes2, carcinoma", tolerance = 1e-6, measure = "absolute")
 })
 
 # One to three classes of mpg on wt (datasets::mtcars).
@@ -221,6 +229,21 @@ test_that("one group class of the additive family is two random-intercept models
                    reference = "lme4", covers = c("enumerate_classes()", "as.data.frame.latents_family_enumeration()"),
                    quantity = "log likelihood, one group class: the sum of two lmer() fits", tolerance = 1e-6,
                    measure = "relative", key = "candidate")
+  expect_reference(subset(summary(family_grid), candidate == "additive_groups1", select = c(candidate, log_likelihood)),
+                   data.frame(candidate = "additive_groups1", log_likelihood = sum(reference)),
+                   reference = "lme4", covers = c("enumerate_classes()", "summary.latents_family_enumeration()"),
+                   quantity = "log likelihood, one group class: the sum of two lmer() fits, summary()",
+                   tolerance = 1e-6, measure = "relative", key = "candidate")
+  expect_reference(subset(get_results(family_grid), candidate == "additive_groups1", select = c(candidate, log_likelihood)),
+                   data.frame(candidate = "additive_groups1", log_likelihood = sum(reference)),
+                   reference = "lme4", covers = c("enumerate_classes()", "get_results.latents_family_enumeration()"),
+                   quantity = "log likelihood, one group class: the sum of two lmer() fits, get_results()",
+                   tolerance = 1e-6, measure = "relative", key = "candidate")
+  # grid$<candidate> is the candidate's fit.
+  expect_reference(as.numeric(logLik(family_grid$additive_groups1)), sum(reference), reference = "lme4",
+                   covers = c("enumerate_classes()", "$.latents_family_enumeration()"),
+                   quantity = "log likelihood of grid$additive_groups1: the sum of two lmer() fits",
+                   tolerance = 1e-6, measure = "relative")
 })
 
 test_that("the family grid's likelihoods and criteria are the dense additive model's", {

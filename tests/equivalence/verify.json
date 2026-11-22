@@ -101,10 +101,19 @@
     "Mplus": {
       "authority": "commercial",
       "family": "Mplus"
+    },
+    "tidyLPA": {
+      "authority": "open-source"
+    },
+    "tna": {
+      "authority": "open-source"
     }
   },
   "exports": {
     "covered": [
+      "$.multilpa_enumeration()",
+      "$.latents_transition_enumeration()",
+      "$.latents_family_enumeration()",
       "align_labels()",
       "as.data.frame.latents_bootstrap()",
       "as.data.frame.latents_family_enumeration()",
@@ -243,6 +252,9 @@
       "predict.latents_growth_mixture()",
       "predict.latents_mixture_regression()",
       "predict.multilpa()",
+      "predict.multilpa_transitions()",
+      "predict.multilpa_lta()",
+      "predict.multilpa_covariates()",
       "r3step()",
       "sensitivity()",
       "starting_values()",
@@ -278,9 +290,6 @@
       ".DollarNames.latents_family_enumeration()": "completion of field names in the console",
       ".DollarNames.latents_transition_enumeration()": "completion of field names in the console",
       ".DollarNames.multilpa_enumeration()": "completion of field names in the console",
-      "$.latents_family_enumeration()": "list access with a deprecation route for old field names; returns a stored element",
-      "$.latents_transition_enumeration()": "list access with a deprecation route for old field names; returns a stored element",
-      "$.multilpa_enumeration()": "list access with a deprecation route for old field names; returns a stored element",
       "descriptives.default()": "the default method raises a classed error for an object the generic does not support; it returns no numbers",
       "get_group_tna.default()": "the default method raises a classed error for an object the generic does not support; it returns no numbers",
       "get_group_tna.multilpa_lta()": "always raises latents_unsupported_tna for covariate-dependent transitions; returns no numbers",
@@ -320,10 +329,6 @@
       "prior_control()": "returns a list of prior settings for a later fit",
       "report()": "prints model estimates and diagnostic summaries as text"
     },
-    "not_yet": {
-      "predict.multilpa_covariates()": "always raises latents_unsupported_prediction: prediction for membership-covariate models is not implemented; once it is, the reference is Bayes rule with the membership logits on new rows (as in test-accessors-covariates.R)",
-      "predict.multilpa_transitions()": "always raises an error: predict() is not implemented for latent transition models (a row class depends on its whole sequence); once it returns forward-backward posteriors for new sequences, the path-enumeration posteriors of test-accessors-transitions.R are the reference",
-      "predict.multilpa_lta()": "as predict.multilpa_transitions()"
-    }
+    "not_yet": {}
   }
 }

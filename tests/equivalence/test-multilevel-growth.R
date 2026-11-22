@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # The multilevel growth mixture model (phase E7 of validation/ENGINE_DESIGN.md):
 # the growth block's person densities under the two-level structure, with
 # persons nested in clusters and a group class per cluster. References: a

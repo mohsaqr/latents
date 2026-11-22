@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # enumerate_lpa() on the Old Faithful eruptions (datasets::faithful) with one to
 # four profiles under mclust's EEI and VVI structures, and the accessors that
 # read the grid. Reference: mclust::mclustBIC() on the same grid, both programs

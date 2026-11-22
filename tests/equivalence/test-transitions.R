@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Comparisons with independent references moved from tests/testthat/test-transitions.R,
 # so that they run in CI's equivalence job rather than under R CMD check.
 # Reference: the likelihood summed over every state path of every group and

@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Ordinal (adjacent-category logit) and count (Poisson) indicators.
 
 extra_rows <- function(seed = 1, n = 600) {
@@ -34,7 +38,7 @@ test_that("fits agree with Latent GOLD 6.1", {
   # of each Latent GOLD 6.1 listing (equivalence/latentgold-ordinal/returned/),
   # read by equivalence/latentgold-ordinal/make-fixture.R. It has no provenance
   # header.
-  fixture <- readRDS(test_path("fixtures", "latentgold-ordinal.rds"))
+  fixture <- readRDS(reference_data("fixtures/latentgold-ordinal.rds"))
   fits <- lapply(fixture, function(case) {
     quietly(multilpa(case$data, case$vars, if (case$two_level) "g" else NULL,
                      case$n_profiles,

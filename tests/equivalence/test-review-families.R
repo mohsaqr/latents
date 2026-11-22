@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Independent checks added in the 2026-10-01 model review.
 review_family_data <- function() {
   old_seed <- if (exists(".Random.seed", globalenv())) get(".Random.seed", globalenv())

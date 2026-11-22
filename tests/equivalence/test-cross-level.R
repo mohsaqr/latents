@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Cross-level families (Houle et al., 2026, manifest specification). The
 # reference likelihood is computed directly from the published formula,
 #   L_j = sum_h omega_h f(m_j | h) prod_i sum_k pi_{k|h} f(x_ij | k),
@@ -120,4 +124,33 @@ test_that("the full cross-level EM reaches a stationary point of the formula", {
                    quantity = "gradient of the published likelihood at the full cross-level maximum",
                    tolerance = 1e-3, measure = "absolute",
                    note = "Reference: numDeriv::grad() of cross_level_reference(), the published formula written in this file.")
+})
+
+test_that("with one group class the cross-level likelihood is mclust's VVI maximum plus the group means' normal", {
+  skip_without_reference("mclust")
+  # With one group class, L = prod_j f(m_j) prod_i sum_k pi_k f(x_ij | k): the
+  # maximum factorises into mclust's two-profile VVI mixture of the members and
+  # the maximum of a normal for the group means (their mean and the variance
+  # with divisor J, in closed form).
+  fits <- lapply(c("full_cross_level", "restricted_cross_level"), \(family) {
+    multilpa(cross_level_data, cross_level_vars, "team", n_profiles = 2, n_group_classes = 1, family = family,
+             tol = 1e-12, seed = 1)
+  })
+  members <- cross_level_data[cross_level_vars]
+  bic <- mclust::mclustBIC(members, G = 2, modelNames = "VVI",
+                           control = mclust::emControl(tol = c(1e-12, 1e-12), itmax = c(1e6, 1e6)),
+                           verbose = FALSE)[1L, "VVI"]
+  p <- mclust::nMclustParams("VVI", 2L, 2L)
+  mixture <- (bic + p * log(nrow(members))) / 2
+  team_means <- stats::aggregate(members, list(team = cross_level_data$team), mean)
+  group_part <- sum(vapply(cross_level_vars, \(v) {
+    m <- team_means[[v]]
+    sum(stats::dnorm(m, mean(m), sqrt(mean((m - mean(m))^2)), log = TRUE))
+  }, numeric(1)))
+  # Both EMs stop at a relative change of 1e-12: 1e-8 relative.
+  expect_reference(vapply(fits, \(fit) as.numeric(logLik(fit)), numeric(1)),
+                   c(full = mixture + group_part, restricted = mixture + group_part), reference = "mclust",
+                   covers = c("multilpa()", "logLik.multilpa_cross_level()"),
+                   quantity = "log likelihood with one group class (full, restricted)", tolerance = 1e-8,
+                   measure = "relative")
 })

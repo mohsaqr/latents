@@ -1,0 +1,155 @@
+{
+  "eei_k3poor": {
+    "log_likelihood": -3053.078,
+    "relative_entropy": 0.622,
+    "class_counts": [
+      {
+        "class": 1,
+        "estimated_n": 198.86524,
+        "proportion": 0.39773
+      },
+      {
+        "class": 2,
+        "estimated_n": 275.85397,
+        "proportion": 0.55171
+      },
+      {
+        "class": 3,
+        "estimated_n": 25.28079,
+        "proportion": 0.05056
+      }
+    ],
+    "avepp": [
+      {
+        "assigned_class": 1,
+        "class": 1,
+        "average_posterior": 0.828
+      },
+      {
+        "assigned_class": 1,
+        "class": 2,
+        "average_posterior": 0.172
+      },
+      {
+        "assigned_class": 1,
+        "class": 3,
+        "average_posterior": 0
+      },
+      {
+        "assigned_class": 2,
+        "class": 1,
+        "average_posterior": 0.137
+      },
+      {
+        "assigned_class": 2,
+        "class": 2,
+        "average_posterior": 0.822
+      },
+      {
+        "assigned_class": 2,
+        "class": 3,
+        "average_posterior": 0.041
+      },
+      {
+        "assigned_class": 3,
+        "class": 1,
+        "average_posterior": 0.005
+      },
+      {
+        "assigned_class": 3,
+        "class": 2,
+        "average_posterior": 0.211
+      },
+      {
+        "assigned_class": 3,
+        "class": 3,
+        "average_posterior": 0.784
+      }
+    ]
+  },
+  "lca_k3": {
+    "log_likelihood": -3800.67,
+    "relative_entropy": 0.689,
+    "class_counts": [
+      {
+        "class": 1,
+        "estimated_n": 373.32911,
+        "proportion": 0.37333
+      },
+      {
+        "class": 2,
+        "estimated_n": 498.51053,
+        "proportion": 0.49851
+      },
+      {
+        "class": 3,
+        "estimated_n": 128.16036,
+        "proportion": 0.12816
+      }
+    ],
+    "avepp": [
+      {
+        "assigned_class": 1,
+        "class": 1,
+        "average_posterior": 0.849
+      },
+      {
+        "assigned_class": 1,
+        "class": 2,
+        "average_posterior": 0.093
+      },
+      {
+        "assigned_class": 1,
+        "class": 3,
+        "average_posterior": 0.058
+      },
+      {
+        "assigned_class": 2,
+        "class": 1,
+        "average_posterior": 0.062
+      },
+      {
+        "assigned_class": 2,
+        "class": 2,
+        "average_posterior": 0.895
+      },
+      {
+        "assigned_class": 2,
+        "class": 3,
+        "average_posterior": 0.043
+      },
+      {
+        "assigned_class": 3,
+        "class": 1,
+        "average_posterior": 0.172
+      },
+      {
+        "assigned_class": 3,
+        "class": 2,
+        "average_posterior": 0.1
+      },
+      {
+        "assigned_class": 3,
+        "class": 3,
+        "average_posterior": 0.728
+      }
+    ]
+  },
+  "provenance": {
+    "program": "Mplus",
+    "version": "9 DEMO (Mac)",
+    "generated_by": "tests/equivalence/fixtures/make-mplus-avepp.R",
+    "generated_at": "2026-11-22T13:14:34+0200",
+    "data": [
+      {
+        "path": "tests/equivalence/data/mplus-eei_k3poor.dat",
+        "sha256": "0602def07ee99fe85db6f7105571d580f4a680c7debef2de4f6691a43a023b12"
+      },
+      {
+        "path": "tests/equivalence/data/mplus-lca_k3.dat",
+        "sha256": "0ee3dc84b4e57e55886b27ff7b72251694da9d6d53dc08e52562668d1b292e54"
+      }
+    ],
+    "source": ["equivalence/features/vlmr/returned/eei_k3poor_01_k3.out (and .inp)", "equivalence/features/vlmr/returned/lca_k3_01_k3.out (and .inp)"]
+  }
+}

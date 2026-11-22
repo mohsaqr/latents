@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # lpa() on the Old Faithful eruptions (datasets::faithful, 272 eruptions, two
 # indicators, two profiles, diagonal class-varying covariances = mclust's VVI)
 # and the accessors that report it. References: mclust's E-step at latents'

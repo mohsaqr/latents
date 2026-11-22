@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Cluster-robust variances against sandwich::vcovCL(), whose default
 # adjustment is the CR1 factor G / (G - 1).
 
@@ -63,7 +67,7 @@ test_that("the sandwich is the hand-built CR1 variance", {
   ours <- latents:::.inference_sandwich(solve(crossprod(x)), crossprod(scores), nrow(scores))
   expect_reference(unname(ours), unname(cr1_reference(x, residuals, groups)),
                    reference = "independent: hand-built CR1 sandwich, base R",
-                   covers = "mixture_regression()", quantity = "CR1 sandwich of a linear model",
+                   covers = "mixture_regression()", quantity = "CR1 sandwich of a linear model, against the hand-built CR1",
                    tolerance = 1e-12, measure = "relative", note = sandwich_note)
 })
 
@@ -83,6 +87,6 @@ test_that("a one-class robust regression gives the hand-built CR1 standard error
                    reference = "independent: hand-built CR1 sandwich, base R",
                    covers = c("mixture_regression()", "get_results.latents_mixture_regression()",
                               "as.data.frame.latents_table()"),
-                   quantity = "robust standard errors, one-class regression",
+                   quantity = "robust standard errors, one-class regression, against the hand-built CR1",
                    tolerance = 1e-4, measure = "relative", key = "term")
 })

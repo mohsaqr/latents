@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Dispersion and additive-dispersion families: the same engine with
 # class-specific within-group variances. References: dense covariance
 # densities, numerical derivatives, closed-form nesting relations.

@@ -1,3 +1,7 @@
+# The edition of DESCRIPTION (Config/testthat/edition: 3), stated here because a re-run
+# of this file outside the package finds no DESCRIPTION and would fall back to edition 2.
+testthat::local_edition(3)
+
 # Comparisons with independent references moved from tests/testthat/test-three-step-ml.R,
 # so that they run in CI's equivalence job rather than under R CMD check.
 
@@ -5,9 +9,8 @@ test_that("both variance models converge and agree with Latent GOLD's step three
   # Latent GOLD 6.1, `step3 modal ml` on this package's case c09 with the
   # class sizes fixed at the average posteriors (equivalence/latentgold/):
   # log likelihoods, means and variances as printed there.
-  skip_if_not(file.exists(test_path("..", "..", "equivalence", "latentgold", "cases.R")),
-              "the Latent GOLD kit is not available")
-  source(test_path("..", "..", "equivalence", "latentgold", "cases.R"), local = TRUE)
+  # data/latentgold-cases.R is a copy of the kit's equivalence/latentgold/cases.R.
+  source(reference_data("data/latentgold-cases.R"), local = TRUE)
   case <- .lg_step_case(.lg_step_data(seed = 109L))
   fit <- case$fit()
   pieces <- latents:::.multilpa_level_assignments(fit, "individuals")
