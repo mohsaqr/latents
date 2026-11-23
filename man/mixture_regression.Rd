@@ -2,7 +2,8 @@
 % Please edit documentation in R/mixture-regression.R
 \name{mixture_regression}
 \alias{mixture_regression}
-\title{Estimate regression relationships that vary across latent classes}
+\title{Fit a mixture regression model in which the relationship between an outcome
+and its predictors differs across latent classes}
 \usage{
 mixture_regression(
   formula,
@@ -39,25 +40,44 @@ interactions and \code{offset()} are supported.}
 
 \item{data}{A data frame.}
 
-\item{n_classes}{Number of regression classes.}
+\item{n_classes}{Number of regression classes; a positive integer.}
 
-\item{family}{\code{"gaussian"} (default), \code{"binomial"}, \code{"poisson"},
-\code{"negative_binomial"} or \code{"ordinal"}. See \emph{Families}.}
+\item{family}{The distribution of the outcome within a class:
+\itemize{
+\item \code{"gaussian"} (default): a continuous outcome, identity link;
+\item \code{"binomial"}: a binary outcome or counts of successes and failures,
+logit link;
+\item \code{"poisson"}: a count outcome, log link;
+\item \code{"negative_binomial"}: a count outcome more dispersed than a Poisson,
+log link;
+\item \code{"ordinal"}: an ordered categorical outcome, cumulative logit link.
+}
+
+See \emph{Families} for the accepted outcome codings.}
 
 \item{id}{\code{NULL} (default), or the column identifying the units (persons,
 schools) the rows belong to.}
 
-\item{class_level}{\code{"observation"} (default): each row has its own class.
-\code{"group"}: all rows of a unit share a class (needs \code{id}). See \emph{Nesting}.}
+\item{class_level}{What a class is assigned to:
+\itemize{
+\item \code{"observation"} (default): each row has its own class, so two rows of
+the same unit can be in different classes;
+\item \code{"group"}: all rows of a unit share one class, so the classes are
+kinds of units. It needs \code{id}.
+}
+
+See \emph{Nesting}.}
 
 \item{n_group_classes}{Number of second-level group classes (default 1,
 none). For \code{class_level = "observation"} with \code{id}, classes of the
 units: a unit's class sets the class probabilities of its rows. For a
-growth mixture with \code{cluster}, classes of the clusters.}
+growth mixture with \code{cluster}, classes of the clusters. More than one
+needs \code{id}.}
 
 \item{common}{Predictor terms whose coefficients are shared by every
 class, as names (\code{"age"}) or a one-sided formula (\code{~ age}). Each term
-must appear in \code{formula}; the intercept cannot be shared.}
+must appear in \code{formula}; the intercept cannot be shared. \code{NULL}
+(default) lets every coefficient differ between classes.}
 
 \item{membership}{Covariates of class membership, a multinomial logit
 with the first class as reference: names or a one-sided formula (\code{~ 1},
@@ -65,12 +85,19 @@ the default, for none). Row-level under \code{"observation"}, constant within
 units under \code{"group"}.}
 
 \item{group_membership}{Covariates of the group class, as names or a
-one-sided formula; constant within the units that carry group classes
-(the \code{id} units, or the clusters under \code{cluster}).}
+one-sided formula (\code{~ 1}, the default, for none); constant within the
+units that carry group classes (the \code{id} units, or the clusters under
+\code{cluster}).}
 
-\item{variance}{\code{"varying"} (default): a residual standard deviation (or
-negative-binomial dispersion) per class; \code{"equal"}: one shared. Gaussian
-and negative-binomial families only.}
+\item{variance}{For the Gaussian and negative-binomial families (an error
+when given with the others), whether the classes share their residual
+variation:
+\itemize{
+\item \code{"varying"} (default): each class has its own residual standard
+deviation (or negative-binomial dispersion);
+\item \code{"equal"}: one value shared by all classes, so the classes differ
+only in their coefficients.
+}}
 
 \item{n_starts}{Number of random starts (default 10), besides one start
 built from the residuals of a pooled regression. Each start runs up to
@@ -93,74 +120,134 @@ about.}
 \item{seed}{Optional integer seed; when given, the caller's random-number
 state is restored on exit.}
 
-\item{missing}{\code{"error"} (default) rejects rows with a missing value in
-any variable the model uses; \code{"omit"} drops them with a warning saying
-how many.}
+\item{missing}{What to do with rows that have a missing value in any
+variable the model uses:
+\itemize{
+\item \code{"error"} (default): stop, saying how many rows are affected;
+\item \code{"omit"}: drop those rows and fit the complete ones, with a
+\code{latents_rows_dropped} warning saying how many were dropped.
+}}
 
-\item{select_start}{\code{"likelihood"} (default): the start with the highest
-likelihood; \code{"converged"}: the best start that converged.}
+\item{select_start}{Which start is reported:
+\itemize{
+\item \code{"likelihood"} (default): the start with the highest log likelihood,
+whether or not it converged;
+\item \code{"converged"}: the start with the highest log likelihood among those
+that converged, or among all starts when none converged.
+}
 
-\item{vcov_type}{Covariance of the estimates stored with the fit:
-\code{"observed"} (default, inverse observed information), \code{"robust"}
-(sandwich, clustered on the independent units), \code{"opg"} (outer product
-of the scores) or \code{"none"}. A weighted fit takes \code{"robust"} or
-\code{"none"} only.}
+Starts in which a class emptied or a residual variance reached its
+floor are set aside under either rule.}
+
+\item{vcov_type}{The covariance matrix of the estimates stored with the
+fit, from which the standard errors and confidence intervals are taken:
+\itemize{
+\item \code{"observed"} (default): the inverse of the observed information;
+\item \code{"robust"}: the sandwich estimator, clustered on the independent
+units;
+\item \code{"opg"}: the outer product of the scores;
+\item \code{"none"}: no covariance matrix is stored, which saves the time of
+computing it during the fit. A table that needs standard errors
+then computes them when it is requested (from the observed
+information; the sandwich for a weighted fit).
+}
+
+A weighted fit uses \code{"robust"} by default and accepts only \code{"robust"}
+or \code{"none"}.}
 
 \item{weights}{Name of a numeric column holding a sampling weight per
 independent unit (per row without \code{id}, per unit with it): pseudo
 maximum likelihood with robust standard errors. A unit of weight zero
 is absent from the fit and every criterion but keeps its row and
-posterior.}
+posterior. \code{NULL} (default) weights every unit equally.}
 
 \item{random}{\code{NULL} (default), or the random effects within classes:
 names such as \code{"time"} (a random intercept and a random slope on time)
-or \code{"intercept"}, or a one-sided formula such as \code{~ 1 + time} (\code{~ 0 + time} for a slope alone). See \emph{Growth mixture models}.}
+or \code{"intercept"}, or a one-sided formula such as \code{~ 1 + time} (\code{~ 0 + time} for a slope alone). Giving \code{random} fits a growth mixture model;
+it needs the Gaussian family, \code{id} and \code{class_level = "group"}. See
+\emph{Growth mixture models}.}
 
-\item{random_covariance}{How the random-effect covariance differs across
-classes: \code{"varying"} (default, one per class), \code{"equal"} (one shared
-matrix, \code{lcmm::hlme(nwg = FALSE)}) or \code{"proportional"} (a shared matrix
-times a class-specific scale, the last class's being one, \code{nwg = TRUE}).}
+\item{random_covariance}{With \code{random}, how the covariance matrix of the
+random effects differs between classes:
+\itemize{
+\item \code{"varying"} (default): one matrix per class;
+\item \code{"equal"}: one matrix shared by all classes
+(\code{lcmm::hlme(nwg = FALSE)});
+\item \code{"proportional"}: a shared matrix times a class-specific scale, the
+last class's scale being one (\code{nwg = TRUE}).
+}}
 
-\item{random_diagonal}{\code{TRUE} for uncorrelated random effects (\code{idiag = TRUE} in lcmm); default \code{FALSE}.}
+\item{random_diagonal}{With \code{random}: \code{FALSE} (default) estimates the
+covariances between the random effects; \code{TRUE} sets them to zero, so
+the random effects are uncorrelated (\code{idiag = TRUE} in lcmm).}
 
 \item{cluster}{Column grouping the units of \code{id} into clusters, such as
 schools, for the multilevel growth mixture model (with \code{random}): each
 cluster belongs to one of \code{n_group_classes} group classes, which sets
 the trajectory-class probabilities of its persons. The clusters are the
 independent units of the likelihood, the standard errors and the BIC.
-See \emph{Growth mixture models}.}
+\code{NULL} (default) has no cluster level. Not combined with \code{weights}. See
+\emph{Growth mixture models}.}
 
-\item{residual_correlation}{\code{"none"} (default): independent residuals
-within a unit. With \code{random}, \code{"ar"} adds a continuous-time
-autoregressive process (covariance \verb{sd^2 * exp(-rate * |t - s|)}) and
-\code{"brownian"} Brownian motion (\code{sd^2 * min(t, s)}) to the residuals,
-shared by the classes: \code{lcmm::hlme(cor = AR(time))} and \code{cor = BM(time)}. A process the data cannot separate from the residual
-variance or the random effects stays on its bound, warns, and has no
-standard error. These fits refine one class placement from the model
-without the process; \code{n_best_replicated} is \code{NA}, and \code{"starts"} reports
-the correlated fit rather than the initialization's replication count.}
+\item{residual_correlation}{With \code{random}, how the residuals of one unit
+are correlated over time:
+\itemize{
+\item \code{"none"} (default): independent residuals;
+\item \code{"ar"}: a continuous-time autoregressive process is added, with
+covariance \verb{sd^2 * exp(-rate * |t - s|)} between times \code{t} and \code{s}
+(\code{lcmm::hlme(cor = AR(time))});
+\item \code{"brownian"}: Brownian motion is added, with covariance
+\code{sd^2 * min(t, s)} (\code{cor = BM(time)}).
+}
+
+The process is shared by the classes. One the data cannot separate
+from the residual variance or the random effects stays on its bound,
+warns, and has no standard error. These fits refine one class placement
+from the model without the process; \code{n_best_replicated} is \code{NA}, and
+\code{"starts"} reports the correlated fit rather than the initialization's
+replication count.}
 
 \item{residual_time}{Numeric time column of the residual process; default
 the first numeric variable in \code{random}, otherwise in the predictors.
-Brownian motion needs non-negative times.}
+Brownian motion needs non-negative times. Given without
+\code{residual_correlation}, it is an error.}
 }
 \value{
-A \code{latents_mixture_regression} object, or \code{latents_growth_mixture}
-when \code{random} is given. \code{as.data.frame()} returns the coefficient table
-and \code{\link[=get_results]{get_results()}} every table by name; \code{\link[=predict]{predict()}}, \code{plot()} (and
-\code{\link[=plot_trajectories]{plot_trajectories()}}, \code{\link[=plot_coefficients]{plot_coefficients()}}), \code{summary()}, \code{coef()},
-\code{vcov()}, \code{confint()}, \code{logLik()} and \code{nobs()} apply. The within-class
-coefficients are conditional associations under the specified model,
-not causal effects; check the starts table and the classification
-diagnostics before reading substance into the classes.
+A fitted model of class \code{latents_mixture_regression}, or of class
+\code{latents_growth_mixture} when \code{random} is given. Printing it shows the
+fit, the classes and the coefficients. \code{\link[=get_results]{get_results()}} returns its
+tables by name, among them:
+\itemize{
+\item \code{"coefficients"} (also \code{as.data.frame(fit)}): one row per class and
+term, with the estimate, standard error, confidence limits and
+p-value;
+\item \code{"classes"}: the share of each class, the number of rows assigned
+to it, its average posterior probability and its residual standard
+deviation;
+\item \code{"membership"}: the coefficients of the membership covariates;
+\item \code{"fit"}: the log likelihood, number of parameters, AIC, BIC, SABIC,
+ICL and entropy;
+\item \code{"assignments"}: each row's (or unit's) most likely class and
+posterior probabilities;
+\item \code{"starts"}: the log likelihood and convergence of every start.
+}
+
+A regression mixture also has \code{"fitted"}, \code{"classification"},
+\code{"groups"} and \code{"group_classes"}; a growth mixture has \code{"random"} (the
+random-effect variances), \code{"random_effects"}, \code{"trajectories"} and
+\code{"individual"}. \code{\link[=predict]{predict()}}, \code{plot()} (and \code{\link[=plot_trajectories]{plot_trajectories()}},
+\code{\link[=plot_coefficients]{plot_coefficients()}}), \code{summary()}, \code{coef()}, \code{vcov()}, \code{confint()},
+\code{logLik()} and \code{nobs()} apply. The within-class coefficients are
+conditional associations under the specified model, not causal effects;
+check the starts table and the classification diagnostics before
+reading substance into the classes.
 }
 \description{
-\code{mixture_regression()} asks whether the relationship between an outcome
-and its predictors differs across latent classes. The conditional outcome
-distribution is a mixture of class-specific regressions, so classes can
-differ in outcome level, in predictor associations or in trajectory over
-time. Regression parameters and class probabilities are estimated jointly
-by maximum likelihood.
+\code{mixture_regression()} fits a mixture of class-specific regressions, to ask
+whether the relationship between an outcome and its predictors differs across
+latent classes. Classes can differ in outcome level, in predictor
+associations or in trajectory over time. Regression parameters and class
+probabilities are estimated jointly by maximum likelihood.
 
 Predictors in \code{formula} describe variation within classes; covariates in
 \code{membership} describe who belongs to which class. A coefficient may be
@@ -170,6 +257,26 @@ shared membership the classes are trajectories, and \code{random} adds
 within-class variation around them (a growth mixture model). Outcomes can
 be Gaussian, binomial, Poisson, negative binomial or ordinal.
 }
+\section{Conditions}{
+
+Errors: \code{latents_bad_argument} for an argument value or combination that
+is not accepted (for example \code{class_level = "group"} without \code{id},
+\code{variance} with a family that has none, or \code{random} without
+\code{class_level = "group"}); \code{latents_bad_data} for a variable that \code{data}
+does not have or an outcome the family cannot take;
+\code{latents_missing_data} for missing values under \code{missing = "error"};
+\code{latents_not_identified} for the models listed under \emph{Families};
+\code{latents_no_valid_start} when a class emptied or a variance collapsed in
+every start; \code{latents_unsupported_weights} for a weighted fit asked for
+a \code{vcov_type} other than \code{"robust"} or \code{"none"}, or combined with
+\code{cluster}.
+
+Warnings: \code{latents_unconverged} when the reported start did not
+converge; \code{latents_degenerate_start} when some starts were set aside;
+\code{latents_rows_dropped} for rows left out under \code{missing = "omit"};
+\code{latents_random_boundary} for a random-effect variance at its floor.
+}
+
 \section{Nesting}{
 
 \describe{

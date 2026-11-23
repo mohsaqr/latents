@@ -27,7 +27,13 @@ message wording, which may change between versions.
 group column are invalid: too few rows, a duplicated or absent column
 name, an indicator that is not a numeric vector, an indicator that is
 constant or entirely unobserved, missing or non-finite values under
-\code{missing = "error"}, or a missing group identifier.}
+\code{missing = "error"}, or a missing group identifier. Also raised when
+an outcome, covariate or variable named in an argument is not a column
+of the data given to \code{\link[=three_step]{three_step()}}, \code{\link[=r3step]{r3step()}} or \code{\link[=descriptives]{descriptives()}};
+when \code{newdata} given to \code{predict()} cannot be used
+(\link{latents-predict}); and when \code{imputed} given to \code{\link[=pool_imputations]{pool_imputations()}}
+is not a list of at least two data frames with the same columns and
+rows.}
 \item{\code{latents_unweightable_level}}{The stored sampling weights cannot be
 aligned with a classification level, for example in an older cross-level
 fit without a row-to-group mapping. \code{\link[=diagnostics]{diagnostics()}} handles this condition
@@ -172,9 +178,10 @@ returned.}
 likelihood, indicating that at least one fit has not reached its global
 maximum.}
 \item{\code{latents_bad_outcome}}{A distal outcome given to \code{\link[=three_step]{three_step()}} is
-of a type the requested method cannot handle, varies within a group
-when a group-level outcome is requested, or is a measurement
-indicator.}
+a measurement indicator, varies within a group when a group-level
+outcome is requested (within a person, for a trajectory model), or
+takes a single category or value among the units analysed, so it has
+no distribution to compare across classes.}
 \item{\code{latents_bad_covariate}}{A predictor given to \code{\link[=r3step]{r3step()}} varies
 within a group when group-level membership is predicted, makes the
 design rank deficient, or is a measurement indicator; or a predictor
@@ -246,9 +253,9 @@ so there is no standard error to report. Raised by
 fixed by the fit and has no confidence interval. Raised by
 \code{\link[=confint]{confint()}}.}
 \item{\code{latents_unsupported_sensitivity}}{\code{\link[=sensitivity]{sensitivity()}} cannot refit the
-requested model or align its class labels. This includes directly fitted
-fixed-measurement models whose original free starting values were not
-retained.}
+requested model or align its class labels: a membership-covariate fit,
+or a directly fitted fixed-measurement model whose original free
+starting values were not retained.}
 \item{\code{latents_unsupported_three_step}}{\code{\link[=three_step]{three_step()}} or \code{\link[=r3step]{r3step()}} was
 called on a fit the correction does not cover: a membership-covariate
 fit, whose classification errors depend on the predictors (the
@@ -256,9 +263,13 @@ correction uses one unconditional error matrix); a multilevel growth
 mixture; a general \code{\link[=lta]{lta()}} fit (occasion-varying, second-order or
 covariate transitions, occasion-specific measurement, a stayer class,
 or ordinal or count indicators), except that \code{\link[=r3step]{r3step()}} takes
-\code{initial_covariates} and \code{transition_covariates} for a covariate-free
-one; an additive, dispersion or cross-level \code{\link[=multilpa]{multilpa()}} fit; or a
-mixture regression with observation classes.}
+\code{initial_covariates} and \code{transition_covariates} for one with
+invariant measurement, one group class, no covariates and no stayer
+class; an additive, dispersion or cross-level \code{\link[=multilpa]{multilpa()}} fit; or a
+mixture regression with observation classes. Also raised by
+\code{three_step(step_one = "estimated")} for a transition fit, a
+trajectory model, a staged fit or a fit holding a measurement block
+fixed.}
 \item{\code{latents_unsupported_bootstrap}}{\code{\link[=bootstrap_lrt]{bootstrap_lrt()}} was called on a
 person-centred fit, for which raw data cannot be simulated under the
 null model because the group baselines were removed before
@@ -274,12 +285,14 @@ whose plot method has no views to draw.}
 \item{\code{latents_no_time}}{A sequence table or function was requested for a
 fit made without \code{time}.}
 \item{\code{latents_unsupported_prediction}}{\code{predict()} was called on a
-growth mixture, a membership-covariate fit or a latent transition fit,
-for which prediction on new rows is not implemented; results for the
-fitted rows are available from \code{\link[=get_results]{get_results()}}.}
+membership-covariate fit or a latent transition fit, for which
+prediction is not implemented; the posterior probabilities of the
+fitted rows are \code{get_results(x, "posteriors")}.}
 \item{\code{latents_missing_package}}{A required package from \code{Suggests} is
-not installed. Raised by \code{\link[=get_tna]{get_tna()}} and \code{\link[=get_group_tna]{get_group_tna()}} when \code{tna}
-is absent; the message names the package and how to install it.}
+not installed. Raised by the plot functions when \code{ggplot2} is absent,
+by \code{\link[=get_tna]{get_tna()}} and \code{\link[=get_group_tna]{get_group_tna()}} when \code{tna} is absent, and by
+\code{\link[=pool_imputations]{pool_imputations()}} for a \code{mids} object when \code{mice} is absent; the
+message names the package and how to install it.}
 }
 }
 
@@ -360,8 +373,13 @@ reported.}
 convergence criterion before \code{max_iter}, or an inference check found a
 non-negligible score. The returned estimate requires further assessment.}
 \item{\code{latents_boundary}}{A variance, or a covariance eigenvalue, is at
-\code{min_variance}, so the fit is bound-active and its standard errors are
-not valid at that parameter.}
+\code{min_variance}, or an initial, transition or group-class probability
+of a transition fit is at its bound, so the fit is bound-active and
+its standard errors are not valid at that parameter. Also a warning
+from \code{three_step(method = "ml")} when a class probability of a
+categorical outcome is estimated at 0 or 1 (the estimates are reported
+without standard errors, intervals or tests), or when a class variance
+of a numeric outcome reached its lower bound.}
 \item{\code{latents_atomic_groups}}{Under \code{centering = "person"} with
 \code{scaling = "person"}, some groups have fewer than three observations of
 an indicator. Standardizing two values within a group makes them
@@ -486,16 +504,14 @@ condition instead.}
 }
 
 \examples{
-set.seed(1)
-example_data <- data.frame(
-  school = rep(seq_len(8), each = 6),
-  score_a = stats::rnorm(48), score_b = stats::rnorm(48)
-)
-fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-                n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-# Handle a missing-time condition by its class.
+fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
+           n_starts = 2, seed = 1)
+# A fit made without `time` has no sequences; handle that by its class.
 tryCatch(get_results(fit, "sequences"),
          latents_no_time = function(condition) {
   "No occasion ordering was specified for this fit."
 })
+# Every condition of the package can be caught and inspected the same way.
+tryCatch(three_step(fit, faithful, "eruptions"),
+         latents_bad_outcome = function(condition) conditionMessage(condition))
 }

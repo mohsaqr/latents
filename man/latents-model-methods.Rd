@@ -7,7 +7,8 @@
 \alias{vcov.multilpa}
 \alias{confint.multilpa}
 \alias{latents-model-methods}
-\title{Extract model coefficients, covariance matrices and likelihood summaries}
+\title{Extract the coefficients, their covariance matrix and the log likelihood of a
+fitted model}
 \usage{
 \method{vcov}{multilpa_covariates}(
   object,
@@ -88,8 +89,9 @@ Groups with zero sampling weight are excluded under either setting.
 For a single-level fit these groups are its individual observations.
 }
 \description{
-These methods extract fitted parameters, measures of parameter uncertainty,
-and likelihood information for reporting and further statistical analysis.
+\code{coef()}, \code{vcov()} and \code{confint()} return the fitted parameters of a model,
+their estimated covariance matrix and their confidence intervals, for
+reporting and further statistical analysis.
 
 \code{coef()} returns the model's parameter values. \code{vcov()} returns their
 estimated sampling variances and covariances, describing the uncertainty in

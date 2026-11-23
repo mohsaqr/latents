@@ -3,43 +3,57 @@
 \name{get_candidate}
 \alias{get_candidate}
 \alias{candidate_fit}
-\title{Retrieve a fitted model from an enumeration or comparison}
+\title{Get one fitted model out of an enumeration grid or a model comparison}
 \usage{
 get_candidate(x, n_profiles, n_group_classes = 1L, model = NULL)
 
 candidate_fit(x, n_profiles, n_group_classes = 1L, model = NULL)
 }
 \arguments{
-\item{x}{An enumeration grid from \code{\link[=enumerate_classes]{enumerate_classes()}} (a profile, latent
-class, transition or group-class family grid), or a comparison from
-\code{\link[=compare_models]{compare_models()}}. On a family grid, give the name, or \code{n_group_classes}
-with \code{model}. A grid of mixture regressions from
-\code{\link[=enumerate_regressions]{enumerate_regressions()}} is not supported (\code{latents_bad_argument}):
-\code{get_results(grid, "model", n_classes = )} returns one of its models.}
+\item{x}{An enumeration grid from \code{\link[=enumerate_classes]{enumerate_classes()}}, \code{\link[=enumerate_lpa]{enumerate_lpa()}}
+or \code{\link[=enumerate_lca]{enumerate_lca()}} (a profile, latent class, transition or
+group-class family grid), or a comparison from \code{\link[=compare_models]{compare_models()}}. On a
+family grid, give the name, or \code{n_group_classes} with \code{model}. A grid
+of mixture regressions from \code{\link[=enumerate_regressions]{enumerate_regressions()}} is not supported
+(\code{latents_bad_argument}): \code{get_results(grid, "model", n_classes = )}
+returns one of its models.}
 
-\item{n_profiles}{Number of individual profiles of the candidate, the
-candidate's name (\code{"profiles3_groups4"}), or its two class counts
-(\code{c(3, 4)}). For a comparison, the row label, as its \code{model} column shows
-it.}
+\item{n_profiles}{Which candidate, in one of three forms:
+\itemize{
+\item a single number: the candidate's number of profiles (classes), used
+together with \code{n_group_classes} and, where needed, \code{model};
+\item a name: the candidate's name as the grid's \code{candidate} column shows
+it, such as \code{"profiles3_groups4"};
+\item two numbers: the number of profiles and the number of group classes,
+such as \code{c(3, 4)}.
+}
 
-\item{n_group_classes}{Number of group classes of the candidate. Default 1.}
+A name or a pair of numbers identifies the candidate on its own, so
+\code{n_group_classes} and \code{model} are then left out. For a comparison, this
+is the row label, as its \code{model} column shows it.}
 
-\item{model}{The covariance structure of the candidate, needed when
-\code{\link[=enumerate_classes]{enumerate_classes()}} crossed several structures and the class counts
-match several candidates; on a group-class family grid, the family model
-as the grid's \code{model} column shows it.}
+\item{n_group_classes}{Number of group classes of the candidate. Default
+1, which is also the value for every candidate of a single-level grid.}
+
+\item{model}{\code{NULL} (default), or the covariance structure of the
+candidate as a single code such as \code{"VVI"}, needed when the grid crossed
+several structures and the class counts match several candidates. On a
+group-class family grid, the family model as the grid's \code{model} column
+shows it, such as \code{"additive_equal"}.}
 }
 \value{
-The fitted object for the selected candidate, with the class and
-methods of its fitting function (for example, \code{multilpa} for a profile
-model).
+The fitted model of the selected candidate, with the class its
+fitting function gives it: \code{multilpa} or \code{multilpa_covariates} from a
+profile or class grid, \code{multilpa_transitions} or \code{multilpa_lta} from a
+transition grid, \code{multilpa_additive} from a family grid. Every method
+and accessor of that class applies. The stored fit is returned; nothing
+is estimated again.
 }
 \description{
-\code{get_candidate()} retrieves a specified fitted model from an enumeration
-grid or model comparison for detailed inspection and subsequent analysis.
-The returned object retains its original model class and supports the
-summary, diagnostic, plotting, and inference methods available for that
-model.
+\code{get_candidate()} returns one fitted model from an enumeration grid or a
+model comparison, for detailed inspection and further analysis. The returned
+object keeps its original model class and supports the summary, diagnostic,
+plotting and inference methods available for that model.
 
 A candidate can be identified by its name or, for supported enumeration
 grids, by its class counts and model specification. When several
@@ -74,15 +88,16 @@ that is not a single string, also raise \code{latents_bad_argument}.
 }
 
 \examples{
-set.seed(1)
-d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
-candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
-                              n_group_classes = 1, n_starts = 2, seed = 1)
-get_candidate(candidates, n_profiles = 2, n_group_classes = 1, model = "VVI")
 # This grid crosses two structures, so the names carry them:
-candidates
-get_candidate(candidates, "profiles2_groups1_VVI")
-compared <- compare_models(candidates, "profiles1_groups1_VVI",
-                           "profiles2_groups1_VVI")
-get_candidate(compared, "profiles2_groups1_VVI")
+grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
+                      n_profiles = 1:2, model = c("EEI", "VVI"),
+                      n_starts = 2, seed = 1)
+grid
+# By name:
+get_candidate(grid, "profiles2_VVI")
+# By number of profiles and structure:
+get_candidate(grid, n_profiles = 2, model = "VVI")
+# From a comparison, by row label:
+compared <- compare_models(grid, "profiles1_VVI", "profiles2_VVI")
+get_candidate(compared, "profiles2_VVI")
 }

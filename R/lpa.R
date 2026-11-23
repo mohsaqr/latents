@@ -5,13 +5,14 @@
 # one observation per unit and no group classes. `multilpa(id = NULL)` fits it;
 # these two verbs name it, so that the ordinary analysis reads as what it is.
 
-#' Fit a latent profile model
+#' Fit a latent profile model that groups observations by their pattern on
+#' continuous indicators
 #'
 #' @description
-#' Latent profile analysis describes heterogeneity in continuous indicators
-#' through a specified number of latent profiles. Each profile represents a
-#' pattern of indicator means and within-profile variation. `lpa()` estimates
-#' these patterns using a finite mixture of multivariate normal distributions.
+#' `lpa()` fits a latent profile model, which describes heterogeneity in
+#' continuous indicators through a specified number of latent profiles. Each
+#' profile represents a pattern of indicator means and within-profile variation,
+#' estimated as a finite mixture of multivariate normal distributions.
 #'
 #' By default, indicators are independent within profiles and their variances
 #' differ across profiles. Alternative covariance structures allow associations
@@ -28,17 +29,58 @@
 #' @param vars Names of the indicator columns. Numeric columns are continuous
 #'   indicators; categorical ones are named in `categorical`.
 #' @param n_profiles Number of profiles; a positive integer.
-#' @param ... Further arguments for [multilpa()]: the covariance structure
-#'   (`model`, or `variance_model` and `covariance_model`, or `volume`,
-#'   `shape` and `orientation`), `missing`, `categorical`, `n_starts`,
-#'   `seed`, `boundary`, `prior`, `noise` and `profile_covariates`.
-#'   Arguments `id` and `n_group_classes` are not accepted.
-#' @return A fitted object as returned by [multilpa()], usually of class
-#'   `multilpa`, or `multilpa_covariates` with membership covariates. Its
-#'   `call` records the original `lpa()` call.
+#' @param ... Further arguments, passed to [multilpa()], which documents all
+#'   of them. The ones used most often:
+#'   * `variance_model`: `"varying"` (default) gives each profile its own
+#'     variances; `"equal"` gives all profiles the same variances.
+#'   * `covariance_model`: `"diagonal"` (default) treats the indicators as
+#'     uncorrelated within a profile; `"full"` estimates their within-profile
+#'     covariances.
+#'   * `model`: the covariance structure as one of mclust's fourteen codes
+#'     (`"EII"`, `"VII"`, `"EEI"`, `"VEI"`, `"EVI"`, `"VVI"`, `"EEE"`,
+#'     `"VEE"`, `"EVE"`, `"VVE"`, `"EEV"`, `"VEV"`, `"EVV"`, `"VVV"`),
+#'     instead of `variance_model` and `covariance_model`. The default
+#'     structure is `"VVI"`.
+#'   * `missing`: `"error"` (default) stops when an indicator has a missing
+#'     value; `"fiml"` keeps every row and uses the values it has.
+#'   * `categorical`, `ordinal`, `count`: indicators in `vars` that are not
+#'     continuous.
+#'   * `n_starts` (default 10) and `seed`: the number of starts and the seed
+#'     that makes them reproducible.
+#'   * `boundary`: `"allow"` (default) or `"exclude"`, whether a solution
+#'     with a variance at its lower bound may be reported.
+#'   * `prior`, `noise` and `profile_covariates`: a prior on the Gaussian
+#'     parameters, a noise component for outliers, and covariates that
+#'     predict profile membership.
+#'
+#'   `id` and `n_group_classes` are not accepted: they belong to the
+#'   two-level model.
+#' @return A fitted model of class `multilpa`, or `multilpa_covariates` when
+#'   `profile_covariates` is given. Printing it shows the log likelihood,
+#'   convergence, profile sizes and profile means; `summary()` prints every
+#'   table. [get_results()] returns the tables by name, among them:
+#'   * `"profiles"` (also `as.data.frame(fit)`): one row per profile and
+#'     indicator, with the mean, variance and their standard errors;
+#'   * `"profile_probabilities"`: the proportion of each profile;
+#'   * `"assignments"`: the data with each row's most likely profile and its
+#'     posterior probabilities;
+#'   * `"classification"` and `"entropy"`: how clearly the rows are
+#'     classified;
+#'   * `"information_criteria"`: the log likelihood, AIC, BIC and related
+#'     criteria;
+#'   * `"starts"`: the log likelihood and convergence of every start.
+#'
+#'   `get_results(fit, "all")` returns every table. The fit's `call` records
+#'   the original `lpa()` call.
 #' @section Conditions:
-#'   `latents_bad_argument` when `id` or `n_group_classes` is passed; the
-#'   conditions [multilpa()] raises otherwise.
+#'   Errors: `latents_bad_argument` when `id` or `n_group_classes` is passed
+#'   or an argument has a value that is not accepted; `latents_bad_data` when
+#'   a column is missing from `data` or an indicator has missing values under
+#'   `missing = "error"`; `latents_unidentified` when there are more profiles
+#'   than distinct rows. Warnings: `latents_unconverged` when the reported
+#'   start did not converge, `latents_boundary` when a variance is at its
+#'   lower bound, and `latents_small_classes` when a profile is nearly empty.
+#'   [multilpa()] raises the others, and [latents-conditions] lists them all.
 #' @seealso [lca()] for categorical indicators; [multilpa()] for the two-level
 #'   model; [enumerate_lpa()] to compare numbers of profiles.
 #' @examples
@@ -47,6 +89,7 @@
 #'            n_profiles = 2, variance_model = "equal",
 #'            covariance_model = "full", n_starts = 3, seed = 1)
 #' fit
+#' get_results(fit, "profile_probabilities")
 #' plot(fit, what = "raincloud")
 #' @export
 lpa <- function(data, vars, n_profiles, ...) {
@@ -60,14 +103,15 @@ lpa <- function(data, vars, n_profiles, ...) {
   fit
 }
 
-#' Fit a latent class model
+#' Fit a latent class model that groups observations by their pattern of
+#' categorical responses
 #'
 #' @description
-#' Latent class analysis describes heterogeneity in categorical response
-#' patterns through a specified number of latent classes. Each class is
-#' characterized by the probabilities of the response categories for each
-#' indicator. These probabilities describe how response patterns differ
-#' between classes.
+#' `lca()` fits a latent class model, which describes heterogeneity in
+#' categorical response patterns through a specified number of latent classes.
+#' Each class is characterized by the probabilities of the response categories
+#' for each indicator, which describe how response patterns differ between
+#' classes.
 #'
 #' `lca()` estimates the class-specific response probabilities and class
 #' proportions, together with posterior membership probabilities for each
@@ -82,20 +126,55 @@ lpa <- function(data, vars, n_profiles, ...) {
 #' using the structured measurement models described in [multilpa()].
 #'
 #' @param data A data frame with one row per observation.
-#' @param vars Names of the discrete indicator columns. Categories are taken
-#'   from the data. Columns named in `ordinal` or `count` (through `...`) are
-#'   modelled as such; the rest are categorical.
+#' @param vars Names of the discrete indicator columns. Numeric, integer,
+#'   logical, character and factor columns are accepted, and every distinct
+#'   value of a column is one category. Columns named in `ordinal` or `count`
+#'   (through `...`) are modelled as such; the rest are categorical.
 #' @param n_classes Number of classes; a positive integer.
-#' @param ... Further arguments for [multilca()], such as `missing`,
-#'   `n_starts`, `seed`, `min_probability` and `profile_covariates`, except
-#'   `id` and `n_group_classes`.
-#' @return A fitted object as returned by [multilca()], usually of class
-#'   `multilpa`, or `multilpa_covariates` with membership covariates. Its
-#'   `call` records the original `lca()` call. Classes are labelled
-#'   `profile_1`, `profile_2`, and so on in the returned tables.
+#' @param ... Further arguments, passed through [multilca()] to [multilpa()],
+#'   which documents all of them. The ones used most often:
+#'   * `missing`: `"error"` (default) stops when an indicator has a missing
+#'     value; `"fiml"` keeps every row and uses the responses it has.
+#'   * `ordinal`, `count`: indicators in `vars` modelled as ordered categories
+#'     or as counts instead of as unordered categories.
+#'   * `local_dependence`: pairs of indicators, written `"item1:item2"`,
+#'     that stay associated within a class.
+#'   * `n_starts` (default 10) and `seed`: the number of starts and the seed
+#'     that makes them reproducible.
+#'   * `min_probability`: the lower bound on a response probability (default
+#'     `1e-10`).
+#'   * `profile_covariates`: covariates that predict class membership.
+#'
+#'   `id` and `n_group_classes` are not accepted (they belong to the
+#'   two-level model), and neither is `n_profiles`: the number of classes is
+#'   `n_classes`.
+#' @return A fitted model of class `multilpa`, or `multilpa_covariates` when
+#'   `profile_covariates` is given. The classes are numbered 1, 2, and so on
+#'   in the `profile` column of its tables. [get_results()] returns the
+#'   tables by name, among them:
+#'   * `"responses"` (also `as.data.frame(fit)`): one row per class,
+#'     indicator and category, with the response probability and its
+#'     standard error;
+#'   * `"profile_probabilities"`: the proportion of each class;
+#'   * `"assignments"`: the data with each row's most likely class and its
+#'     posterior probabilities;
+#'   * `"classification"` and `"entropy"`: how clearly the rows are
+#'     classified;
+#'   * `"residuals"`: bivariate residuals, which show pairs of indicators
+#'     the classes do not explain;
+#'   * `"information_criteria"` and `"starts"`.
+#'
+#'   The fit's `call` records the original `lca()` call.
 #' @section Conditions:
-#'   `latents_bad_argument` when `id`, `n_group_classes` or `n_profiles` is
-#'   passed; the conditions [multilca()] raises otherwise.
+#'   Errors: `latents_bad_argument` when `id`, `n_group_classes` or
+#'   `n_profiles` is passed; `latents_bad_data` when a column is missing from
+#'   `data` or an indicator has missing values under `missing = "error"`;
+#'   `latents_bad_categorical` when `categorical` names a column not in
+#'   `vars`. Warnings: `latents_unidentified` when the model has more free
+#'   parameters than the table of response patterns has free cells,
+#'   `latents_unconverged` when the reported start did not converge, and
+#'   `latents_small_classes` when a class is nearly empty. [multilpa()]
+#'   raises the others, and [latents-conditions] lists them all.
 #' @seealso [lpa()] for continuous indicators; [multilca()] for the
 #'   two-level model; [enumerate_lca()] to compare numbers of classes.
 #' @examples
@@ -103,6 +182,7 @@ lpa <- function(data, vars, n_profiles, ...) {
 #'                           "tv_video_games", "sports"),
 #'            n_classes = 2, n_starts = 3, seed = 1)
 #' fit
+#' get_results(fit, "profile_probabilities")
 #' plot(fit, what = "heatmap")
 #' @export
 lca <- function(data, vars, n_classes, ...) {
@@ -119,7 +199,8 @@ lca <- function(data, vars, n_classes, ...) {
   fit
 }
 
-#' Compare latent profile models
+#' Fit latent profile models with different numbers of profiles and covariance
+#' structures, and compare them
 #'
 #' @description
 #' `enumerate_lpa()` fits latent profile models with different numbers of
@@ -136,21 +217,43 @@ lca <- function(data, vars, n_classes, ...) {
 #' @param data A data frame with one row per observation.
 #' @param vars Names of the indicator columns.
 #' @param n_profiles Numbers of profiles to compare, specified as positive
-#'   integers.
-#' @param model The covariance structures: `"basic"`, the default, for the
-#'   four that combine equal or varying variances with covariances absent or
-#'   present (`EEI`, `VVI`, `EEE`, `VVV`); `"all"` for all 14; or their
-#'   three-letter codes. See [enumerate_classes()].
-#' @param ... Further arguments for [multilpa()], such as `missing`,
-#'   `n_starts`, `seed`, `boundary` and `categorical`, except `id` and
-#'   `n_group_classes`.
+#'   integers. Default `1:4`.
+#' @param model The covariance structures to fit at every number of
+#'   profiles; each structure with each number of profiles is one candidate.
+#'   * `"basic"` (default): four structures. `"EEI"`: the profiles share
+#'     their variances and the indicators are uncorrelated within a profile.
+#'     `"VVI"`: each profile has its own variances, still uncorrelated.
+#'     `"EEE"`: the profiles share one covariance matrix. `"VVV"`: each
+#'     profile has its own covariance matrix.
+#'   * `"all"`: all fourteen structures of mclust.
+#'   * One or more of the codes `"EII"`, `"VII"`, `"EEI"`, `"VEI"`, `"EVI"`,
+#'     `"VVI"`, `"EEE"`, `"VEE"`, `"EVE"`, `"VVE"`, `"EEV"`, `"VEV"`,
+#'     `"EVV"`, `"VVV"`: those structures only. [multilpa()] explains the
+#'     three letters.
+#'   * `NULL`: no structures are crossed, and every candidate has the
+#'     structure [multilpa()] fits by default (`"VVI"`).
+#'
+#'   Giving `variance_model`, `covariance_model`, `volume`, `shape` or
+#'   `orientation` in `...` sets one structure for every candidate; `model`
+#'   must then be left out.
+#' @param ... Further arguments for [multilpa()], used for every candidate,
+#'   such as `missing` (`"error"` or `"fiml"`), `n_starts`, `seed`,
+#'   `boundary` (`"allow"` or `"exclude"`) and `categorical`. `id` and
+#'   `n_group_classes` are not accepted.
 #' @return An object of class `multilpa_enumeration`, as [enumerate_classes()]
-#'   returns: [as.data.frame()] gives one row per candidate, [summary()] the
-#'   candidate minimizing each criterion, [plot()] the criteria against the
-#'   number of profiles, and [get_candidate()] one fitted candidate.
+#'   returns. [get_candidates()] (also [as.data.frame()]) gives one row per
+#'   candidate with its log likelihood, information criteria, entropy,
+#'   convergence and replication; [get_best()] and [summary()] the candidate
+#'   with the lowest value of each criterion; [plot()] the criteria against
+#'   the number of profiles; and [get_candidate()] one fitted candidate, a
+#'   `multilpa` fit. A candidate that could not be fitted keeps its row,
+#'   with `NA` values.
 #' @section Conditions:
-#'   `latents_bad_argument` when `id` or `n_group_classes` is passed, or when
-#'   `model` names an unknown structure.
+#'   `latents_bad_argument` when `id` or `n_group_classes` is passed, when
+#'   `model` names an unknown structure, and when `model` is given together
+#'   with `variance_model`, `covariance_model`, `volume`, `shape` or
+#'   `orientation`. A `latents_single_start` message names the candidates
+#'   whose best log likelihood was reached from one start only.
 #' @seealso [lpa()] to fit one model; [enumerate_lca()] for categorical
 #'   indicators; [bootstrap_lrt()] to test one number of profiles against
 #'   another.
@@ -178,7 +281,7 @@ enumerate_lpa <- function(data, vars, n_profiles = 1:4, model = "basic", ...) {
                       model = model, ...)), data_expression)
 }
 
-#' Compare latent class models
+#' Fit latent class models with different numbers of classes, and compare them
 #'
 #' @description
 #' `enumerate_lca()` fits latent class models with different numbers of classes
@@ -199,27 +302,37 @@ enumerate_lpa <- function(data, vars, n_profiles = 1:4, model = "basic", ...) {
 #' @param data A data frame with one row per observation.
 #' @param vars Names of the categorical indicator columns.
 #' @param n_classes Numbers of classes to compare, specified as positive
-#'   integers.
-#' @param ... Further arguments for [multilca()], such as `missing`,
-#'   `n_starts`, `seed` and `min_probability`, except `id` and
-#'   `n_group_classes`. Every indicator is categorical unless named in
-#'   `ordinal` or `count`. `categorical` is accepted but has no further
-#'   effect; its names must be in `vars`.
+#'   integers. Default `1:4`.
+#' @param ... Further arguments for [multilca()], used for every candidate,
+#'   such as `missing` (`"error"` or `"fiml"`), `n_starts`, `seed` and
+#'   `min_probability`. `id` and `n_group_classes` are not accepted, and
+#'   neither is `model`: a latent class model has no covariance structure.
+#'   Every indicator is categorical unless named in `ordinal` or `count`.
+#'   `categorical` is accepted but has no further effect; its names must be
+#'   in `vars`.
 #' @return An object of class `multilpa_enumeration`, as [enumerate_classes()]
-#'   returns: [as.data.frame()] gives one row per candidate, [summary()] the
-#'   candidate minimizing each criterion, [plot()] the criteria against the
-#'   number of classes, and [get_candidate()] one fitted candidate. The number
-#'   of classes is reported in the `n_profiles` column of the enumeration
-#'   table and selected through the `n_profiles` argument of [get_candidate()].
+#'   returns. [get_candidates()] (also [as.data.frame()]) gives one row per
+#'   candidate with its log likelihood, information criteria, entropy,
+#'   convergence and replication; [get_best()] and [summary()] the candidate
+#'   with the lowest value of each criterion; [plot()] the criteria against
+#'   the number of classes; and [get_candidate()] one fitted candidate. The
+#'   number of classes is in the `n_profiles` column of the candidates table,
+#'   and [get_candidate()] selects it through its `n_profiles` argument. A
+#'   candidate that could not be fitted keeps its row, with `NA` values.
 #' @section Conditions:
 #'   `latents_bad_argument` when `id` or `n_group_classes` is passed, or when
 #'   `model` is passed (no indicator is continuous); `latents_bad_categorical`
-#'   when `categorical` names a column not in `vars`.
+#'   when `categorical` names a column not in `vars`. A candidate with more
+#'   free parameters than the table of response patterns has free cells
+#'   warns with class `latents_unidentified`. A `latents_single_start`
+#'   message names the candidates whose best log likelihood was reached from
+#'   one start only.
 #' @seealso [lca()] to fit one model; [enumerate_lpa()] for continuous
 #'   indicators.
 #' @examples
 #' models <- enumerate_lca(student_esm, c("time_with_friends",
-#'                                        "on_social_media", "sports"),
+#'                                        "on_social_media", "tv_video_games",
+#'                                        "sports"),
 #'                         n_classes = 1:3, n_starts = 2, seed = 1)
 #' summary(models)
 #' @export

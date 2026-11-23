@@ -2,7 +2,8 @@
 % Please edit documentation in R/inference.R
 \name{parameter_inference}
 \alias{parameter_inference}
-\title{Standard errors, confidence intervals and tests for model parameters}
+\title{Compute standard errors, confidence intervals and tests for the estimates of
+a fitted model}
 \usage{
 parameter_inference(
   x,
@@ -21,49 +22,92 @@ parameter_inference(
 )
 }
 \arguments{
-\item{x}{A converged fit from \code{\link[=multilpa]{multilpa()}}, \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}} or
-\code{\link[=multilca]{multilca()}} (with or without covariates), \code{\link[=lta]{lta()}}, the additive family
-or a growth mixture. An unconverged fit, or one with a parameter at a
-bound, is refused (\code{boundary} can hold one kind of bound). A fit made
-with \code{prior} has no Wald inference, only the bootstrap; a fit with a
-noise component has neither. Mixture regressions carry their inference
-in \code{get_results(x, "coefficients")}, \code{confint()} and \code{vcov()}; the
-cross-level families have none.}
+\item{x}{A converged fit. Accepted:
+\itemize{
+\item a profile or class fit from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}} or
+\code{\link[=multilca]{multilca()}}, with or without membership covariates (a covariate fit
+has the Wald method only);
+\item a transition fit from \code{\link[=lta]{lta()}};
+\item a group-class family fit (\code{multilpa(family = "additive")},
+\code{"dispersion"} or \code{"additive_dispersion"}), with the Wald method
+only;
+\item a growth mixture (\code{\link[=mixture_regression]{mixture_regression()}} with \code{random}).
+}
+
+Not accepted: a mixture regression without \code{random}
+(\code{latents_bad_argument}; its inference is in
+\code{get_results(x, "coefficients")}, \code{confint()} and \code{vcov()}), a
+cross-level fit (\code{latents_unsupported_inference}) and a fit with a
+noise component (\code{latents_unsupported_noise}). An unconverged fit
+(\code{latents_no_converge}) or one with a parameter at a bound
+(\code{latents_boundary_fit}) is refused; \code{boundary} can hold one kind of
+bound. A fit made with \code{prior} has no Wald inference, only the
+bootstrap.}
 
 \item{data}{Optional data frame the model was fitted to. When omitted it
 is rebuilt from what the fit stores; when supplied it is checked against
-the stored indicators and identifiers.}
+the stored indicators and identifiers, and data that do not reproduce
+the fit raise \code{latents_bad_inference_data}. The bootstrap of a
+transition fit needs it.}
 
 \item{level}{Confidence level (default 0.95).}
 
 \item{step}{Finite-difference step for the derivative of the analytic
 score (default \code{1e-4}). Not used by the bootstrap.}
 
-\item{vcov_type}{Covariance estimator for the Wald method. \code{"observed"}
-(default; a growth mixture defaults to the type it was fitted with)
-inverts the observed information. \code{"robust"} is the sandwich over the
-independent units (groups), with the \code{G / (G - 1)} small-sample factor;
-it relaxes the within-group model, not the independence of groups.
-\code{"opg"} inverts the outer product of the group scores. The last two need
-more groups than parameters. Wald inference for a fit with sampling
-weights, or with person centring or scaling, uses \code{"robust"} only. See
-\emph{Centred and scaled fits}.}
+\item{vcov_type}{Covariance estimator for the Wald method:
+\itemize{
+\item \code{"observed"} (default): the inverse of the observed information,
+which relies on the model being correct within groups. A growth
+mixture defaults to the type it was fitted with instead;
+\item \code{"robust"}: the sandwich over the independent units (groups), with
+the \code{G / (G - 1)} small-sample factor. It relaxes the within-group
+model, not the independence of groups;
+\item \code{"opg"}: the inverse of the outer product of the group scores.
+}
 
-\item{adjust}{Multiplicity correction for \code{p_value}, giving \code{p_adjusted}:
-\code{"none"} (default) or a \code{stats::p.adjust()} method, taken over the tests
-the table reports.}
+\code{"robust"} and \code{"opg"} need more groups than parameters
+(\code{latents_too_few_groups} otherwise). A fit with sampling weights
+defaults to \code{"robust"} and refuses the other two
+(\code{latents_unsupported_weights}), as does a fit with person centring or
+scaling (\code{latents_unsupported_inference}). See \emph{Centred and scaled
+fits}. Not used by the bootstrap.}
 
-\item{method}{\code{"wald"} (default) or \code{"bootstrap"}. Both are available for
-all fourteen covariance structures, except that a \code{multilpa_transitions}
-fit has Wald inference under EEI, VVI, EEE and VVV only. The bootstrap
-resamples the groups
-with replacement, refits within the same structure and realigns each
-replicate's labels to the original. It is not available for a covariate
-fit, an additive fit, or a fit with held measurement blocks other than
-a \code{\link[=fit_staged]{fit_staged()}} result whose measurement was estimated from the same
-indicator observations. A separately supplied measurement from other
-data, or without stored data to establish its origin, cannot be
-resampled by this bootstrap.}
+\item{adjust}{Multiplicity correction of \code{p_value}, giving \code{p_adjusted},
+taken over the tests the table reports:
+\itemize{
+\item \code{"none"} (default): no correction (\code{p_adjusted} equals \code{p_value});
+\item \code{"holm"}, \code{"hochberg"}, \code{"hommel"}, \code{"bonferroni"}: control the
+family-wise error rate;
+\item \code{"BH"} (or its alias \code{"fdr"}): Benjamini-Hochberg, controls the
+false discovery rate;
+\item \code{"BY"}: Benjamini-Yekutieli, controls the false discovery rate under
+any dependence.
+}
+
+These are the methods of \code{\link[stats:p.adjust]{stats::p.adjust()}}.}
+
+\item{method}{How the uncertainty is estimated:
+\itemize{
+\item \code{"wald"} (default): standard errors from the covariance chosen by
+\code{vcov_type}, with normal-theory intervals and z tests;
+\item \code{"bootstrap"}: the groups (persons of a transition fit or a growth
+mixture) are resampled with replacement \code{iter} times, the model is
+refitted to each resample within the same structure, and each
+replicate's labels are realigned to the original. The standard error
+is the standard deviation of the replicates and the interval their
+percentile interval; there are no tests.
+}
+
+Both are available for all fourteen covariance structures, except that
+a homogeneous transition fit has Wald inference under EEI, VVI, EEE and
+VVV only. The bootstrap is not available
+(\code{latents_unsupported_inference}) for a covariate fit, a group-class
+family fit, a multilevel growth mixture, or a fit with held measurement
+blocks other than a \code{\link[=fit_staged]{fit_staged()}} result whose measurement was
+estimated from the same indicator observations. A separately supplied
+measurement from other data, or without stored data to establish its
+origin, cannot be resampled by this bootstrap.}
 
 \item{iter}{Number of bootstrap resamples (default 199, at least 2). A 95\%
 percentile interval is more stable with 999 or more.}
@@ -75,26 +119,56 @@ shown are \code{\link[=multilpa]{multilpa()}}'s; a transition fit uses \code{\li
 caller's random-number state is restored on exit. The Wald method uses
 no random numbers.}
 
-\item{boundary}{What to do with categorical response probabilities at their
-lower bound (at or below \code{min_probability}, or 1e-6 if that is larger),
-where the information is singular.
-\code{"error"} (default) refuses the fit. \code{"fix"} holds them at the bound and
-reports every other parameter conditional on them, as Mplus does. The
-held probabilities are left out of the table and named in the
-\code{fixed_at_bound} attribute; a covariate fit keeps their rows with \code{NA}
-standard errors. A homogeneous transition fit (\code{\link[=lta]{lta()}}) holds its
-response, initial and transition probabilities on the bound the same
-way; a general one (covariates, occasion-specific measurement, second
-order, stayers) holds nothing, and \code{method = "bootstrap"} is the
-alternative there.}
+\item{boundary}{What the Wald method does with categorical response
+probabilities at their lower bound (at or below \code{min_probability}, or
+1e-6 if that is larger), where the information is singular:
+\itemize{
+\item \code{"error"} (default): the fit is refused (\code{latents_boundary_fit});
+\item \code{"fix"}: they are held at the bound and every other parameter is
+reported conditional on them, as Mplus does. The held probabilities
+are left out of the table and named in the \code{fixed_at_bound}
+attribute; a covariate fit keeps their rows with \code{NA} standard
+errors.
+}
+
+Under \code{"fix"} a homogeneous transition fit (\code{\link[=lta]{lta()}} with its default
+transitions and measurement) holds its response, initial and
+transition probabilities on the bound the same way, and a growth
+mixture reports the parameters off the bound. A general transition
+fit (covariates, occasion-specific transitions or measurement, second
+order, stayers, ordinal or count indicators) holds nothing and is
+refused under either value; \code{method = "bootstrap"} is the alternative
+there. A variance at \code{min_variance}, a zero mixing probability and a
+count parameter on its bound are refused under either value.}
 }
 \value{
-A data frame with one row per reported parameter. For a profile,
-class or covariate fit the columns are \code{level} (\code{"measurement"},
-\code{"profile"} or \code{"group"}), \code{outcome}, \code{term}, \code{parameter}, \code{estimate},
-\code{standard_error}, \code{statistic}, \code{p_value}, \code{p_adjusted}, \code{conf_low} and
-\code{conf_high}; the transition and growth-mixture tables are described in
-their sections. Estimates are on the natural scale. A parameter whose
+A \code{data.frame} with one row per reported parameter. Estimates
+are on the natural scale (means, variances, probabilities, logit
+coefficients). The estimate columns are the same in every table:
+\code{estimate}, \code{standard_error}, \code{statistic} (the estimate over its
+standard error), \code{p_value} (two-sided, normal), \code{p_adjusted},
+\code{conf_low} and \code{conf_high}. The columns that identify a parameter
+depend on the family:
+\itemize{
+\item a profile, class or covariate fit, and a homogeneous transition fit:
+\code{level} (\code{"measurement"}, \code{"profile"} or \code{"group"}), \code{outcome} (the
+profile or group class the row is about), \code{term} (the indicator of
+a measurement parameter, \code{indicator:category} for a response
+probability and \code{indicator:indicator} for a covariance; the
+covariate of a membership coefficient; the group class a profile
+share is within; \code{NA} for a group-class share) and \code{parameter}
+(\code{"mean"}, \code{"variance"}, \code{"covariance"}, \code{"response"},
+\code{"probability"}, \code{"coefficient"}, and for a transition fit
+\code{"initial_probability"} and \code{"transition_probability"});
+\item a group-class family fit: \code{level} (\code{"between"}, \code{"within"} or
+\code{"group_class"}), \code{group_class} (\code{"shared"} for a quantity every
+group class shares), \code{indicator} and \code{parameter} (\code{"mean"},
+\code{"variance"} or \code{"weight"}, the group-class share);
+\item a general transition fit and a growth mixture: see \emph{Transition fits}
+and \emph{Growth mixtures}.
+}
+
+A parameter whose
 null value sits on the edge of its space (a variance, a covariance
 diagonal, a probability, a count mean or dispersion) has \code{NA} test
 columns but an interval. Wald intervals for probabilities are formed on
@@ -109,14 +183,15 @@ standard errors are conditional on the held measurement and do not
 include its uncertainty. For a \code{\link[=fit_staged]{fit_staged()}} result the bootstrap
 refits both stages, so that uncertainty is propagated.
 
-With \code{method = "bootstrap"} the table has the same columns and class
-\code{latents_bootstrap}: \code{estimate} is the fitted value, \code{standard_error} the
-standard deviation of the replicates, \code{conf_low}/\code{conf_high} the
-percentile interval, the test columns \code{NA}.
+With \code{method = "bootstrap"} the table has the same columns and the
+additional class \code{latents_bootstrap}: \code{estimate} is the fitted value,
+\code{standard_error} the standard deviation of the replicates,
+\code{conf_low}/\code{conf_high} the percentile interval, the test columns \code{NA}.
 \code{as.data.frame(x, what = "replicates")} returns the replicates (one row
-per kept resample and parameter) and \code{plot(x)} draws each estimate with
-its interval; \code{n_valid} and \code{messages} (why a resample was dropped) are
-attributes.
+per kept resample and parameter: \code{replicate}, the identifying columns
+and \code{estimate}) and \code{plot(x)} draws each estimate with
+its interval; \code{n_valid} (the number of resamples kept) and \code{messages}
+(why a resample was dropped) are attributes.
 
 For the Wald method on a profile or class fit, the attributes hold
 \code{covariance} (returned by \code{vcov()}), \code{fixed_at_bound}, \code{adjust} and the
@@ -126,13 +201,14 @@ under \code{"robust"} or \code{"opg"} also \code{group_scores} and
 tests. The other families store fewer attributes.
 }
 \description{
-\code{parameter_inference()} quantifies the sampling uncertainty of a fitted
-model's estimates: indicator means, response probabilities, membership
-coefficients or transition probabilities, according to the family. Wald
-inference inverts an estimated information matrix for the covariance of
-the estimates;
-bootstrap inference resamples the independent units, refits, and reads
-standard errors and percentile intervals off the replicates.
+\code{parameter_inference()} returns the sampling uncertainty of a fitted model's
+estimates: indicator means, response probabilities, membership coefficients
+or transition probabilities, according to the family. It gives one row per
+parameter with the estimate, its standard error, a confidence interval and,
+where a test against zero is meaningful, a z test. Wald inference inverts an
+estimated information matrix for the covariance of the estimates; bootstrap
+inference resamples the independent units, refits, and reads standard errors
+and percentile intervals off the replicates.
 
 Wald tests are omitted where a test against zero makes no sense
 (probabilities, variances, count means), or a coordinate has zero estimated

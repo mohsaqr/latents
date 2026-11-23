@@ -2,26 +2,55 @@
 % Please edit documentation in R/wildcards.R
 \name{plot_deltas}
 \alias{plot_deltas}
-\title{Change in the criterion with each added class}
+\title{Plot how much the information criterion falls each time a class or a group
+class is added}
 \usage{
 plot_deltas(x, main = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{An enumeration grid.}
+\item{x}{An enumeration grid from \code{\link[=enumerate_lpa]{enumerate_lpa()}}, \code{\link[=enumerate_lca]{enumerate_lca()}},
+\code{\link[=enumerate_classes]{enumerate_classes()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}. A grid of
+group-class families (\code{enumerate_classes(family = )}) has no such view
+and is refused.}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot. \code{NULL} (default)
+keeps the view's own text.}
 }
 \value{
 A ggplot object.
-An object with nothing to draw raises \code{latents_nothing_to_plot},
-naming the plot functions that apply; an object the package did not
-return raises \code{latents_not_a_fit}.
+
+Errors:
+\itemize{
+\item \code{latents_nothing_to_plot} when the package returned \code{x} but this
+function has no plot of it: a fitted model, a comparison or another
+result, a grid of group-class families, or a grid in which no converged
+candidate has a converged neighbour one step smaller. For an object of
+the wrong kind, the message names the plot functions that apply to it;
+\item \code{latents_not_a_fit} when \code{x} is not a fit, grid or other result of the
+package, for example a data frame;
+\item \code{latents_missing_package} when ggplot2 is not installed.
+}
 }
 \description{
-The decrease in the information criterion of an enumeration grid with
-each added profile and each added group class (BIC over groups on a
-profile or class grid, BIC on the others).
+\code{plot_deltas()} plots how much the information criterion of an enumeration
+grid falls each time one class, or one group class, is added.
+}
+\details{
+The plot has up to two panels. In the left panel the x-axis is the number
+of classes after the step, and each point is the decrease in the
+criterion from the candidate with one class fewer and the same number of
+group classes. There is one line per number of group classes, named at
+its right end. In the right panel the x-axis is the number of group
+classes after the step, and each point is the decrease from the candidate
+with one group class fewer and the same number of classes; a grid with
+one number of group classes has no such panel. A point above the zero
+line means that the larger model has the lower criterion. A small
+decrease after a large one is where further classes stop paying.
+
+The criterion is \code{bic_groups} (BIC with the number of groups as the
+sample size) on a profile or class grid and \code{bic} on a transition or
+regression grid. \code{plot_selection(x, what = "deltas", using = )} draws the
+same view with another criterion.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -32,5 +61,6 @@ plot_deltas(grid)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=get_deltas]{get_deltas()}} and \code{\link[=get_knees]{get_knees()}} for the tables; \code{\link[=plot_selection]{plot_selection()}}.
+\code{\link[=get_deltas]{get_deltas()}} and \code{\link[=get_knees]{get_knees()}} for the numbers of a profile or
+class grid; \code{\link[=plot_selection]{plot_selection()}} for the other selection views.
 }

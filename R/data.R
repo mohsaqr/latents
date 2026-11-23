@@ -45,8 +45,9 @@
 #' therefore do not imply that every fitted specification will favour two
 #' profiles.
 #'
-#' @format A data frame with 1422 rows (106 students, 32 courses, up to 15
-#'   enrolments each) and 11 columns:
+#' @format A data frame with 1422 rows (106 students, 32 courses, one row
+#'   per student and course, 10 to 15 enrolments each, no missing values)
+#'   and 11 columns:
 #' \describe{
 #'   \item{student}{Integer student identifier, 1 to 106. The nesting unit;
 #'     pass it as `id`.}
@@ -126,7 +127,8 @@
 #' representing low-worry prompts may therefore reach the `min_variance`
 #' bound.
 #'
-#' @format A data frame with 2582 rows (100 students) and 15 columns:
+#' @format A data frame with 2582 rows (100 students, one row per student
+#'   and non-study prompt, 15 to 51 each, no missing values) and 15 columns:
 #' \describe{
 #'   \item{student}{Integer student identifier, 1 to 100. The nesting unit;
 #'     pass it as `id`.}
@@ -207,17 +209,20 @@
 #' the student level (`class_level = "group"`). `questions` is a count whose Poisson
 #' regression depends on the week's strategy.
 #'
-#' @format A data frame with 900 rows (150 students by 6 weeks) and 10
-#'   columns:
+#' @format A data frame with 900 rows (150 students by 6 weeks, one row per
+#'   student and week, no missing values) and 10 columns:
 #' \describe{
-#'   \item{student}{Integer student identifier, 1 to 150.}
+#'   \item{student}{Integer student identifier, 1 to 150. Pass it as `id`.}
 #'   \item{week}{Integer study week, 1 to 6.}
-#'   \item{hours}{Hours studied that week, 0 to 12.}
-#'   \item{sleep}{Hours slept the night before the quiz.}
-#'   \item{motivation}{Standardized motivation, constant within student.}
-#'   \item{score}{Quiz score.}
+#'   \item{hours}{Numeric, hours studied that week, 0 to 12.}
+#'   \item{sleep}{Numeric, hours slept the night before the quiz, 4.2 to
+#'     9.8.}
+#'   \item{motivation}{Numeric, standardized motivation, constant within
+#'     student.}
+#'   \item{score}{Numeric quiz score, 28.1 to 97.6.}
 #'   \item{passed}{Integer 0/1: passed the weekly check.}
-#'   \item{questions}{Count of questions the student asked that week.}
+#'   \item{questions}{Integer count of questions the student asked that
+#'     week, 0 to 12.}
 #'   \item{strategy}{Factor, `"deep"` or `"surface"`: the week's generating
 #'     strategy; retained for assessing class recovery.}
 #'   \item{student_type}{Factor, `"steady"` or `"erratic"`: the student's
@@ -251,13 +256,18 @@
 #' self-regulation range from approximately 0.78 to 0.86. Their correlations
 #' with test anxiety range from approximately -0.30 to -0.10.
 #'
-#' @format A data frame with 300 rows and 5 columns:
+#' @format A data frame with 300 rows (one per synthetic respondent, no
+#'   missing values) and 5 numeric columns, each the mean of the construct's
+#'   items on the 1 to 7 response scale:
 #' \describe{
-#'   \item{`cognitive_strategies`}{cognitive strategy use}
-#'   \item{`intrinsic_value`}{intrinsic value of the course}
-#'   \item{`self_efficacy`}{self-efficacy}
-#'   \item{`self_regulation`}{self-regulation}
-#'   \item{`test_anxiety`}{test anxiety}
+#'   \item{cognitive_strategies}{Numeric, cognitive strategy use; observed
+#'     4.15 to 7.}
+#'   \item{intrinsic_value}{Numeric, intrinsic value of the course; observed
+#'     4.22 to 7.}
+#'   \item{self_efficacy}{Numeric, self-efficacy; observed 4 to 7.}
+#'   \item{self_regulation}{Numeric, self-regulation; observed 3.78 to
+#'     6.78.}
+#'   \item{test_anxiety}{Numeric, test anxiety; observed 2 to 5.75.}
 #' }
 #' @source The `SRL_GPT` data of the psychnets package, with descriptive
 #'   column names. Saqr, M. (2025). Delving into the psychology of machines:
@@ -302,12 +312,15 @@
 #' A model without random effects may represent within-class variation by
 #' additional trajectory classes.
 #'
-#' @format A data frame with 1844 rows (300 students) and 5 columns:
+#' @format A data frame with 1844 rows (300 students, one row per student
+#'   and observed occasion, 3 to 7 occasions each, no missing values) and 5
+#'   columns:
 #' \describe{
 #'   \item{student}{Integer student identifier, 1 to 300. Pass it as `id`.}
 #'   \item{wave}{Integer test occasion, 0 to 6. The time variable.}
-#'   \item{score}{Achievement score.}
-#'   \item{motivation}{Standardized motivation, constant within student.}
+#'   \item{score}{Numeric achievement score, 24.9 to 81.2.}
+#'   \item{motivation}{Numeric, standardized motivation, constant within
+#'     student.}
 #'   \item{trajectory}{Factor, `"improving"`, `"stable"` or `"declining"`:
 #'     the student's generating class; retained for assessing class recovery.}
 #' }
@@ -357,15 +370,16 @@
 #' `mixture_regression(..., cluster = "school", n_group_classes = 2)`, with
 #' `group_membership = "programme"`.
 #'
-#' @format A data frame with 2780 rows (600 students, 40 schools) and 7
-#'   columns:
+#' @format A data frame with 2780 rows (600 students in 40 schools, one row
+#'   per student and observed occasion, 2 to 5 occasions each, no missing
+#'   values) and 7 columns:
 #' \describe{
 #'   \item{school}{Integer school identifier, 1 to 40. Pass it as `cluster`.}
 #'   \item{student}{Integer student identifier, 1 to 600. Pass it as `id`.}
 #'   \item{wave}{Integer test occasion, 0 to 4. The time variable.}
-#'   \item{score}{Reading score.}
-#'   \item{programme}{Standardized school support programme, constant within
-#'     school.}
+#'   \item{score}{Numeric reading score, 35.9 to 70.5.}
+#'   \item{programme}{Numeric, standardized school support programme,
+#'     constant within school.}
 #'   \item{school_type}{Factor, `"supportive"` or `"struggling"`: the school's
 #'     generating class; retained for assessing class recovery.}
 #'   \item{trajectory}{Factor, `"improving"` or `"plateauing"`: the student's

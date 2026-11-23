@@ -2,27 +2,75 @@
 % Please edit documentation in R/wildcards.R
 \name{plot_criteria}
 \alias{plot_criteria}
-\title{Every information criterion}
+\title{Plot every information criterion of a grid, or of a model comparison, against
+the number of classes}
 \usage{
 plot_criteria(x, main = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{An enumeration grid, or a comparison from \code{\link[=compare_models]{compare_models()}}.}
+\item{x}{One of:
+\itemize{
+\item an enumeration grid of any kind, from \code{\link[=enumerate_lpa]{enumerate_lpa()}},
+\code{\link[=enumerate_lca]{enumerate_lca()}}, \code{\link[=enumerate_classes]{enumerate_classes()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}};
+\item a comparison from \code{\link[=compare_models]{compare_models()}}.
+}}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot. \code{NULL} (default)
+keeps the view's own text.}
 }
 \value{
 A ggplot object.
-An object with nothing to draw raises \code{latents_nothing_to_plot},
-naming the plot functions that apply; an object the package did not
-return raises \code{latents_not_a_fit}.
+
+Errors:
+\itemize{
+\item \code{latents_nothing_to_plot} when the package returned \code{x} but this
+function has no plot of it: a fitted model, a diagnostics result, pooled
+imputations, a bootstrap result or a sensitivity analysis. For an object
+of the wrong kind, the message names the plot functions that apply to
+it;
+\item \code{latents_not_a_fit} when \code{x} is not a fit, grid or other result of the
+package, for example a data frame;
+\item \code{latents_missing_package} when ggplot2 is not installed.
+}
 }
 \description{
-For an enumeration grid, every information criterion against the
-number of classes, as panels of one plot with each criterion's lowest
-value circled. For a comparison from \code{\link[=compare_models]{compare_models()}}, the criteria
-of each compared model.
+\code{plot_criteria()} plots every information criterion of an enumeration grid
+against the number of classes, or the criteria of the models compared by
+\code{\link[=compare_models]{compare_models()}}.
+}
+\details{
+\strong{An enumeration grid.} There is one panel per criterion, each with its
+own y-axis; lower values are preferred. The x-axis is the number of
+classes (the number of group classes for a grid of group-class families,
+or when the grid has one number of profiles and several numbers of group
+classes). There is one line per number of group classes, and per
+covariance structure when the grid has several. In each panel the lowest
+value among the converged candidates is circled, and a candidate that did
+not converge is marked with a cross at the bottom of the panel. The
+circle marks a minimum; it does not choose a model.
+
+The criteria depend on the kind of grid:
+\itemize{
+\item a profile or class grid: AIC, KIC, BIC, SABIC, CAIC, AWE, ICL and CLC.
+BIC, SABIC, CAIC, AWE and ICL exist in two versions, with the number of
+groups or the number of individuals as the sample size; the two are
+drawn as separate panels where they differ and as one panel where they
+are the same;
+\item a transition grid or a grid of group-class families: AIC, BIC and BIC
+with the individuals as the sample size;
+\item a regression grid: AIC, BIC, BIC with the rows as the sample size,
+SABIC and ICL.
+}
+
+On these grids a criterion that takes the same values as one already
+drawn is not repeated.
+
+\code{\link[=plot_enumeration]{plot_enumeration()}} draws the criteria you name, and takes the options
+of this view (\code{labels}, \code{mark_minimum}, \code{combine}).
+
+\strong{A comparison.} The x-axis lists the compared models and the y-axis is
+the value of the criterion; lower is better. AIC, BIC and SABIC are drawn
+as one line each, with their own colour and marker.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -30,8 +78,16 @@ grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
                       n_profiles = 1:3, model = "EEI",
                       n_starts = 2, seed = 1)
 plot_criteria(grid)
+
+# A comparison of two fitted models
+one <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 1,
+           n_starts = 2, seed = 1)
+two <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
+           n_starts = 2, seed = 1)
+plot_criteria(compare_models(one, two))
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=plot_enumeration]{plot_enumeration()}} to choose the criteria; \code{\link[=get_candidates]{get_candidates()}}.
+\code{\link[=plot_enumeration]{plot_enumeration()}} to choose the criteria; \code{\link[=get_candidates]{get_candidates()}}
+and \code{\link[=get_best]{get_best()}} for the values as tables; \code{\link[=plot_deltas]{plot_deltas()}}.
 }

@@ -2,35 +2,68 @@
 % Please edit documentation in R/lpa.R
 \name{lca}
 \alias{lca}
-\title{Fit a latent class model}
+\title{Fit a latent class model that groups observations by their pattern of
+categorical responses}
 \usage{
 lca(data, vars, n_classes, ...)
 }
 \arguments{
 \item{data}{A data frame with one row per observation.}
 
-\item{vars}{Names of the discrete indicator columns. Categories are taken
-from the data. Columns named in \code{ordinal} or \code{count} (through \code{...}) are
-modelled as such; the rest are categorical.}
+\item{vars}{Names of the discrete indicator columns. Numeric, integer,
+logical, character and factor columns are accepted, and every distinct
+value of a column is one category. Columns named in \code{ordinal} or \code{count}
+(through \code{...}) are modelled as such; the rest are categorical.}
 
 \item{n_classes}{Number of classes; a positive integer.}
 
-\item{...}{Further arguments for \code{\link[=multilca]{multilca()}}, such as \code{missing},
-\code{n_starts}, \code{seed}, \code{min_probability} and \code{profile_covariates}, except
-\code{id} and \code{n_group_classes}.}
+\item{...}{Further arguments, passed through \code{\link[=multilca]{multilca()}} to \code{\link[=multilpa]{multilpa()}},
+which documents all of them. The ones used most often:
+\itemize{
+\item \code{missing}: \code{"error"} (default) stops when an indicator has a missing
+value; \code{"fiml"} keeps every row and uses the responses it has.
+\item \code{ordinal}, \code{count}: indicators in \code{vars} modelled as ordered categories
+or as counts instead of as unordered categories.
+\item \code{local_dependence}: pairs of indicators, written \code{"item1:item2"},
+that stay associated within a class.
+\item \code{n_starts} (default 10) and \code{seed}: the number of starts and the seed
+that makes them reproducible.
+\item \code{min_probability}: the lower bound on a response probability (default
+\code{1e-10}).
+\item \code{profile_covariates}: covariates that predict class membership.
+}
+
+\code{id} and \code{n_group_classes} are not accepted (they belong to the
+two-level model), and neither is \code{n_profiles}: the number of classes is
+\code{n_classes}.}
 }
 \value{
-A fitted object as returned by \code{\link[=multilca]{multilca()}}, usually of class
-\code{multilpa}, or \code{multilpa_covariates} with membership covariates. Its
-\code{call} records the original \code{lca()} call. Classes are labelled
-\code{profile_1}, \code{profile_2}, and so on in the returned tables.
+A fitted model of class \code{multilpa}, or \code{multilpa_covariates} when
+\code{profile_covariates} is given. The classes are numbered 1, 2, and so on
+in the \code{profile} column of its tables. \code{\link[=get_results]{get_results()}} returns the
+tables by name, among them:
+\itemize{
+\item \code{"responses"} (also \code{as.data.frame(fit)}): one row per class,
+indicator and category, with the response probability and its
+standard error;
+\item \code{"profile_probabilities"}: the proportion of each class;
+\item \code{"assignments"}: the data with each row's most likely class and its
+posterior probabilities;
+\item \code{"classification"} and \code{"entropy"}: how clearly the rows are
+classified;
+\item \code{"residuals"}: bivariate residuals, which show pairs of indicators
+the classes do not explain;
+\item \code{"information_criteria"} and \code{"starts"}.
+}
+
+The fit's \code{call} records the original \code{lca()} call.
 }
 \description{
-Latent class analysis describes heterogeneity in categorical response
-patterns through a specified number of latent classes. Each class is
-characterized by the probabilities of the response categories for each
-indicator. These probabilities describe how response patterns differ
-between classes.
+\code{lca()} fits a latent class model, which describes heterogeneity in
+categorical response patterns through a specified number of latent classes.
+Each class is characterized by the probabilities of the response categories
+for each indicator, which describe how response patterns differ between
+classes.
 
 \code{lca()} estimates the class-specific response probabilities and class
 proportions, together with posterior membership probabilities for each
@@ -46,8 +79,15 @@ using the structured measurement models described in \code{\link[=multilpa]{mult
 }
 \section{Conditions}{
 
-\code{latents_bad_argument} when \code{id}, \code{n_group_classes} or \code{n_profiles} is
-passed; the conditions \code{\link[=multilca]{multilca()}} raises otherwise.
+Errors: \code{latents_bad_argument} when \code{id}, \code{n_group_classes} or
+\code{n_profiles} is passed; \code{latents_bad_data} when a column is missing from
+\code{data} or an indicator has missing values under \code{missing = "error"};
+\code{latents_bad_categorical} when \code{categorical} names a column not in
+\code{vars}. Warnings: \code{latents_unidentified} when the model has more free
+parameters than the table of response patterns has free cells,
+\code{latents_unconverged} when the reported start did not converge, and
+\code{latents_small_classes} when a class is nearly empty. \code{\link[=multilpa]{multilpa()}}
+raises the others, and \link{latents-conditions} lists them all.
 }
 
 \examples{
@@ -55,6 +95,7 @@ fit <- lca(student_esm, c("time_with_friends", "on_social_media",
                           "tv_video_games", "sports"),
            n_classes = 2, n_starts = 3, seed = 1)
 fit
+get_results(fit, "profile_probabilities")
 plot(fit, what = "heatmap")
 }
 \seealso{

@@ -45,3 +45,4 @@
 ^\.mini-ci$
 ^\.ci$
 ^\.equivalence-repo$
+^\.playwright-mcp$

@@ -26,6 +26,8 @@ utils::globalVariables(c(
 # The palette's grey marks a category that is not a class (noise, a block
 # shared by every class); classes then cycle through the other colours.
 .gg_reserved_grey <- "#999999"
+# The fill of an occasion that observes nothing on a dense sequence grid.
+.gg_empty_fill <- "#EBEBEB"
 .gg_class_palette <- setdiff(.gg_okabe_ito, .gg_reserved_grey)
 .gg_shapes <- c(21L, 22L, 24L, 23L, 25L)
 
@@ -118,7 +120,10 @@ utils::globalVariables(c(
   total <- sum(counts) + if (isTRUE(x$noise))
     sum(x$noise_posteriors[.multilpa_informative_rows(x)]) else 0
   share <- (counts / total)[seq_len(n_profiles)]
-  ordering <- order(-share, seq_len(n_profiles))
+  # Shares equal up to rounding (3 and 3 + 4e-16 effective members) are a
+  # tie, broken by profile number, so colours, shapes and the order of rows
+  # and blocks do not hinge on the last bit of a sum.
+  ordering <- order(-round(share, 12), seq_len(n_profiles))
   rank <- integer(n_profiles)
   rank[ordering] <- seq_len(n_profiles)
   label <- sprintf("Profile %d (%s)", seq_len(n_profiles), .gg_percent(share))
@@ -253,7 +258,9 @@ utils::globalVariables(c(
   vars <- .multilpa_continuous_names(x)
   if (length(vars) == 0L) {
     stop(errorCondition(
-      "This model has no continuous indicators; plot `what = \"responses\"` instead.",
+      paste("This model has no continuous indicators; draw its category",
+            "probabilities with plot_responses(), or read them with",
+            "get_results(fit, \"responses\"), \"ordinal\" or \"count_means\"."),
       class = "latents_no_continuous", call = NULL))
   }
   reason <- if (is.character(errors)) errors else NULL
@@ -360,7 +367,9 @@ utils::globalVariables(c(
     if (is.null(scores)) {
       stop(errorCondition(sprintf(
         paste("Categorical profile summaries need distinct finite numeric category",
-              "labels; `%s` does not have them. Use `what = \"responses\"` instead."),
+              "labels; `%s` does not have them. Draw its category probabilities",
+              "with plot_responses(), or read them with get_results(fit,",
+              "\"responses\") or get_results(fit, \"ordinal\")."),
         indicator), class = "latents_bad_argument", call = NULL))
     }
     scores
@@ -396,7 +405,7 @@ utils::globalVariables(c(
 #' @noRd
 .gg_categorical_summary_frame <- function(x, key, statistic) {
   stopifnot(statistic %in% c("mean", "median", "mode"))
-  blocks <- x$response_probabilities
+  blocks <- .gg_response_blocks(x)
   scores <- .gg_category_scores(blocks)
   values <- lapply(seq_along(blocks), function(index) {
     ordered <- order(scores[[index]])
@@ -424,22 +433,24 @@ utils::globalVariables(c(
                               statistic = "mean", intervals = TRUE) {
   key <- .gg_profile_key(x)
   if (length(.multilpa_continuous_names(x)) == 0L &&
-      length(x$response_probabilities) > 0L) {
+      length(.gg_response_blocks(x)) > 0L) {
     if (scale != "raw") {
       stop(errorCondition(
         "Categorical profile summaries require `scale = \"raw\"`.",
         class = "latents_bad_argument", call = NULL))
     }
     summaries <- .gg_categorical_summary_frame(x, key, statistic)
+    kind <- .gg_indicator_kind(x)
     return(.gg_series_plot(
       summaries$frame, key, labels, FALSE,
       y_label = paste("Estimated", statistic, "(category score)"),
       x_labels = summaries$vars, ylim = summaries$range) +
-      .gg_titles(main, subtitle, sprintf("Profile %ss across %d categorical indicators",
-                                        statistic, length(summaries$vars)),
+      .gg_titles(main, subtitle, sprintf("Profile %ss across %d %s indicator%s",
+                                        statistic, length(summaries$vars), kind,
+                                        if (length(summaries$vars) == 1L) "" else "s"),
         sprintf("%d profiles%s; original category scale%s", x$n_profiles,
                 .gg_group_class_text(x),
-                if (intervals) "; intervals unavailable for categorical summaries" else ""),
+                if (intervals) sprintf("; intervals unavailable for %s summaries", kind) else ""),
         caption = .gg_undrawn_caption(x, summaries$vars)))
   }
   means <- .gg_mean_frame(x, key, scale, errors)
@@ -538,7 +549,7 @@ utils::globalVariables(c(
 #' Every response probability as tiles, one block per indicator
 #' @noRd
 .gg_view_response_heatmap <- function(x, main, subtitle) {
-  blocks <- x$response_probabilities
+  blocks <- .gg_response_blocks(x)
   if (is.null(blocks) || length(blocks) == 0L) {
     stop(errorCondition("This model has no indicators to draw.",
                         class = "latents_nothing_to_plot", call = NULL))
@@ -736,12 +747,45 @@ utils::globalVariables(c(
                    panel.spacing = ggplot2::unit(1.2, "lines"))
 }
 
+#' The kind of the categorical and ordinal indicators, for titles
+#' @param x A fitted model.
+#' @return `"categorical"`, `"ordinal"` or `"categorical and ordinal"`.
+#' @noRd
+.gg_indicator_kind <- function(x) {
+  kinds <- c(categorical = length(x$response_probabilities) > 0L,
+             ordinal = !is.null(x$extra_data$ordinal))
+  if (!any(kinds)) return("categorical")
+  paste(names(kinds)[kinds], collapse = " and ")
+}
+
+#' Response probabilities of the categorical and ordinal indicators
+#'
+#' @param x A fitted model.
+#' @return A named list with one profiles-by-categories matrix per indicator:
+#'   the categorical indicators, then the ordinal ones, each in the order the
+#'   fit was given. Empty when the fit has neither.
+#' @noRd
+.gg_response_blocks <- function(x) {
+  categorical <- x$response_probabilities %||% list()
+  extra <- x$extra_data
+  if (is.null(extra$ordinal)) return(categorical)
+  ordinal <- lapply(seq_len(ncol(extra$ordinal)), function(j) {
+    probability <- exp(.latents_ordinal_log_probabilities(
+      x$ordinal_intercepts[[j]], x$ordinal_locations[, j]))
+    matrix(probability, nrow = x$n_profiles,
+           dimnames = list(sprintf("profile_%d", seq_len(x$n_profiles)),
+                           extra$ordinal_levels[[j]]))
+  })
+  names(ordinal) <- colnames(extra$ordinal)
+  c(categorical, ordinal)
+}
+
 #' Categorical response probabilities, one line per profile
 #' @noRd
 .gg_view_responses <- function(x, category, labels, errors, main, subtitle) {
-  blocks <- x$response_probabilities
-  if (is.null(blocks) || length(blocks) == 0L) {
-    stop(errorCondition("This model has no categorical indicators.",
+  blocks <- .gg_response_blocks(x)
+  if (length(blocks) == 0L) {
+    stop(errorCondition("This model has no categorical or ordinal indicators.",
                         class = "latents_no_categorical", call = NULL))
   }
   key <- .gg_profile_key(x)
@@ -800,9 +844,10 @@ utils::globalVariables(c(
                       "Response probability",
                   x_labels = axis_labels, ylim = c(0, 1)) +
     .gg_titles(main, subtitle, "Response probabilities by profile",
-               sprintf("%d profiles%s, %d categorical indicator%s%s",
+               sprintf("%d profiles%s, %d %s indicator%s%s",
                        n_profiles, .gg_group_class_text(x), length(vars),
-                       if (length(vars) == 1L) "" else "s", note))
+                       .gg_indicator_kind(x), if (length(vars) == 1L) "" else "s",
+                       note))
 }
 
 #' The confidence bounds an inference table reports for the requested cells
@@ -843,7 +888,7 @@ utils::globalVariables(c(
   kinds <- list(
     list(vars = x$categorical, text = "categorical %s (what = \"responses\")"),
     list(vars = x$ordinal, text = "ordinal %s (get_results(fit, \"ordinal\"))"),
-    list(vars = x$count, text = "count %s (get_results(fit, \"counts\"))"))
+    list(vars = x$count, text = "count %s (get_results(fit, \"count_means\"))"))
   parts <- vapply(kinds, \(kind) {
     missing_vars <- setdiff(as.character(kind$vars), drawn)
     if (length(missing_vars) == 0L) return(NA_character_)
@@ -898,14 +943,40 @@ utils::globalVariables(c(
                  .gg_percent(x$noise_probability)))
 }
 
+#' Each group's most frequent profile and the share of its sequence it holds
+#'
+#' @param codes Groups by positions matrix of assigned profiles (`NA` where
+#'   nothing is assigned).
+#' @param key The profile key from `.gg_profile_key()`.
+#' @return A data.frame, one row per group: `rank` (the display rank of the
+#'   most frequent profile; ties go to the more prevalent profile, `NA` for a
+#'   group with nothing assigned) and `share` (its share of the assigned
+#'   positions).
+#' @noRd
+.gg_sequence_dominant <- function(codes, key) {
+  ranks <- matrix(key$rank[match(codes, key$profile)], nrow(codes))
+  summary <- apply(ranks, 1L, function(row) {
+    row <- row[!is.na(row)]
+    if (length(row) == 0L) return(c(NA_real_, NA_real_))
+    counts <- tabulate(row, nbins = nrow(key))
+    c(which.max(counts), max(counts) / length(row))
+  })
+  data.frame(rank = summary[1L, ], share = summary[2L, ])
+}
+
 #' Each group's assigned profile at each position, blocked by group class
 #' @noRd
 .gg_view_sequences <- function(x, labels, cell_labels, main, subtitle) {
   layout <- .multilpa_sequences(x, format = "wide")
-  ordering <- order(layout$group_class, layout$group)
-  codes <- .multilpa_sequence_matrix(x)[ordering, , drop = FALSE]
-  classes <- layout$group_class[ordering]
   key <- .gg_profile_key(x)
+  # The cells sit on the grid of every occasion in the data, so an occasion
+  # that no group answered keeps its column instead of shifting the later
+  # ones left (the sequence table leaves such an occasion out).
+  long <- .multilpa_sequences(x, format = "long")
+  time_values <- sort(unique(x$time_values))
+  all_codes <- matrix(NA_integer_, nrow(layout), length(time_values))
+  all_codes[cbind(match(long$group, layout$group),
+                  match(long$time, time_values))] <- long$profile
   if (isTRUE(x$noise)) {
     levels <- c(levels(key$label), "Noise")
     key$label <- as.character(key$label)
@@ -917,7 +988,19 @@ utils::globalVariables(c(
                                  colour = .gg_reserved_grey, shape = 4L))
     key$label <- factor(key$label, levels = levels)
   }
-  time_values <- sort(unique(x$time_values))
+  # Within a class, rows are sorted by the group's most frequent profile and
+  # then by how much of its sequence that profile holds, so runs of one
+  # colour sit together instead of in identifier order. Noise counts as a
+  # state of its own here, so a group that is mostly noise is said to be.
+  dominant <- .gg_sequence_dominant(all_codes, key)
+  ordering <- order(layout$group_class, dominant$rank, -dominant$share,
+                    layout$group)
+  codes <- all_codes[ordering, , drop = FALSE]
+  classes <- layout$group_class[ordering]
+  dominant <- dominant[ordering, , drop = FALSE]
+  # With one group class there are no class strips; the rows are blocked by
+  # their most frequent profile instead.
+  one_class <- length(unique(classes)) == 1L
   n_groups <- nrow(codes)
   # An occasion the data holds but that observes nothing is not classified
   # (its posterior is the prior), so it has no profile; it is drawn as a grey
@@ -929,11 +1012,21 @@ utils::globalVariables(c(
                  column = match(x$time_values[unobserved], time_values))
   empty <- empty[stats::complete.cases(empty), , drop = FALSE]
   empty_label <- "Nothing observed"
+  # A digit fits a cell only while the grid stays sparse enough to hold one.
+  stamp <- isTRUE(cell_labels) && n_groups <= 60L && ncol(codes) <= 40L
+  # Positions a group has no row for are left blank.
+  absent <- length(codes) - sum(!is.na(codes)) - nrow(empty) > 0L
+  # The dash marks an empty occasion apart from a noise cell and from a
+  # blank (absent) one. Without either on the grid, and with no digits to
+  # match, hundreds of dashes would bury the colours: the empty cells are
+  # then drawn pale and unmarked, and no other cell can be mistaken for them.
+  dash <- stamp || isTRUE(x$noise) || absent
   if (nrow(empty) > 0L) {
     key$label <- as.character(key$label)
     key <- rbind(key, data.frame(profile = NA_integer_, rank = nrow(key) + 1L,
                                  share = NA_real_, count = NA_real_,
-                                 label = empty_label, colour = .gg_reserved_grey,
+                                 label = empty_label,
+                                 colour = if (dash) .gg_reserved_grey else .gg_empty_fill,
                                  shape = 3L))
     key$label <- factor(key$label, levels = key$label)
   }
@@ -943,8 +1036,21 @@ utils::globalVariables(c(
   cells$empty[match(paste(empty[, "row"], empty[, "column"]),
                     paste(cells$row, cells$column))] <- TRUE
   cells <- cells[!is.na(cells$profile) | cells$empty, , drop = FALSE]
-  cells$class_label <- factor(sprintf("Class %d", classes[cells$row]),
-                              levels = sprintf("Class %d", sort(unique(classes))))
+  cells$class_label <- if (one_class) {
+    ranks <- unique(dominant$rank)
+    blocks <- c(sort(ranks), if (anyNA(ranks)) NA_real_)
+    block_profiles <- key$profile[match(blocks, key$rank)]
+    names_of <- ifelse(is.na(blocks), "Unclassified",
+                       ifelse(block_profiles %in% 0L, "Mostly noise",
+                              sprintf("Mostly %d", block_profiles)))
+    factor(names_of[match(dominant$rank[cells$row], blocks)], levels = names_of)
+  } else {
+    # A fit may name its classes (a mover-stayer fit calls one "Stayers").
+    class_names <- x$group_class_labels %||%
+      sprintf("Class %d", seq_len(max(classes)))
+    factor(class_names[classes[cells$row]],
+           levels = class_names[sort(unique(classes))])
+  }
   profile_at <- match(cells$profile, key$profile)
   cells$profile_label <- factor(
     ifelse(cells$empty, empty_label, as.character(key$label[profile_at])),
@@ -952,8 +1058,6 @@ utils::globalVariables(c(
   cells$cell_text <- ifelse(cells$empty, "\u2013", as.character(cells$profile))
   cells$text_colour <- ifelse(cells$empty, .gg_ink(.gg_reserved_grey),
                               .gg_ink(key$colour[profile_at]))
-  # A digit fits a cell only while the grid stays sparse enough to hold one.
-  stamp <- isTRUE(cell_labels) && n_groups <= 60L && ncol(codes) <= 40L
   plot <- ggplot2::ggplot(cells, ggplot2::aes(column, row,
                                               fill = profile_label)) +
     # Cell borders only while rows are tall enough for a border to separate
@@ -964,7 +1068,7 @@ utils::globalVariables(c(
     plot <- plot + ggplot2::geom_text(
       ggplot2::aes(label = cell_text, colour = text_colour), size = 2.6) +
       ggplot2::scale_colour_identity()
-  } else if (any(cells$empty)) {
+  } else if (dash && any(cells$empty)) {
     # The dash is the mark that tells an empty occasion from a noise cell,
     # so it stays when the profile digits are not drawn.
     plot <- plot + ggplot2::geom_text(
@@ -972,7 +1076,7 @@ utils::globalVariables(c(
       ggplot2::aes(label = cell_text), colour = .gg_ink(.gg_reserved_grey),
       size = 2.6)
   }
-  if (length(unique(classes)) > 1L && isTRUE(labels)) {
+  if (isTRUE(labels) && length(unique(cells$class_label)) > 1L) {
     plot <- plot + ggplot2::facet_grid(rows = ggplot2::vars(class_label),
                                        scales = "free_y", space = "free_y",
                                        switch = "y")
@@ -984,9 +1088,11 @@ utils::globalVariables(c(
     ggplot2::scale_y_reverse(expand = c(0, 0)) +
     .gg_scales(key, "fill", legend = TRUE) +
     .gg_titles(main, subtitle, "Assigned profile in sequence order",
-               sprintf("%d groups in %d classes; %d profiles across %d positions",
-                       n_groups, x$n_group_classes, x$n_profiles,
-                       ncol(codes))) +
+               sprintf("%d groups %s; %d profiles across %d positions",
+                       n_groups,
+                       if (one_class) "sorted by their most frequent profile" else
+                         sprintf("in %d classes", length(unique(classes))),
+                       x$n_profiles, ncol(codes))) +
     ggplot2::labs(x = x$time, y = sprintf("Groups (%d)", n_groups)) +
     .gg_theme() +
     ggplot2::theme(axis.text.y = ggplot2::element_blank(),

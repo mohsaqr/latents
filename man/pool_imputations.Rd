@@ -2,7 +2,8 @@
 % Please edit documentation in R/pool-imputations.R
 \name{pool_imputations}
 \alias{pool_imputations}
-\title{Fit and pool mixture models across multiple imputations}
+\title{Fit a profile or class model to each imputed data set and pool the results
+across the imputations}
 \usage{
 pool_imputations(
   imputed,
@@ -20,7 +21,10 @@ pool_imputations(
 with the same columns and rows in the same order, or a \code{mids} object from
 the mice package, which is completed here.}
 
-\item{vars, id, n_profiles}{As in \code{\link[=multilpa]{multilpa()}}.}
+\item{vars, id, n_profiles}{The indicator columns, the group identifier and
+the number of profiles, as in \code{\link[=multilpa]{multilpa()}}. The model is the profile or
+class model \code{multilpa()} fits by default (\code{family = "profiles"}), with
+or without membership covariates; the other families are not pooled.}
 
 \item{...}{Further arguments for \code{\link[=multilpa]{multilpa()}}, such as \code{n_group_classes},
 \code{profile_covariates}, \code{group_covariates}, \code{categorical}, \code{n_starts} and
@@ -28,47 +32,80 @@ the mice package, which is completed here.}
 
 \item{level}{Confidence level of the pooled intervals (default 0.95).}
 
-\item{vcov_type}{\code{"observed"} (default), \code{"robust"} or \code{"opg"}, as in
-\code{\link[=parameter_inference]{parameter_inference()}}, applied to every imputation's fit. For fits
-with sampling weights the default is \code{"robust"}, and the other types are
-refused with \code{latents_unsupported_weights}; for fits with person
-centring or scaling the default is \code{"robust"} too, and the other types
-raise \code{latents_unsupported_inference}.}
+\item{vcov_type}{Covariance estimator applied to every imputation's fit,
+as in \code{\link[=parameter_inference]{parameter_inference()}}:
+\itemize{
+\item \code{"observed"} (default): the inverse of the observed information;
+\item \code{"robust"}: the sandwich over the independent groups;
+\item \code{"opg"}: the inverse of the outer product of the group scores.
+}
+
+For fits with sampling weights the default is \code{"robust"}, and the other
+types are refused with \code{latents_unsupported_weights}; for fits with
+person centring or scaling the default is \code{"robust"} too, and the other
+types raise \code{latents_unsupported_inference}.}
 
 \item{adjust}{Multiplicity correction applied to the pooled p-values to
-give \code{p_adjusted}, as in \code{\link[=parameter_inference]{parameter_inference()}}: \code{"none"} (default) or
-a method of \code{\link[stats:p.adjust]{stats::p.adjust()}}. The per-imputation tables are computed
-without correction.}
+give \code{p_adjusted}:
+\itemize{
+\item \code{"none"} (default): no correction (\code{p_adjusted} equals \code{p_value});
+\item \code{"holm"}, \code{"hochberg"}, \code{"hommel"}, \code{"bonferroni"}: control the
+family-wise error rate;
+\item \code{"BH"} (or its alias \code{"fdr"}): Benjamini-Hochberg, controls the
+false discovery rate;
+\item \code{"BY"}: Benjamini-Yekutieli, controls the false discovery rate under
+any dependence.
+}
+
+These are the methods of \code{\link[stats:p.adjust]{stats::p.adjust()}}. The per-imputation tables
+are computed without correction.}
 }
 \value{
-An object of class \code{latents_pooled}. \code{\link[=as.data.frame]{as.data.frame()}} and
-\code{get_results(x, "estimates")} give one row per parameter, with the columns
-of \code{\link[=parameter_inference]{parameter_inference()}} (\code{level}, \code{outcome}, \code{term}, \code{parameter},
+An object of class \code{latents_pooled}. Printing it shows the pooled
+estimates; \code{summary()} gives a one-row data frame describing the
+pooling (number of imputations, convergence, range of the log
+likelihoods, how many fits were relabelled, largest and median fraction
+of missing information); \code{plot()} draws the pooled estimates with their
+intervals over the single imputations; \code{coef()}, \code{vcov()} and
+\code{confint()} give the pooled estimates, their total covariance and the
+pooled intervals. Its three tables are read with
+\code{get_results(x, what = )} or \code{as.data.frame(x, what = )}:
+\itemize{
+\item \code{"estimates"} (default): one row per parameter, with the columns of
+\code{\link[=parameter_inference]{parameter_inference()}} (\code{level}, \code{outcome}, \code{term}, \code{parameter},
 \code{estimate}, \code{standard_error}, \code{statistic}, \code{p_value}, \code{p_adjusted},
 \code{conf_low}, \code{conf_high}) plus \code{df} (Rubin's degrees of freedom),
 \code{within} and \code{between} (the two variance components), \code{riv} (the
-relative increase in variance due to missingness) and \code{fmi} (the fraction
-of missing information). \code{statistic} and \code{p_value} are \code{NA} where
-\code{\link[=parameter_inference]{parameter_inference()}} reports no test (variances and probabilities).
-\code{get_results(x, "imputations")} gives each imputation's aligned estimates,
-one row per imputation and parameter, and \code{get_results(x, "fits")} one row
-per imputation with its log likelihood, convergence and the label
-permutation that aligned it.
+relative increase in variance due to missingness) and \code{fmi} (the
+fraction of missing information). \code{statistic} and \code{p_value} are \code{NA}
+where \code{\link[=parameter_inference]{parameter_inference()}} reports no test (variances and
+probabilities);
+\item \code{"imputations"}: each imputation's aligned estimates, one row per
+imputation and parameter: \code{imputation}, \code{level}, \code{outcome}, \code{term},
+\code{parameter}, \code{estimate} and \code{standard_error};
+\item \code{"fits"}: one row per imputation: \code{imputation}, \code{log_likelihood},
+\code{n_parameters}, \code{converged}, and \code{profile_order} and \code{group_order},
+the label permutations that aligned the fit to the first
+imputation's.
+}
+
+\code{get_results(x, "all")} returns the three tables as a named list.
 }
 \description{
-\code{pool_imputations()} estimates a mixture model from multiply imputed data
-and combines the results to account for uncertainty associated with
-missing values. It fits the same model specification to each completed
-data set, allowing parameter estimates to reflect the alternative plausible
-values supplied by the imputation procedure.
+\code{pool_imputations()} fits the same profile or class model to each of
+several completed (imputed) data sets and combines the results, so that
+the standard errors include the uncertainty due to the missing values.
+It is the way to handle missing covariates, which the model cannot
+integrate out as \code{missing = "fiml"} does for missing indicators.
 
 Class labels can differ across fitted mixture models even when their
-profiles are similar. Before pooling, the function matches individual
-profiles and group classes to those in the first imputation's fit. It then
+profiles are similar. Before pooling, the function matches the
+profiles and group classes of every fit to those of the first
+imputation's fit. It then
 combines the aligned parameter estimates and covariance matrices using
-Rubin's rules. The resulting uncertainty incorporates both the estimated
-sampling variance within each analysis and variation in estimates between
-imputations.
+Rubin's rules: the pooled estimate is the mean over imputations, and its
+variance adds the average sampling variance within the imputations to
+the variance of the estimates between them.
 
 The function returns pooled estimates, standard errors, confidence
 intervals, and tests for eligible parameters, together with summaries of
@@ -120,9 +157,11 @@ indicator distributions when missingness depends on the indicators.
 \code{latents_bad_data} when \code{imputed} is not a list of at least two data frames
 with identical columns and row counts; \code{latents_pooling_failed} when any
 imputation's fit or inference fails (the message names the imputation and
-gives the original reason); \code{latents_missing_package} for a \code{mids} object
-without mice installed. Warnings from the individual fits are passed on
-as they are raised.
+gives the original reason), for example a fit \code{\link[=parameter_inference]{parameter_inference()}}
+refuses because a parameter is on a bound, or when the imputations'
+fits do not report the same parameters; \code{latents_missing_package} for a
+\code{mids} object without mice installed. Warnings from the individual fits
+are passed on as they are raised.
 }
 
 \examples{

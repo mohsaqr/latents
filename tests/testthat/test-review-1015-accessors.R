@@ -38,12 +38,13 @@ test_that("covariate-fit recovery compares a group-level truth with group classe
 test_that("descriptives of a single-level fit report no fabricated groups", {
   fit <- review_single_level()
   described <- descriptives(fit)
-  expect_false(any(c("n_groups", "icc") %in% names(described)))
+  expect_false(any(c("n_groups", "sd_within", "sd_between", "icc") %in% names(described)))
   expect_identical(described$variable, review_activity)
   by_profile <- descriptives(fit, by = "profile")
-  expect_false(any(c("n_groups", "icc") %in% names(by_profile)))
+  expect_false(any(c("n_groups", "sd_within", "sd_between", "icc") %in% names(by_profile)))
   # A two-level fit keeps its grouping summaries.
-  expect_true(all(c("n_groups", "icc") %in% names(descriptives(review_two_level()))))
+  expect_true(all(c("n_groups", "sd_within", "sd_between", "icc") %in%
+                  names(descriptives(review_two_level()))))
 })
 
 test_that("descriptives of a fit refuse arguments it cannot use, by class", {

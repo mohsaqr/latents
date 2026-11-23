@@ -2,57 +2,90 @@
 
 utils::globalVariables(c("model", "criterion", "value"))
 
-#' Compare the fit and classification of mixture models
+#' Compare the fit, classification and convergence of several fitted models in
+#' one table
 #'
 #' @description
-#' `compare_models()` puts the fit, complexity, classification and
-#' convergence of several models fitted to the same data in one table:
-#' separately fitted models, or candidates of an enumeration grid. BIC
-#' differences give each model's distance from the smallest BIC among those
-#' compared, and the Schwarz weights `exp(-delta_bic / 2)`, normalised over
-#' them, give relative support. The
-#' function does not select a model: a lower criterion favours a model
-#' among those compared and says nothing about absolute fit.
+#' `compare_models()` returns one table of the fit, complexity, classification
+#' and convergence of several models fitted to the same data: separately fitted
+#' models, or candidates of an enumeration grid. Each row holds one model's
+#' number of parameters, log likelihood, information criteria, entropy, average
+#' posterior probabilities and smallest class share. BIC differences give each
+#' model's distance from the smallest BIC among those compared, and the Schwarz
+#' weights `exp(-delta_bic / 2)`, normalised over them, give relative support.
+#' The function does not select a model: a lower criterion favours a model among
+#' those compared and says nothing about absolute fit.
 #'
-#' @param ... An enumeration grid from [enumerate_classes()] followed by the
-#'   candidates to compare (none for all); or two or more fits from
-#'   [multilpa()], [lpa()], [lca()], [lta()] or [get_candidate()]; or two or
-#'   more fits from [mixture_regression()]. Named fits are labelled by their
-#'   names, unnamed ones by their expression, candidates by their candidate
-#'   name; labels must be distinct. See *Choosing candidates*.
+#' @param ... The models to compare, in one of three forms:
+#'   * an enumeration grid from [enumerate_classes()], [enumerate_lpa()] or
+#'     [enumerate_lca()], followed by the candidates to compare (none for
+#'     all); see *Choosing candidates*;
+#'   * two or more fits from [lpa()], [lca()], [multilpa()], [multilca()]
+#'     (with or without membership covariates), [lta()] or
+#'     [get_candidate()];
+#'   * two or more fits from [mixture_regression()], with or without
+#'     `random`.
+#'
+#'   The two kinds of fit cannot be mixed in one call. Named fits are
+#'   labelled by their names, unnamed ones by their expression, candidates
+#'   by their candidate name; labels must be distinct. Additive, dispersion
+#'   and cross-level fits of [multilpa()] are refused
+#'   (`latents_bad_argument`).
 #' @param n_profiles,n_group_classes With a grid, the class counts of the
 #'   candidates to compare; `NULL` (default) takes every count. Candidates
-#'   whose fit failed are left out, with a message.
+#'   whose fit failed are left out, with a message. Without a grid they
+#'   raise `latents_bad_argument`.
 #' @param cutoff For profile and class models, the average posterior
 #'   probability below which a class is counted in `avepp_below` and
-#'   `group_avepp_below` (default 0.8). Not used for mixture regressions.
-#' @param test `"none"` (default) for the table alone; `"lrt"` adds a
-#'   likelihood-ratio test of each model against the one before it. See
-#'   *Likelihood-ratio tests*.
+#'   `group_avepp_below` (default 0.8; a number above 0 and at most 1). Not
+#'   used for mixture regressions.
+#' @param test Whether the models are also tested against each other:
+#'   * `"none"` (default): the comparison table alone;
+#'   * `"lrt"`: adds a likelihood-ratio test of each model against the one
+#'     in the row before it (`lr_statistic`, `lr_df`, `lr_p_value`), for
+#'     nested profile, class and transition models. See *Likelihood-ratio
+#'     tests*.
 #'
-#' @return A data frame of class `latents_comparison`, one row per model.
+#' @return A data frame of class `latents_comparison` (also a
+#'   `latents_table`, which prints as a formatted table), one row per model,
+#'   in the order given. `plot()` draws its information criteria, and
+#'   `get_candidate(comparison, "<model>")` returns the fitted model of a
+#'   row.
 #'
-#'   For profile and class models: `model`, `n_profiles` (classes, for a
-#'   class model), `n_group_classes`, `structure` (the covariance
-#'   structure, `NA` without continuous indicators), `n_parameters` (see
-#'   *Held measurement*),
-#'   `log_likelihood`, every information criterion of [get_candidates()],
-#'   `profile_entropy`, `group_entropy`, `avepp_min`, `avepp_max`,
-#'   `avepp_mean`, `avepp_below` and the same four prefixed `group_`,
-#'   `smallest_share` (the smallest estimated profile share), `converged`,
-#'   `n_best_replicated`, `delta_bic` and `bic_weight` (on `bic_groups`, the
-#'   BIC that counts groups as the independent units; the ordinary BIC for
-#'   single-level models).
+#'   For profile, class and transition models the columns are `model` (the
+#'   label), `n_profiles` (classes, for a class model), `n_group_classes`,
+#'   `structure` (the covariance structure, `NA` without continuous
+#'   indicators), `n_parameters` (see *Held measurement*),
+#'   `log_likelihood`; the information criteria `aic`, `kic`, and `bic`,
+#'   `sabic`, `caic`, `awe`, `icl` and `clc`, each of these six in two
+#'   columns, `_groups` (the number of groups as the sample size) and
+#'   `_individual` (the number of rows); `profile_entropy`,
+#'   `group_entropy`; `avepp_min`, `avepp_max`, `avepp_mean` (the smallest,
+#'   largest and mean average posterior probability of the profiles) and
+#'   `avepp_below` (the number of profiles below `cutoff`), and the same
+#'   four prefixed `group_` for the group classes; `smallest_share` (the
+#'   smallest estimated profile share), `converged`, `n_best_replicated`
+#'   (the starts that reached the best log likelihood), `delta_bic` and
+#'   `bic_weight` (on `bic_groups`, the BIC that counts groups as the
+#'   independent units; the ordinary BIC for single-level models).
 #'
-#'   For mixture regressions: `model`, `n_classes`, `random`,
-#'   `n_parameters`, `log_likelihood`, `aic`, `bic`, `sabic`, `icl`,
-#'   `entropy`, `smallest_share`, `delta_bic`, `bic_weight` and `converged`.
+#'   For mixture regressions: `model`, `n_classes`, `random` (the
+#'   random-effects specification, `"none"` without one), `n_parameters`,
+#'   `log_likelihood`, `aic`, `bic`, `sabic`, `icl`, `entropy`,
+#'   `smallest_share`, `delta_bic`, `bic_weight` and `converged`.
 #'
 #'   With `test = "lrt"`, also `lr_statistic`, `lr_df` and `lr_p_value`,
-#'   `NA` in the first row. Fits to different data, fewer than two models,
-#'   a group-class family fit or grid, and a mixture-regression grid are
-#'   refused with classed conditions ([latents-conditions]); the family and
-#'   regression grids have their own tables. The criteria compare the
+#'   `NA` in the first row.
+#'
+#'   Errors: `latents_bad_argument` for fewer than two models, models of
+#'   mixed or unsupported kinds, duplicated labels, a group-class family fit
+#'   or grid, a mixture-regression grid, or `test = "lrt"` on mixture
+#'   regressions (the family and regression grids have their own tables,
+#'   `as.data.frame(grid)`); `latents_incomparable_models` for fits to
+#'   different data; and, under `test = "lrt"`, `latents_bad_nesting` for
+#'   models that are not nested and `latents_singular_restriction` for a
+#'   singular restriction. [latents-conditions] describes each class. The
+#'   criteria compare the
 #'   models with each other; a final choice also needs the estimation to be
 #'   stable and the classes to mean something.
 #'

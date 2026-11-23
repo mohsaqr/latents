@@ -10,22 +10,24 @@ utils::globalVariables(c("estimate", "label", "source", "conf_low", "conf_high")
 # does not: the imputations label their profiles and group classes
 # independently, so they are aligned to the first before anything is averaged.
 
-#' Fit and pool mixture models across multiple imputations
+#' Fit a profile or class model to each imputed data set and pool the results
+#' across the imputations
 #'
 #' @description
-#' `pool_imputations()` estimates a mixture model from multiply imputed data
-#' and combines the results to account for uncertainty associated with
-#' missing values. It fits the same model specification to each completed
-#' data set, allowing parameter estimates to reflect the alternative plausible
-#' values supplied by the imputation procedure.
+#' `pool_imputations()` fits the same profile or class model to each of
+#' several completed (imputed) data sets and combines the results, so that
+#' the standard errors include the uncertainty due to the missing values.
+#' It is the way to handle missing covariates, which the model cannot
+#' integrate out as `missing = "fiml"` does for missing indicators.
 #'
 #' Class labels can differ across fitted mixture models even when their
-#' profiles are similar. Before pooling, the function matches individual
-#' profiles and group classes to those in the first imputation's fit. It then
+#' profiles are similar. Before pooling, the function matches the
+#' profiles and group classes of every fit to those of the first
+#' imputation's fit. It then
 #' combines the aligned parameter estimates and covariance matrices using
-#' Rubin's rules. The resulting uncertainty incorporates both the estimated
-#' sampling variance within each analysis and variation in estimates between
-#' imputations.
+#' Rubin's rules: the pooled estimate is the mean over imputations, and its
+#' variance adds the average sampling variance within the imputations to
+#' the variance of the estimates between them.
 #'
 #' The function returns pooled estimates, standard errors, confidence
 #' intervals, and tests for eligible parameters, together with summaries of
@@ -71,41 +73,72 @@ utils::globalVariables(c("estimate", "label", "source", "conf_low", "conf_high")
 #' @param imputed The completed data sets: a list of at least two data frames
 #'   with the same columns and rows in the same order, or a `mids` object from
 #'   the mice package, which is completed here.
-#' @param vars,id,n_profiles As in [multilpa()].
+#' @param vars,id,n_profiles The indicator columns, the group identifier and
+#'   the number of profiles, as in [multilpa()]. The model is the profile or
+#'   class model `multilpa()` fits by default (`family = "profiles"`), with
+#'   or without membership covariates; the other families are not pooled.
 #' @param ... Further arguments for [multilpa()], such as `n_group_classes`,
 #'   `profile_covariates`, `group_covariates`, `categorical`, `n_starts` and
 #'   `seed`, used for every imputation.
 #' @param level Confidence level of the pooled intervals (default 0.95).
-#' @param vcov_type `"observed"` (default), `"robust"` or `"opg"`, as in
-#'   [parameter_inference()], applied to every imputation's fit. For fits
-#'   with sampling weights the default is `"robust"`, and the other types are
-#'   refused with `latents_unsupported_weights`; for fits with person
-#'   centring or scaling the default is `"robust"` too, and the other types
-#'   raise `latents_unsupported_inference`.
+#' @param vcov_type Covariance estimator applied to every imputation's fit,
+#'   as in [parameter_inference()]:
+#'   * `"observed"` (default): the inverse of the observed information;
+#'   * `"robust"`: the sandwich over the independent groups;
+#'   * `"opg"`: the inverse of the outer product of the group scores.
+#'
+#'   For fits with sampling weights the default is `"robust"`, and the other
+#'   types are refused with `latents_unsupported_weights`; for fits with
+#'   person centring or scaling the default is `"robust"` too, and the other
+#'   types raise `latents_unsupported_inference`.
 #' @param adjust Multiplicity correction applied to the pooled p-values to
-#'   give `p_adjusted`, as in [parameter_inference()]: `"none"` (default) or
-#'   a method of [stats::p.adjust()]. The per-imputation tables are computed
-#'   without correction.
-#' @return An object of class `latents_pooled`. [as.data.frame()] and
-#'   `get_results(x, "estimates")` give one row per parameter, with the columns
-#'   of [parameter_inference()] (`level`, `outcome`, `term`, `parameter`,
-#'   `estimate`, `standard_error`, `statistic`, `p_value`, `p_adjusted`,
-#'   `conf_low`, `conf_high`) plus `df` (Rubin's degrees of freedom),
-#'   `within` and `between` (the two variance components), `riv` (the
-#'   relative increase in variance due to missingness) and `fmi` (the fraction
-#'   of missing information). `statistic` and `p_value` are `NA` where
-#'   [parameter_inference()] reports no test (variances and probabilities).
-#'   `get_results(x, "imputations")` gives each imputation's aligned estimates,
-#'   one row per imputation and parameter, and `get_results(x, "fits")` one row
-#'   per imputation with its log likelihood, convergence and the label
-#'   permutation that aligned it.
+#'   give `p_adjusted`:
+#'   * `"none"` (default): no correction (`p_adjusted` equals `p_value`);
+#'   * `"holm"`, `"hochberg"`, `"hommel"`, `"bonferroni"`: control the
+#'     family-wise error rate;
+#'   * `"BH"` (or its alias `"fdr"`): Benjamini-Hochberg, controls the
+#'     false discovery rate;
+#'   * `"BY"`: Benjamini-Yekutieli, controls the false discovery rate under
+#'     any dependence.
+#'
+#'   These are the methods of [stats::p.adjust()]. The per-imputation tables
+#'   are computed without correction.
+#' @return An object of class `latents_pooled`. Printing it shows the pooled
+#'   estimates; `summary()` gives a one-row data frame describing the
+#'   pooling (number of imputations, convergence, range of the log
+#'   likelihoods, how many fits were relabelled, largest and median fraction
+#'   of missing information); `plot()` draws the pooled estimates with their
+#'   intervals over the single imputations; `coef()`, `vcov()` and
+#'   `confint()` give the pooled estimates, their total covariance and the
+#'   pooled intervals. Its three tables are read with
+#'   `get_results(x, what = )` or `as.data.frame(x, what = )`:
+#'   * `"estimates"` (default): one row per parameter, with the columns of
+#'     [parameter_inference()] (`level`, `outcome`, `term`, `parameter`,
+#'     `estimate`, `standard_error`, `statistic`, `p_value`, `p_adjusted`,
+#'     `conf_low`, `conf_high`) plus `df` (Rubin's degrees of freedom),
+#'     `within` and `between` (the two variance components), `riv` (the
+#'     relative increase in variance due to missingness) and `fmi` (the
+#'     fraction of missing information). `statistic` and `p_value` are `NA`
+#'     where [parameter_inference()] reports no test (variances and
+#'     probabilities);
+#'   * `"imputations"`: each imputation's aligned estimates, one row per
+#'     imputation and parameter: `imputation`, `level`, `outcome`, `term`,
+#'     `parameter`, `estimate` and `standard_error`;
+#'   * `"fits"`: one row per imputation: `imputation`, `log_likelihood`,
+#'     `n_parameters`, `converged`, and `profile_order` and `group_order`,
+#'     the label permutations that aligned the fit to the first
+#'     imputation's.
+#'
+#'   `get_results(x, "all")` returns the three tables as a named list.
 #' @section Conditions:
 #'   `latents_bad_data` when `imputed` is not a list of at least two data frames
 #'   with identical columns and row counts; `latents_pooling_failed` when any
 #'   imputation's fit or inference fails (the message names the imputation and
-#'   gives the original reason); `latents_missing_package` for a `mids` object
-#'   without mice installed. Warnings from the individual fits are passed on
-#'   as they are raised.
+#'   gives the original reason), for example a fit [parameter_inference()]
+#'   refuses because a parameter is on a bound, or when the imputations'
+#'   fits do not report the same parameters; `latents_missing_package` for a
+#'   `mids` object without mice installed. Warnings from the individual fits
+#'   are passed on as they are raised.
 #' @examples
 #' set.seed(1)
 #' # Illustrative completed data sets for demonstrating the pooling interface.

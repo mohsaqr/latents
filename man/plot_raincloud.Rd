@@ -2,25 +2,58 @@
 % Please edit documentation in R/wildcards.R
 \name{plot_raincloud}
 \alias{plot_raincloud}
-\title{Distribution of each indicator by profile}
+\title{Plot the distribution of each continuous indicator in each profile as a
+density, its quartiles and the points}
 \usage{
 plot_raincloud(x, main = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{A profile or class fit with continuous indicators.}
+\item{x}{One of:
+\itemize{
+\item a profile fit from \code{\link[=lpa]{lpa()}} or \code{\link[=multilpa]{multilpa()}}, with or without
+covariates, that has at least one continuous indicator and was fitted
+without centering or scaling;
+\item a \code{\link[=diagnostics]{diagnostics()}} result, which is drawn from the fit it checked.
+}}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot. \code{NULL} (default)
+keeps the view's own text.}
 }
 \value{
 A ggplot object.
-An object with nothing to draw raises \code{latents_nothing_to_plot},
-naming the plot functions that apply; an object the package did not
-return raises \code{latents_not_a_fit}.
+
+Errors:
+\itemize{
+\item \code{latents_nothing_to_plot} when the package returned \code{x} but this
+function has no plot of it: a fit without continuous indicators (a
+latent class fit), a centred or scaled fit, a transition fit, an
+additive or cross-level fit, a mixture regression, a growth mixture or
+an enumeration grid. For an object of the wrong kind, the message names
+the plot functions that apply to it;
+\item \code{latents_not_a_fit} when \code{x} is not a fit, grid or other result of the
+package, for example a data frame;
+\item \code{latents_missing_package} when ggplot2 is not installed.
+}
 }
 \description{
-Each continuous indicator's distribution by assigned profile: density,
-box and the observations.
+\code{plot_raincloud()} plots the observed values of each continuous indicator,
+split by profile: a density, a line over the middle half of the values (first
+to third quartile) with a point at the median, and every case as a point.
+}
+\details{
+There is one panel per continuous indicator, each with its own x-axis in
+the indicator's units. The rows of a panel are the profiles, the largest
+at the top, each in its own colour. For each profile the panel shows the
+density of the indicator as a filled curve, the interquartile range as a
+thick line with a white point at the median, and each case as a small
+point below. A case counts for its most likely profile.
+
+The view draws the stored data of the fit. A fit with person or grand
+centering or scaling is refused, because its stored data are not on the
+scale of the model. Transition fits are refused as well.
+
+\code{plot_profiles(x, what = "raincloud", scale = "standardized")} draws the
+same view in standard deviations.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -30,5 +63,6 @@ plot_raincloud(fit)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=plot_parallel]{plot_parallel()}}, \code{\link[=plot_pairs]{plot_pairs()}}, \code{\link[=plot_profiles]{plot_profiles()}}.
+\code{\link[=plot_parallel]{plot_parallel()}} and \code{\link[=plot_pairs]{plot_pairs()}} for the other views of the
+cases; \code{\link[=plot_profiles]{plot_profiles()}} for the profile means.
 }

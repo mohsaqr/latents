@@ -2,7 +2,8 @@
 % Please edit documentation in R/accessors.R
 \name{starting_values}
 \alias{starting_values}
-\title{Extract starting values for a subsequent fit}
+\title{Get the estimates of a fitted profile or class model as starting values for
+another fit}
 \usage{
 starting_values(
   x,
@@ -11,51 +12,86 @@ starting_values(
 )
 }
 \arguments{
-\item{x}{A fitted \code{multilpa} model, or a list carrying
-\code{profile_probabilities}, \code{group_probabilities}, and the measurement
-blocks the model uses: \code{means} with \code{variances} or \code{covariances} for
-continuous indicators, \code{response_probabilities} for categorical ones. An
-all-categorical model needs no Gaussian block. Other elements are
-ignored. A missing block, or a transition fit from \code{\link[=lta]{lta()}} (which takes
-no \code{start}), raises \code{latents_bad_start}; a fit with a noise
-component raises \code{latents_unsupported_noise}; anything that is not a
-list raises \code{latents_bad_argument}.}
+\item{x}{The source of the values, one of:
+\itemize{
+\item a fit from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}} or \code{\link[=multilca]{multilca()}} without
+membership covariates;
+\item a list with \code{profile_probabilities}, \code{group_probabilities} and the
+measurement blocks the model uses: \code{means} with \code{variances} or
+\code{covariances} for continuous indicators, \code{response_probabilities}
+for categorical ones (a model with only categorical indicators
+needs no \code{means}). Other elements are ignored.
+}
 
-\item{covariance}{\code{"auto"} (the default) keeps \code{covariances} when the
-object carries them, \code{"drop"} always returns the diagonal
-parameterization, and \code{"keep"} requires \code{covariances} and raises
-\code{latents_bad_start} when they are absent.}
+A fit with membership covariates and a model of another family carry
+no such blocks and raise \code{latents_bad_start}, as does a transition fit
+from \code{\link[=lta]{lta()}}, which takes no \code{start}.}
 
-\item{what}{\code{"all"} (the default) returns the measurement and mixing
-blocks. \code{"measurement"} omits \code{profile_probabilities} and
-\code{group_probabilities}, which are sized for the model that produced them;
-use it with \code{fixed} in \code{\link[=multilpa]{multilpa()}} for a staged fit that changes the
-number of group classes.}
+\item{covariance}{How the within-profile covariances are returned:
+\itemize{
+\item \code{"auto"} (default): \code{covariances} when \code{x} has them (a fit with a
+full covariance structure), otherwise \code{variances};
+\item \code{"drop"}: always \code{variances}, the diagonal form;
+\item \code{"keep"}: \code{covariances}, raising \code{latents_bad_start} when \code{x} has
+none.
+}}
+
+\item{what}{Which blocks to return:
+\itemize{
+\item \code{"all"} (default): the measurement blocks and the mixing blocks
+(\code{profile_probabilities} and \code{group_probabilities});
+\item \code{"measurement"}: the measurement blocks only. The mixing blocks are
+sized for the model that produced them, so leave them out for a
+refit with another number of group classes, together with \code{fixed}
+in \code{\link[=multilpa]{multilpa()}}.
+}}
 }
 \value{
-An object of class \code{multilpa_start}: the list \code{\link[=multilpa]{multilpa()}} accepts
-as \code{start}, with elements \code{means}, \code{variances}, \code{profile_probabilities}
-and \code{group_probabilities}. When covariances are returned, \code{covariances}
-replaces \code{variances}; when the object carries a categorical measurement
-model, \code{response_probabilities} is added. \code{what = "measurement"} drops
-\code{profile_probabilities} and \code{group_probabilities}. The Gaussian blocks
-are unnamed and indexed by position; \code{\link[=as.data.frame]{as.data.frame()}} returns them as a
-labelled table. \code{response_probabilities} keeps each indicator's name and
-each block's category names, and \code{\link[=multilpa]{multilpa()}} matches the blocks by these
-labels, so a fit whose categorical indicators or categories do not match
-raises \code{latents_bad_start}. The object can be passed directly as \code{start}.
+An object of class \code{multilpa_start}: the list that \code{\link[=multilpa]{multilpa()}}
+accepts as \code{start}, which can be passed on as it is. Its elements:
+\itemize{
+\item \code{means}: a matrix, profiles by continuous indicators;
+\item \code{variances}: a matrix of the same shape; or, when covariances are
+returned, \code{covariances} in its place: an array, indicators by
+indicators by profiles;
+\item \code{profile_probabilities}: a matrix, group classes by profiles, and
+\code{group_probabilities}: a vector with one value per group class.
+Both are left out under \code{what = "measurement"};
+\item \code{response_probabilities}: for a model with categorical indicators,
+a list with one matrix per indicator, profiles by categories.
+}
+
+The Gaussian blocks are unnamed and matched by position.
+\code{response_probabilities} keeps the indicator and category names, and
+\code{\link[=multilpa]{multilpa()}} matches its blocks by them.
+
+Printing the object summarises the blocks. \code{as.data.frame()} returns
+the means and variances as a table, one row per profile and
+indicator, and \code{\link[=get_results]{get_results()}} the tables \code{"profiles"}, \code{"responses"},
+\code{"profile_probabilities"} and \code{"covariances"}.
+
+Conditions raised:
+\itemize{
+\item \code{latents_bad_start}: \code{x} lacks a block that is needed, is a
+transition fit, or has no covariances under \code{covariance = "keep"}.
+\code{\link[=multilpa]{multilpa()}} raises the same class for a \code{start} whose categorical
+indicators or categories do not match the model;
+\item \code{latents_unsupported_noise}: \code{x} is a fit with a noise component;
+\item \code{latents_bad_argument}: \code{x} is not a list.
+}
 }
 \description{
-Extract parameter values from a fitted model for use as starting values in
-a subsequent \code{\link[=multilpa]{multilpa()}} fit. Measurement parameters can be extracted
-separately when membership probabilities should be re-estimated. Supplying
-starting values does not hold parameters fixed; use the fitting function's
-\code{fixed} argument to impose those constraints.
+\code{starting_values()} returns the parameter estimates of a fitted profile or
+class model in the form \code{\link[=multilpa]{multilpa()}} accepts as \code{start}, so that a second fit
+begins from the first one's solution. The measurement parameters can be taken
+alone, for a refit that estimates the class probabilities anew. Starting
+values are where the estimation begins, not constraints: to hold parameters
+fixed, use the \code{fixed} argument of the fitting function.
 }
 \details{
-This is an advanced utility for controlled refitting and selective
-parameter constraints. Required blocks are checked during extraction;
-further numerical and model-specific validation occurs during fitting.
+This is a utility for controlled refitting. \code{starting_values()} checks
+that the blocks it needs are present; the fitting function checks their
+dimensions and values.
 }
 \examples{
 set.seed(7)
@@ -64,12 +100,12 @@ example_data <- data.frame(
   score_a = rnorm(120), score_b = rnorm(120)
 )
 fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-                  n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+                n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 starting_values(fit)
 as.data.frame(starting_values(fit))
 refit <- multilpa(example_data, c("score_a", "score_b"), "school",
-                    n_profiles = 2, n_group_classes = 1, n_starts = 1,
-                    start = starting_values(fit))
+                  n_profiles = 2, n_group_classes = 1, n_starts = 1,
+                  start = starting_values(fit))
 logLik(refit)
 }
 \seealso{

@@ -1,17 +1,19 @@
-#' Descriptive statistics and intraclass correlations of model variables
+#' Describe each variable of a data frame or a fitted model, with its variation
+#' within and between groups
 #'
 #' @description
-#' `descriptives()` summarizes the characteristics of variables used in latent
-#' profile and class analyses. It supports inspection of variability, observed
-#' ranges, and missingness before model estimation, as well as descriptive
-#' comparisons across groups.
+#' `descriptives()` describes each variable of a data frame, or each indicator
+#' of a fitted model: the number of observed and missing values, the mean,
+#' standard deviation, minimum and maximum of a numeric variable, and the number
+#' of distinct values. When the rows are nested in groups it adds the number of
+#' groups, the standard deviations within and between groups, and the intraclass
+#' correlation, the share of a variable's variance that lies between groups.
 #'
-#' For numeric variables, the function reports measures of central tendency
-#' and dispersion. When a grouping identifier is supplied, it also estimates
-#' intraclass correlations to describe clustering within groups. Summaries can
-#' be calculated for the full dataset or separately by an observed grouping
-#' variable. For supported fitted models, variables can also be summarized by
-#' assigned profile or group class.
+#' The table can be computed for the whole data set, or once per level of an
+#' observed grouping column (`by`). For a fitted model it can be computed
+#' once per assigned profile or group class. Use it to inspect variability,
+#' ranges and missingness before fitting, and to describe the observations
+#' assigned to each class afterwards.
 #'
 #' @details
 #' Summaries by fitted class use assigned membership and do not incorporate
@@ -28,22 +30,44 @@
 #' differ in other variables, in profile prevalence, or in other features of
 #' the distributions.
 #'
-#' @param x A data frame, or a profile, class or transition fit (from
-#'   [lpa()], [lca()], [multilpa()], [multilca()], or [lta()] with
-#'   time-homogeneous transitions), whose own `vars` and `id` are then used. A
-#'   single-level fit has no groups, so its table has no `n_groups` or `icc`.
-#'   Anything else, including a fit of another family, raises
-#'   `latents_not_a_fit`; describe the data frame it was fitted to instead.
-#' @param vars Character vector of column names to describe; repeated names
-#'   are described once. Columns must be vectors: matrix-valued columns raise
-#'   `latents_bad_data`. For a data frame, defaults to every numeric column
-#'   other than `id` and `by`.
-#' @param id Optional. The column identifying the groups the rows are nested
-#'   in. Supplying it adds `n_groups` and `icc`.
-#' @param by Optional. On a fitted model, `"profile"` or `"group_class"`; on a
-#'   data frame, a column name. Each variable is then described once per level
-#'   of it. Rows whose stratifier is `NA` form their own stratum, labelled `NA`
-#'   and reported last, so every input row is counted in exactly one stratum.
+#' @param x What to describe:
+#'   * a data frame, with `vars`, `id` and `by` naming its columns;
+#'   * a profile or class fit from [lpa()], [lca()], [multilpa()] or
+#'     [multilca()], with or without membership covariates;
+#'   * an [lta()] fit with its default homogeneous first-order transitions,
+#'     invariant measurement and continuous or categorical indicators.
+#'
+#'   A fit is described on its own indicators and group identifier, so
+#'   `vars` and `id` are not given with it. A single-level fit has no
+#'   groups, so its table has no `n_groups`, `sd_within`, `sd_between` or
+#'   `icc`. Anything else raises
+#'   `latents_not_a_fit`, including the other `multilpa()` families
+#'   (additive, dispersion and cross-level), an `lta()` fit with ordinal or
+#'   count indicators, covariates, occasion-specific or second-order
+#'   transitions, occasion-specific measurement, a stayer class or weights,
+#'   and a fit from [mixture_regression()]; describe the data frame it was
+#'   fitted to instead.
+#' @param vars For a data frame: character vector of column names to
+#'   describe; repeated names are described once. `NULL` (default) takes
+#'   every numeric column other than `id` and `by`. Columns must be vectors:
+#'   matrix-valued columns raise `latents_bad_data`.
+#' @param id For a data frame: optional name of the column identifying the
+#'   groups the rows are nested in (for example the person in repeated
+#'   measures). Supplying it adds `n_groups`, `sd_within`, `sd_between` and
+#'   `icc`.
+#' @param by Optional stratifier; each variable is then described once per
+#'   level of it. `NULL` (default) describes all rows together.
+#'   * On a data frame: the name of one of its columns.
+#'   * On a fitted model, `"profile"`: the profile (class) each observation
+#'     is assigned to.
+#'   * On a fitted model, `"group_class"`: the group class the observation's
+#'     group is assigned to; a single-level fit has one group class, so one
+#'     stratum.
+#'
+#'   Rows whose stratifier is `NA` form their own stratum, labelled `NA`
+#'   and reported last, so every input row is counted in exactly one
+#'   stratum. On a fitted model any other value raises
+#'   `latents_bad_argument`.
 #' @param ... Not used. For a data frame, any further argument raises a
 #'   `latents_unused_argument` warning; for a fit, it raises
 #'   `latents_bad_argument`.
@@ -53,23 +77,47 @@
 #'     \item{`variable`}{character: the column described.}
 #'     \item{`n`}{integer: observations with a value.}
 #'     \item{`n_missing`}{integer: observations without one.}
-#'     \item{`mean`,`sd`,`min`,`max`}{numeric; `NA_real_` for a variable
-#'       that is not numeric.}
+#'     \item{`mean`,`sd`,`min`,`max`}{numeric: the mean, standard deviation,
+#'       minimum and maximum of the observed values; `NA_real_` for a
+#'       variable that is not numeric, such as a categorical indicator.}
 #'     \item{`n_distinct`}{integer: distinct observed values.}
-#'     \item{`n_groups`,`icc`}{present only when `id` is known. `icc` is the
-#'       one-way random-effects estimate. It can be negative when the
-#'       between-group mean square is smaller than the within-group mean
-#'       square; this does not represent a negative population variance.
-#'       Rows with a missing group identifier contribute to neither statistic.}
+#'     \item{`n_groups`}{integer, present only when `id` is known: the groups
+#'       with an observed value of the variable.}
+#'     \item{`sd_within`}{numeric, present only when `id` is known: the
+#'       pooled within-group standard deviation, how much the values vary
+#'       around their own group's mean (the square root of the within-group
+#'       mean square). `NA` when no group holds more than one value, and for
+#'       a variable that is not numeric.}
+#'     \item{`sd_between`}{numeric, present only when `id` is known: the
+#'       standard deviation of the group means, each group counted once, how
+#'       much the groups differ from each other. `NA` with fewer than two
+#'       groups, and for a variable that is not numeric.}
+#'     \item{`icc`}{numeric, present only when `id` is known: the one-way
+#'       random-effects intraclass correlation,
+#'       `(MSB - MSW) / (MSB + (n0 - 1) * MSW)`, from the between-group and
+#'       within-group mean squares of a one-way analysis of variance, with
+#'       `n0` the average group size corrected for unequal sizes. It can be
+#'       negative when the between-group mean square is smaller than the
+#'       within-group mean square; this does not represent a negative
+#'       population variance. It is `NA` for a variable that is not numeric,
+#'       with fewer than two groups, with no group holding more than one
+#'       value, or constant over all rows. Rows with a missing group
+#'       identifier contribute to neither statistic.}
 #'   }
 #'   With `by`, a first column named after the stratifier holds each stratum's
 #'   value (`NA` for the stratum of missing values). For every variable,
 #'   `n + n_missing` summed over the strata equals the number of input rows.
 #'   When describing a fit by `"profile"` or `"group_class"`, the model's
 #'   assignment is used as the stratifier without replacing an indicator of
-#'   the same name. A `by` named like one of the summary's own columns raises
-#'   `latents_bad_data`. Describing no variables raises
-#'   `latents_nothing_to_describe`.
+#'   the same name.
+#'
+#'   Errors: `latents_not_a_fit` for an `x` that is neither a data frame
+#'   nor a supported fit; `latents_bad_data` for a `vars` name the data
+#'   frame does not have, a matrix-valued column, or a `by` named like one
+#'   of the summary's own columns; `latents_nothing_to_describe` when there
+#'   are no variables to describe; `latents_bad_argument` for any other
+#'   invalid argument. Describing a fit with sampling weights warns with
+#'   `latents_unweighted_descriptives`.
 #' @seealso [multilpa()] for model estimation and [diagnostics()] for
 #'   diagnostics of a fitted model.
 #' @examples
@@ -235,7 +283,8 @@ descriptives.multilpa_covariates <-descriptives.multilpa
 #' @noRd
 .multilpa_describe_by <- function(data, vars, id, by_values, by_label) {
   summary_columns <- c("variable", "n", "n_missing", "mean", "sd", "min", "max",
-                       "n_distinct", "n_groups", "icc")
+                       "n_distinct", "n_groups", "sd_within", "sd_between",
+                       "icc")
   stopifnot(
     "`vars` must be column names of the frame being described" =
       all(vars %in% names(data)),
@@ -307,6 +356,10 @@ descriptives.multilpa_covariates <-descriptives.multilpa
     grouped <- !is.na(values) & !is.na(data[[id]])
     groups <- data[[id]][grouped]
     row$n_groups <- length(unique(groups))
+    spread <- if (is.numeric(values)) .multilpa_level_sds(values[grouped], groups) else
+      c(within = NA_real_, between = NA_real_)
+    row$sd_within <- spread[["within"]]
+    row$sd_between <- spread[["between"]]
     row$icc <- if (is.numeric(values)) .multilpa_icc(values[grouped], groups) else NA_real_
     row
   })
@@ -351,6 +404,32 @@ descriptives.multilpa_covariates <-descriptives.multilpa
 #' @param groups The group each observation belongs to.
 #' @return A single number, or `NA_real_` where the design cannot support one.
 #' @noRd
+#' Within-group and between-group standard deviations
+#'
+#' The within-group SD is the square root of the pooled within-group
+#' variance, the within-group mean square of a one-way analysis of variance:
+#' each value's deviation from its own group's mean, summed over groups and
+#' divided by n - k. The between-group SD is the standard deviation of the
+#' group means, each group counted once whatever its size.
+#' @param values Numeric values, none missing.
+#' @param groups The group of each value, none missing.
+#' @return A named numeric vector, `within` and `between`; `NA` where
+#'   undefined (no group with two values for `within`, fewer than two groups
+#'   for `between`).
+#' @noRd
+.multilpa_level_sds <- function(values, groups) {
+  stopifnot("one group per value" = length(values) == length(groups),
+            "no missing values or groups" = !anyNA(values) && !anyNA(groups))
+  index <- match(groups, unique(groups))
+  k <- max(c(0L, index))
+  n <- length(values)
+  if (k == 0L) return(c(within = NA_real_, between = NA_real_))
+  group_means <- vapply(split(values, index), mean, numeric(1))
+  within <- if (n > k) sqrt(sum((values - group_means[index])^2) / (n - k)) else NA_real_
+  between <- if (k >= 2L) stats::sd(group_means) else NA_real_
+  c(within = within, between = between)
+}
+
 .multilpa_icc <- function(values, groups) {
   index <- match(groups, unique(groups))
   sizes <- tabulate(index)

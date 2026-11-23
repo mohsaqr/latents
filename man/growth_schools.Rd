@@ -5,15 +5,16 @@
 \alias{growth_schools}
 \title{Reading growth of students nested in schools}
 \format{
-A data frame with 2780 rows (600 students, 40 schools) and 7
-columns:
+A data frame with 2780 rows (600 students in 40 schools, one row
+per student and observed occasion, 2 to 5 occasions each, no missing
+values) and 7 columns:
 \describe{
 \item{school}{Integer school identifier, 1 to 40. Pass it as \code{cluster}.}
 \item{student}{Integer student identifier, 1 to 600. Pass it as \code{id}.}
 \item{wave}{Integer test occasion, 0 to 4. The time variable.}
-\item{score}{Reading score.}
-\item{programme}{Standardized school support programme, constant within
-school.}
+\item{score}{Numeric reading score, 35.9 to 70.5.}
+\item{programme}{Numeric, standardized school support programme,
+constant within school.}
 \item{school_type}{Factor, \code{"supportive"} or \code{"struggling"}: the school's
 generating class; retained for assessing class recovery.}
 \item{trajectory}{Factor, \code{"improving"} or \code{"plateauing"}: the student's

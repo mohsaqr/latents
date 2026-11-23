@@ -43,6 +43,8 @@ The \code{family} argument of \code{multilpa} provides additional model
 families documented on that function's help page.
 \code{\link{fit_staged}} estimates a two-level model with measurement
 parameters fixed at their first-stage estimates.
+\code{\link{descriptives}} describes the indicators, with their intraclass
+correlations, before a model is fitted.
 }
 \section{Model evaluation and inference}{
 \code{\link{enumerate_classes}}, \code{\link{enumerate_lpa}},
@@ -58,7 +60,9 @@ provides parameter estimates, standard errors, and intervals for supported
 model families. \code{\link{three_step}} and \code{\link{r3step}}
 relate external variables to latent membership with correction for
 classification error. \code{\link{pool_imputations}} combines compatible
-analyses across imputed datasets.
+analyses across imputed datasets. \code{\link{align_labels}} renumbers the
+profiles of one fit to match another's, so that fits to different samples
+or occasions can be read side by side.
 }
 \section{Interpretation and assumptions}{
 The measurement distribution, conditional independence assumptions,

@@ -100,7 +100,9 @@
     # prevalence that plot_prevalence() draws for a profile model.
     rows("pooled", c("plot_profiles", "plot_prevalence"), c("lines", ""),
          c("measurement", "profile")),
-    rows("general_transitions", "plot_transitions", "", NA_character_))
+    rows("general_transitions",
+         c("plot_transitions", "plot_profiles", "plot_sequences"),
+         c("", "lines", ""), c("transitions", "profiles", "sequences")))
 }
 
 #' The view a named plot function draws for a fit, or `NULL`
@@ -319,49 +321,64 @@
   .latents_draw_named(x, verb, what, arguments, uses[[what]], warn_unused = TRUE)
 }
 
-#' Profile means across the indicators
+#' Plot how the profiles differ on the indicators: each profile's mean, or
+#' another summary, on every indicator
 #'
-#' One line per profile (class), joining its mean, median or mode of each
-#' indicator, with 95% intervals when the fit has standard errors. On a
-#' growth mixture or a regression that classifies persons it draws the class
-#' trajectories, on another mixture regression the fitted lines, on an
-#' additive fit the group-class means, on a cross-level fit the profiles and
-#' on pooled imputations the pooled measurement parameters.
+#' `plot_profiles()` plots how the profiles (classes) of a fitted model differ
+#' on its indicators: by default one line per profile through its mean of each
+#' indicator, with 95% intervals. `what` chooses another view of them.
 #'
-#' @param x A fitted model of any family.
-#' @param statistic `"mean"` (default), `"median"` or `"mode"`; they coincide
-#'   for continuous indicators. For categorical ones the fitted probabilities
-#'   are summarised on the numeric category scale, without intervals.
-#' @param scale `"raw"` (default) keeps each indicator in its own units;
-#'   `"standardized"` divides its deviation from the observed mean by the
-#'   observed standard deviation.
+#' @param x A fitted model, or pooled imputations. What each draws:
+#'   * a profile or class fit ([lpa()], [lca()], [multilpa()], [multilca()]):
+#'     every view it has the indicators for;
+#'   * an [lta()] fit: `"lines"`, and `"bars"` and `"heatmap"` when its class
+#'     is `multilpa_transitions`; nothing when it has only count indicators
+#'     or `measurement = "occasion"`;
+#'   * a growth mixture or mixture regression: `"lines"` only, each class's
+#'     trajectory over time or fitted line over the first numeric predictor;
+#'   * an additive or cross-level fit: `"lines"` only;
+#'   * pooled imputations ([pool_imputations()]): `"lines"` only, the pooled
+#'     means with their intervals beside each imputation's estimates.
+#' @param statistic What `"lines"` joins. It matters only for a profile, class
+#'   or `multilpa_lta` fit with only categorical or ordinal indicators:
+#'   * `"mean"` (default): the probability-weighted category score;
+#'   * `"median"`: the first category where cumulative probability reaches 0.5;
+#'   * `"mode"`: the most probable category.
+#' @param scale `"raw"` (default) draws each indicator in its own units;
+#'   `"standardized"` in observed standard deviations from the observed mean
+#'   (continuous indicators only). For `"lines"`, `"bars"` and `"raincloud"`
+#'   of profile, class and `multilpa_transitions` fits.
 #' @param intervals `TRUE` (default) draws the 95% intervals of
-#'   [parameter_inference()] when the fit has standard errors; otherwise the
-#'   subtitle says why there are none.
-#' @param labels `TRUE` (default) labels each profile directly; `FALSE` uses
-#'   a legend.
-#' @param data The data the model was fitted to, used only for the intervals.
-#'   `NULL` (default) uses the data stored in the fit.
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
-#' @param what `"lines"` (default). The other values draw the view of the
-#'   function with that name ([plot_bars()], [plot_heatmap()],
-#'   [plot_raincloud()], [plot_parallel()], [plot_pairs()]); `"all"` draws
-#'   every view the fit supports, as a list.
-#' @return A ggplot object; a `latents_plots` list for `what = "all"`. A fit
-#'   the function has no view for raises `latents_nothing_to_plot`, naming
-#'   the plot functions that apply; an argument no view of the fit takes
-#'   (for example `scale` on a growth mixture) raises `latents_bad_argument`,
-#'   and one that belongs to another view of the same fit is dropped with
-#'   a warning.
-#' @seealso [plot_responses()] for categorical indicators; [plot_bars()],
-#'   [plot_heatmap()], [plot_raincloud()], [plot_parallel()], [plot_pairs()];
-#'   [plot_all()].
+#'   [parameter_inference()] on `"lines"` and `"bars"` of continuous indicators
+#'   (the subtitle says why a fit has none); `FALSE` draws none.
+#' @param labels `TRUE` (default) writes each profile's name at the end of
+#'   its line; `FALSE` uses a legend instead. For `what = "lines"`.
+#' @param data The data frame the model was fitted to, used only to compute
+#'   the intervals. `NULL` (default) uses the data stored in the fit.
+#' @param main,subtitle Title and subtitle of the plot, each one string;
+#'   `NULL` (default) keeps the view's own.
+#' @param what Which view to draw. The linked pages say what a view needs:
+#'   * `"lines"` (default): each profile's mean of every indicator, joined;
+#'   * `"bars"`: the same means as bars ([plot_bars()]);
+#'   * `"heatmap"`: the means in standard deviations ([plot_heatmap()]);
+#'   * `"raincloud"`: each indicator's distribution ([plot_raincloud()]);
+#'   * `"parallel"`: every case as a line, by profile ([plot_parallel()]);
+#'   * `"pairs"`: the cases in every pair of indicators ([plot_pairs()]);
+#'   * `"all"`: every view the fit supports, as a list.
+#' @return A ggplot object; for `what = "all"` a `latents_plots` list of the
+#'   views the fit can draw, named by view (a message names the others).
+#'   Errors: `latents_nothing_to_plot` (the fit has no such view),
+#'   `latents_no_continuous` (too few continuous indicators),
+#'   `latents_bad_argument` (an argument no view of the fit takes, or
+#'   `"lines"` for category labels that are not numbers), `latents_not_a_fit`.
+#'   An argument of another view gives a `latents_unused_argument` warning.
+#' @seealso [plot_responses()] for categorical indicators; [plot_all()].
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 #'            n_starts = 2, seed = 1)
 #' plot_profiles(fit)
 #' plot_profiles(fit, scale = "standardized")
+#' plot_profiles(fit, what = "bars")
 #' @export
 plot_profiles <- function(x, statistic = c("mean", "median", "mode"),
                           scale = c("raw", "standardized"), intervals = TRUE,
@@ -387,23 +404,53 @@ plot_profiles <- function(x, statistic = c("mean", "median", "mode"),
     .multilpa_supplied_arguments(match.call(), environment()), "plot_profiles")
 }
 
-#' Response probabilities of the categorical indicators
+#' Plot each profile's probability of one response category on every categorical
+#' or ordinal indicator
 #'
-#' One line per profile (class), joining the probability of one category of
-#' each categorical indicator, with 95% intervals (formed on the logit scale)
-#' when the fit has standard errors.
+#' `plot_responses()` plots how likely each profile (class) is to give one
+#' response category. There is one line per profile, joining the probability of
+#' the chosen category on every categorical or ordinal indicator, on a 0 to 1
+#' axis. The categorical indicators carry 95% intervals, formed on the logit
+#' scale, when the fit has standard errors.
 #'
 #' @inheritParams plot_profiles
-#' @param category The category drawn: `"last"` (default), `"first"`, or one
-#'   label or index.
-#' @return A ggplot object. A fit without categorical indicators raises
-#'   `latents_no_categorical`; a `category` no indicator has raises
-#'   `latents_unknown_category`.
-#' @seealso [plot_profiles()] for continuous indicators; [plot_heatmap()].
+#' @param x A profile, class or transition fit with categorical or ordinal
+#'   indicators: from [lca()], [multilca()], [lpa()] or [multilpa()] (with
+#'   or without membership covariates), or from [lta()] with categorical
+#'   indicators. An [lta()] fit of class `multilpa_lta` (ordinal or count
+#'   indicators, covariates, weights, a stayer class, second-order or
+#'   occasion-specific transitions, occasion-specific measurement) is not
+#'   drawn: read its probabilities with `get_results(x, "responses")` or
+#'   `get_results(x, "ordinal")`.
+#' @param category Which category's probability is drawn:
+#'   * `"last"` (default): the last category of each indicator, which for a
+#'     no/yes indicator is the probability of "yes";
+#'   * `"first"`: the first category of each indicator;
+#'   * one category label (such as `"yes"`) or one whole-number position
+#'     (such as `2`), which every indicator must have.
+#' @param intervals `TRUE` (default) draws the 95% intervals of
+#'   [parameter_inference()]; a fit that has no standard errors is drawn
+#'   without them, and the subtitle says why. A probability estimated at 0
+#'   or 1 is held there and has no interval. `FALSE` draws no intervals and
+#'   does not compute them.
+#' @param labels `TRUE` (default) writes each profile's name at the end of
+#'   its line; `FALSE` uses a legend instead.
+#' @return A ggplot object, which draws the plot when printed. Conditions
+#'   raised:
+#'   * `latents_no_categorical`: a profile, class or transition fit without
+#'     categorical or ordinal indicators;
+#'   * `latents_unknown_category`: `category` is not a category of every
+#'     indicator;
+#'   * `latents_nothing_to_plot`: a model of another family, which has no
+#'     response view; the message names the plot functions that apply;
+#'   * `latents_not_a_fit`: `x` is not a fitted model.
+#' @seealso [plot_profiles()] for continuous indicators; [plot_heatmap()]
+#'   for every category at once.
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- lca(student_esm, c("time_with_friends", "on_social_media", "sports"),
 #'            n_classes = 2, n_starts = 2, seed = 1)
 #' plot_responses(fit)
+#' plot_responses(fit, category = "no")
 #' @export
 plot_responses <- function(x, category = "last", intervals = TRUE,
                            labels = TRUE, data = NULL, main = NULL,
@@ -413,18 +460,47 @@ plot_responses <- function(x, category = "last", intervals = TRUE,
                       .multilpa_supplied_arguments(match.call(), environment()))
 }
 
-#' Assigned profiles over the occasions
+#' Plot each unit's sequence of assigned profiles across the occasions as a row
+#' of coloured cells
 #'
-#' One row per group (person) and one cell per occasion, coloured by the
-#' profile assigned at that occasion, for a fit with `time`.
+#' `plot_sequences()` plots each group's (person's) sequence of profiles as a
+#' row of coloured cells: one row per group, one cell per occasion, coloured by
+#' the profile the observation at that occasion is assigned to (its most likely
+#' one). Within a block the rows are sorted by each group's most frequent
+#' profile, so groups with similar sequences sit together. An occasion at which
+#' nothing was observed is shown grey, and one absent from the data is left
+#' blank.
 #'
 #' @inheritParams plot_profiles
-#' @param labels `TRUE` (default) groups the rows by group class under
-#'   labelled strips; `FALSE` does not.
-#' @param cell_labels `TRUE` (default) prints the profile in each cell when
-#'   the cells are large enough for the text.
-#' @return A ggplot object. A fit without occasions raises `latents_no_time`.
-#' @seealso [plot_transitions()] for the transition matrix.
+#' @param x A fit with ordered occasions:
+#'   * a transition fit from [lta()], of either class
+#'     (`multilpa_transitions` or `multilpa_lta`), except one with
+#'     `measurement = "occasion"`, whose profiles differ by occasion;
+#'   * a profile or class fit from [lpa()], [lca()], [multilpa()] or
+#'     [multilca()] (with or without membership covariates) made with
+#'     `time`.
+#' @param labels `TRUE` (default) puts the rows in blocks under labelled
+#'   strips: one block per group class when the fit has two or more group
+#'   classes, otherwise one per most frequent profile. `FALSE` draws the
+#'   rows in the same order as one block without strips.
+#' @param cell_labels `TRUE` (default) prints the profile number in each
+#'   cell when the grid has at most 60 rows and 40 occasions; a larger grid
+#'   shows the profiles by colour, with a dash still marking an occasion that
+#'   observed nothing when the grid also has noise or absent occasions.
+#'   `FALSE` never prints the numbers.
+#' @return A ggplot object, which draws the plot when printed. Conditions
+#'   raised:
+#'   * `latents_no_time`: a profile or class fit made without `time`;
+#'   * `latents_nothing_to_plot`: a model with no sequence view (an
+#'     [lta()] fit with `measurement = "occasion"`, a growth mixture, a
+#'     mixture regression, an additive or cross-level fit, pooled
+#'     imputations);
+#'   * `latents_not_a_fit`: `x` is not a fitted model.
+#' @seealso [plot_transitions()] for the transition matrix. The sequences as
+#'   a table: `get_results(x, "sequences")` for a profile or class model and
+#'   a transition fit of class `multilpa_transitions`;
+#'   `get_results(x, "assignments")` (one row per observation, with its
+#'   profile) for a general transition fit of class `multilpa_lta`.
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- lta(course_engagement, c("browse", "lectures", "forum_read"),
 #'            id = "student", n_profiles = 2, time = "sequence",
@@ -438,17 +514,39 @@ plot_sequences <- function(x, labels = TRUE, cell_labels = TRUE, main = NULL,
                       .multilpa_supplied_arguments(match.call(), environment()))
 }
 
-#' Profile prevalence within each group class
+#' Plot how common each profile is within each group class of a two-level model
 #'
-#' The probability of each profile within each group class, the quantity a
-#' two-level model adds to a one-level one. On a cross-level fit it draws
-#' the profile composition of each group class and on pooled imputations the
-#' pooled profile probabilities beside each imputation's.
+#' `plot_prevalence()` plots how common each profile is in each group class: the
+#' quantity a two-level model adds to a one-level one. There is one line per
+#' group class, labelled with the class's share of the groups, joining the
+#' probability of each profile within that class.
 #'
 #' @inheritParams plot_profiles
-#' @return A ggplot object; a fit with one group class is drawn too. A
-#'   covariate model has no view and raises `latents_nothing_to_plot`.
-#' @seealso [plot_sizes()] for the class sizes at each level.
+#' @param x One of:
+#'   * a profile or class fit from [lpa()], [lca()], [multilpa()] or
+#'     [multilca()] without membership covariates: the profile
+#'     probabilities within each group class. A fit with one group class
+#'     (or none) is drawn as a single line, the overall profile shares;
+#'   * a cross-level fit: the share of each profile among the members of
+#'     each group class, as stacked bars;
+#'   * pooled imputations ([pool_imputations()]): the pooled profile-level
+#'     parameters with their intervals, beside each imputation's. They are
+#'     the profile probabilities within each group class, or the membership
+#'     coefficients of a model with profile covariates.
+#' @param labels `TRUE` (default) writes each group class's name at the end
+#'   of its line; `FALSE` uses a legend instead. For a profile or class
+#'   fit; a cross-level fit or pooled imputations raise
+#'   `latents_bad_argument` when it is given.
+#' @return A ggplot object, which draws the plot when printed. Conditions
+#'   raised:
+#'   * `latents_nothing_to_plot`: a model with no such view. A fit with
+#'     membership covariates has none because its prevalence varies with
+#'     each unit's covariates; a transition fit from [lta()], a growth
+#'     mixture, a mixture regression and an additive fit have none either.
+#'     The message names the plot functions that apply;
+#'   * `latents_not_a_fit`: `x` is not a fitted model.
+#' @seealso [plot_sizes()] for the class sizes at each level;
+#'   `get_results(x, "profile_probabilities")` for the table.
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- multilpa(course_engagement, c("browse", "lectures", "forum_read"),
 #'                 "student", n_profiles = 2, n_group_classes = 2,
@@ -461,31 +559,72 @@ plot_prevalence <- function(x, labels = TRUE, main = NULL, subtitle = NULL) {
                       .multilpa_supplied_arguments(match.call(), environment()))
 }
 
-#' Classification summaries of a fit
+#' Plot how well a fitted model separates its classes: sizes, posteriors,
+#' entropy and average posterior probabilities
 #'
-#' The four classification views of a profile, class or transition fit:
-#' effective class sizes, the posterior probability of each case's assigned
-#' class, each case's entropy and the average posterior matrix; and the same
-#' four for the groups of a fit with two or more group classes. Each view is
-#' also a function of its own that takes a fit of any family: [plot_sizes()],
-#' [plot_posteriors()], [plot_entropy()] and [plot_avepp()].
+#' `plot_diagnostics()` plots how well a fitted model separates its classes. A
+#' profile, class or transition fit has four views of how its observations are
+#' classified into profiles: the class sizes, the posterior probability of each
+#' observation's assigned profile, each observation's entropy and the average
+#' posterior matrix. A fit with two or more group classes has the same four
+#' views of how its groups are classified into group classes. Each view is also
+#' a function of its own, which takes models of the other families too:
+#' [plot_sizes()], [plot_posteriors()], [plot_entropy()] and [plot_avepp()].
 #'
 #' @inheritParams plot_profiles
-#' @param what `"all"` (default) draws every view the fit supports, as a
-#'   list; `"sizes"`, `"posteriors"`, `"entropy"` or `"avepp"` one view of
-#'   the cases; `"group_sizes"`, `"group_posteriors"`, `"group_entropy"` or
-#'   `"group_avepp"` one view of the groups.
-#' @return A ggplot object; a `latents_plots` list for `"all"`. A group view
-#'   of a fit with fewer than two group classes raises
-#'   `latents_no_group_classes`; a fit with a noise component (always one
-#'   group class) draws only `"sizes"` and refuses the other case views
-#'   with `latents_unsupported_noise`.
+#' @param x One of:
+#'   * a profile or class fit from [lpa()], [lca()], [multilpa()] or
+#'     [multilca()] (with or without membership covariates), or an [lta()]
+#'     fit of class `multilpa_transitions`: every view;
+#'   * a growth mixture or a mixture regression: `"posteriors"` only, each
+#'     unit's posterior probability of its most likely class (`"all"` then
+#'     holds that one view).
+#'
+#'   Any other model (an [lta()] fit of class `multilpa_lta`, an additive
+#'   or cross-level fit, pooled imputations) raises
+#'   `latents_nothing_to_plot`. [plot_sizes()], [plot_posteriors()],
+#'   [plot_entropy()] and [plot_avepp()] draw those fits, pooled
+#'   imputations excepted.
+#' @param what Which view to draw:
+#'   * `"all"` (default): every view the fit supports, as a list;
+#'   * `"sizes"`: the effective number of observations in each profile (the
+#'     sum of their posterior probabilities), as bars labelled with the
+#'     count and its share;
+#'   * `"posteriors"`: each observation's posterior probability of the
+#'     profile it is assigned to, one strip per profile, with chance (one
+#'     over the number of profiles) marked;
+#'   * `"entropy"`: each observation's entropy relative to a flat
+#'     posterior (0 is certain, 1 is flat), one strip per profile;
+#'   * `"avepp"`: the average posterior probability matrix: for the
+#'     observations assigned to each profile (rows), their mean posterior
+#'     probability of every profile (columns). The diagonal is the
+#'     classification accuracy;
+#'   * `"group_sizes"`, `"group_posteriors"`, `"group_entropy"`,
+#'     `"group_avepp"`: the same four views of the groups in their group
+#'     classes.
+#'
+#'   `"all"` leaves out what the fit cannot draw: the group views of a fit
+#'   with fewer than two group classes, `"posteriors"` and `"entropy"` of a
+#'   fit with one profile, and every view but `"sizes"` of a fit with a
+#'   noise component.
+#' @return A ggplot object, which draws the plot when printed; for `"all"`
+#'   a `latents_plots` list of ggplot objects named by view, which draws
+#'   every plot when printed. Conditions raised:
+#'   * `latents_no_group_classes`: a group view of a fit with fewer than
+#'     two group classes;
+#'   * `latents_unsupported_noise`: a view other than `"sizes"` of a fit
+#'     with a noise component (such a fit always has one group class);
+#'   * `latents_nothing_to_plot`: `"posteriors"` or `"entropy"` of a fit
+#'     with one profile, or a model without the view asked for; the
+#'     message names the views and plot functions that apply;
+#'   * `latents_not_a_fit`: `x` is not a fitted model.
 #' @seealso [diagnostics()] and [get_checks()] for the tables behind the
 #'   views.
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 #'            n_starts = 2, seed = 1)
 #' plot_diagnostics(fit, what = "avepp")
+#' plot_diagnostics(fit, what = "sizes")
 #' @export
 plot_diagnostics <- function(x, what = c("all", "sizes", "posteriors",
                                          "entropy", "avepp", "group_sizes",
@@ -530,17 +669,38 @@ plot_diagnostics <- function(x, what = c("all", "sizes", "posteriors",
   .gg_plots(lapply(views, \(view) view(x, main, subtitle)))
 }
 
-#' Transition probabilities between profiles
+#' Plot the estimated probability of moving from each profile to each profile
+#' between occasions
 #'
-#' The estimated transition matrix of a latent transition model: from the
-#' profile at one occasion (rows) to the profile at the next (columns), one
-#' panel per group class.
+#' `plot_transitions()` plots the estimated transition matrix of a latent
+#' transition model as a grid of tiles: the profile at one occasion in the rows,
+#' the profile at the next occasion in the columns, and in each tile the
+#' probability of that move. Each row sums to one. There is one panel per group
+#' class.
 #'
 #' @inheritParams plot_profiles
-#' @return A ggplot object. A fit without transitions raises
-#'   `latents_nothing_to_plot`.
-#' @seealso [plot_sequences()]; [get_tna()] hands the transitions to the tna
-#'   package.
+#' @param x A transition fit from [lta()], of either class:
+#'   * `multilpa_transitions` (the basic transition model: continuous or
+#'     categorical indicators and one first-order transition matrix for
+#'     all occasions): the estimated matrix of each group class, the panel
+#'     labelled with the class's share of the groups. A row with no
+#'     expected moves out of its profile is not estimated from the data,
+#'     and its label is put in parentheses;
+#'   * `multilpa_lta` (any extension of the basic model: ordinal or count
+#'     indicators, covariates, weights, a stayer class, second-order or
+#'     occasion-specific transitions, occasion-specific measurement): the
+#'     probabilities the model implies, averaged over the observed groups,
+#'     with one panel per group class and, when the transitions differ by
+#'     occasion, per occasion.
+#' @return A ggplot object, which draws the plot when printed. Conditions
+#'   raised:
+#'   * `latents_nothing_to_plot`: a model without transitions, which is
+#'     every model not fitted by [lta()], including a profile or class fit
+#'     made with `time`; the message names the plot functions that apply;
+#'   * `latents_not_a_fit`: `x` is not a fitted model.
+#' @seealso [plot_sequences()] for the assigned profiles over time;
+#'   `get_results(x, "transitions")` for the probabilities as a table;
+#'   [get_tna()] hands the transitions to the tna package.
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- lta(course_engagement, c("browse", "lectures", "forum_read"),
 #'            id = "student", n_profiles = 2, time = "sequence",
@@ -553,28 +713,30 @@ plot_transitions <- function(x, main = NULL, subtitle = NULL) {
                       .multilpa_supplied_arguments(match.call(), environment()))
 }
 
-#' How classes split as more are added
+#' Plot how the classes of each solution split or rearrange as one more class is
+#' added
 #'
-#' A clustering tree of an enumeration grid: one
-#' row per number of classes, one bar per class, and bands between the rows
-#' showing where each class's units go in the next solution. At the
-#' individual level a tree runs down the numbers of profiles (classes) at one
-#' number of group classes and one covariance structure; at the group level,
-#' down the numbers of group classes at one number of profiles. A family
-#' grid's tree compares its group classes.
+#' `plot_tree()` plots a clustering tree of an enumeration grid, which shows
+#' whether a solution with one more class splits an existing class or rearranges
+#' them all. A tree has one row per solution and one bar per class, as wide as
+#' the class's share of the units. A band between two rows shows where the units
+#' of a class go in the next solution, as wide as the share of all units the two
+#' classes have in common. Colour follows a class from row to row, and a new
+#' colour marks a class that split off.
 #'
 #' @param x An enumeration grid from [enumerate_classes()],
-#'   [enumerate_lpa()], [enumerate_lca()] or [enumerate_regressions()].
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
+#'   [enumerate_lpa()], [enumerate_lca()] or [enumerate_regressions()]. A
+#'   family grid (`enumerate_classes(family = )`) has group classes only,
+#'   so its trees are of the groups.
+#' @param main,subtitle Title and subtitle of the plot, each one string;
+#'   `NULL` (default) keeps the view's own.
 #' @param n_group_classes,n_profiles,model Which trees and rows to draw;
 #'   `NULL` (default) keeps every converged candidate. At the individual
 #'   level `n_group_classes` and `model` choose the trees and `n_profiles`
 #'   the rows; at the group level `n_profiles` and `model` choose the trees
 #'   and `n_group_classes` the rows. A single count for the rows compares
-#'   that level's solutions across the trees instead:
-#'   `plot_tree(x, n_profiles = 4, n_group_classes = c(2, 5))` draws the
-#'   four-profile solution at two and at five group classes as two rows.
+#'   that solution across the trees instead, as the rows of one tree:
+#'   `plot_tree(x, n_profiles = 4, n_group_classes = c(2, 5))`.
 #' @param candidates Two or more candidate names, drawn as the rows of one
 #'   tree in the order given. Not with `n_group_classes`, `n_profiles` or
 #'   `model`.
@@ -583,20 +745,31 @@ plot_transitions <- function(x, main = NULL, subtitle = NULL) {
 #'   class) or by its candidate name:
 #'   `plot_tree(x, from = c(3, 3), to = c(4, 3))`. Given together, not with
 #'   `candidates`.
-#' @param level `"individuals"` (default): the cases divided into profiles;
-#'   `"groups"`: the groups divided into group classes.
+#' @param level Which units a tree divides:
+#'   * `"individuals"` (default): the observations, into profiles (classes).
+#'     A tree runs down the numbers of profiles at one number of group
+#'     classes and one covariance structure;
+#'   * `"groups"`: the groups, into group classes. A tree runs down the
+#'     numbers of group classes at one number of profiles, so the grid needs
+#'     two or more of them. The default for a family grid.
 #' @param combine `FALSE` (default) returns one plot per tree; `TRUE` draws
 #'   every tree as a panel of one plot.
-#' @return One ggplot for a single tree or `combine = TRUE`, otherwise a
-#'   `latents_plots` list named by tree. A tree with fewer than two rows
-#'   raises `latents_no_tree`; a name no converged candidate has raises
-#'   `latents_unknown_candidate`.
+#' @return A ggplot object when there is one tree or `combine = TRUE`;
+#'   otherwise a `latents_plots` list of ggplot objects named by tree.
+#'   Conditions raised:
+#'   * `latents_no_tree`: a tree would have fewer than two rows;
+#'   * `latents_unknown_candidate`: `candidates`, `from` or `to` names no
+#'     converged candidate of the grid;
+#'   * `latents_unsupported_view`: `level = "individuals"` on a family grid;
+#'   * `latents_bad_argument`: `x` is not an enumeration grid, or the
+#'     arguments are combined in a way the tree does not take.
 #' @seealso [get_tree()] for the flows as a table; [plot_enumeration()].
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
 #'                       n_profiles = 1:3, model = "EEI",
 #'                       n_starts = 2, seed = 1)
 #' plot_tree(grid)
+#' plot_tree(grid, from = 2, to = 3)
 #' @export
 plot_tree <- function(x, main = NULL, subtitle = NULL, n_group_classes = NULL,
                       n_profiles = NULL, model = NULL, candidates = NULL,
@@ -617,30 +790,57 @@ plot_tree <- function(x, main = NULL, subtitle = NULL, n_group_classes = NULL,
                 subtitle = subtitle)
 }
 
-#' Model-selection evidence across a candidate grid
+#' Plot the evidence for choosing the number of classes from an enumeration grid
 #'
-#' Five views that bear on the choice of a solution, none of which selects
-#' one: the decrease in a criterion with each added class (`"deltas"`), the
-#' criterion over profiles and group classes relative to its lowest value
-#' (`"heatmap"`), the smallest class share with 5% dashed (`"smallest"`),
-#' convergence, boundary and replication of every candidate (`"trust"`), and
-#' relative entropy with the lowest AvePP (`"diagnostics"`). Each is also a
-#' function of its own: [plot_deltas()], [plot_heatmap()], [plot_sizes()],
-#' [plot_trust()], [plot_entropy()] and [plot_avepp()].
+#' `plot_selection()` plots five views of an enumeration grid that bear on the
+#' choice of a solution: how much a criterion improves with each added class,
+#' the criterion over the whole grid, the smallest class, whether each estimate
+#' can be trusted, and how sharply each candidate classifies. None of them
+#' selects a model. Each view is also a function of its own, named below.
 #'
 #' @inheritParams plot_enumeration
-#' @param what `"all"` (default) draws the five views as a list, or one of
-#'   `"deltas"`, `"heatmap"`, `"smallest"`, `"trust"` and `"diagnostics"`.
-#' @return A ggplot object; a `latents_plots` list for `"all"`. A view
-#'   the kind of grid does not offer raises
-#'   `latents_unsupported_view`.
+#' @param x An enumeration grid from [enumerate_classes()],
+#'   [enumerate_lpa()], [enumerate_lca()] or [enumerate_regressions()]. A
+#'   family grid (`enumerate_classes(family = )`) has no numbers of
+#'   profiles to lay the views out by and draws `"diagnostics"` only.
+#' @param what Which view to draw:
+#'   * `"all"` (default): the five views below, as a list;
+#'   * `"deltas"`: the decrease in the criterion `using` with each added
+#'     class and each added group class ([plot_deltas()]);
+#'   * `"heatmap"`: the criterion `using` over the numbers of classes and
+#'     group classes, relative to its lowest value ([plot_heatmap()]);
+#'   * `"smallest"`: the share of the smallest class of every candidate,
+#'     with 5% drawn dashed ([plot_sizes()]);
+#'   * `"trust"`: whether each candidate converged, whether it has an
+#'     estimate at a bound, and how many starts reached its best log
+#'     likelihood ([plot_trust()]);
+#'   * `"diagnostics"`: the relative entropy and the lowest average
+#'     posterior probability (AvePP) of every candidate, with `cutoff`
+#'     drawn dashed ([plot_entropy()], [plot_avepp()]).
+#' @param using The information criterion that `"deltas"` and `"heatmap"`
+#'   read: one criterion column of the grid. When not given it is
+#'   `"bic_groups"` on a profile or class grid and `"bic"` on a transition
+#'   or regression grid.
+#' @param cutoff The AvePP cutoff drawn dashed by `"diagnostics"`: one
+#'   number above 0 and at most 1 (default 0.8).
+#' @return A ggplot object, which draws the plot when printed; for `"all"`
+#'   a `latents_plots` list of the five ggplot objects, named `deltas`,
+#'   `heatmap`, `smallest`, `trust` and `diagnostics`, which draws every
+#'   plot when printed. Conditions raised:
+#'   * `latents_unsupported_view`: a view the kind of grid does not offer
+#'     (every view but `"diagnostics"` on a family grid, `"all"`
+#'     included); the message gives the reason and what the grid offers;
+#'   * `latents_bad_argument`: `x` is not an enumeration grid, or `using`
+#'     is not a criterion of the grid.
 #' @seealso [get_deltas()], [get_knees()] and [get_best()] for the tables;
-#'   [plot_enumeration()] for the information criteria.
+#'   [plot_enumeration()] for the information criteria; [plot_views()]
+#'   lists the views a grid offers.
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
 #'                       n_profiles = 1:3, model = "EEI",
 #'                       n_starts = 2, seed = 1)
 #' plot_selection(grid, what = "deltas")
+#' plot_selection(grid, what = "trust")
 #' @export
 plot_selection <- function(x, what = c("all", "deltas", "heatmap", "smallest",
                                        "trust", "diagnostics"),

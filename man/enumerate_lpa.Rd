@@ -2,7 +2,8 @@
 % Please edit documentation in R/lpa.R
 \name{enumerate_lpa}
 \alias{enumerate_lpa}
-\title{Compare latent profile models}
+\title{Fit latent profile models with different numbers of profiles and covariance
+structures, and compare them}
 \usage{
 enumerate_lpa(data, vars, n_profiles = 1:4, model = "basic", ...)
 }
@@ -12,22 +13,43 @@ enumerate_lpa(data, vars, n_profiles = 1:4, model = "basic", ...)
 \item{vars}{Names of the indicator columns.}
 
 \item{n_profiles}{Numbers of profiles to compare, specified as positive
-integers.}
+integers. Default \code{1:4}.}
 
-\item{model}{The covariance structures: \code{"basic"}, the default, for the
-four that combine equal or varying variances with covariances absent or
-present (\code{EEI}, \code{VVI}, \code{EEE}, \code{VVV}); \code{"all"} for all 14; or their
-three-letter codes. See \code{\link[=enumerate_classes]{enumerate_classes()}}.}
+\item{model}{The covariance structures to fit at every number of
+profiles; each structure with each number of profiles is one candidate.
+\itemize{
+\item \code{"basic"} (default): four structures. \code{"EEI"}: the profiles share
+their variances and the indicators are uncorrelated within a profile.
+\code{"VVI"}: each profile has its own variances, still uncorrelated.
+\code{"EEE"}: the profiles share one covariance matrix. \code{"VVV"}: each
+profile has its own covariance matrix.
+\item \code{"all"}: all fourteen structures of mclust.
+\item One or more of the codes \code{"EII"}, \code{"VII"}, \code{"EEI"}, \code{"VEI"}, \code{"EVI"},
+\code{"VVI"}, \code{"EEE"}, \code{"VEE"}, \code{"EVE"}, \code{"VVE"}, \code{"EEV"}, \code{"VEV"},
+\code{"EVV"}, \code{"VVV"}: those structures only. \code{\link[=multilpa]{multilpa()}} explains the
+three letters.
+\item \code{NULL}: no structures are crossed, and every candidate has the
+structure \code{\link[=multilpa]{multilpa()}} fits by default (\code{"VVI"}).
+}
 
-\item{...}{Further arguments for \code{\link[=multilpa]{multilpa()}}, such as \code{missing},
-\code{n_starts}, \code{seed}, \code{boundary} and \code{categorical}, except \code{id} and
-\code{n_group_classes}.}
+Giving \code{variance_model}, \code{covariance_model}, \code{volume}, \code{shape} or
+\code{orientation} in \code{...} sets one structure for every candidate; \code{model}
+must then be left out.}
+
+\item{...}{Further arguments for \code{\link[=multilpa]{multilpa()}}, used for every candidate,
+such as \code{missing} (\code{"error"} or \code{"fiml"}), \code{n_starts}, \code{seed},
+\code{boundary} (\code{"allow"} or \code{"exclude"}) and \code{categorical}. \code{id} and
+\code{n_group_classes} are not accepted.}
 }
 \value{
 An object of class \code{multilpa_enumeration}, as \code{\link[=enumerate_classes]{enumerate_classes()}}
-returns: \code{\link[=as.data.frame]{as.data.frame()}} gives one row per candidate, \code{\link[=summary]{summary()}} the
-candidate minimizing each criterion, \code{\link[=plot]{plot()}} the criteria against the
-number of profiles, and \code{\link[=get_candidate]{get_candidate()}} one fitted candidate.
+returns. \code{\link[=get_candidates]{get_candidates()}} (also \code{\link[=as.data.frame]{as.data.frame()}}) gives one row per
+candidate with its log likelihood, information criteria, entropy,
+convergence and replication; \code{\link[=get_best]{get_best()}} and \code{\link[=summary]{summary()}} the candidate
+with the lowest value of each criterion; \code{\link[=plot]{plot()}} the criteria against
+the number of profiles; and \code{\link[=get_candidate]{get_candidate()}} one fitted candidate, a
+\code{multilpa} fit. A candidate that could not be fitted keeps its row,
+with \code{NA} values.
 }
 \description{
 \code{enumerate_lpa()} fits latent profile models with different numbers of
@@ -43,8 +65,11 @@ grouping column as \code{id}, which also varies the number of group classes.
 }
 \section{Conditions}{
 
-\code{latents_bad_argument} when \code{id} or \code{n_group_classes} is passed, or when
-\code{model} names an unknown structure.
+\code{latents_bad_argument} when \code{id} or \code{n_group_classes} is passed, when
+\code{model} names an unknown structure, and when \code{model} is given together
+with \code{variance_model}, \code{covariance_model}, \code{volume}, \code{shape} or
+\code{orientation}. A \code{latents_single_start} message names the candidates
+whose best log likelihood was reached from one start only.
 }
 
 \examples{

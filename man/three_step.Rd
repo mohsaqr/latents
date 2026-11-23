@@ -2,7 +2,8 @@
 % Please edit documentation in R/three-step.R
 \name{three_step}
 \alias{three_step}
-\title{Compare latent classes on an external outcome}
+\title{Compare latent classes on an outcome not used to define them, correcting for
+classification error}
 \usage{
 three_step(
   x,
@@ -15,95 +16,214 @@ three_step(
   adjust = c("BH", "holm", "hochberg", "hommel", "bonferroni", "BY", "none"),
   vcov_type = c("cluster", "independent"),
   variance = c("varying", "equal"),
-  step_one = c("fixed", "estimated")
+  step_one = c("fixed", "estimated"),
+  missing = c("error", "exclude")
 )
 }
 \arguments{
-\item{x}{A covariate-free fit: from \code{\link[=multilpa]{multilpa()}} (the profile family),
-from \code{\link[=lta]{lta()}} with its default homogeneous first-order transitions and
-invariant measurement, or a trajectory model that classifies persons
-(\code{\link[=mixture_regression]{mixture_regression()}} with \code{class_level = "group"}, with or without
-\code{random}) fitted without \code{membership} covariates. Refused: fits with
-membership covariates, multilevel growth mixtures (\code{cluster}), the
-other \code{multilpa()} families, observation-level mixture regressions,
-fits with weights or a noise component, and \code{lta()} fits with
-occasion-specific or covariate transitions, second order, occasion-
-specific measurement, a stayer class or ordinal or count indicators.}
+\item{x}{The fitted model whose classes are compared. It must have no
+membership covariates. Accepted:
+\itemize{
+\item a profile or class fit from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}} or
+\code{\link[=multilca]{multilca()}} (the default \code{family = "profiles"});
+\item an \code{\link[=lta]{lta()}} fit with its default homogeneous first-order transitions,
+invariant measurement and continuous or categorical indicators;
+\item a trajectory model that classifies persons: \code{\link[=mixture_regression]{mixture_regression()}}
+with \code{class_level = "group"}, with or without \code{random}, fitted
+without \code{membership} covariates and without \code{cluster}.
+}
+
+Refused with \code{latents_unsupported_three_step}: a fit with membership
+covariates; the other \code{multilpa()} families (additive, dispersion and
+cross-level); an \code{lta()} fit with occasion-specific, second-order or
+covariate transitions, initial covariates, occasion-specific
+measurement, a stayer class, or ordinal or count indicators; a mixture
+regression that classifies observations; and a multilevel growth
+mixture (\code{cluster}). A fit with sampling weights raises
+\code{latents_unsupported_weights}, and one with a noise component
+\code{latents_unsupported_noise}.}
 
 \item{data}{The data frame carrying the outcome, in the fit's row order;
-columns shared with the fit are checked row by row. For a trajectory
+columns shared with the fit are checked row by row, and a frame that
+does not match raises \code{latents_bad_inference_data}. For a trajectory
 model, the data the model was fitted to.}
 
-\item{outcome}{Name of the outcome column, without missing or infinite
-values and not an indicator of \code{x}: numeric for class means, or a
-factor, character or logical column for the probability of each
-category in each class. For
-\code{level = "groups"} it must be constant within each group; for a
-trajectory model, within each person.}
+\item{outcome}{Name of the outcome column. It must not be an indicator of
+\code{x}, must have no infinite values, and must have no missing values
+unless \code{missing = "exclude"}. A numeric column gives a mean in each
+class; a factor, character or logical column gives the probability of
+each category in each class. For \code{level = "groups"} the outcome must
+be constant within each group; for a trajectory model, within each
+person.}
 
-\item{level}{\code{"individuals"} (default) relates the outcome to the
-profiles, \code{"groups"} to the group classes. A trajectory model relates
-it to its person classes, reported as \code{level = "persons"}.}
+\item{level}{Which classes the outcome is related to:
+\itemize{
+\item \code{"individuals"} (default): the profiles (classes) of the
+observations;
+\item \code{"groups"}: the group classes of a two-level fit.
+}
 
-\item{method}{\code{"bch"} (default): Bolck-Croon-Hagenaars weights. \code{"ml"}:
-the maximum-likelihood step-three model. \code{"proportional"}: posterior
-weights without correction. \code{"modal"}: modal assignment without
-correction. See \emph{Methods}.}
+A trajectory model has person classes only: leave \code{level} at its
+default (the result reports \code{level = "persons"}); \code{"groups"} raises
+\code{latents_bad_argument}.}
+
+\item{method}{How step three relates the outcome to the classes:
+\itemize{
+\item \code{"bch"} (default): Bolck-Croon-Hagenaars weights. Each unit gets one
+weight per class, taken from the inverse of the classification-error
+matrix, and the class means are weighted means;
+\item \code{"ml"}: the maximum-likelihood step-three model. The assigned class
+is an indicator of the true class with the step-one error
+probabilities, and the outcome has a normal (numeric) or multinomial
+(categorical) distribution within each true class;
+\item \code{"proportional"}: each unit is weighted by its posterior class
+probabilities, without correction for classification error;
+\item \code{"modal"}: each unit counts fully in its most probable class,
+without correction.
+}
+
+The last two are the uncorrected comparisons the correction is judged
+against. See \emph{Methods}.}
 
 \item{ci_level}{Confidence level of the intervals (default 0.95).}
 
-\item{contrast}{\code{"none"} (default): one outcome mean per class (one
-probability per class and category). \code{"pairs"}: the difference between
-every pair of classes, tested against zero. \code{"overall"}: one Wald test
-that every class has the same mean (the same category distribution).}
+\item{contrast}{What is reported:
+\itemize{
+\item \code{"none"} (default): the outcome mean of each class (for a
+categorical outcome, the probability of each category in each
+class), with a confidence interval and no test;
+\item \code{"pairs"}: the difference between every pair of classes, each tested
+against zero;
+\item \code{"overall"}: one Wald test that every class has the same mean (the
+same category distribution).
+}}
 
-\item{adjust}{Multiplicity correction across the pairwise differences,
-a \code{stats::p.adjust()} method; \code{"BH"} by default. Ignored for
-\code{contrast = "none"} or \code{"overall"}. With a binary outcome, its two
+\item{adjust}{Multiplicity correction of the p-values across the pairwise
+differences, giving \code{p_adjusted}. One of the \code{\link[stats:p.adjust]{stats::p.adjust()}}
+methods:
+\itemize{
+\item \code{"BH"} (default): Benjamini-Hochberg, controls the false discovery
+rate;
+\item \code{"holm"}, \code{"hochberg"}, \code{"hommel"}, \code{"bonferroni"}: control the
+family-wise error rate;
+\item \code{"BY"}: Benjamini-Yekutieli, controls the false discovery rate under
+any dependence;
+\item \code{"none"}: no correction (\code{p_adjusted} equals \code{p_value}).
+}
+
+Used only with \code{contrast = "pairs"}. With a binary outcome, its two
 complementary category rows count as one test per class pair; with
 more categories, every reported category difference enters the family.}
 
-\item{vcov_type}{\code{"cluster"} (default) treats the fit's groups as the
-independent units of the sandwich variance, as the nesting requires;
-\code{"independent"} treats every observation as independent.}
+\item{vcov_type}{Which units the sandwich variance treats as independent:
+\itemize{
+\item \code{"cluster"} (default): the fit's groups (the persons of a transition
+fit or a trajectory model), as the nesting requires. For a
+single-level fit every observation is its own group;
+\item \code{"independent"}: every observation, ignoring the nesting.
+}}
 
-\item{variance}{For \code{method = "ml"} with a numeric outcome (refused
-otherwise): \code{"varying"} (default) estimates an outcome variance in each
-class, \code{"equal"} one shared by the classes.}
+\item{variance}{The outcome variances of the \code{"ml"} model for a numeric
+outcome:
+\itemize{
+\item \code{"varying"} (default): one variance in each class;
+\item \code{"equal"}: one variance shared by the classes.
+}
 
-\item{step_one}{\code{"fixed"} (default) conditions on the step-one estimates.
-\code{"estimated"} adds the uncertainty of the classification-error
-probabilities (and, under \code{"ml"}, of the class sizes) to the step-three
-covariance; available for \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}} and \code{\link[=multilpa]{multilpa()}} profile
-fits at either level when their Wald inference is available and their
-measurement was estimated jointly. Staged fits and fits holding a
-measurement block fixed are refused. See
-\emph{Step-one uncertainty}.}
+Supplying it with another method or with a categorical outcome raises
+\code{latents_bad_argument}.}
+
+\item{step_one}{Whether the standard errors include the uncertainty of
+the step-one estimates:
+\itemize{
+\item \code{"fixed"} (default): they condition on the step-one estimates;
+\item \code{"estimated"}: the uncertainty of the classification-error
+probabilities (and, under \code{"ml"}, of the class sizes) is added to
+the step-three covariance. Available for \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}},
+\code{\link[=multilpa]{multilpa()}} and \code{\link[=multilca]{multilca()}} fits at either level, when their Wald
+inference is available and their measurement was estimated jointly.
+A transition fit, a trajectory model, a staged fit and a fit holding
+a measurement block fixed are refused.
+}
+
+See \emph{Step-one uncertainty}.}
+
+\item{missing}{What to do with units whose outcome is missing:
+\itemize{
+\item \code{"error"} (default): a missing outcome value raises
+\code{latents_bad_argument};
+\item \code{"exclude"}: the units without the outcome are left out of step
+three, as Latent GOLD's \verb{missing excludeall} does. The step-one fit
+and its posteriors are unchanged, and the classification errors,
+weights and standard errors are those of the units analysed. This
+assumes the outcome is missing at random given the classes. At
+\code{level = "groups"} a group's outcome must be missing on all its rows
+or on none.
+}
+
+An outcome missing for every unit is refused under either value.}
 }
 \value{
-A data frame. For \code{contrast = "none"}, one row per class (per
-class and category for a categorical outcome, with \code{category} after
-\code{class}): \code{level}, \code{method}, \code{class}, \code{estimate}, \code{standard_error},
-\code{conf_low}, \code{conf_high} and \code{effective_n}; means are not tested, and a
-probability's interval is formed on the logit scale. Under
-\code{method = "ml"} with a numeric outcome a \code{variance} column precedes
-\code{effective_n}, and under \code{"ml"} \code{effective_n} is the expected number of
-units in the class. For \code{contrast = "pairs"}, one row per pair (per pair and category): \code{level}, \code{method},
-\code{class}, \code{reference_class}, \code{estimate} (class minus reference),
-\code{standard_error}, \code{statistic}, \code{p_value}, \code{p_adjusted}, \code{conf_low} and
-\code{conf_high}, as in \code{\link[=r3step]{r3step()}}. For \code{contrast = "overall"}, one row:
-\code{level}, \code{method}, \code{statistic}, \code{df} (\code{K - 1} for a mean,
-\code{(K - 1)(C - 1)} for \code{C} categories) and \code{p_value}. The attributes
-\code{vcov_type} and \code{step_one} record the choices, \code{adjust} on a pairs
-result and \code{variance} on a numeric ML result with \code{contrast = "none"}.
+A data frame of class \code{latents_table} (a \code{data.frame} that
+prints as a formatted table). Its rows depend on \code{contrast}:
+\itemize{
+\item \code{contrast = "none"}: one row per class, or per class and category
+for a categorical outcome. Columns: \code{level}, \code{method}, \code{class},
+\code{category} (categorical outcomes only), \code{estimate} (the class mean,
+or the probability of the category in the class), \code{standard_error},
+\code{conf_low}, \code{conf_high}, \code{variance} (the outcome variance in the
+class; \code{method = "ml"} with a numeric outcome only) and
+\code{effective_n} (Kish's effective number of units behind the class's
+weights; under \code{"ml"} the expected number of units in the class).
+Means are not tested, and a probability's interval is formed on the
+logit scale;
+\item \code{contrast = "pairs"}: one row per pair of classes, or per pair and
+category. Columns: \code{level}, \code{method}, \code{class}, \code{reference_class},
+\code{category} (categorical outcomes only), \code{estimate} (class minus
+reference), \code{standard_error}, \code{statistic} (the estimate over its
+standard error), \code{p_value}, \code{p_adjusted}, \code{conf_low} and
+\code{conf_high};
+\item \code{contrast = "overall"}: one row. Columns: \code{level}, \code{method},
+\code{statistic} (the Wald chi-square), \code{df} (\code{K - 1} for a mean with \code{K}
+classes, \code{(K - 1)(C - 1)} for \code{C} categories) and \code{p_value}.
+}
+
+The attributes \code{vcov_type} and \code{step_one} record those choices;
+\code{adjust} is recorded on a pairs result and \code{variance} on a numeric ML
+result with \code{contrast = "none"}.
+
+Errors: \code{latents_unsupported_three_step},
+\code{latents_unsupported_weights} and \code{latents_unsupported_noise} for a
+fit the correction does not cover (see \code{x}); \code{latents_bad_outcome}
+for an outcome that is an indicator of \code{x} (also of class
+\code{multilpa_indicator_reused}), that varies within a group or person
+where one value is needed, or that takes a single category (under
+\code{"ml"}, a single value);
+\code{latents_bad_data} when \code{data} has no column named by \code{outcome};
+\code{latents_bad_inference_data} when \code{data} is not the fit's data;
+\code{latents_bad_argument} for any other invalid argument;
+\code{latents_inseparable_classes} when the classification-error matrix
+cannot be inverted or a single class is asked for a contrast; and
+\code{latents_too_few_groups} when there are no more independent units
+than classes. Warnings: \code{latents_bch_out_of_range},
+\code{latents_boundary} and \code{latents_small_classes}, described under
+\emph{Methods} and \emph{Standard errors}, and \code{latents_unconverged} when the
+\code{"ml"} model did not converge. \link{latents-conditions} describes each
+class.
 }
 \description{
 \code{three_step()} estimates how an outcome that was not used to define the
-classes differs between them, holding the measurement model fixed so the
-classes keep their meaning. Comparing classes by modal assignment treats
-uncertain assignments as certain and biases the differences; the
-three-step methods correct for the classification error of the fitted
-model. The default is the Bolck-Croon-Hagenaars (\code{"bch"}) weighting; the
+classes differs between them: the mean of a numeric outcome in each
+class, or the probability of each category of a categorical one. The
+measurement model is held fixed, so the classes keep their meaning.
+
+Comparing classes by modal assignment treats uncertain assignments as
+certain and biases the differences. The three-step methods correct for
+the classification error of the fitted model: step one is the fitted
+model, step two assigns each unit to its most probable class and
+measures how often each true class is assigned to another, and step
+three relates the outcome to the classes with those error rates built
+in. The default is the Bolck-Croon-Hagenaars (\code{"bch"}) weighting; the
 maximum-likelihood (\code{"ml"}) method models the outcome given the true
 class instead. Both assume that the outcome and the assigned class are
 independent given the true class; the differences are associations, not
@@ -129,9 +249,10 @@ that.
 A categorical outcome is described by its probability in each class. BCH
 weights can be negative, so with poorly separated classes a share can
 fall outside 0 to 1; it is then reported without an interval or test,
-with a warning. The ML probabilities stay in range; where the BCH shares
-do not, the ML maximum usually sits on the bound and is reported without
-standard errors, with a warning.
+with a \code{latents_bch_out_of_range} warning. The ML probabilities stay in
+range; where the BCH shares do not, the ML maximum usually sits on the
+bound and is reported without standard errors, with a
+\code{latents_boundary} warning.
 
 On an \code{\link[=lta]{lta()}} fit, \code{level = "individuals"} uses one row per occasion and
 relates the outcome to the profile at that occasion, with the
@@ -145,9 +266,11 @@ transitions.
 The variance is a sandwich over the \code{G} independent units (the groups,
 or the observations under \code{vcov_type = "independent"}) with the
 \code{G / (G - 1)} small-sample factor. It needs more units than classes;
-with as many or fewer, the analysis is refused. A class carried by one unit (Kish's
+with as many or fewer, the analysis is refused
+(\code{latents_too_few_groups}). A class carried by one unit (Kish's
 effective number of units carrying it below 1.5) has no standard error:
-its interval and the contrasts involving it are \code{NA}, with a warning.
+its interval and the contrasts involving it are \code{NA}, with a
+\code{latents_small_classes} warning.
 }
 
 \section{Step-one uncertainty}{
@@ -183,13 +306,19 @@ example_data <- data.frame(
 )
 fit <- multilpa(example_data, c("a", "b"), "g", n_profiles = 2,
                 n_group_classes = 1, n_starts = 4, seed = 1)
+# The mean of `y` in each class, then the difference between the classes.
 three_step(fit, example_data, "y")
 three_step(fit, example_data, "y", contrast = "pairs")
 # A categorical outcome: its probability in each class.
 example_data <- transform(example_data, passed = y + rnorm(400, sd = 6) > 5)
 three_step(fit, example_data, "passed")
 three_step(fit, example_data, "passed", contrast = "overall")
+# An outcome missing for some units: they are left out of step three.
+example_data <- transform(example_data, y_seen = replace(y, seq_len(25), NA))
+three_step(fit, example_data, "y_seen", missing = "exclude")
 }
 \seealso{
-\code{\link[=r3step]{r3step()}} for covariates of class membership; \code{\link[=fit_staged]{fit_staged()}}.
+\code{\link[=r3step]{r3step()}} for covariates of class membership; \code{\link[=fit_staged]{fit_staged()}};
+\code{get_results(x, "classification_errors")} for the error matrix the
+correction uses.
 }

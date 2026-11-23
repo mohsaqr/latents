@@ -674,13 +674,87 @@ parameter_inference.multilpa_lta <-function(x, data = NULL, level = 0.95,
 }
 
 
+#' The fit with the fields the shared profile and sequence views read
+#'
+#' `.gg_view_profiles()` and `.gg_view_sequences()` read a profile fit's
+#' measurement parameters at the top level, its modal profiles and group
+#' classes, and its effective profile counts. A general transition fit holds
+#' its measurement per occasion block; under invariant measurement there is
+#' one block, which is lifted to the top level here.
+#' @param fit A `multilpa_lta` fit with one measurement block.
+#' @return `fit` with `means`, `variances`, `response_probabilities`,
+#'   `ordinal_intercepts`, `ordinal_locations` (those the block holds),
+#'   `subject_profiles`, `group_classes`, `effective_profile_counts` and
+#'   `noise = FALSE` added.
+#' @noRd
+.lta_plot_view <- function(fit) {
+  stopifnot("one measurement block" = length(fit$measurement) == 1L)
+  block <- fit$measurement[[1L]]
+  lifted <- block[intersect(names(block), c("means", "variances",
+                                            "response_probabilities",
+                                            "ordinal_intercepts",
+                                            "ordinal_locations"))]
+  informative <- .multilpa_informative_rows(fit)
+  row_weights <- (fit$sampling_weights %||% rep(1, fit$n_groups))[fit$group_index]
+  counts <- colSums(fit$subject_posteriors[informative, , drop = FALSE] *
+                      row_weights[informative])
+  fit[names(lifted)] <- lifted
+  fit$subject_profiles <- max.col(fit$subject_posteriors, ties.method = "first")
+  fit$group_classes <- max.col(fit$group_posteriors, ties.method = "first")
+  fit$effective_profile_counts <- unname(counts)
+  fit$noise <- FALSE
+  # The stayer class keeps its own name in the views, as in the tables.
+  class_names <- names(fit$group_probabilities)
+  fit$group_class_labels <- ifelse(class_names == "stayers", "Stayers",
+                                   sprintf("Class %d", seq_along(class_names)))
+  fit
+}
+
 #' @noRd
 #' @export
-plot.multilpa_lta <-function(x, main = NULL, subtitle = NULL, ...) {
+plot.multilpa_lta <-function(x, main = NULL, subtitle = NULL,
+                              what = c("transitions", "profiles", "sequences"),
+                              statistic = c("mean", "median", "mode"),
+                              labels = TRUE, cell_labels = TRUE, ...) {
   .latents_warn_unused_arguments(
     list(...), "plot()",
     "Style the returned plot with ggplot2, for example `+ ggplot2::theme()`.")
+  # Which arguments the caller gave, read before any of them is reassigned
+  # (missing() is FALSE for a formal once it has been assigned to).
+  supplied <- c(statistic = !missing(statistic), labels = !missing(labels),
+                cell_labels = !missing(cell_labels))
+  what <- .latents_match_formal(what)
+  statistic <- .latents_match_formal(statistic)
+  .latents_require("`labels` must be TRUE or FALSE" = isTRUE(labels) || isFALSE(labels),
+                   "`cell_labels` must be TRUE or FALSE" =
+                     isTRUE(cell_labels) || isFALSE(cell_labels))
+  # Each view takes some of the arguments; one supplied for another view is
+  # named in a warning rather than dropped without a word.
+  used <- switch(what, transitions = character(),
+                 profiles = c("statistic", "labels"),
+                 sequences = c("labels", "cell_labels"))
+  unused <- setdiff(names(supplied)[supplied], used)
+  .latents_warn_unused_arguments(
+    stats::setNames(as.list(unused), unused), sprintf("plot(what = \"%s\")", what),
+    "Those arguments belong to the fit's other views.")
   .gg_require()
+  if (!identical(what, "transitions")) {
+    # Occasion-specific measurement has a profile definition per occasion,
+    # so there is no one profile line, and no one profile to colour a cell.
+    if (length(x$measurement) != 1L) {
+      stop(errorCondition(paste(
+        "The profiles differ by occasion (`measurement = \"occasion\"`), so",
+        "there is no single profile view; read them with",
+        "`get_results(fit, \"profiles\")` or `get_results(fit, \"ordinal\")`."),
+        class = "latents_nothing_to_plot", call = NULL))
+    }
+    view <- .lta_plot_view(x)
+    if (identical(what, "sequences")) {
+      return(.gg_view_sequences(view, labels, cell_labels, main, subtitle))
+    }
+    return(.gg_view_profiles(view, "raw", labels, NULL, main, subtitle,
+                             statistic = statistic))
+  }
   frame <- .lta_table(x, "transitions")
   # One panel per group class (and occasion), in numeric occasion order --
   # as plain strings "occasion 10" would sort before "occasion 2" -- with the

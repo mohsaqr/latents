@@ -2,7 +2,8 @@
 % Please edit documentation in R/multilca.R
 \name{multilca}
 \alias{multilca}
-\title{Fit a two-level latent class model}
+\title{Fit a two-level latent class model: classes of categorical responses and
+classes of the groups they are nested in}
 \usage{
 multilca(data, vars, id, n_profiles, n_group_classes = 2L, ...)
 }
@@ -10,28 +11,59 @@ multilca(data, vars, id, n_profiles, n_group_classes = 2L, ...)
 \item{data}{A data frame with one row per observation.}
 
 \item{vars}{Names of the indicator columns. Numeric, integer, logical,
-character and factor columns are accepted; factor levels retain their
-declared order and other types are sorted.}
+character and factor columns are accepted, and every distinct value of a
+column is one category; factor levels retain their declared order and
+other types are sorted.}
 
 \item{id}{Name of the group identifier column, or \code{NULL} for a single-level
-model.}
+model (\code{\link[=lca]{lca()}} fits that directly).}
 
 \item{n_profiles}{Number of observation-level latent classes (profiles).}
 
 \item{n_group_classes}{Number of group-level latent classes. Defaults to 2,
-or to 1 when \code{id = NULL}.}
+or to 1 when \code{id = NULL}. With 1, the groups do not differ in their
+class proportions.}
 
-\item{...}{Further arguments to \code{\link[=multilpa]{multilpa()}}, such as \code{n_starts}, \code{seed},
-\code{missing}, \code{tol} or \code{profile_covariates}. \code{ordinal} and \code{count} name
-ordinal and count indicators; the remaining indicators are categorical.
+\item{...}{Further arguments, passed to \code{\link[=multilpa]{multilpa()}}, which documents all
+of them. The ones used most often:
+\itemize{
+\item \code{missing}: \code{"error"} (default) stops when an indicator has a missing
+value; \code{"fiml"} keeps every row and uses the responses it has.
+\item \code{ordinal}, \code{count}: indicators in \code{vars} modelled as ordered
+categories or as counts; the remaining indicators are categorical.
+\item \code{n_starts} (default 10), \code{seed}, \code{max_iter} and \code{tol}: the number of
+starts, the seed that makes them reproducible, and the limits of each
+start.
+\item \code{min_probability}: the lower bound on a response probability (default
+\code{1e-10}).
+\item \code{profile_covariates}, \code{group_covariates}: covariates that predict
+class and group-class membership.
+\item \code{time}: the occasion column, used to order each group's rows in the
+sequence tables and \code{\link[=plot_sequences]{plot_sequences()}}.
+}
+
 \code{categorical} is accepted but has no further effect; its names must be in
 \code{vars}.}
 }
 \value{
-A fitted \code{multilpa} object (\code{multilpa_covariates} when membership
-covariates are specified), as returned by \code{\link[=multilpa]{multilpa()}}. Categorical response
-probabilities are in \code{get_results(fit, "responses")}, one row per
-profile, item and category.
+A fitted model of class \code{multilpa}, or \code{multilpa_covariates} when
+membership covariates are specified, as returned by \code{\link[=multilpa]{multilpa()}}. The
+classes are numbered 1, 2, and so on in the \code{profile} column of its
+tables, and the group classes in \code{group_class}. \code{\link[=get_results]{get_results()}} returns
+the tables by name, among them:
+\itemize{
+\item \code{"responses"} (also \code{as.data.frame(fit)}): one row per class, item
+and category, with the response probability;
+\item \code{"profile_probabilities"}: the proportion of each class within each
+group class, and the proportion of each group class;
+\item \code{"assignments"}: the data with each row's most likely class, its
+group's most likely group class and the posterior probabilities;
+\item \code{"group_posteriors"}: the posterior probability of each group class
+for each group;
+\item \code{"classification"} and \code{"entropy"}: how clearly rows and groups are
+classified;
+\item \code{"information_criteria"} and \code{"starts"}.
+}
 }
 \description{
 \code{multilca()} fits a latent class model for categorical data with observations
@@ -56,15 +88,23 @@ and categorical indicators, use \code{\link[=multilpa]{multilpa()}} with \code{c
 }
 \section{Conditions}{
 
-\code{latents_bad_categorical} when \code{categorical} names a column not in
-\code{vars}; otherwise the conditions of \code{\link[=multilpa]{multilpa()}}.
+Errors: \code{latents_bad_argument} when \code{id} is left out or an argument has
+a value that is not accepted; \code{latents_bad_categorical} when
+\code{categorical} names a column not in \code{vars}; \code{latents_bad_data} when a
+column is missing from \code{data} or an indicator has missing values under
+\code{missing = "error"}; \code{latents_unidentified} when more than one group
+class is requested with one class or with one row per group. Warnings:
+\code{latents_unconverged} when the reported start did not converge and
+\code{latents_small_classes} when a class or group class is nearly empty.
+Otherwise the conditions of \code{\link[=multilpa]{multilpa()}}; \link{latents-conditions} lists
+them all.
 }
 
 \examples{
 activities <- c("time_with_friends", "on_social_media", "tv_video_games")
 fit <- multilca(subset(student_esm, day <= 1), vars = activities,
                 id = "student", n_profiles = 2, n_group_classes = 2,
-                n_starts = 1, seed = 1)
+                n_starts = 2, seed = 1)
 get_results(fit, "responses")
 get_results(fit, "profile_probabilities")
 }

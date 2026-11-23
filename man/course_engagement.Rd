@@ -5,8 +5,9 @@
 \alias{course_engagement}
 \title{Student engagement across a sequence of courses}
 \format{
-A data frame with 1422 rows (106 students, 32 courses, up to 15
-enrolments each) and 11 columns:
+A data frame with 1422 rows (106 students, 32 courses, one row
+per student and course, 10 to 15 enrolments each, no missing values)
+and 11 columns:
 \describe{
 \item{student}{Integer student identifier, 1 to 106. The nesting unit;
 pass it as \code{id}.}

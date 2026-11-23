@@ -2,72 +2,108 @@
 % Please edit documentation in R/tna.R
 \name{get_tna}
 \alias{get_tna}
-\title{Represent transitions between latent states as a network}
+\title{Get the transitions between a fitted model's profiles as one transition
+network for the whole sample}
 \usage{
 get_tna(x, ...)
 }
 \arguments{
-\item{x}{A time-homogeneous fitted model from \code{\link[=lta]{lta()}}, or a \code{\link[=multilpa]{multilpa()}}
-or \code{\link[=multilca]{multilca()}} model fitted with \code{time}, for which the network is based
-on modal profile sequences.}
+\item{x}{A transition fit from \code{\link[=lta]{lta()}}, or a profile or class fit made
+with \code{time}. See \emph{Which fits are supported}.}
 
-\item{...}{Passed to \code{\link[tna:build_model]{tna::tna()}}.}
+\item{...}{Further arguments passed to \code{\link[tna:build_model]{tna::tna()}}.}
 }
 \value{
-An object of class \code{tna}, as returned by \code{\link[tna:build_model]{tna::tna()}}, to which the
-functions of the tna package apply, including \code{centralities()},
-\code{communities()}, \code{cliques()} and \code{plot()}.
+An object of class \code{tna}, as \code{\link[tna:build_model]{tna::tna()}} returns it: a list
+with \code{weights} (the square matrix of transition probabilities, rows
+the current profile and columns the next, each row summing to one),
+\code{inits} (the probability of starting in each profile), \code{labels} (the
+profile names) and \code{data} (the sequences, for a profile or class
+fit; \code{NULL} for a transition fit). The functions of the tna package
+apply to it, among them \code{centralities()}, \code{communities()},
+\code{cliques()} and \code{plot()}.
+
+Conditions raised: \code{latents_no_time}, \code{latents_unsupported_tna} and
+\code{latents_not_a_fit} as described under \emph{Which fits are supported};
+\code{latents_missing_package} when the tna package is not installed; and
+the warning \code{latents_empty_transition_row}.
 }
 \description{
-\code{get_tna()} constructs a network summarising transitions between latent
-profiles or classes across ordered observations. The profiles or classes
-form the nodes, and directed edge weights represent transition
-probabilities, including the probability of remaining in the same state.
-The returned network supports visualisation and analysis with the tna
-package.
+\code{get_tna()} returns the transitions between the profiles (classes) of a
+fitted model as one transition network for the whole sample, an object of the
+tna package. The profiles are the nodes, named \code{profile_1}, \code{profile_2}, and
+so on. The weight of the edge from one profile to another is the probability
+of moving to it at the next occasion, and the weight of a loop is the
+probability of staying.
 
-For a supported latent transition model, the network uses model-estimated
-transitions, pooling expected transitions across latent group classes.
-For a profile or class model fitted with \code{time}, it instead summarises
-transitions between the most probable class assignments in each group's
-ordered sequence.
+Where the probabilities come from depends on the model:
+\itemize{
+\item for a transition fit from \code{\link[=lta]{lta()}}, they are the transition
+probabilities the model estimated, pooled over its group classes, and
+the network starts from the estimated initial probabilities;
+\item for a profile or class fit made with \code{time}, they are counted by
+\code{\link[tna:build_model]{tna::tna()}} from each group's sequence of assigned (most likely)
+profiles.
+}
 }
 \details{
-For a supported latent transition model, transition probabilities are the
-expected transition counts summed across group classes and normalised by
-row, so each class
-contributes in proportion to its share of the expected transitions, not its
-class probability. If a profile has no expected outgoing transitions in any
-class, its row is the class rows averaged by class probability, and a
-warning states that the row is unestimated; absent transitions are not
-treated as self-transitions.
-
-For a \code{\link[=multilpa]{multilpa()}} or \code{\link[=multilca]{multilca()}} fit, \code{\link[tna:build_model]{tna::tna()}} builds the network
-from the modal sequences. A fit made without \code{time} is refused.
-
-A general \code{\link[=lta]{lta()}} fit (occasion-varying or covariate-dependent
-transitions, second order, movers and stayers, or ordinal, count or
-weighted data) is currently unsupported and raises
-\code{latents_unsupported_tna}; its transitions are returned by
-\code{get_results(x, "transitions")}.
+For a transition fit, the pooled matrix is built from the expected
+transition counts, summed over the group classes and divided by their
+row totals. Each group class therefore counts in proportion to the
+transitions it is expected to make, not to its class probability. If a
+profile has no expected moves out of it in any class, its row is the
+class rows averaged by class probability, and a warning of class
+\code{latents_empty_transition_row} says that the row is not estimated from
+transitions; a missing transition is never counted as staying.
 }
+\section{Which fits are supported}{
+
+\itemize{
+\item An \code{\link[=lta]{lta()}} fit of class \code{multilpa_transitions} (the basic transition
+model: continuous or categorical indicators and one first-order
+transition matrix for all occasions, without covariates, weights or a
+stayer class): always.
+\item An \code{\link[=lta]{lta()}} fit of class \code{multilpa_lta} (ordinal or count indicators,
+weights, covariates of the initial profiles, occasion-specific
+measurement): when its transitions are first order, the same at every
+occasion and without transition covariates. A fit whose transitions
+vary by occasion, by covariate or by the previous profile (\code{order = 2})
+has no single matrix and raises \code{latents_unsupported_tna}; read its
+transitions with \code{get_results(x, "transitions")}.
+\item A mover-stayer fit (\code{mover_stayer = TRUE}): not by \code{get_tna()}, which
+raises \code{latents_unsupported_tna} because the stayer class records no
+expected moves to pool. \code{\link[=get_group_tna]{get_group_tna()}} returns one network per
+mover class and one for the stayers.
+\item A profile or class fit from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}} or
+\code{\link[=multilca]{multilca()}} (with or without membership covariates): when it was
+made with \code{time}; without it the fit raises \code{latents_no_time}.
+\item Any other model (a mixture regression, a growth mixture, an additive
+or cross-level fit, pooled imputations) raises \code{latents_not_a_fit}.
+}
+}
+
 \section{Interpretation}{
 
-A network built from modal assignments is a descriptive summary and does
-not account for classification uncertainty. A pooled network may conceal
-differences between latent group classes; use \code{\link[=get_group_tna]{get_group_tna()}} to examine
-their separate networks.
+A network counted from assigned profiles treats each assignment as
+known and does not carry the uncertainty of the classification. The
+network of a transition fit uses probabilities estimated from the
+posterior probabilities, so an observation that may belong to two
+profiles contributes to both. A network pooled over the group classes
+can hide differences between them; \code{\link[=get_group_tna]{get_group_tna()}} returns their
+separate networks.
 }
 
 \examples{
 if (requireNamespace("tna", quietly = TRUE)) {
   activity <- c("browse", "lectures", "forum_read")
   moves <- lta(course_engagement, vars = activity, id = "student",
-                           time = "sequence", n_profiles = 2,
-                           n_group_classes = 2, n_starts = 2, seed = 1)
+               time = "sequence", n_profiles = 2, n_group_classes = 2,
+               n_starts = 2, seed = 1)
   get_tna(moves)
 }
 }
 \seealso{
-\code{\link[=get_group_tna]{get_group_tna()}} for one network per latent group class.
+\code{\link[=get_group_tna]{get_group_tna()}} for one network per latent group class;
+\code{\link[=plot_transitions]{plot_transitions()}} for the transition matrix as a plot;
+\code{get_results(x, "transitions")} for it as a table.
 }

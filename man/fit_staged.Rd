@@ -2,7 +2,8 @@
 % Please edit documentation in R/fixed-measurement.R
 \name{fit_staged}
 \alias{fit_staged}
-\title{Estimate group classes with fixed individual profile definitions}
+\title{Fit a two-level profile model in two stages, holding the profiles fixed while
+the group classes are estimated}
 \usage{
 fit_staged(
   data,
@@ -33,23 +34,32 @@ fit_staged(
 \code{categorical} are continuous.}
 
 \item{id}{Name of the group identifier column (character, factor or
-numeric, without missing values). Required.}
+numeric, without missing values). Required: a staged fit is a two-level
+model.}
 
 \item{n_profiles}{Number of individual profiles.}
 
 \item{n_group_classes}{Number of group classes in the second stage, at
 least two (default 2).}
 
-\item{measurement}{\code{NULL} (default) estimates the first stage from
-\code{data}; otherwise a fitted \code{multilpa} model supplying the measurement
-estimates, with one group class and the same profiles, indicators and
-measurement options. Its covariance structure must be EEI, VVI, EEE or
-VVV, and it must not have \code{weights}, \code{centering}, \code{scaling}, \code{ordinal}
-or \code{count} indicators, \code{direct_effects}, \code{local_dependence} or
-\code{noise}.}
+\item{measurement}{Where the profiles come from:
+\itemize{
+\item \code{NULL} (default): the first stage is estimated from \code{data}, with one
+group class;
+\item a fitted \code{multilpa} model: its measurement estimates are used and
+only the second stage is estimated. It must have one group class and
+the same profiles, indicators and measurement options as this call.
+Its covariance structure must be EEI, VVI, EEE or VVV, and it must
+not have \code{weights}, \code{centering}, \code{scaling}, \code{ordinal} or \code{count}
+indicators, \code{direct_effects}, \code{local_dependence} or \code{noise}.
+}}
 
-\item{variance_model}{\code{"varying"} (default): each profile has its own
-variances or covariance matrix; \code{"equal"}: one shared by all profiles.}
+\item{variance_model, covariance_model}{The covariance structure of the
+continuous indicators, as under \code{\link[=multilpa]{multilpa()}}: \code{variance_model} is
+\code{"varying"} (default, variances per profile) or \code{"equal"} (shared by
+all profiles), and \code{covariance_model} is \code{"diagonal"} (default, no
+within-profile covariances) or \code{"full"}. These give the structures VVI,
+EEI, VVV and EEE; a staged fit takes no other structure.}
 
 \item{n_starts}{Number of EM starts in each estimated stage (default 10).
 With \code{measurement}, only the second stage is estimated.}
@@ -68,13 +78,13 @@ stages; a supplied \code{measurement} must satisfy it.}
 \item{seed}{Optional integer seed. The caller's random-number state is
 restored on exit.}
 
-\item{missing}{\code{"error"} (default) rejects missing indicator values;
-\code{"fiml"} maximises the observed-data likelihood under MAR, integrating
-the missing values out.}
-
-\item{covariance_model}{\code{"diagonal"} (default): the indicators are
-independent within a profile; \code{"full"}: within-profile covariances are
-estimated.}
+\item{missing}{What to do with missing indicator values, in both stages:
+\itemize{
+\item \code{"error"} (default): stop, naming the indicators that have them;
+\item \code{"fiml"}: keep every row and fit each one on the indicators it
+observes (full-information maximum likelihood), valid when the
+missingness depends only on observed values.
+}}
 
 \item{categorical}{Indicators modelled by profile-specific response
 probabilities over their observed categories, the latent class
@@ -84,30 +94,46 @@ parameterization. Naming a subset of \code{vars} fits a mixed-mode model.}
 \item{min_probability}{Lower bound on every categorical response
 probability (default \code{1e-10}).}
 
-\item{time}{Optional column giving each row's occasion within its group,
-used only to order the rows for \code{get_results(x, "sequences")},
-\code{"sequence_summary"} and \code{\link[=plot_sequences]{plot_sequences()}}. Values must be unique within a group and sort in
-their intended order (numbers numerically, factors by level, text
-alphabetically, so \code{"T2"}, \code{"T10"} is refused: use a factor or
+\item{time}{Optional column giving each row's occasion within its group, used
+only to order the rows for \code{get_results(x, "sequences")},
+\code{"sequence_summary"} and \code{\link[=plot_sequences]{plot_sequences()}}. Values must be unique within a
+group and sort in their intended order (numbers numerically, factors by
+level, text alphabetically, so \code{"T2"}, \code{"T10"} is refused: use a factor or
 zero-pad).}
 
-\item{search}{\code{NULL} (default), \code{"kmeans"} or \code{"emEM"} for each estimated
-stage, as under \code{\link[=multilpa]{multilpa()}}: the default is \code{"emEM"} for continuous
-indicators with a shared covariance matrix (EEI or EEE) and \code{"kmeans"}
-otherwise. The second stage starts from the first-stage measurement
-and holds it.}
+\item{search}{How the starting values of each estimated stage are
+searched, as under \code{\link[=multilpa]{multilpa()}}:
+\itemize{
+\item \code{"kmeans"}: every one of the \code{n_starts} starts is run to convergence;
+\item \code{"emEM"}: a larger pool of \code{n_screen} starts is screened with a short
+EM run each, and only the first start and the best of the rest,
+\code{n_starts} in all, are run to convergence;
+\item \code{NULL} (default): \code{"emEM"} for continuous indicators with a shared
+covariance matrix (EEI or EEE), \code{"kmeans"} otherwise.
+}
+
+The second stage starts from the first-stage measurement and holds it.}
 
 \item{n_screen}{For \code{search = "emEM"} only, the size of the screened pool
 (default five times \code{n_starts}, at least \code{n_starts}). The second stage
 skips screening when \code{n_starts = 1}.}
 }
 \value{
-A second-stage \code{multilpa} object whose measurement parameters
-equal the first-stage estimates; \code{fixed} names the held blocks,
-\code{n_parameters} counts the second-stage parameters and
-\code{n_parameters_with_measurement} adds the measurement ones.
-\code{get_results(fit, what = "stages")} summarises the two stages in two
-rows. Every table, plot and diagnostic of a \code{multilpa} fit applies.
+A fitted model of class \code{multilpa}: the second-stage fit, whose
+measurement parameters equal the first-stage estimates. Every table,
+plot and diagnostic of a \code{\link[=multilpa]{multilpa()}} fit applies. What a staged fit
+adds:
+\itemize{
+\item \code{get_results(fit, what = "stages")}: two rows, \code{measurement} (the
+first stage) and \code{membership} (the second), each with its number of
+group classes, the held blocks (\code{fixed}), \code{log_likelihood},
+\code{parameters}, \code{parameters_with_measurement} and \code{converged};
+\item \code{get_results(fit, what = "profile_probabilities")}: the profile
+proportions within each group class, the result of the second stage;
+\item \code{n_parameters} counts the second-stage parameters only, which the
+information criteria use; \code{n_parameters_with_measurement} adds the
+held measurement parameters.
+}
 }
 \description{
 \code{fit_staged()} fits a two-level profile model in two stages. The first
@@ -133,15 +159,23 @@ A measurement fitted to different observations, or with unknown provenance,
 is refused by this bootstrap; resampling the current data cannot represent
 uncertainty from an external measurement sample.
 }
+\section{Conditions}{
+
+\code{latents_bad_argument} for \code{n_group_classes} below two, \code{id = NULL}, or
+a \code{measurement} that is not a \code{multilpa} fit; \code{latents_bad_stage} for a
+\code{measurement} with group classes, with a different number of profiles,
+other indicators, categories or covariance structure than this call,
+or with an option the second stage does not use (listed under
+\code{measurement}); \code{latents_unsupported_noise} for a \code{measurement} with a
+noise component. Both stages raise the conditions of \code{\link[=multilpa]{multilpa()}}.
+}
+
 \examples{
-set.seed(7)
-example_data <- data.frame(
-  school = rep(seq_len(30), each = 8),
-  score_a = stats::rnorm(240), score_b = stats::rnorm(240)
-)
-staged <- fit_staged(example_data, c("score_a", "score_b"), "school",
-                     n_profiles = 2, n_group_classes = 2, n_starts = 2,
-                     seed = 1)
+# Stage 1: profiles of course sessions. Stage 2: classes of students that
+# differ in how often their sessions are in each profile.
+staged <- fit_staged(course_engagement, c("browse", "lectures"),
+                     id = "student", n_profiles = 2, n_group_classes = 2,
+                     n_starts = 2, seed = 1)
 get_results(staged, what = "stages")
 get_results(staged, what = "profile_probabilities")
 }

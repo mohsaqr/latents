@@ -42,11 +42,12 @@ test_that("named plots refuse objects they cannot draw with a classed error", {
                          "student", 2, time = "sequence",
                          transitions = "occasion", n_starts = 1, seed = 1))
   expect_s3_class(general, "multilpa_lta")
-  for (verb in list(plot_profiles, plot_responses, plot_prevalence,
-                    plot_diagnostics)) {
+  for (verb in list(plot_responses, plot_prevalence, plot_diagnostics)) {
     expect_error(verb(general), class = "latents_bad_argument")
   }
-  expect_error(plot_profiles(general), "plot_transitions")
+  expect_error(plot_prevalence(general), "plot_transitions")
+  # Its profiles are drawn from its one measurement block.
+  expect_plot(plot_profiles(general))
   # The general fit's transition matrix is still drawn by its own function.
   expect_plot(plot_transitions(general))
   grid <- enumerate_lpa(srl, c("intrinsic_value", "test_anxiety"), 1:2,

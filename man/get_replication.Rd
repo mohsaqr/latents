@@ -2,30 +2,66 @@
 % Please edit documentation in R/wildcards.R
 \name{get_replication}
 \alias{get_replication}
-\title{How many starts reached the best log likelihood}
+\title{Get how many random starts converged, failed and reached the best log
+likelihood}
 \usage{
 get_replication(x)
 }
 \arguments{
-\item{x}{A fitted model of any family, an enumeration grid, or the
-result of \code{\link[=diagnostics]{diagnostics()}}.}
+\item{x}{One of:
+\itemize{
+\item a fitted model of any family: from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}},
+\code{\link[=multilca]{multilca()}}, \code{\link[=lta]{lta()}} or \code{\link[=mixture_regression]{mixture_regression()}}. The table is the one
+\code{\link[=diagnostics]{diagnostics()}} computes with its defaults;
+\item an enumeration grid of any kind, from \code{\link[=enumerate_lpa]{enumerate_lpa()}},
+\code{\link[=enumerate_lca]{enumerate_lca()}}, \code{\link[=enumerate_classes]{enumerate_classes()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}.
+The tables of the fitted candidates are stacked, with a first column
+\code{candidate} that names the candidate of each row. A candidate whose
+estimation failed has no rows;
+\item the result of \code{\link[=diagnostics]{diagnostics()}}. The table is the one the result holds.
+}}
 }
 \value{
-A data frame, one row per fit (and candidate): \verb{n_starts, n_screened, n_converged, n_failed, n_best_replicated, share, tolerance, best_start, log_likelihood}.
-Any other object raises \code{latents_not_a_fit}.
+A data frame with one row per fit (one row per candidate for a
+grid) and the columns:
+\itemize{
+\item \code{n_starts}: the number of starts that were run to the end;
+\item \code{n_screened}: the number of starts that were only screened in a
+short run; 0 when the fit screened none;
+\item \code{n_converged}: the number of starts that converged;
+\item \code{n_failed}: the number of starts that failed or gave no log
+likelihood;
+\item \code{n_best_replicated}: the number of starts whose log likelihood is
+within \code{tolerance} of the best;
+\item \code{share}: \code{n_best_replicated} divided by \code{n_starts};
+\item \code{tolerance}: the difference in log likelihood up to which two starts
+count as the same solution;
+\item \code{best_start}: the number of the start that gave the fit;
+\item \code{log_likelihood}: the log likelihood of the fit.
+}
+
+A count the fit does not record is \code{NA}.
+
+Errors: \code{latents_not_a_fit} when \code{x} is none of these, for example a
+comparison, pooled imputations or a data frame.
 }
 \description{
-The number of starts, how many were screened, converged and failed,
-and how many replicated the best log likelihood within tolerance. For a fit, the table is the one \code{\link[=diagnostics]{diagnostics()}} computes with its
-defaults; for a grid, the tables of every candidate are stacked with
-a first column \code{candidate} (a candidate whose estimation failed has no
-row); for a diagnostics result, its own table.
+\code{get_replication()} returns how many of a model's random starts ran,
+converged and failed, and how many arrived at the best log likelihood. A best
+solution that only one start reached may not be the highest one.
 }
 \examples{
 fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
            n_starts = 2, seed = 1)
 get_replication(fit)
+
+# One row per candidate of a grid
+grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
+                      n_profiles = 1:3, model = "EEI",
+                      n_starts = 2, seed = 1)
+get_replication(grid)
 }
 \seealso{
-\code{\link[=plot_trust]{plot_trust()}} draws it for a grid; \code{\link[=get_checks]{get_checks()}}.
+\code{\link[=plot_trust]{plot_trust()}} draws the replication of every candidate of a
+grid; \code{\link[=get_checks]{get_checks()}}; \code{\link[=sensitivity]{sensitivity()}} refits a model from other seeds.
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/lpa.R
 \name{enumerate_lca}
 \alias{enumerate_lca}
-\title{Compare latent class models}
+\title{Fit latent class models with different numbers of classes, and compare them}
 \usage{
 enumerate_lca(data, vars, n_classes = 1:4, ...)
 }
@@ -12,21 +12,26 @@ enumerate_lca(data, vars, n_classes = 1:4, ...)
 \item{vars}{Names of the categorical indicator columns.}
 
 \item{n_classes}{Numbers of classes to compare, specified as positive
-integers.}
+integers. Default \code{1:4}.}
 
-\item{...}{Further arguments for \code{\link[=multilca]{multilca()}}, such as \code{missing},
-\code{n_starts}, \code{seed} and \code{min_probability}, except \code{id} and
-\code{n_group_classes}. Every indicator is categorical unless named in
-\code{ordinal} or \code{count}. \code{categorical} is accepted but has no further
-effect; its names must be in \code{vars}.}
+\item{...}{Further arguments for \code{\link[=multilca]{multilca()}}, used for every candidate,
+such as \code{missing} (\code{"error"} or \code{"fiml"}), \code{n_starts}, \code{seed} and
+\code{min_probability}. \code{id} and \code{n_group_classes} are not accepted, and
+neither is \code{model}: a latent class model has no covariance structure.
+Every indicator is categorical unless named in \code{ordinal} or \code{count}.
+\code{categorical} is accepted but has no further effect; its names must be
+in \code{vars}.}
 }
 \value{
 An object of class \code{multilpa_enumeration}, as \code{\link[=enumerate_classes]{enumerate_classes()}}
-returns: \code{\link[=as.data.frame]{as.data.frame()}} gives one row per candidate, \code{\link[=summary]{summary()}} the
-candidate minimizing each criterion, \code{\link[=plot]{plot()}} the criteria against the
-number of classes, and \code{\link[=get_candidate]{get_candidate()}} one fitted candidate. The number
-of classes is reported in the \code{n_profiles} column of the enumeration
-table and selected through the \code{n_profiles} argument of \code{\link[=get_candidate]{get_candidate()}}.
+returns. \code{\link[=get_candidates]{get_candidates()}} (also \code{\link[=as.data.frame]{as.data.frame()}}) gives one row per
+candidate with its log likelihood, information criteria, entropy,
+convergence and replication; \code{\link[=get_best]{get_best()}} and \code{\link[=summary]{summary()}} the candidate
+with the lowest value of each criterion; \code{\link[=plot]{plot()}} the criteria against
+the number of classes; and \code{\link[=get_candidate]{get_candidate()}} one fitted candidate. The
+number of classes is in the \code{n_profiles} column of the candidates table,
+and \code{\link[=get_candidate]{get_candidate()}} selects it through its \code{n_profiles} argument. A
+candidate that could not be fitted keeps its row, with \code{NA} values.
 }
 \description{
 \code{enumerate_lca()} fits latent class models with different numbers of classes
@@ -48,12 +53,17 @@ grouping column as \code{id} and the indicators as \code{categorical}.
 
 \code{latents_bad_argument} when \code{id} or \code{n_group_classes} is passed, or when
 \code{model} is passed (no indicator is continuous); \code{latents_bad_categorical}
-when \code{categorical} names a column not in \code{vars}.
+when \code{categorical} names a column not in \code{vars}. A candidate with more
+free parameters than the table of response patterns has free cells
+warns with class \code{latents_unidentified}. A \code{latents_single_start}
+message names the candidates whose best log likelihood was reached from
+one start only.
 }
 
 \examples{
 models <- enumerate_lca(student_esm, c("time_with_friends",
-                                       "on_social_media", "sports"),
+                                       "on_social_media", "tv_video_games",
+                                       "sports"),
                         n_classes = 1:3, n_starts = 2, seed = 1)
 summary(models)
 }

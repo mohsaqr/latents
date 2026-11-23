@@ -2,25 +2,56 @@
 % Please edit documentation in R/wildcards.R
 \name{plot_bars}
 \alias{plot_bars}
-\title{Profile means as bars}
+\title{Plot the mean of each continuous indicator in each profile as bars}
 \usage{
 plot_bars(x, main = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{A profile or class fit with continuous indicators.}
+\item{x}{One of:
+\itemize{
+\item a profile fit from \code{\link[=lpa]{lpa()}} or \code{\link[=multilpa]{multilpa()}}, with or without
+covariates, that has at least one continuous indicator;
+\item a transition fit from \code{\link[=lta]{lta()}} of class \code{multilpa_transitions} with at
+least one continuous indicator. The general transition fits (class
+\code{multilpa_lta}) are refused;
+\item a \code{\link[=diagnostics]{diagnostics()}} result, which is drawn from the fit it checked.
+}}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot. \code{NULL} (default)
+keeps the view's own text.}
 }
 \value{
 A ggplot object.
-An object with nothing to draw raises \code{latents_nothing_to_plot},
-naming the plot functions that apply; an object the package did not
-return raises \code{latents_not_a_fit}.
+
+Errors:
+\itemize{
+\item \code{latents_nothing_to_plot} when the package returned \code{x} but this
+function has no plot of it: a fit without continuous indicators (a
+latent class fit), an additive or cross-level fit, a mixture regression,
+a growth mixture, a general transition fit or an enumeration grid. For
+an object of the wrong kind, the message names the plot functions that
+apply to it;
+\item \code{latents_not_a_fit} when \code{x} is not a fit, grid or other result of the
+package, for example a data frame;
+\item \code{latents_missing_package} when ggplot2 is not installed.
+}
 }
 \description{
-The profile means of a profile or class fit as grouped bars from zero,
-with 95\% intervals when the fit has standard errors.
+\code{plot_bars()} plots the mean of each continuous indicator in each profile as
+bars that start at zero.
+}
+\details{
+The x-axis lists the continuous indicators and the y-axis is the
+estimated mean, in each indicator's own units. Within an indicator there
+is one bar per profile, side by side. A profile has its own fill colour
+and its own marker at the end of its bar, shown in the legend. When the
+fit has standard errors, each bar carries its 95\% interval; when it has
+none, the subtitle says why. Categorical, ordinal and count indicators
+are not drawn; a caption names them.
+
+\code{plot_profiles(x, what = "bars", scale = "standardized")} draws the same
+bars in standard deviations, and \code{intervals = FALSE} there leaves the
+intervals out.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -30,5 +61,6 @@ plot_bars(fit)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=plot_profiles]{plot_profiles()}}, \code{\link[=plot_heatmap]{plot_heatmap()}}, \code{\link[=plot_raincloud]{plot_raincloud()}}.
+\code{\link[=plot_profiles]{plot_profiles()}} for the same means as lines and for the
+options of this view; \code{\link[=plot_heatmap]{plot_heatmap()}}, \code{\link[=plot_raincloud]{plot_raincloud()}}.
 }

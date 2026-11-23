@@ -107,12 +107,13 @@ test_that("descriptives describes what is there and says how it is nested", {
   expect_identical(described$variable, .activity)
   expect_identical(names(described),
                    c("variable", "n", "n_missing", "mean", "sd", "min", "max",
-                     "n_distinct", "n_groups", "icc"))
+                     "n_distinct", "n_groups", "sd_within", "sd_between",
+                     "icc"))
   expect_true(all(described$n == nrow(engagement_small)))
   expect_true(all(described$n_groups == length(unique(engagement_small$student))))
   # Without an id there is nothing to report an icc against.
   plain <- descriptives(engagement_small, vars = "browse")
-  expect_false(any(c("n_groups", "icc") %in% names(plain)))
+  expect_false(any(c("n_groups", "sd_within", "sd_between", "icc") %in% names(plain)))
   expect_error(descriptives(engagement_small, vars = "not_a_column"))
 })
 

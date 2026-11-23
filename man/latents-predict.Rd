@@ -6,7 +6,8 @@
 \alias{simulate.latents_mixture_regression}
 \alias{latents-predict}
 \alias{predict.multilpa}
-\title{Predict from and simulate a fitted model}
+\title{Predict class membership or outcomes from a fitted model, and simulate data
+from it}
 \usage{
 \method{predict}{latents_mixture_regression}(
   object,
@@ -21,32 +22,73 @@
 \method{predict}{multilpa}(object, newdata = NULL, type = c("class", "posterior", "density"), ...)
 }
 \arguments{
-\item{object}{A fitted model.}
+\item{object}{A fitted model with a prediction method:
+\itemize{
+\item a profile or class model from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}} or
+\code{\link[=multilca]{multilca()}} without membership covariates;
+\item a mixture regression from \code{\link[=mixture_regression]{mixture_regression()}};
+\item a growth mixture (\code{mixture_regression(random = )}).
+}
 
-\item{newdata}{\code{NULL} for the fitted rows, or a data frame with the
-indicator or predictor columns (and \code{id} and membership covariates where
-the model uses them).}
+A membership-covariate fit and an \code{\link[=lta]{lta()}} fit raise
+\code{latents_unsupported_prediction}; the additive, dispersion and
+cross-level families of \code{\link[=multilpa]{multilpa()}} have no \code{predict()} method.
+\code{simulate()} takes a mixture regression or a growth mixture only.}
 
-\item{type}{For a profile or class model: \code{"class"} (modal profile and
-group class with their posteriors), \code{"posterior"} (every profile's
-probability as well) or \code{"density"} (each row's log density, marginal
-over group classes, for scoring or held-out likelihood). For a mixture
-regression: \code{"response"} (the mean outcome over classes; expected
-successes for a binomial count response),
-\code{"class_response"} (one row per observation and class), \code{"posterior"} (class
-probabilities given the outcome, which \code{newdata} must contain) or
-\code{"probabilities"} (each category under each class; ordinal family only).
-For a growth mixture: \code{"response"} (the class trajectories averaged with
-each person's prior class probabilities), \code{"class_response"} (one row per
-observation and class, with random effects set to zero), and, using outcomes in
-\code{newdata}, \code{"posterior"} (one row per person), \code{"class_conditional"}
-(one row per observation and class: the class trajectory plus the person's
-random effects predicted under that class, E(b | y, class)),
-\code{"conditional"} (those averaged with the posterior class probabilities)
-and \code{"random_effects"} (one row per person and class with its posterior
-probability; their posterior-weighted mean is \code{lcmm::predictRE()}).}
+\item{newdata}{\code{NULL} (default) for the fitted rows, or a data frame with
+the indicator or predictor columns (and \code{id} and membership covariates
+where the model uses them).}
 
-\item{...}{Unused.}
+\item{type}{What to predict. The first value listed for each kind of
+model is its default.
+
+For a profile or class model:
+\itemize{
+\item \code{"class"} (default): each row's most probable profile and its
+posterior probability, and in a two-level model the group's most
+probable group class and its posterior probability;
+\item \code{"posterior"}: the same, plus the posterior probability of every
+profile;
+\item \code{"density"}: each row's log density under the fitted model, marginal
+over profiles and group classes, for scoring or a held-out
+likelihood.
+}
+
+For a mixture regression:
+\itemize{
+\item \code{"response"} (default): the mean outcome averaged over the classes
+with their prior probabilities (expected successes for a binomial
+count response);
+\item \code{"class_response"}: the mean outcome under each class, one row per
+observation and class;
+\item \code{"posterior"}: each row's class probabilities given its outcome,
+which \code{newdata} must contain, and the most probable class;
+\item \code{"probabilities"}: the probability of each outcome category under
+each class; ordinal family only.
+}
+
+For a growth mixture:
+\itemize{
+\item \code{"response"} (default): the class mean trajectories averaged with
+each person's prior class probabilities;
+\item \code{"class_response"}: each class's mean trajectory, with random effects
+set to zero, one row per observation and class;
+\item \code{"posterior"}: each person's class probabilities given the observed
+outcomes, one row per person;
+\item \code{"class_conditional"}: one row per observation and class: the class
+trajectory plus the person's random effects predicted under that
+class, E(b | y, class);
+\item \code{"conditional"}: the \code{"class_conditional"} trajectories averaged with
+the posterior class probabilities, one row per observation;
+\item \code{"random_effects"}: the predicted random effects, one row per person
+and class with its posterior probability; their posterior-weighted
+mean is \code{lcmm::predictRE()}.
+}
+
+The last four use the outcomes, which \code{newdata} must then contain.}
+
+\item{...}{Unused. A profile, class or growth mixture \code{predict()} warns
+with \code{latents_unused_argument} for an argument it does not take.}
 
 \item{trials}{For binomial mixture-regression predictions, the number of
 trials: one non-negative whole number, a vector with one value per row,
@@ -57,21 +99,62 @@ defaults to one trial. For \code{type = "posterior"}, any explicit value must
 agree with the observed response. Predictions remain on the expected
 success-count scale; \code{trials = 1} requests probabilities for each trial.}
 
-\item{nsim}{Number of simulated outcome vectors.}
+\item{nsim}{Number of simulated outcome vectors (default 1).}
 
-\item{seed}{\code{NULL} uses and advances the caller's random stream. An integer
-makes simulation reproducible and restores the caller's \code{.Random.seed}.
+\item{seed}{\code{NULL} (default) uses and advances the caller's random
+stream. An integer makes the simulation reproducible and restores the
+caller's \code{.Random.seed}.
 R does not store the cached Box-Muller normal draw in \code{.Random.seed}, so
 the next normal draw is not preserved when that generator has a cached draw.}
 }
 \value{
-A base \code{data.frame} with one row per row of \code{newdata} (per row and
-class for \code{"class_response"} and \code{"class_conditional"}, per row, class and
-category for \code{"probabilities"}), starting with \code{row}, its position;
-\code{"posterior"} and \code{"random_effects"} of a growth mixture have one row per
-person (and class), starting with the \code{id} column. \code{simulate()}
-returns one row per fitted row and one column per simulation, \code{sim_1},
-\code{sim_2}, ...
+A base \code{data.frame}. Its rows and columns depend on the model and
+\code{type}; \code{row} is the row's position in \code{newdata} (or in the fitted
+data).
+
+Profile or class model, one row per row of the data:
+\itemize{
+\item \code{"class"}: \code{row}, the group identifier (two-level models), \code{profile}
+(the most probable profile; 0 for the noise component), \code{posterior}
+(its probability) and, with more than one group class, \code{group_class}
+and \code{group_posterior};
+\item \code{"posterior"}: the same, plus \code{probability_profile_1},
+\code{probability_profile_2} and so on;
+\item \code{"density"}: \code{row} and \code{log_density}.
+}
+
+Mixture regression:
+\itemize{
+\item \code{"response"}: \code{row} and \code{fitted}, one row per observation;
+\item \code{"class_response"}: \code{row}, \code{class}, \code{prior} (the class's prior
+probability for the row) and \code{fitted}, one row per observation and
+class;
+\item \code{"posterior"}: \code{row}, the \code{id} column (when classes are assigned to
+groups), \code{class} (the most probable class), \code{posterior} (its
+probability) and \code{probability_class_1}, \code{probability_class_2} and so
+on, one row per observation;
+\item \code{"probabilities"}: \code{row}, \code{class}, \code{category} and \code{probability}, one
+row per observation, class and category.
+}
+
+Growth mixture:
+\itemize{
+\item \code{"response"} and \code{"conditional"}: \code{row} and \code{fitted}, one row per
+observation;
+\item \code{"class_response"}: \code{row}, \code{class}, \code{prior} and \code{fitted}, one row per
+observation and class;
+\item \code{"class_conditional"}: \code{row}, \code{class}, \code{posterior} (the person's
+posterior probability of the class) and \code{fitted}, one row per
+observation and class;
+\item \code{"posterior"}: the \code{id} column, \code{class} (the most probable class),
+\code{probability} (its probability) and \code{posterior_class_1},
+\code{posterior_class_2} and so on, one row per person;
+\item \code{"random_effects"}: the \code{id} column, \code{class}, \code{posterior} and one
+column per random effect, one row per person and class.
+}
+
+\code{simulate()} returns one row per fitted row and one column per
+simulation, \code{sim_1}, \code{sim_2}, ...
 }
 \description{
 \code{predict()} applies a fitted model to the original sample or new
@@ -150,6 +233,13 @@ ignores.
 }
 
 \examples{
+# Classify new observations with a fitted profile model.
+profiles <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
+                n_starts = 2, seed = 1)
+predict(profiles, data.frame(eruptions = c(2, 4.5), waiting = c(55, 80)),
+        type = "posterior")
+
+# The mean outcome under each class of a mixture regression.
 fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
                           n_starts = 2, seed = 1)
 predict(fit, data.frame(hours = c(2, 10)), type = "class_response")

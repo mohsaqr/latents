@@ -2,33 +2,52 @@
 % Please edit documentation in R/wildcards.R
 \name{overview}
 \alias{overview}
-\title{Everything about any object, printed and drawn}
+\title{Print and plot everything about any object of the package: its summary, its
+checks and every plot}
 \usage{
 overview(x, plots = TRUE)
 }
 \arguments{
-\item{x}{Any object returned by the package.}
+\item{x}{Any object returned by the package: a fitted model, pooled
+imputations, an enumeration grid, a comparison, a bootstrap result, a
+sensitivity analysis or a diagnostics result.}
 
-\item{plots}{\code{TRUE} (the default) draws the plots; \code{FALSE} prints only.}
+\item{plots}{Whether to draw the plots:
+\itemize{
+\item \code{TRUE} (default): prints, then draws every plot. The plots need the
+ggplot2 package; without it only the printed part is shown;
+\item \code{FALSE}: prints only.
+}}
 }
 \value{
-\code{x}, invisibly. Called for its printed and drawn output.
+\code{x}, invisibly. The function is called for what it prints and
+draws.
 
-An object the package did not return raises \code{latents_not_a_fit}.
+Errors: \code{latents_not_a_fit} when \code{x} is not a fit, grid or other
+result of the package, for example a data frame; \code{latents_bad_argument}
+when \code{plots} is not \code{TRUE} or \code{FALSE}.
 }
 \description{
-\code{overview()} takes any object the package returns and shows all of it: the
-summary, the diagnostic checks and every plot the object can draw.
+\code{overview()} prints and plots everything about any object the package
+returns: the summary, the diagnostic checks where the object has them, and
+every plot the object can draw. What is shown depends on the object:
 \itemize{
-\item A profile, class or transition fit: \code{\link[=report]{report()}} (summary, descriptives,
-checks, every plot view).
-\item Any other fit (mixture regression, growth mixture, general transition,
-additive, cross-level, pooled): its summary, its \code{\link[=diagnostics]{diagnostics()}} checks
-where defined, and \code{\link[=plot_all]{plot_all()}}.
-\item An enumeration grid: its summary and \code{\link[=plot_all]{plot_all()}} (criteria, entropy,
-AvePP, smallest class, BIC changes, trust, tree).
-\item A comparison, bootstrap test, sensitivity analysis or diagnostics result:
-the object printed and its plot.
+\item a profile, class or transition fit of \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}},
+\code{\link[=multilca]{multilca()}} or \code{\link[=lta]{lta()}} (class \code{multilpa_transitions}): the output of
+\code{\link[=report]{report()}}, that is, the summary, the descriptives, the checks and
+every plot view;
+\item a fit of another family (a mixture regression, a growth mixture, a
+general transition fit, an additive or a cross-level fit): its
+summary, the checks of \code{\link[=diagnostics]{diagnostics()}}, and the plots of \code{\link[=plot_all]{plot_all()}};
+\item pooled imputations: the summary and the plots of \code{\link[=plot_all]{plot_all()}};
+\item an enumeration grid: its summary and the plots of \code{\link[=plot_all]{plot_all()}}
+(criteria, entropy, AvePP, criterion changes, heat map, smallest
+class, trust and tree);
+\item a comparison, a bootstrap test, a bootstrap table of
+\code{\link[=parameter_inference]{parameter_inference()}} or a sensitivity analysis: the object or its
+summary printed, and its plot;
+\item a \code{\link[=diagnostics]{diagnostics()}} result: the result printed, and the plots of the fit
+it checked.
 }
 }
 \examples{
@@ -37,5 +56,6 @@ fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
 overview(fit, plots = FALSE)
 }
 \seealso{
-\code{\link[=report]{report()}}, \code{\link[=plot_all]{plot_all()}}, \code{\link[=get_checks]{get_checks()}}.
+\code{\link[=report]{report()}} for the fits it covers; \code{\link[=plot_all]{plot_all()}} for the plots
+alone; \code{\link[=get_checks]{get_checks()}} for the checks as a table.
 }

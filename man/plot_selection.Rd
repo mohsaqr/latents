@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot-named.R
 \name{plot_selection}
 \alias{plot_selection}
-\title{Model-selection evidence across a candidate grid}
+\title{Plot the evidence for choosing the number of classes from an enumeration grid}
 \usage{
 plot_selection(
   x,
@@ -15,35 +15,57 @@ plot_selection(
 }
 \arguments{
 \item{x}{An enumeration grid from \code{\link[=enumerate_classes]{enumerate_classes()}},
-\code{\link[=enumerate_lpa]{enumerate_lpa()}}, \code{\link[=enumerate_lca]{enumerate_lca()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}.}
+\code{\link[=enumerate_lpa]{enumerate_lpa()}}, \code{\link[=enumerate_lca]{enumerate_lca()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}. A
+family grid (\code{enumerate_classes(family = )}) has no numbers of
+profiles to lay the views out by and draws \code{"diagnostics"} only.}
 
-\item{what}{\code{"all"} (default) draws the five views as a list, or one of
-\code{"deltas"}, \code{"heatmap"}, \code{"smallest"}, \code{"trust"} and \code{"diagnostics"}.}
+\item{what}{Which view to draw:
+\itemize{
+\item \code{"all"} (default): the five views below, as a list;
+\item \code{"deltas"}: the decrease in the criterion \code{using} with each added
+class and each added group class (\code{\link[=plot_deltas]{plot_deltas()}});
+\item \code{"heatmap"}: the criterion \code{using} over the numbers of classes and
+group classes, relative to its lowest value (\code{\link[=plot_heatmap]{plot_heatmap()}});
+\item \code{"smallest"}: the share of the smallest class of every candidate,
+with 5\% drawn dashed (\code{\link[=plot_sizes]{plot_sizes()}});
+\item \code{"trust"}: whether each candidate converged, whether it has an
+estimate at a bound, and how many starts reached its best log
+likelihood (\code{\link[=plot_trust]{plot_trust()}});
+\item \code{"diagnostics"}: the relative entropy and the lowest average
+posterior probability (AvePP) of every candidate, with \code{cutoff}
+drawn dashed (\code{\link[=plot_entropy]{plot_entropy()}}, \code{\link[=plot_avepp]{plot_avepp()}}).
+}}
 
-\item{using}{The criterion \code{"deltas"}, \code{"heatmap"} and \code{"selection"} use:
-when not given, \code{"bic_groups"} on a profile or class grid and \code{"bic"} on
-the others.}
+\item{using}{The information criterion that \code{"deltas"} and \code{"heatmap"}
+read: one criterion column of the grid. When not given it is
+\code{"bic_groups"} on a profile or class grid and \code{"bic"} on a transition
+or regression grid.}
 
-\item{cutoff}{The AvePP cutoff drawn dashed by \code{"avepp"}, \code{"diagnostics"}
-and \code{"selection"} (default 0.8).}
+\item{cutoff}{The AvePP cutoff drawn dashed by \code{"diagnostics"}: one
+number above 0 and at most 1 (default 0.8).}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot, each one string;
+\code{NULL} (default) keeps the view's own.}
 }
 \value{
-A ggplot object; a \code{latents_plots} list for \code{"all"}. A view
-the kind of grid does not offer raises
-\code{latents_unsupported_view}.
+A ggplot object, which draws the plot when printed; for \code{"all"}
+a \code{latents_plots} list of the five ggplot objects, named \code{deltas},
+\code{heatmap}, \code{smallest}, \code{trust} and \code{diagnostics}, which draws every
+plot when printed. Conditions raised:
+\itemize{
+\item \code{latents_unsupported_view}: a view the kind of grid does not offer
+(every view but \code{"diagnostics"} on a family grid, \code{"all"}
+included); the message gives the reason and what the grid offers;
+\item \code{latents_bad_argument}: \code{x} is not an enumeration grid, or \code{using}
+is not a criterion of the grid.
+}
 }
 \description{
-Five views that bear on the choice of a solution, none of which selects
-one: the decrease in a criterion with each added class (\code{"deltas"}), the
-criterion over profiles and group classes relative to its lowest value
-(\code{"heatmap"}), the smallest class share with 5\% dashed (\code{"smallest"}),
-convergence, boundary and replication of every candidate (\code{"trust"}), and
-relative entropy with the lowest AvePP (\code{"diagnostics"}). Each is also a
-function of its own: \code{\link[=plot_deltas]{plot_deltas()}}, \code{\link[=plot_heatmap]{plot_heatmap()}}, \code{\link[=plot_sizes]{plot_sizes()}},
-\code{\link[=plot_trust]{plot_trust()}}, \code{\link[=plot_entropy]{plot_entropy()}} and \code{\link[=plot_avepp]{plot_avepp()}}.
+\code{plot_selection()} plots five views of an enumeration grid that bear on the
+choice of a solution: how much a criterion improves with each added class,
+the criterion over the whole grid, the smallest class, whether each estimate
+can be trusted, and how sharply each candidate classifies. None of them
+selects a model. Each view is also a function of its own, named below.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -51,9 +73,11 @@ grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
                       n_profiles = 1:3, model = "EEI",
                       n_starts = 2, seed = 1)
 plot_selection(grid, what = "deltas")
+plot_selection(grid, what = "trust")
 \dontshow{\}) # examplesIf}
 }
 \seealso{
 \code{\link[=get_deltas]{get_deltas()}}, \code{\link[=get_knees]{get_knees()}} and \code{\link[=get_best]{get_best()}} for the tables;
-\code{\link[=plot_enumeration]{plot_enumeration()}} for the information criteria.
+\code{\link[=plot_enumeration]{plot_enumeration()}} for the information criteria; \code{\link[=plot_views]{plot_views()}}
+lists the views a grid offers.
 }

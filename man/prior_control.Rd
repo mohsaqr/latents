@@ -2,39 +2,52 @@
 % Please edit documentation in R/prior.R
 \name{prior_control}
 \alias{prior_control}
-\title{Specify prior settings for Gaussian profile estimation}
+\title{Set a prior that regularises the means and covariances of Gaussian profile
+models}
 \usage{
 prior_control(shrinkage = 0.01, mean = NULL, dof = NULL, scale = NULL)
 }
 \arguments{
 \item{shrinkage}{Non-negative prior precision factor for the means, \code{kappa}
-(default \code{0.01}, as in mclust). Zero leaves the means unshrunk.}
+(default \code{0.01}, as in mclust). A larger value pulls the profile means
+more strongly towards the prior \code{mean}; zero leaves the means unshrunk
+and keeps only the prior on the covariances.}
 
-\item{mean}{Optional prior mean, one value per continuous indicator on the
-scale used to fit the profiles. Use original indicator units when no
-transformation is requested, and the transformed scale under
-\code{\link[=multilpa]{multilpa()}}'s \code{centering} or \code{scaling}. The separate internal centring
-used for numerical stability is handled automatically. Requires a
-positive \code{shrinkage}.}
+\item{mean}{Prior mean. \code{NULL} (default) uses the mean of each indicator.
+Otherwise one value per continuous indicator on the scale used to fit
+the profiles: original indicator units when no transformation is
+requested, and the transformed scale under \code{\link[=multilpa]{multilpa()}}'s \code{centering}
+or \code{scaling}. The separate internal centring used for numerical
+stability is handled automatically. Requires a positive \code{shrinkage}.}
 
-\item{dof}{Optional prior degrees of freedom, a single positive number.}
+\item{dof}{Prior degrees of freedom. \code{NULL} (default) uses \code{d + 2} for \code{d}
+indicators. Otherwise a single positive number; a larger value gives
+the prior \code{scale} more weight against the data.}
 
-\item{scale}{Optional prior scale: a single positive number for an
-axis-parallel or spherical structure, or a positive-definite \code{d} by \code{d}
-matrix for an ellipsoidal one.}
+\item{scale}{Prior scale of the covariance. \code{NULL} (default) computes it
+from the data, as described under \emph{Details}. Otherwise a single
+positive number for a structure without covariances (codes ending in
+\code{I}), or a positive-definite \code{d} by \code{d} matrix for a structure with
+covariances (the other codes).}
 }
 \value{
 An object of class \code{latents_prior}: a list with \code{shrinkage}, \code{mean},
 \code{dof} and \code{scale}, the last three \code{NULL} where the default is to be
 computed from the data. Its \code{print()} method shows these settings and
-returns the object invisibly.
+returns the object invisibly. The object holds settings only; nothing
+is estimated until it is passed to a fitting function.
 }
 \description{
 \code{prior_control()} specifies prior settings that regularise the estimation
 of Gaussian profile means and covariance parameters. The returned object
-is supplied to the \code{prior} argument of \code{\link[=multilpa]{multilpa()}}. The prior applies to
-the continuous-indicator measurement parameters; class-membership
-probabilities are estimated without a prior.
+is supplied to the \code{prior} argument of \code{\link[=lpa]{lpa()}} or \code{\link[=multilpa]{multilpa()}}. The prior
+applies to the continuous-indicator measurement parameters;
+class-membership probabilities are estimated without a prior.
+
+A prior is used when maximum likelihood gives a profile whose variance
+collapses towards zero, or when a profile rests on few observations. It
+pulls the variances towards a common scale and, with a positive
+\code{shrinkage}, the profile means towards a common mean.
 
 The settings control mean shrinkage and the prior scale and degrees of
 freedom for covariance estimation. Unspecified values are determined from
@@ -67,17 +80,42 @@ these fits; supported bootstrap inference refits the model with the prior
 settings.
 }
 
+\section{Where a prior applies}{
+
+A prior is available for the covariance structures \code{"EII"}, \code{"VII"},
+\code{"EEI"}, \code{"VEI"}, \code{"EVI"}, \code{"VVI"}, \code{"EEE"}, \code{"EEV"}, \code{"VEV"} and
+\code{"VVV"}; mclust defines none for \code{"VEE"}, \code{"EVE"}, \code{"VVE"} and \code{"EVV"}.
+The indicators must all be continuous and complete. A prior is not
+combined with \code{categorical}, \code{ordinal} or \code{count} indicators, missing
+values, \code{fixed}, membership covariates or sampling weights, and \code{\link[=lta]{lta()}}
+has no \code{prior} argument. \code{\link[=multilpa]{multilpa()}} refuses these combinations with
+class \code{latents_unsupported_prior} (\code{latents_unsupported_indicator} for
+ordinal or count indicators, \code{latents_unsupported_weights} for weights).
+}
+
 \section{Conditions}{
 
 \code{latents_bad_argument} for a negative or non-finite \code{shrinkage}, a
 non-finite \code{mean}, a \code{mean} with a zero \code{shrinkage}, a non-positive or
 non-finite \code{dof}, or a \code{scale} that is neither a positive number nor a
-square, symmetric, positive-definite matrix.
+square, symmetric, positive-definite matrix. A \code{mean} or \code{scale} whose
+size does not match the indicators or the structure is refused when the
+model is fitted, also with \code{latents_bad_argument}.
 }
 
 \examples{
 prior_control()
 prior_control(shrinkage = 0)
+
+# Used in a fit:
+fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
+           prior = prior_control(), n_starts = 2, seed = 1)
+fit
+}
+\references{
+Fraley, C., & Raftery, A. E. (2007). Bayesian regularization
+for normal mixture estimation and model-based clustering. \emph{Journal of
+Classification}, 24, 155-181. \doi{10.1007/s00357-007-0004-5}
 }
 \seealso{
 \code{\link[=multilpa]{multilpa()}} for the supported model specifications.

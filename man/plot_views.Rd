@@ -2,22 +2,73 @@
 % Please edit documentation in R/plot.R
 \name{plot_views}
 \alias{plot_views}
-\title{The plot views of a fitted model, or of one grid}
+\title{List the views a plot call can draw for a fitted model or a grid, with what
+each one shows}
 \usage{
 plot_views(x = NULL)
 }
 \arguments{
-\item{x}{\code{NULL} (default), or an enumeration grid.}
+\item{x}{What to list the views of:
+\itemize{
+\item \code{NULL} (default): the views of a fit's \code{plot()} (\code{"profiles"},
+\code{"bars"}, \code{"heatmap"}, \code{"raincloud"}, \code{"parallel"}, \code{"pairs"},
+\code{"responses"}, \code{"probabilities"}, \code{"sequences"}, \code{"transitions"},
+\code{"sizes"}, \code{"entropy"}, \code{"posteriors"}, \code{"avepp"}), a grid's
+\code{"enumeration"} and \code{"tree"}, and \code{"all"};
+\item an enumeration grid from \code{\link[=enumerate_classes]{enumerate_classes()}}, \code{\link[=enumerate_lpa]{enumerate_lpa()}},
+\code{\link[=enumerate_lca]{enumerate_lca()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}: that grid's
+criteria, \code{"all"}, and the views \code{"entropy"}, \code{"avepp"},
+\code{"diagnostics"}, \code{"deltas"}, \code{"heatmap"}, \code{"smallest"}, \code{"trust"},
+\code{"selection"} and \code{"tree"}.
+}
+
+A fitted model is not taken: the views without an argument are the
+same for every profile, class and homogeneous transition fit, and a fit
+draws the ones it has the indicators, occasions or group classes for. A
+general transition fit (class \code{multilpa_lta}) has its own three:
+\code{"transitions"}, \code{"profiles"} and \code{"sequences"}.}
 }
 \value{
-A data frame, one row per view: \code{type} (the value for \code{what}),
-\code{group} and \code{description}; for a grid also \code{supported} and \code{reason}.
+A data frame with one row per view, in the order given above.
+
+Without \code{x}, three character columns:
+\itemize{
+\item \code{type}: the value to pass as \code{what};
+\item \code{group}: \code{"measurement"}, \code{"structure"}, \code{"diagnostics"},
+\code{"selection"} or \code{"every"};
+\item \code{description}: what the view draws.
+}
+
+With a grid, five columns:
+\itemize{
+\item \code{type}: the value to pass as \code{what};
+\item \code{group}: \code{"criteria"}, \code{"quality"}, \code{"selection"} or \code{"tree"};
+\item \code{supported}: \code{TRUE} when this kind of grid offers the view;
+\item \code{description}: what the view draws;
+\item \code{reason}: why a view is not offered; \code{NA} when it is.
+}
+
+An \code{x} that is neither \code{NULL} nor an enumeration grid raises
+\code{latents_bad_argument}.
 }
 \description{
-Without an argument, one row per \code{what} value of a fitted model's
-\code{plot()}. With a grid, one row per \code{what} value of that grid's
-\code{\link[=plot_enumeration]{plot_enumeration()}}, saying whether the grid offers it and, if not, why.
+\code{plot_views()} lists the values that \code{what} takes in a plot call, with one
+line on what each plots. Without an argument it lists the views of \code{plot()}
+for a profile, class or transition fit, and the two views of \code{plot()} for an
+enumeration grid. Given a grid, it lists every \code{what} value of
+\code{\link[=plot_enumeration]{plot_enumeration()}} for that grid and says whether the grid offers it.
 }
 \examples{
 plot_views()
+
+grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
+                      n_profiles = 1:3, model = "EEI",
+                      n_starts = 2, seed = 1)
+plot_views(grid)
+}
+\seealso{
+\code{\link[=plot_profiles]{plot_profiles()}}, \code{\link[=plot_responses]{plot_responses()}}, \code{\link[=plot_sequences]{plot_sequences()}},
+\code{\link[=plot_prevalence]{plot_prevalence()}}, \code{\link[=plot_transitions]{plot_transitions()}} and \code{\link[=plot_diagnostics]{plot_diagnostics()}}
+draw a fit's views by name; \code{\link[=plot_enumeration]{plot_enumeration()}}, \code{\link[=plot_selection]{plot_selection()}}
+and \code{\link[=plot_tree]{plot_tree()}} a grid's.
 }

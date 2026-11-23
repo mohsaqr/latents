@@ -1,3 +1,50 @@
+# latents 1.3.10
+
+* `descriptives()` with `id` also reports `sd_within`, the pooled
+  within-group standard deviation, and `sd_between`, the standard deviation
+  of the group means: for repeated measures, how much a person's values vary
+  around their own mean and how much persons differ.
+
+* The help pages are revised throughout: every argument with a fixed set of
+  values lists each value, its default and what it does; each page says
+  which fits the function works for and which it refuses, with the
+  condition raised; and the returned tables list their columns. Several
+  statements that did not match the code were corrected. Every function's
+  title is now a descriptive line that starts with a verb (Fit, Plot, Get,
+  ...), and its first paragraph says what the function fits, plots or
+  returns.
+
+* An `lta()` fit with ordinal, count or weighted indicators, or with a
+  mover-stayer class, now draws each unit's sequence of profiles
+  (`plot_sequences()`) and, when its indicators are continuous or carry
+  numeric category labels, its profiles (`plot_profiles()`); when its
+  transitions are homogeneous and first order it gives its transition
+  network (`get_tna()`, `get_group_tna()`; the stayers get their own
+  network). Before, these refused the fit. `plot_all()` of an ordinal such
+  fit no longer fails.
+* `plot_sequences()` keeps an occasion that no group answered as an empty
+  column; before, it failed when the data held such an occasion.
+* `plot_sequences()` sorts the rows within each class by the unit's most
+  frequent profile and the share of its sequence it holds; with one class
+  the rows are blocked by that profile (noise counts as a state of its own,
+  "Mostly noise"), and a mover-stayer fit's class is labelled "Stayers". On
+  a dense grid without noise or absent occasions, occasions that observe
+  nothing are drawn pale and unmarked. Profiles whose shares are equal take
+  their colour and order by profile number.
+
+* `three_step()` gains `missing = "exclude"`: units whose distal outcome is
+  missing leave step three, as Latent GOLD's `missing excludeall` drops them,
+  while the step-one fit and its posteriors stay unchanged. At
+  `level = "groups"` a group's outcome must be missing on all its rows or on
+  none. The default, `"error"`, still refuses a missing outcome.
+* For a fit whose indicators are all ordinal, `plot_profiles()` draws each
+  profile's expected category, and `plot_responses()` and `plot_heatmap()`
+  draw the category probabilities. Before, each of these plots refused the
+  fit.
+* `get_results(fit)` and `as.data.frame(fit)` now return the response table
+  of a fit without continuous indicators (categorical, then ordinal, then
+  count). Before, they returned an empty profile table, for `lca()` fits too.
+
 # latents 1.3.7
 
 * No change to the package. The verification material (`equivalence/`: the

@@ -18,7 +18,13 @@
 #'     group column are invalid: too few rows, a duplicated or absent column
 #'     name, an indicator that is not a numeric vector, an indicator that is
 #'     constant or entirely unobserved, missing or non-finite values under
-#'     `missing = "error"`, or a missing group identifier.}
+#'     `missing = "error"`, or a missing group identifier. Also raised when
+#'     an outcome, covariate or variable named in an argument is not a column
+#'     of the data given to [three_step()], [r3step()] or [descriptives()];
+#'     when `newdata` given to `predict()` cannot be used
+#'     ([latents-predict]); and when `imputed` given to [pool_imputations()]
+#'     is not a list of at least two data frames with the same columns and
+#'     rows.}
 #'   \item{`latents_unweightable_level`}{The stored sampling weights cannot be
 #'     aligned with a classification level, for example in an older cross-level
 #'     fit without a row-to-group mapping. [diagnostics()] handles this condition
@@ -159,9 +165,10 @@
 #'     likelihood, indicating that at least one fit has not reached its global
 #'     maximum.}
 #'   \item{`latents_bad_outcome`}{A distal outcome given to [three_step()] is
-#'     of a type the requested method cannot handle, varies within a group
-#'     when a group-level outcome is requested, or is a measurement
-#'     indicator.}
+#'     a measurement indicator, varies within a group when a group-level
+#'     outcome is requested (within a person, for a trajectory model), or
+#'     takes a single category or value among the units analysed, so it has
+#'     no distribution to compare across classes.}
 #'   \item{`latents_bad_covariate`}{A predictor given to [r3step()] varies
 #'     within a group when group-level membership is predicted, makes the
 #'     design rank deficient, or is a measurement indicator; or a predictor
@@ -231,9 +238,9 @@
 #'     fixed by the fit and has no confidence interval. Raised by
 #'     [confint()].}
 #'   \item{`latents_unsupported_sensitivity`}{[sensitivity()] cannot refit the
-#'     requested model or align its class labels. This includes directly fitted
-#'     fixed-measurement models whose original free starting values were not
-#'     retained.}
+#'     requested model or align its class labels: a membership-covariate fit,
+#'     or a directly fitted fixed-measurement model whose original free
+#'     starting values were not retained.}
 #'   \item{`latents_unsupported_three_step`}{[three_step()] or [r3step()] was
 #'     called on a fit the correction does not cover: a membership-covariate
 #'     fit, whose classification errors depend on the predictors (the
@@ -241,9 +248,13 @@
 #'     mixture; a general [lta()] fit (occasion-varying, second-order or
 #'     covariate transitions, occasion-specific measurement, a stayer class,
 #'     or ordinal or count indicators), except that [r3step()] takes
-#'     `initial_covariates` and `transition_covariates` for a covariate-free
-#'     one; an additive, dispersion or cross-level [multilpa()] fit; or a
-#'     mixture regression with observation classes.}
+#'     `initial_covariates` and `transition_covariates` for one with
+#'     invariant measurement, one group class, no covariates and no stayer
+#'     class; an additive, dispersion or cross-level [multilpa()] fit; or a
+#'     mixture regression with observation classes. Also raised by
+#'     `three_step(step_one = "estimated")` for a transition fit, a
+#'     trajectory model, a staged fit or a fit holding a measurement block
+#'     fixed.}
 #'   \item{`latents_unsupported_bootstrap`}{[bootstrap_lrt()] was called on a
 #'     person-centred fit, for which raw data cannot be simulated under the
 #'     null model because the group baselines were removed before
@@ -259,12 +270,14 @@
 #'   \item{`latents_no_time`}{A sequence table or function was requested for a
 #'     fit made without `time`.}
 #'   \item{`latents_unsupported_prediction`}{`predict()` was called on a
-#'     growth mixture, a membership-covariate fit or a latent transition fit,
-#'     for which prediction on new rows is not implemented; results for the
-#'     fitted rows are available from [get_results()].}
+#'     membership-covariate fit or a latent transition fit, for which
+#'     prediction is not implemented; the posterior probabilities of the
+#'     fitted rows are `get_results(x, "posteriors")`.}
 #'   \item{`latents_missing_package`}{A required package from `Suggests` is
-#'     not installed. Raised by [get_tna()] and [get_group_tna()] when `tna`
-#'     is absent; the message names the package and how to install it.}
+#'     not installed. Raised by the plot functions when `ggplot2` is absent,
+#'     by [get_tna()] and [get_group_tna()] when `tna` is absent, and by
+#'     [pool_imputations()] for a `mids` object when `mice` is absent; the
+#'     message names the package and how to install it.}
 #' }
 #'
 #' @section Plotting:
@@ -341,8 +354,13 @@
 #'     convergence criterion before `max_iter`, or an inference check found a
 #'     non-negligible score. The returned estimate requires further assessment.}
 #'   \item{`latents_boundary`}{A variance, or a covariance eigenvalue, is at
-#'     `min_variance`, so the fit is bound-active and its standard errors are
-#'     not valid at that parameter.}
+#'     `min_variance`, or an initial, transition or group-class probability
+#'     of a transition fit is at its bound, so the fit is bound-active and
+#'     its standard errors are not valid at that parameter. Also a warning
+#'     from `three_step(method = "ml")` when a class probability of a
+#'     categorical outcome is estimated at 0 or 1 (the estimates are reported
+#'     without standard errors, intervals or tests), or when a class variance
+#'     of a numeric outcome reached its lower bound.}
 #'   \item{`latents_atomic_groups`}{Under `centering = "person"` with
 #'     `scaling = "person"`, some groups have fewer than three observations of
 #'     an indicator. Standardizing two values within a group makes them
@@ -468,17 +486,15 @@
 #'
 #' @return Nothing; this page documents conditions rather than a function.
 #' @examples
-#' set.seed(1)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(8), each = 6),
-#'   score_a = stats::rnorm(48), score_b = stats::rnorm(48)
-#' )
-#' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#' # Handle a missing-time condition by its class.
+#' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
+#'            n_starts = 2, seed = 1)
+#' # A fit made without `time` has no sequences; handle that by its class.
 #' tryCatch(get_results(fit, "sequences"),
 #'          latents_no_time = function(condition) {
 #'   "No occasion ordering was specified for this fit."
 #' })
+#' # Every condition of the package can be caught and inspected the same way.
+#' tryCatch(three_step(fit, faithful, "eruptions"),
+#'          latents_bad_outcome = function(condition) conditionMessage(condition))
 #' @name latents-conditions
 NULL

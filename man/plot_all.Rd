@@ -2,25 +2,66 @@
 % Please edit documentation in R/wildcards.R
 \name{plot_all}
 \alias{plot_all}
-\title{Every plot of an object}
+\title{Plot every view an object has and return the plots as one list}
 \usage{
 plot_all(x)
 }
 \arguments{
-\item{x}{Any object returned by the package.}
+\item{x}{Any object returned by the package: a fitted model, pooled
+imputations, an enumeration grid, a comparison, a bootstrap result, a
+sensitivity analysis or a diagnostics result.}
 }
 \value{
-A \code{latents_plots} list of ggplot objects named by view. An object
-the package did not return raises \code{latents_not_a_fit}.
+A \code{latents_plots} list of ggplot objects, named by view. Printing
+it draws every plot; in an interactive session R waits for a key press
+before each new plot.
+
+Errors: \code{latents_not_a_fit} when \code{x} is not a fit, grid or other result
+of the package, for example a data frame; \code{latents_nothing_to_plot}
+when none of the object's views can be drawn;
+\code{latents_missing_package} when ggplot2 is not installed.
 }
 \description{
-Every view the object can draw, as a list that draws each plot when
-printed: for a fit, its views and the classification views at each level;
-for an enumeration grid, the criteria, entropy, AvePP, smallest class,
-criterion changes, trust and tree; for a comparison, bootstrap test or
-sensitivity analysis, its one plot; for a diagnostics result, the views
-of the fit it checked. A view the
-object lacks the ingredients for is left out and named in a message.
+\code{plot_all()} plots every view that an object of the package has, and returns
+the plots as one list. Printing the list shows each plot in turn.
+}
+\details{
+Which plots the list holds depends on the object. The names of the list
+are the names of the views:
+\itemize{
+\item a profile, class or transition fit of \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}},
+\code{\link[=multilca]{multilca()}} or \code{\link[=lta]{lta()}} (class \code{multilpa_transitions}): the views its
+data allow among \code{profiles}, \code{bars}, \code{heatmap}, \code{raincloud},
+\code{parallel}, \code{pairs}, \code{responses}, \code{probabilities}, \code{sequences},
+\code{transitions}, \code{sizes}, \code{entropy}, \code{posteriors} and \code{avepp}. A fit with
+two or more group classes adds \code{group_sizes}, \code{group_posteriors},
+\code{group_entropy} and \code{group_avepp};
+\item a fit of another family: the views of its own \code{plot()}, then the four
+classification views \code{sizes}, \code{posteriors}, \code{entropy} and \code{avepp}. A
+mixture regression has \code{fitted} and \code{coefficients}; one that classifies
+persons also \code{trajectories}, \code{individuals} and \code{classification}; a
+growth mixture has those three, \code{coefficients} and \code{random}; a general
+transition fit \code{transitions}, \code{profiles} and \code{sequences}; an additive
+fit \code{means}, \code{variances} and \code{intercepts}; a cross-level fit
+\code{profiles}, \code{group_means} and \code{composition}. When such a fit classifies
+at two levels, each classification view is drawn twice, as
+\code{sizes_individuals}, \code{sizes_groups} and so on;
+\item pooled imputations: the pooled estimates of each level the pooled table
+has, among \code{profile}, \code{group} and \code{measurement};
+\item an enumeration grid: \code{criteria} (every criterion, as \code{\link[=plot_criteria]{plot_criteria()}}),
+\code{entropy}, \code{avepp}, \code{deltas}, \code{heatmap}, \code{smallest}, \code{trust} and
+\code{tree}. A grid of group-class families has \code{criteria}, \code{entropy},
+\code{avepp} and \code{tree}. A grid with several trees has one plot per tree,
+named \code{tree_} and the tree's name;
+\item a comparison, a bootstrap test, a bootstrap table of
+\code{\link[=parameter_inference]{parameter_inference()}} or a sensitivity analysis: its one plot, named
+\code{plot};
+\item a \code{\link[=diagnostics]{diagnostics()}} result: the plots of the fit it checked.
+}
+
+Only the views the object can draw are returned. A view that was tried
+and refused is left out and named in a message
+(\verb{Not drawn for this object: ...}).
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -30,5 +71,7 @@ plot_all(fit)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=overview]{overview()}} prints the summary and checks as well.
+\code{\link[=overview]{overview()}} prints the summary and the checks as well; the
+functions named after single views, such as \code{\link[=plot_profiles]{plot_profiles()}},
+\code{\link[=plot_sizes]{plot_sizes()}} and \code{\link[=plot_criteria]{plot_criteria()}}.
 }

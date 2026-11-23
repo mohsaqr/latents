@@ -2,25 +2,56 @@
 % Please edit documentation in R/wildcards.R
 \name{plot_parallel}
 \alias{plot_parallel}
-\title{Every case as a line across the indicators}
+\title{Plot every case as a line across the continuous indicators, one panel per
+profile}
 \usage{
 plot_parallel(x, main = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{A profile or class fit with continuous indicators.}
+\item{x}{One of:
+\itemize{
+\item a profile fit from \code{\link[=lpa]{lpa()}} or \code{\link[=multilpa]{multilpa()}}, with or without
+covariates, that has two or more continuous indicators and was fitted
+without centering or scaling;
+\item a \code{\link[=diagnostics]{diagnostics()}} result, which is drawn from the fit it checked.
+}}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot. \code{NULL} (default)
+keeps the view's own text.}
 }
 \value{
 A ggplot object.
-An object with nothing to draw raises \code{latents_nothing_to_plot},
-naming the plot functions that apply; an object the package did not
-return raises \code{latents_not_a_fit}.
+
+Errors:
+\itemize{
+\item \code{latents_nothing_to_plot} when the package returned \code{x} but this
+function has no plot of it: a fit with fewer than two continuous
+indicators, a centred or scaled fit, a transition fit, an additive or
+cross-level fit, a mixture regression, a growth mixture or an
+enumeration grid. For an object of the wrong kind, the message names the
+plot functions that apply to it;
+\item \code{latents_not_a_fit} when \code{x} is not a fit, grid or other result of the
+package, for example a data frame;
+\item \code{latents_missing_package} when ggplot2 is not installed.
+}
 }
 \description{
-Each case's values on the continuous indicators as one line, one panel
-per assigned profile.
+\code{plot_parallel()} plots each case as one line that joins its values on the
+continuous indicators, with one panel per profile (a parallel-coordinates
+plot).
+}
+\details{
+The x-axis lists the continuous indicators and the y-axis is the
+standardized value (z), so that indicators on different scales can share
+one axis. Each panel holds the cases whose most likely profile it is,
+drawn in the profile's colour; a line is fainter the less certain the
+case's assignment. The cases of the other profiles are drawn in grey
+behind. The dark line with markers is the mean of the panel's profile.
+
+The view needs two or more continuous indicators and draws the stored
+data of the fit. A fit with person or grand centering or scaling is
+refused, because its stored data are not on the scale of the model.
+Transition fits are refused as well.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -30,5 +61,6 @@ plot_parallel(fit)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=plot_raincloud]{plot_raincloud()}}, \code{\link[=plot_pairs]{plot_pairs()}}, \code{\link[=plot_profiles]{plot_profiles()}}.
+\code{\link[=plot_raincloud]{plot_raincloud()}} and \code{\link[=plot_pairs]{plot_pairs()}} for the other views of the
+cases; \code{\link[=plot_profiles]{plot_profiles()}} for the profile means.
 }

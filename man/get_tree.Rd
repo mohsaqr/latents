@@ -2,22 +2,41 @@
 % Please edit documentation in R/wildcards.R
 \name{get_tree}
 \alias{get_tree}
-\title{How the classes of each candidate split into the next}
+\title{Get how the classes of each candidate split into the classes of the next, as
+a table}
 \usage{
 get_tree(x)
 }
 \arguments{
-\item{x}{An enumeration grid from \code{\link[=enumerate_classes]{enumerate_classes()}},
-\code{\link[=enumerate_lpa]{enumerate_lpa()}}, \code{\link[=enumerate_lca]{enumerate_lca()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}.}
+\item{x}{An enumeration grid of any kind, from \code{\link[=enumerate_lpa]{enumerate_lpa()}},
+\code{\link[=enumerate_lca]{enumerate_lca()}}, \code{\link[=enumerate_classes]{enumerate_classes()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}.}
 }
 \value{
-A data frame, one row per flow: \verb{tree, level, from_candidate, from_class, from_share, to_candidate, to_class, to_share, mass, share_of_from, share_of_to}.
-A grid without a tree raises \code{latents_bad_argument}, naming the
-tables it has.  Any other object raises \code{latents_not_a_fit}.
+A data frame with one row per flow, that is, per pair of a class
+of one candidate and a class of the next, and the columns:
+\itemize{
+\item \code{tree}: the name of the tree. A grid can hold several trees, for
+example one per covariance structure;
+\item \code{level}: \code{"individuals"} when the cases are divided into profiles or
+classes, \code{"groups"} when the groups are divided into group classes;
+\item \code{from_candidate}, \code{from_class}, \code{from_share}: the smaller candidate,
+one of its classes and that class's share of the units;
+\item \code{to_candidate}, \code{to_class}, \code{to_share}: the same for the next
+candidate;
+\item \code{mass}: the share of all units that goes from \code{from_class} to
+\code{to_class};
+\item \code{share_of_from}: \code{mass} as a share of \code{from_class};
+\item \code{share_of_to}: \code{mass} as a share of \code{to_class}.
+}
+
+Errors: \code{latents_no_tree} when the grid has fewer than two candidates
+that can form a tree; \code{latents_not_a_fit} when \code{x} is not an
+enumeration grid.
 }
 \description{
-The flows \code{\link[=plot_tree]{plot_tree()}} draws: for each pair of consecutive candidates
-of a tree, how much of each class goes to each class of the next.
+\code{get_tree()} returns the flows that \code{\link[=plot_tree]{plot_tree()}} plots, as a table: for each
+pair of consecutive candidates of a tree, how much of each class of the
+smaller candidate goes to each class of the larger one.
 }
 \examples{
 grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
@@ -26,5 +45,5 @@ grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
 get_tree(grid)
 }
 \seealso{
-\code{\link[=plot_tree]{plot_tree()}} draws it.
+\code{\link[=plot_tree]{plot_tree()}} draws the flows and chooses the trees.
 }

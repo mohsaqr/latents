@@ -2,28 +2,50 @@
 % Please edit documentation in R/plot-named.R
 \name{plot_prevalence}
 \alias{plot_prevalence}
-\title{Profile prevalence within each group class}
+\title{Plot how common each profile is within each group class of a two-level model}
 \usage{
 plot_prevalence(x, labels = TRUE, main = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{A fitted model of any family.}
+\item{x}{One of:
+\itemize{
+\item a profile or class fit from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}} or
+\code{\link[=multilca]{multilca()}} without membership covariates: the profile
+probabilities within each group class. A fit with one group class
+(or none) is drawn as a single line, the overall profile shares;
+\item a cross-level fit: the share of each profile among the members of
+each group class, as stacked bars;
+\item pooled imputations (\code{\link[=pool_imputations]{pool_imputations()}}): the pooled profile-level
+parameters with their intervals, beside each imputation's. They are
+the profile probabilities within each group class, or the membership
+coefficients of a model with profile covariates.
+}}
 
-\item{labels}{\code{TRUE} (default) labels each profile directly; \code{FALSE} uses
-a legend.}
+\item{labels}{\code{TRUE} (default) writes each group class's name at the end
+of its line; \code{FALSE} uses a legend instead. For a profile or class
+fit; a cross-level fit or pooled imputations raise
+\code{latents_bad_argument} when it is given.}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot, each one string;
+\code{NULL} (default) keeps the view's own.}
 }
 \value{
-A ggplot object; a fit with one group class is drawn too. A
-covariate model has no view and raises \code{latents_nothing_to_plot}.
+A ggplot object, which draws the plot when printed. Conditions
+raised:
+\itemize{
+\item \code{latents_nothing_to_plot}: a model with no such view. A fit with
+membership covariates has none because its prevalence varies with
+each unit's covariates; a transition fit from \code{\link[=lta]{lta()}}, a growth
+mixture, a mixture regression and an additive fit have none either.
+The message names the plot functions that apply;
+\item \code{latents_not_a_fit}: \code{x} is not a fitted model.
+}
 }
 \description{
-The probability of each profile within each group class, the quantity a
-two-level model adds to a one-level one. On a cross-level fit it draws
-the profile composition of each group class and on pooled imputations the
-pooled profile probabilities beside each imputation's.
+\code{plot_prevalence()} plots how common each profile is in each group class: the
+quantity a two-level model adds to a one-level one. There is one line per
+group class, labelled with the class's share of the groups, joining the
+probability of each profile within that class.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -34,5 +56,6 @@ plot_prevalence(fit)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=plot_sizes]{plot_sizes()}} for the class sizes at each level.
+\code{\link[=plot_sizes]{plot_sizes()}} for the class sizes at each level;
+\code{get_results(x, "profile_probabilities")} for the table.
 }

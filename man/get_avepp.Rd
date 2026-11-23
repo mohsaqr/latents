@@ -2,24 +2,48 @@
 % Please edit documentation in R/wildcards.R
 \name{get_avepp}
 \alias{get_avepp}
-\title{Average posterior probability matrix}
+\title{Get the average posterior probability of every class among the units assigned
+to each class}
 \usage{
 get_avepp(x)
 }
 \arguments{
-\item{x}{A fitted model of any family, an enumeration grid, or the
-result of \code{\link[=diagnostics]{diagnostics()}}.}
+\item{x}{One of:
+\itemize{
+\item a fitted model of any family: from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}},
+\code{\link[=multilca]{multilca()}}, \code{\link[=lta]{lta()}} or \code{\link[=mixture_regression]{mixture_regression()}}. The table is the one
+\code{\link[=diagnostics]{diagnostics()}} computes with its defaults;
+\item an enumeration grid of any kind, from \code{\link[=enumerate_lpa]{enumerate_lpa()}},
+\code{\link[=enumerate_lca]{enumerate_lca()}}, \code{\link[=enumerate_classes]{enumerate_classes()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}.
+The tables of the fitted candidates are stacked, with a first column
+\code{candidate} that names the candidate of each row. A candidate whose
+estimation failed has no rows;
+\item the result of \code{\link[=diagnostics]{diagnostics()}}. The table is the one the result holds.
+}}
 }
 \value{
-A data frame, one row per level, assigned class and class (and candidate): \verb{level, assigned_class, class, n_assigned, average_posterior}.
-Any other object raises \code{latents_not_a_fit}.
+A data frame with one row per level, assigned class and class
+(and per candidate for a grid) and the columns:
+\itemize{
+\item \code{level}: \code{"individuals"} or \code{"groups"};
+\item \code{assigned_class}: the class the units are assigned to (their most
+likely class);
+\item \code{class}: the class whose probability is averaged;
+\item \code{n_assigned}: the number of units assigned to \code{assigned_class};
+\item \code{average_posterior}: the mean posterior probability of \code{class} among
+those units.
+}
+
+The rows in which \code{assigned_class} equals \code{class} are the diagonal of
+the matrix: values near 1 mean that the class is well separated.
+
+Errors: \code{latents_not_a_fit} when \code{x} is none of these, for example a
+comparison, pooled imputations or a data frame.
 }
 \description{
-The average posterior probability of each class among the units
-assigned to each class, at each level the fit classifies. For a fit, the table is the one \code{\link[=diagnostics]{diagnostics()}} computes with its
-defaults; for a grid, the tables of every candidate are stacked with
-a first column \code{candidate} (a candidate whose estimation failed has no
-row); for a diagnostics result, its own table.
+\code{get_avepp()} returns the average posterior probability (AvePP) matrix in
+long form: for the units assigned to each class, their mean posterior
+probability of every class.
 }
 \examples{
 fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
@@ -27,5 +51,6 @@ fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 get_avepp(fit)
 }
 \seealso{
-\code{\link[=plot_avepp]{plot_avepp()}} draws it; \code{\link[=get_classification]{get_classification()}}, \code{\link[=get_entropy]{get_entropy()}}.
+\code{\link[=plot_avepp]{plot_avepp()}} draws the matrix; \code{\link[=get_classification]{get_classification()}},
+\code{\link[=get_entropy]{get_entropy()}}.
 }

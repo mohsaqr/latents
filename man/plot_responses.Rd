@@ -2,7 +2,8 @@
 % Please edit documentation in R/plot-named.R
 \name{plot_responses}
 \alias{plot_responses}
-\title{Response probabilities of the categorical indicators}
+\title{Plot each profile's probability of one response category on every categorical
+or ordinal indicator}
 \usage{
 plot_responses(
   x,
@@ -15,41 +16,68 @@ plot_responses(
 )
 }
 \arguments{
-\item{x}{A fitted model of any family.}
+\item{x}{A profile, class or transition fit with categorical or ordinal
+indicators: from \code{\link[=lca]{lca()}}, \code{\link[=multilca]{multilca()}}, \code{\link[=lpa]{lpa()}} or \code{\link[=multilpa]{multilpa()}} (with
+or without membership covariates), or from \code{\link[=lta]{lta()}} with categorical
+indicators. An \code{\link[=lta]{lta()}} fit of class \code{multilpa_lta} (ordinal or count
+indicators, covariates, weights, a stayer class, second-order or
+occasion-specific transitions, occasion-specific measurement) is not
+drawn: read its probabilities with \code{get_results(x, "responses")} or
+\code{get_results(x, "ordinal")}.}
 
-\item{category}{The category drawn: \code{"last"} (default), \code{"first"}, or one
-label or index.}
+\item{category}{Which category's probability is drawn:
+\itemize{
+\item \code{"last"} (default): the last category of each indicator, which for a
+no/yes indicator is the probability of "yes";
+\item \code{"first"}: the first category of each indicator;
+\item one category label (such as \code{"yes"}) or one whole-number position
+(such as \code{2}), which every indicator must have.
+}}
 
 \item{intervals}{\code{TRUE} (default) draws the 95\% intervals of
-\code{\link[=parameter_inference]{parameter_inference()}} when the fit has standard errors; otherwise the
-subtitle says why there are none.}
+\code{\link[=parameter_inference]{parameter_inference()}}; a fit that has no standard errors is drawn
+without them, and the subtitle says why. A probability estimated at 0
+or 1 is held there and has no interval. \code{FALSE} draws no intervals and
+does not compute them.}
 
-\item{labels}{\code{TRUE} (default) labels each profile directly; \code{FALSE} uses
-a legend.}
+\item{labels}{\code{TRUE} (default) writes each profile's name at the end of
+its line; \code{FALSE} uses a legend instead.}
 
-\item{data}{The data the model was fitted to, used only for the intervals.
-\code{NULL} (default) uses the data stored in the fit.}
+\item{data}{The data frame the model was fitted to, used only to compute
+the intervals. \code{NULL} (default) uses the data stored in the fit.}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot, each one string;
+\code{NULL} (default) keeps the view's own.}
 }
 \value{
-A ggplot object. A fit without categorical indicators raises
-\code{latents_no_categorical}; a \code{category} no indicator has raises
-\code{latents_unknown_category}.
+A ggplot object, which draws the plot when printed. Conditions
+raised:
+\itemize{
+\item \code{latents_no_categorical}: a profile, class or transition fit without
+categorical or ordinal indicators;
+\item \code{latents_unknown_category}: \code{category} is not a category of every
+indicator;
+\item \code{latents_nothing_to_plot}: a model of another family, which has no
+response view; the message names the plot functions that apply;
+\item \code{latents_not_a_fit}: \code{x} is not a fitted model.
+}
 }
 \description{
-One line per profile (class), joining the probability of one category of
-each categorical indicator, with 95\% intervals (formed on the logit scale)
-when the fit has standard errors.
+\code{plot_responses()} plots how likely each profile (class) is to give one
+response category. There is one line per profile, joining the probability of
+the chosen category on every categorical or ordinal indicator, on a 0 to 1
+axis. The categorical indicators carry 95\% intervals, formed on the logit
+scale, when the fit has standard errors.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 fit <- lca(student_esm, c("time_with_friends", "on_social_media", "sports"),
            n_classes = 2, n_starts = 2, seed = 1)
 plot_responses(fit)
+plot_responses(fit, category = "no")
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=plot_profiles]{plot_profiles()}} for continuous indicators; \code{\link[=plot_heatmap]{plot_heatmap()}}.
+\code{\link[=plot_profiles]{plot_profiles()}} for continuous indicators; \code{\link[=plot_heatmap]{plot_heatmap()}}
+for every category at once.
 }

@@ -30,18 +30,20 @@ test_that("sequence images align profile rows and group classes with factor iden
   data <- data.frame(group = factor(rep(c("z", "a", "m"), each = 4),
                                     levels = c("m", "z", "a", "unused")),
                      time = rep(1:4, 3),
-                     score = c(-2, -2, 2, 2, rep(-2, 4), rep(2, 4)))
+                     score = c(2, -2, -2, -2, -2, -2, -2, 2, rep(2, 4)))
   start <- list(means = matrix(c(-2, 2), 2), variances = matrix(.25, 2, 1),
                  profile_probabilities = rbind(c(.9, .1), c(.1, .9)),
                  group_probabilities = c(.5, .5))
   fit <- multilpa(data, "score", "group", 2, 2, n_starts = 1,
                   start = start, max_iter = 0, time = "time")
   drawn <- expect_plot(plot(fit, what = "sequences"))
-  # Groups sort by their DECLARED factor level order (m, z, a), not
-  # alphabetically: class 1 holds z then a, class 2 holds m. The unused factor
-  # level is not an observed group and must not acquire a row.
+  # z and a share their class, their most frequent profile and its share
+  # (3 of 4), so the tie is broken by the DECLARED factor level order
+  # (m, z, a), not alphabetically: class 1 holds z then a, class 2 holds m.
+  # The unused factor level is not an observed group and must not acquire a
+  # row.
   expect_equal(sequence_codes(drawn),
-               rbind(c(1L, 1L, 2L, 2L), rep(1L, 4), rep(2L, 4)))
+               rbind(c(2L, 1L, 1L, 1L), c(1L, 1L, 1L, 2L), rep(2L, 4)))
 })
 
 test_that("one-group sequence images preserve dimensions and text time labels", {

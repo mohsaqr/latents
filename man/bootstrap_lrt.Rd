@@ -2,7 +2,8 @@
 % Please edit documentation in R/enumeration.R
 \name{bootstrap_lrt}
 \alias{bootstrap_lrt}
-\title{Parametric bootstrap likelihood-ratio test for nested mixture models}
+\title{Test whether a model with one more class improves on a nested model, with a
+parametric bootstrap likelihood ratio}
 \usage{
 bootstrap_lrt(
   null_model,
@@ -25,12 +26,14 @@ same data, in which \code{null_model} is nested.}
 
 \item{data}{The data frame both models were fitted to. Required for
 transition models, whose simulations keep the observed groups,
-occasions and covariates; otherwise taken from the fits when omitted,
-and checked against them when supplied.}
+occasions and covariates. For the other models \code{NULL} (default) uses
+the data stored in the fits; a supplied data frame is checked against
+them.}
 
 \item{iter}{Number of simulated data sets (default 199; at least 2). More
 replicates reduce the Monte Carlo error of the p-value but do not cure
-estimation problems.}
+estimation problems. Both models are refitted to every data set, so the
+run time grows with \code{iter} times the cost of the two fits.}
 
 \item{n_starts, max_iter, tol}{Controls for each simulated refit; \code{NULL}
 (default) keeps each model's own controls and search strategy. A
@@ -40,14 +43,24 @@ supplied value applies to both models.}
 restored on exit.}
 }
 \value{
-A \code{multilpa_bootstrap_lrt} object: the observed statistic, the
-bootstrap p-value and its Monte Carlo standard error, \code{n_valid} and
-\code{n_invalid} replicates, \code{fixed} (the measurement blocks held in every
-refit) and per-replicate diagnostics, including how many starts of
-each refit replicated its best likelihood. \code{as.data.frame()} returns the one-row test
-summary, \code{get_results(result, "replicates")} one row per replicate,
-\code{summary()} both, and \code{plot()} the simulated distribution with the
-observed statistic.
+An object of class \code{multilpa_bootstrap_lrt}, for every kind of
+model compared. Printing it shows the two models, the observed
+statistic and the p-value. Its tables:
+\itemize{
+\item \code{as.data.frame(result)}: the one-row test summary, with the class
+counts of both models, \code{statistic} (twice the difference in log
+likelihoods), \code{p_value}, \code{monte_carlo_se}, \code{iter}, \code{n_valid} and
+\code{n_invalid} (the replicates used and left out) and \code{fixed} (the
+measurement blocks held in every refit);
+\item \code{get_results(result, "replicates")}: one row per simulated data set,
+with its \code{statistic}, whether it is \code{valid}, whether a refit was at a
+bound, how many starts of each refit replicated its best likelihood,
+and any warning or error;
+\item \code{summary(result)}: both tables.
+}
+
+\code{plot(result)} draws the simulated distribution with the observed
+statistic.
 }
 \description{
 \code{bootstrap_lrt()} tests whether a more flexible model improves on a
@@ -60,6 +73,27 @@ changes. A small p-value is
 evidence against the null in favour of this alternative; it does not say
 the alternative has the right number of classes.
 }
+\section{Conditions}{
+
+Errors, raised before anything is simulated: \code{latents_bad_argument} for
+two models of different kinds, an invalid \code{iter}, \code{n_starts}, \code{max_iter}
+or \code{tol}, or transition models without \code{data}; \code{latents_bad_nesting} for
+profile or class models that do not differ by exactly one profile or one
+group class; \code{latents_incomparable_models} for models that differ in
+their observations, grouping, covariance structure, centring, scaling,
+missing-data handling or \code{drop_empty}; \code{latents_no_converge} for an
+original model that did not converge or has a variance at its bound;
+\code{latents_reversed_likelihood} when the alternative has the lower log
+likelihood; \code{latents_bad_inference_data} for \code{data} that are not the
+rows the models were fitted to; \code{latents_unsupported_weights},
+\code{latents_unsupported_prior}, \code{latents_unsupported_noise} and
+\code{latents_unsupported_bootstrap} for fits with sampling weights, a prior,
+a noise component, or person centring or scaling.
+
+A \code{latents_failed_replicates} warning says how many replicates were
+invalid and left out; see \emph{Calculation}.
+}
+
 \section{Supported comparisons}{
 
 Both models must be of one kind: profile or class models, transition
@@ -115,19 +149,13 @@ valid.
 }
 
 \examples{
-set.seed(1)
-example_data <- data.frame(
-  school = rep(seq_len(10), each = 10),
-  score = rnorm(100, rep(c(-2, 2), each = 50))
-)
-smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
-                    n_group_classes = 1, n_starts = 2, seed = 1)
-larger <- multilpa(example_data, "score", "school", n_profiles = 2,
-                   n_group_classes = 1, n_starts = 2, seed = 1)
+indicators <- c("eruptions", "waiting")
+smaller <- lpa(faithful, indicators, n_profiles = 1, n_starts = 2, seed = 1)
+larger <- lpa(faithful, indicators, n_profiles = 2, n_starts = 2, seed = 1)
 # `iter` is small so the example runs quickly; use many more for inference.
-comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
-                            max_iter = 2000, tol = 1e-6, seed = 1)
+comparison <- bootstrap_lrt(smaller, larger, iter = 9, seed = 1)
 comparison
+as.data.frame(comparison)
 }
 \seealso{
 \code{\link[=enumerate_classes]{enumerate_classes()}} for fitting the candidates;

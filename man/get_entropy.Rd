@@ -2,24 +2,51 @@
 % Please edit documentation in R/wildcards.R
 \name{get_entropy}
 \alias{get_entropy}
-\title{Relative entropy of the classification}
+\title{Get the relative entropy, from 0 to 1, of how sharply a model separates its
+classes}
 \usage{
 get_entropy(x)
 }
 \arguments{
-\item{x}{A fitted model of any family, an enumeration grid, or the
-result of \code{\link[=diagnostics]{diagnostics()}}.}
+\item{x}{One of:
+\itemize{
+\item a fitted model of any family: from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}},
+\code{\link[=multilca]{multilca()}}, \code{\link[=lta]{lta()}} or \code{\link[=mixture_regression]{mixture_regression()}}. The table is the one
+\code{\link[=diagnostics]{diagnostics()}} computes with its defaults;
+\item an enumeration grid of any kind, from \code{\link[=enumerate_lpa]{enumerate_lpa()}},
+\code{\link[=enumerate_lca]{enumerate_lca()}}, \code{\link[=enumerate_classes]{enumerate_classes()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}.
+The tables of the fitted candidates are stacked, with a first column
+\code{candidate} that names the candidate of each row. A candidate whose
+estimation failed has no rows;
+\item the result of \code{\link[=diagnostics]{diagnostics()}}. The table is the one the result holds.
+}}
 }
 \value{
-A data frame, one row per classification level (and candidate): \verb{level, n_classes, n_units, entropy_sum, relative_entropy}.
-Any other object raises \code{latents_not_a_fit}.
+A data frame with one row per classification level (per
+candidate and level for a grid) and the columns:
+\itemize{
+\item \code{level}: \code{"individuals"} (the cases sorted into profiles or classes)
+or \code{"groups"} (the groups sorted into group classes);
+\item \code{n_classes}: the number of classes at that level;
+\item \code{n_units}: the number of classified units;
+\item \code{entropy_sum}: the sum of the units' entropies;
+\item \code{relative_entropy}: one minus the mean entropy of a unit divided by
+its largest possible value, the logarithm of \code{n_classes}. \code{NA} for a
+level with one class.
+}
+
+A profile, class or transition fit always has both rows; without group
+classes its \code{"groups"} row has one class and \code{NA}. A fit of another
+family has a row for each level it classifies.
+
+Errors: \code{latents_not_a_fit} when \code{x} is none of these, for example a
+comparison, pooled imputations or a data frame.
 }
 \description{
-The entropy of the posterior class probabilities relative to a flat
-posterior, at each level the fit classifies. For a fit, the table is the one \code{\link[=diagnostics]{diagnostics()}} computes with its
-defaults; for a grid, the tables of every candidate are stacked with
-a first column \code{candidate} (a candidate whose estimation failed has no
-row); for a diagnostics result, its own table.
+\code{get_entropy()} returns one number per classification level that says how
+sharply the model separates its classes: the relative entropy, from 0 (every
+unit is equally likely to be in every class) to 1 (every unit belongs to one
+class with certainty).
 }
 \examples{
 fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
@@ -27,5 +54,6 @@ fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 get_entropy(fit)
 }
 \seealso{
-\code{\link[=plot_entropy]{plot_entropy()}} draws it; \code{\link[=get_classification]{get_classification()}}, \code{\link[=get_avepp]{get_avepp()}}.
+\code{\link[=plot_entropy]{plot_entropy()}} draws the entropy of each unit;
+\code{\link[=get_classification]{get_classification()}}, \code{\link[=get_avepp]{get_avepp()}}.
 }

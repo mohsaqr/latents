@@ -1,8 +1,10 @@
-#' Extract model coefficients, covariance matrices and likelihood summaries
+#' Extract the coefficients, their covariance matrix and the log likelihood of a
+#' fitted model
 #'
 #' @description
-#' These methods extract fitted parameters, measures of parameter uncertainty,
-#' and likelihood information for reporting and further statistical analysis.
+#' `coef()`, `vcov()` and `confint()` return the fitted parameters of a model,
+#' their estimated covariance matrix and their confidence intervals, for
+#' reporting and further statistical analysis.
 #'
 #' `coef()` returns the model's parameter values. `vcov()` returns their
 #' estimated sampling variances and covariances, describing the uncertainty in

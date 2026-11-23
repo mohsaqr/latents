@@ -1,14 +1,15 @@
 # Class enumeration for mixture regressions.
 
-#' Assess the number of classes in mixture regression models
+#' Fit mixture regression models with different numbers of classes, and compare
+#' them
 #'
 #' @description
-#' `enumerate_regressions()` compares mixture regression models with different
-#' numbers of latent classes. It fits the same outcome model across the
-#' requested class counts, allowing researchers to assess whether additional
-#' classes provide a useful representation of variation in outcome--predictor
-#' relationships. The outcome distribution, predictors, and other supplied
-#' model settings remain common across candidates.
+#' `enumerate_regressions()` fits mixture regression models with different
+#' numbers of latent classes and compares them. The same outcome model is fitted
+#' across the requested class counts, so that researchers can assess whether
+#' additional classes provide a useful representation of variation in
+#' outcome-predictor relationships. The outcome distribution, predictors, and
+#' other supplied model settings remain common across candidates.
 #'
 #' For supported two-level models, the function can also vary the number of
 #' group classes and fit each requested combination of class counts. The
@@ -51,33 +52,59 @@
 #' @inheritParams mixture_regression
 #' @param n_classes Positive integer class counts to fit. Default `1:4`.
 #' @param n_group_classes Positive integer group-class counts (two-level
-#'   model; needs `id`), crossed with `n_classes`. Default 1.
+#'   model; needs `id` in `...`), crossed with `n_classes`. Default 1, no
+#'   group classes.
 #' @param bootstrap Number of bootstrap replicates for the likelihood-ratio
-#'   test; `0` (the default) skips it. Not available with sampling weights.
+#'   test of `k - 1` against `k` classes. `0` (the default) skips the test.
+#'   A positive number adds the `blrt_` columns to the table; each replicate
+#'   refits two models, so the run time grows with it. Not available with
+#'   sampling weights.
 #' @param bootstrap_starts Random starts for each bootstrap refit. Default 3.
-#' @param ... Further arguments to [mixture_regression()], such as `family`,
-#'   `id`, `class_level`, `common`, `membership` or `variance`. `n_classes`,
-#'   `n_group_classes` and `vcov_type` are not accepted here.
+#' @param seed Optional integer seed for the starts and the bootstrap; when
+#'   given, the caller's random-number state is restored on exit.
+#' @param ... Further arguments to [mixture_regression()], used for every
+#'   model:
+#'   * `family`: `"gaussian"` (default), `"binomial"`, `"poisson"`,
+#'     `"negative_binomial"` or `"ordinal"`;
+#'   * `id` and `class_level`: `"observation"` (default, a class per row) or
+#'     `"group"` (a class per unit of `id`);
+#'   * `variance`: `"varying"` (default) or `"equal"`;
+#'   * `common`, `membership`, `random` and the other model arguments;
+#'   * `n_starts`, `max_iter`, `tol` and `missing` (`"error"` or `"omit"`).
+#'
+#'   `n_classes`, `n_group_classes` and `vcov_type` are not accepted here:
+#'   the class counts are this function's own arguments, and the models are
+#'   fitted without a stored covariance matrix. A name that is not an
+#'   argument of `mixture_regression()` is refused.
 #' @return An object of class `latents_regression_enumeration`. Its table
-#'   (from [as.data.frame()] or `get_results(x, "fit")`) has one row per
-#'   model, with columns `n_classes`, `n_group_classes`, `log_likelihood`,
-#'   `n_parameters`, `aic`, `bic`, `bic_rows`, `sabic`, `icl`, `entropy`,
-#'   `smallest_share`, `converged`, `n_best_replicated`, `note` (why a model
-#'   could not be fitted), `best_bic` (`TRUE` for rows attaining the smallest
-#'   reported BIC, without filtering on convergence), and,
-#'   with `bootstrap > 0`, `blrt_statistic`, `blrt_p_value`,
-#'   `blrt_replicates` (the valid replicates), `blrt_n_invalid` (the failed,
-#'   unconverged, separated or reversed-likelihood replicates) and
-#'   `blrt_flagged` (a compatibility alias for `blrt_n_invalid`). The test
-#'   columns are `NA` where the `k - 1` or `k` class model is missing or
-#'   failed, and the p-value is `NA` when the observed fits fail validation or
-#'   fewer than half of the requested replicates are valid.
+#'   (from [as.data.frame()], `summary()` or `get_results(x, "fit")`) has
+#'   one row per model, with these columns:
+#'   * `n_classes`, `n_group_classes`, `log_likelihood`, `n_parameters`;
+#'   * `aic`, `bic`, `bic_rows` (BIC with the number of rows as the sample
+#'     size), `sabic` and `icl`: lower is better;
+#'   * `entropy`: between 0 and 1, higher meaning clearer classification;
+#'   * `smallest_share`: the proportion of the smallest class;
+#'   * `converged` and `n_best_replicated` (the number of starts that
+#'     reached the best log likelihood);
+#'   * `note`: why a model could not be fitted; its other columns are `NA`;
+#'   * `best_bic`: `TRUE` for the rows with the smallest reported BIC,
+#'     without filtering on convergence;
+#'   * with `bootstrap > 0`: `blrt_statistic`, `blrt_p_value`,
+#'     `blrt_replicates` (the valid replicates), `blrt_n_invalid` (the
+#'     failed, unconverged, separated or reversed-likelihood replicates)
+#'     and `blrt_flagged` (a compatibility alias for `blrt_n_invalid`). The
+#'     test of a row compares it with the row that has one class fewer.
+#'     These columns are `NA` where the `k - 1` or `k` class model is
+#'     missing or failed, and the p-value is `NA` when the observed fits
+#'     fail validation or fewer than half of the requested replicates are
+#'     valid.
+#'
 #'   `get_results(x, "model", n_classes = , n_group_classes = )` returns one
-#'   fitted model, `get_results(x, "tree")` the class tree and
-#'   `get_results(x, "all")` the named list of the `fit` and `tree` tables;
-#'   any other `what` raises `latents_bad_argument`. `print()` shows the main
-#'   columns of the table. `summary()` returns the same table as
-#'   [as.data.frame()].
+#'   fitted model (a `latents_mixture_regression` or
+#'   `latents_growth_mixture` fit), `get_results(x, "tree")` the class tree
+#'   and `get_results(x, "all")` the named list of the `fit` and `tree`
+#'   tables; any other `what` raises `latents_bad_argument`. `print()` shows
+#'   the main columns of the table.
 #'   `plot()` draws AIC, BIC, SABIC and ICL across the classes (see
 #'   [plot_enumeration()] for its other views, and `plot_views(x)` for the
 #'   views a regression grid offers).
@@ -102,11 +129,14 @@
 #' classes <- enumerate_regressions(score ~ hours, data = study_hours,
 #'                                  n_classes = 1:3, n_starts = 3, seed = 1)
 #' classes
+#' get_results(classes, "model", n_classes = 2)
 #' \donttest{
-#' # A small bootstrap count is used only to limit example execution time.
+#' # With the bootstrap likelihood-ratio test of one against two classes.
+#' # `bootstrap` is small so the example runs quickly; use many more
+#' # replicates for inference.
 #' with_test <- enumerate_regressions(score ~ hours, data = study_hours,
-#'                                    n_classes = 1:2, n_starts = 3, seed = 1,
-#'                                    bootstrap = 4)
+#'                                    n_classes = 1:2, variance = "equal",
+#'                                    n_starts = 3, seed = 1, bootstrap = 4)
 #' as.data.frame(with_test)
 #' }
 #' @export

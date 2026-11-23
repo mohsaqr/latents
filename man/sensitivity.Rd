@@ -2,7 +2,8 @@
 % Please edit documentation in R/sensitivity.R
 \name{sensitivity}
 \alias{sensitivity}
-\title{Assess sensitivity of a fitted mixture model to initialisation}
+\title{Refit a model from several random seeds and check whether it reaches the same
+solution}
 \usage{
 sensitivity(
   x,
@@ -16,23 +17,27 @@ sensitivity(
 )
 }
 \arguments{
-\item{x}{The reference fit: a \code{\link[=multilpa]{multilpa()}} model, an \code{\link[=lta]{lta()}} model, or a
-growth mixture (\code{\link[=mixture_regression]{mixture_regression()}} with \code{random}). A \code{\link[=fit_staged]{fit_staged()}}
-result varies the second-stage starts while holding its first-stage
-measurement solution fixed. A directly fitted model with measurement
-blocks held fixed is refused (\code{latents_unsupported_sensitivity}), because
-its original free starting values are not retained. A
-membership-covariate fit raises
-\code{latents_unsupported_sensitivity}. For an \code{\link[=lta]{lta()}} fit, \code{agreement} is the
-share of occasions given the same profile, after matching the refit's
-profiles on the measurement; for a growth mixture it is the share of
-persons given the same class, after matching the refit's classes by
-their posterior memberships of the fitted persons.}
+\item{x}{The reference fit. Accepted:
+\itemize{
+\item a profile or class fit from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}} or
+\code{\link[=multilca]{multilca()}} without membership covariates. A \code{\link[=fit_staged]{fit_staged()}} result
+varies the second-stage starts while holding its first-stage
+measurement solution fixed;
+\item a transition fit from \code{\link[=lta]{lta()}}, which also needs \code{data};
+\item a growth mixture (\code{\link[=mixture_regression]{mixture_regression()}} with \code{random}).
+}
 
-\item{data}{Optional for a \code{\link[=multilpa]{multilpa()}} fit or a growth mixture, which
-carry the columns they were built from. Required for an \code{\link[=lta]{lta()}} fit
-(\code{latents_bad_argument} otherwise). It must be the data the model was
-fitted to, in its original row order; shared identifier and indicator
+Refused with \code{latents_unsupported_sensitivity}: a membership-covariate
+fit, and a directly fitted model with measurement blocks held fixed
+(\code{fixed}), because its original free starting values are not retained.
+Refused with \code{latents_not_a_fit}: the other \code{multilpa()} families
+(additive, dispersion and cross-level) and a mixture regression without
+\code{random}.}
+
+\item{data}{The data the model was fitted to, in its original row order.
+Optional for a profile or class fit and for a growth mixture, which
+carry the columns they were built from; required for an \code{\link[=lta]{lta()}} fit
+(\code{latents_bad_argument} otherwise). Shared identifier and indicator
 columns are checked against the fit (\code{latents_bad_inference_data}).}
 
 \item{seeds}{At least two distinct integer seeds accepted by \code{set.seed()}.
@@ -63,18 +68,32 @@ seeds are not used.}
 }
 \value{
 A \code{data.frame} of class \code{latents_sensitivity} (which \code{plot()}
-draws), one row per seed, with columns \code{seed},
-\code{log_likelihood}, \code{converged}, \code{iterations}, \code{optimum} (1 for the group
-containing the highest attained log likelihood, 2 for the next lower
-group, and so on),
-\code{best} (whether this seed reached optimum 1) and \code{agreement} (the
-proportion of classified observations given the same profile as the
-reference fit, after label matching). For profile and transition models,
-this uses observations included in both fits under their \code{drop_empty}
-settings. A failed refit has \code{NA} in every column except
-\code{seed}. The \code{optimum} and \code{best} columns group attained likelihood values
-without filtering on convergence; inspect \code{converged} before interpreting
-them as evidence of replicated maxima.
+draws), one row per seed, in the order of \code{seeds}, with the columns
+\describe{
+\item{\code{seed}}{integer: the seed of the refit.}
+\item{\code{log_likelihood}}{numeric: the refit's maximised log
+likelihood.}
+\item{\code{converged}}{logical: whether the refit met its convergence
+criterion.}
+\item{\code{iterations}}{integer: the number of iterations the refit
+reports.}
+\item{\code{optimum}}{integer: 1 for the group of converged refits holding
+the highest log likelihood, 2 for the next lower group, and so on;
+\code{NA} for a refit that did not converge.}
+\item{\code{best}}{logical: whether the refit converged to optimum 1.}
+\item{\code{agreement}}{numeric, 0 to 1: the proportion of units given the
+same class as in the reference fit, after label matching. The units
+are the observations of a profile or class fit, the occasions of a
+transition fit (profiles matched on the measurement) and the
+persons of a growth mixture (classes matched by their posterior
+memberships of the fitted persons). For profile and transition
+models, only observations included in both fits under their
+\code{drop_empty} settings are compared.}
+}
+A failed refit has \code{NA} in every column except \code{seed}, and the call
+warns with \code{latents_sensitivity_dropped}. The reference fit itself is
+not a row of the table. Invalid arguments raise \code{latents_bad_argument};
+see \code{x} and \code{data} for the other refusals.
 
 \code{as.data.frame()} returns a plain \code{data.frame}. \code{plot()} accepts \code{main}
 and \code{subtitle} and returns a ggplot object showing each refit's
@@ -84,24 +103,19 @@ refits are distinguished from converged maxima; if none converged, the
 highest observed log likelihood is the reference instead.
 }
 \description{
-\code{sensitivity()} evaluates how consistently a fitted mixture model is
-recovered from different random initialisations. Mixture-model estimation
-can converge to different local maxima, yielding different class assignments
-for the same data and model specification. Examining this dependence on
-initialisation helps assess the numerical reliability of the solution
-being interpreted.
+\code{sensitivity()} refits a fitted mixture model from several random seeds
+and reports whether the refits reach the same solution. Mixture-model
+estimation can converge to different local maxima, yielding different
+class assignments for the same data and model specification, so a
+solution that only one seed finds should not be interpreted.
 
-The function repeats estimation under several random seeds and compares
-the resulting likelihood values and class assignments with the reference
-fit. Class labels are aligned before assignments are compared. By
-considering likelihood and classification agreement together, the analysis
-shows whether repeated searches recover a comparable fit and whether they
+Each seed gives one refit of the same model to the same data. The
+function records the refit's log likelihood, whether it converged and how
+many iterations it took, and compares its class assignments with those of
+the reference fit, after aligning the class labels. Log likelihoods
+within \code{tolerance} of each other are grouped as one optimum, so the table
+shows how many seeds reached the best one and whether those that did
 assign the same observations to the same classes.
-
-Results include convergence status, log likelihood, and classification
-agreement for each refit. Similar likelihood values are grouped using a
-specified tolerance. The data and model specification remain fixed
-throughout the analysis.
 }
 \details{
 Replication across seeds complements replication across starts within one

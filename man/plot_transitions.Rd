@@ -2,24 +2,47 @@
 % Please edit documentation in R/plot-named.R
 \name{plot_transitions}
 \alias{plot_transitions}
-\title{Transition probabilities between profiles}
+\title{Plot the estimated probability of moving from each profile to each profile
+between occasions}
 \usage{
 plot_transitions(x, main = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{A fitted model of any family.}
+\item{x}{A transition fit from \code{\link[=lta]{lta()}}, of either class:
+\itemize{
+\item \code{multilpa_transitions} (the basic transition model: continuous or
+categorical indicators and one first-order transition matrix for
+all occasions): the estimated matrix of each group class, the panel
+labelled with the class's share of the groups. A row with no
+expected moves out of its profile is not estimated from the data,
+and its label is put in parentheses;
+\item \code{multilpa_lta} (any extension of the basic model: ordinal or count
+indicators, covariates, weights, a stayer class, second-order or
+occasion-specific transitions, occasion-specific measurement): the
+probabilities the model implies, averaged over the observed groups,
+with one panel per group class and, when the transitions differ by
+occasion, per occasion.
+}}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot, each one string;
+\code{NULL} (default) keeps the view's own.}
 }
 \value{
-A ggplot object. A fit without transitions raises
-\code{latents_nothing_to_plot}.
+A ggplot object, which draws the plot when printed. Conditions
+raised:
+\itemize{
+\item \code{latents_nothing_to_plot}: a model without transitions, which is
+every model not fitted by \code{\link[=lta]{lta()}}, including a profile or class fit
+made with \code{time}; the message names the plot functions that apply;
+\item \code{latents_not_a_fit}: \code{x} is not a fitted model.
+}
 }
 \description{
-The estimated transition matrix of a latent transition model: from the
-profile at one occasion (rows) to the profile at the next (columns), one
-panel per group class.
+\code{plot_transitions()} plots the estimated transition matrix of a latent
+transition model as a grid of tiles: the profile at one occasion in the rows,
+the profile at the next occasion in the columns, and in each tile the
+probability of that move. Each row sums to one. There is one panel per group
+class.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -30,6 +53,7 @@ plot_transitions(fit)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=plot_sequences]{plot_sequences()}}; \code{\link[=get_tna]{get_tna()}} hands the transitions to the tna
-package.
+\code{\link[=plot_sequences]{plot_sequences()}} for the assigned profiles over time;
+\code{get_results(x, "transitions")} for the probabilities as a table;
+\code{\link[=get_tna]{get_tna()}} hands the transitions to the tna package.
 }

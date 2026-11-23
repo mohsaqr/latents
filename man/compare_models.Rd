@@ -2,7 +2,8 @@
 % Please edit documentation in R/compare-models.R
 \name{compare_models}
 \alias{compare_models}
-\title{Compare the fit and classification of mixture models}
+\title{Compare the fit, classification and convergence of several fitted models in
+one table}
 \usage{
 compare_models(
   ...,
@@ -13,61 +14,97 @@ compare_models(
 )
 }
 \arguments{
-\item{...}{An enumeration grid from \code{\link[=enumerate_classes]{enumerate_classes()}} followed by the
-candidates to compare (none for all); or two or more fits from
-\code{\link[=multilpa]{multilpa()}}, \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=lta]{lta()}} or \code{\link[=get_candidate]{get_candidate()}}; or two or
-more fits from \code{\link[=mixture_regression]{mixture_regression()}}. Named fits are labelled by their
-names, unnamed ones by their expression, candidates by their candidate
-name; labels must be distinct. See \emph{Choosing candidates}.}
+\item{...}{The models to compare, in one of three forms:
+\itemize{
+\item an enumeration grid from \code{\link[=enumerate_classes]{enumerate_classes()}}, \code{\link[=enumerate_lpa]{enumerate_lpa()}} or
+\code{\link[=enumerate_lca]{enumerate_lca()}}, followed by the candidates to compare (none for
+all); see \emph{Choosing candidates};
+\item two or more fits from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}}, \code{\link[=multilca]{multilca()}}
+(with or without membership covariates), \code{\link[=lta]{lta()}} or
+\code{\link[=get_candidate]{get_candidate()}};
+\item two or more fits from \code{\link[=mixture_regression]{mixture_regression()}}, with or without
+\code{random}.
+}
+
+The two kinds of fit cannot be mixed in one call. Named fits are
+labelled by their names, unnamed ones by their expression, candidates
+by their candidate name; labels must be distinct. Additive, dispersion
+and cross-level fits of \code{\link[=multilpa]{multilpa()}} are refused
+(\code{latents_bad_argument}).}
 
 \item{n_profiles, n_group_classes}{With a grid, the class counts of the
 candidates to compare; \code{NULL} (default) takes every count. Candidates
-whose fit failed are left out, with a message.}
+whose fit failed are left out, with a message. Without a grid they
+raise \code{latents_bad_argument}.}
 
 \item{cutoff}{For profile and class models, the average posterior
 probability below which a class is counted in \code{avepp_below} and
-\code{group_avepp_below} (default 0.8). Not used for mixture regressions.}
+\code{group_avepp_below} (default 0.8; a number above 0 and at most 1). Not
+used for mixture regressions.}
 
-\item{test}{\code{"none"} (default) for the table alone; \code{"lrt"} adds a
-likelihood-ratio test of each model against the one before it. See
-\emph{Likelihood-ratio tests}.}
+\item{test}{Whether the models are also tested against each other:
+\itemize{
+\item \code{"none"} (default): the comparison table alone;
+\item \code{"lrt"}: adds a likelihood-ratio test of each model against the one
+in the row before it (\code{lr_statistic}, \code{lr_df}, \code{lr_p_value}), for
+nested profile, class and transition models. See \emph{Likelihood-ratio
+tests}.
+}}
 }
 \value{
-A data frame of class \code{latents_comparison}, one row per model.
+A data frame of class \code{latents_comparison} (also a
+\code{latents_table}, which prints as a formatted table), one row per model,
+in the order given. \code{plot()} draws its information criteria, and
+\code{get_candidate(comparison, "<model>")} returns the fitted model of a
+row.
 
-For profile and class models: \code{model}, \code{n_profiles} (classes, for a
-class model), \code{n_group_classes}, \code{structure} (the covariance
-structure, \code{NA} without continuous indicators), \code{n_parameters} (see
-\emph{Held measurement}),
-\code{log_likelihood}, every information criterion of \code{\link[=get_candidates]{get_candidates()}},
-\code{profile_entropy}, \code{group_entropy}, \code{avepp_min}, \code{avepp_max},
-\code{avepp_mean}, \code{avepp_below} and the same four prefixed \code{group_},
-\code{smallest_share} (the smallest estimated profile share), \code{converged},
-\code{n_best_replicated}, \code{delta_bic} and \code{bic_weight} (on \code{bic_groups}, the
-BIC that counts groups as the independent units; the ordinary BIC for
-single-level models).
+For profile, class and transition models the columns are \code{model} (the
+label), \code{n_profiles} (classes, for a class model), \code{n_group_classes},
+\code{structure} (the covariance structure, \code{NA} without continuous
+indicators), \code{n_parameters} (see \emph{Held measurement}),
+\code{log_likelihood}; the information criteria \code{aic}, \code{kic}, and \code{bic},
+\code{sabic}, \code{caic}, \code{awe}, \code{icl} and \code{clc}, each of these six in two
+columns, \verb{_groups} (the number of groups as the sample size) and
+\verb{_individual} (the number of rows); \code{profile_entropy},
+\code{group_entropy}; \code{avepp_min}, \code{avepp_max}, \code{avepp_mean} (the smallest,
+largest and mean average posterior probability of the profiles) and
+\code{avepp_below} (the number of profiles below \code{cutoff}), and the same
+four prefixed \code{group_} for the group classes; \code{smallest_share} (the
+smallest estimated profile share), \code{converged}, \code{n_best_replicated}
+(the starts that reached the best log likelihood), \code{delta_bic} and
+\code{bic_weight} (on \code{bic_groups}, the BIC that counts groups as the
+independent units; the ordinary BIC for single-level models).
 
-For mixture regressions: \code{model}, \code{n_classes}, \code{random},
-\code{n_parameters}, \code{log_likelihood}, \code{aic}, \code{bic}, \code{sabic}, \code{icl},
-\code{entropy}, \code{smallest_share}, \code{delta_bic}, \code{bic_weight} and \code{converged}.
+For mixture regressions: \code{model}, \code{n_classes}, \code{random} (the
+random-effects specification, \code{"none"} without one), \code{n_parameters},
+\code{log_likelihood}, \code{aic}, \code{bic}, \code{sabic}, \code{icl}, \code{entropy},
+\code{smallest_share}, \code{delta_bic}, \code{bic_weight} and \code{converged}.
 
 With \code{test = "lrt"}, also \code{lr_statistic}, \code{lr_df} and \code{lr_p_value},
-\code{NA} in the first row. Fits to different data, fewer than two models,
-a group-class family fit or grid, and a mixture-regression grid are
-refused with classed conditions (\link{latents-conditions}); the family and
-regression grids have their own tables. The criteria compare the
+\code{NA} in the first row.
+
+Errors: \code{latents_bad_argument} for fewer than two models, models of
+mixed or unsupported kinds, duplicated labels, a group-class family fit
+or grid, a mixture-regression grid, or \code{test = "lrt"} on mixture
+regressions (the family and regression grids have their own tables,
+\code{as.data.frame(grid)}); \code{latents_incomparable_models} for fits to
+different data; and, under \code{test = "lrt"}, \code{latents_bad_nesting} for
+models that are not nested and \code{latents_singular_restriction} for a
+singular restriction. \link{latents-conditions} describes each class. The
+criteria compare the
 models with each other; a final choice also needs the estimation to be
 stable and the classes to mean something.
 }
 \description{
-\code{compare_models()} puts the fit, complexity, classification and
-convergence of several models fitted to the same data in one table:
-separately fitted models, or candidates of an enumeration grid. BIC
-differences give each model's distance from the smallest BIC among those
-compared, and the Schwarz weights \code{exp(-delta_bic / 2)}, normalised over
-them, give relative support. The
-function does not select a model: a lower criterion favours a model
-among those compared and says nothing about absolute fit.
+\code{compare_models()} returns one table of the fit, complexity, classification
+and convergence of several models fitted to the same data: separately fitted
+models, or candidates of an enumeration grid. Each row holds one model's
+number of parameters, log likelihood, information criteria, entropy, average
+posterior probabilities and smallest class share. BIC differences give each
+model's distance from the smallest BIC among those compared, and the Schwarz
+weights \code{exp(-delta_bic / 2)}, normalised over them, give relative support.
+The function does not select a model: a lower criterion favours a model among
+those compared and says nothing about absolute fit.
 }
 \section{Held measurement}{
 

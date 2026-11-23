@@ -941,47 +941,73 @@ print.multilpa_enumeration <- function(x, ...) {
 }
 
 
-#' Extract starting values for a subsequent fit
+#' Get the estimates of a fitted profile or class model as starting values for
+#' another fit
 #'
-#' Extract parameter values from a fitted model for use as starting values in
-#' a subsequent [multilpa()] fit. Measurement parameters can be extracted
-#' separately when membership probabilities should be re-estimated. Supplying
-#' starting values does not hold parameters fixed; use the fitting function's
-#' `fixed` argument to impose those constraints.
+#' `starting_values()` returns the parameter estimates of a fitted profile or
+#' class model in the form [multilpa()] accepts as `start`, so that a second fit
+#' begins from the first one's solution. The measurement parameters can be taken
+#' alone, for a refit that estimates the class probabilities anew. Starting
+#' values are where the estimation begins, not constraints: to hold parameters
+#' fixed, use the `fixed` argument of the fitting function.
 #'
-#' This is an advanced utility for controlled refitting and selective
-#' parameter constraints. Required blocks are checked during extraction;
-#' further numerical and model-specific validation occurs during fitting.
+#' This is a utility for controlled refitting. `starting_values()` checks
+#' that the blocks it needs are present; the fitting function checks their
+#' dimensions and values.
 #'
-#' @param x A fitted `multilpa` model, or a list carrying
-#'   `profile_probabilities`, `group_probabilities`, and the measurement
-#'   blocks the model uses: `means` with `variances` or `covariances` for
-#'   continuous indicators, `response_probabilities` for categorical ones. An
-#'   all-categorical model needs no Gaussian block. Other elements are
-#'   ignored. A missing block, or a transition fit from [lta()] (which takes
-#'   no `start`), raises `latents_bad_start`; a fit with a noise
-#'   component raises `latents_unsupported_noise`; anything that is not a
-#'   list raises `latents_bad_argument`.
-#' @param what `"all"` (the default) returns the measurement and mixing
-#'   blocks. `"measurement"` omits `profile_probabilities` and
-#'   `group_probabilities`, which are sized for the model that produced them;
-#'   use it with `fixed` in [multilpa()] for a staged fit that changes the
-#'   number of group classes.
-#' @param covariance `"auto"` (the default) keeps `covariances` when the
-#'   object carries them, `"drop"` always returns the diagonal
-#'   parameterization, and `"keep"` requires `covariances` and raises
-#'   `latents_bad_start` when they are absent.
-#' @return An object of class `multilpa_start`: the list [multilpa()] accepts
-#'   as `start`, with elements `means`, `variances`, `profile_probabilities`
-#'   and `group_probabilities`. When covariances are returned, `covariances`
-#'   replaces `variances`; when the object carries a categorical measurement
-#'   model, `response_probabilities` is added. `what = "measurement"` drops
-#'   `profile_probabilities` and `group_probabilities`. The Gaussian blocks
-#'   are unnamed and indexed by position; [as.data.frame()] returns them as a
-#'   labelled table. `response_probabilities` keeps each indicator's name and
-#'   each block's category names, and [multilpa()] matches the blocks by these
-#'   labels, so a fit whose categorical indicators or categories do not match
-#'   raises `latents_bad_start`. The object can be passed directly as `start`.
+#' @param x The source of the values, one of:
+#'   * a fit from [lpa()], [lca()], [multilpa()] or [multilca()] without
+#'     membership covariates;
+#'   * a list with `profile_probabilities`, `group_probabilities` and the
+#'     measurement blocks the model uses: `means` with `variances` or
+#'     `covariances` for continuous indicators, `response_probabilities`
+#'     for categorical ones (a model with only categorical indicators
+#'     needs no `means`). Other elements are ignored.
+#'
+#'   A fit with membership covariates and a model of another family carry
+#'   no such blocks and raise `latents_bad_start`, as does a transition fit
+#'   from [lta()], which takes no `start`.
+#' @param what Which blocks to return:
+#'   * `"all"` (default): the measurement blocks and the mixing blocks
+#'     (`profile_probabilities` and `group_probabilities`);
+#'   * `"measurement"`: the measurement blocks only. The mixing blocks are
+#'     sized for the model that produced them, so leave them out for a
+#'     refit with another number of group classes, together with `fixed`
+#'     in [multilpa()].
+#' @param covariance How the within-profile covariances are returned:
+#'   * `"auto"` (default): `covariances` when `x` has them (a fit with a
+#'     full covariance structure), otherwise `variances`;
+#'   * `"drop"`: always `variances`, the diagonal form;
+#'   * `"keep"`: `covariances`, raising `latents_bad_start` when `x` has
+#'     none.
+#' @return An object of class `multilpa_start`: the list that [multilpa()]
+#'   accepts as `start`, which can be passed on as it is. Its elements:
+#'   * `means`: a matrix, profiles by continuous indicators;
+#'   * `variances`: a matrix of the same shape; or, when covariances are
+#'     returned, `covariances` in its place: an array, indicators by
+#'     indicators by profiles;
+#'   * `profile_probabilities`: a matrix, group classes by profiles, and
+#'     `group_probabilities`: a vector with one value per group class.
+#'     Both are left out under `what = "measurement"`;
+#'   * `response_probabilities`: for a model with categorical indicators,
+#'     a list with one matrix per indicator, profiles by categories.
+#'
+#'   The Gaussian blocks are unnamed and matched by position.
+#'   `response_probabilities` keeps the indicator and category names, and
+#'   [multilpa()] matches its blocks by them.
+#'
+#'   Printing the object summarises the blocks. `as.data.frame()` returns
+#'   the means and variances as a table, one row per profile and
+#'   indicator, and [get_results()] the tables `"profiles"`, `"responses"`,
+#'   `"profile_probabilities"` and `"covariances"`.
+#'
+#'   Conditions raised:
+#'   * `latents_bad_start`: `x` lacks a block that is needed, is a
+#'     transition fit, or has no covariances under `covariance = "keep"`.
+#'     [multilpa()] raises the same class for a `start` whose categorical
+#'     indicators or categories do not match the model;
+#'   * `latents_unsupported_noise`: `x` is a fit with a noise component;
+#'   * `latents_bad_argument`: `x` is not a list.
 #' @seealso [get_results()] for the values as tidy tables; [fit_staged()] for
 #'   two-stage estimation with fixed measurement parameters.
 #' @examples
@@ -991,12 +1017,12 @@ print.multilpa_enumeration <- function(x, ...) {
 #'   score_a = rnorm(120), score_b = rnorm(120)
 #' )
 #' fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                   n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
+#'                 n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
 #' starting_values(fit)
 #' as.data.frame(starting_values(fit))
 #' refit <- multilpa(example_data, c("score_a", "score_b"), "school",
-#'                     n_profiles = 2, n_group_classes = 1, n_starts = 1,
-#'                     start = starting_values(fit))
+#'                   n_profiles = 2, n_group_classes = 1, n_starts = 1,
+#'                   start = starting_values(fit))
 #' logLik(refit)
 #' @export
 starting_values <- function(x, covariance = c("auto", "drop", "keep"),

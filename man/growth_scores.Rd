@@ -5,12 +5,15 @@
 \alias{growth_scores}
 \title{Simulated achievement scores with three growth trajectories}
 \format{
-A data frame with 1844 rows (300 students) and 5 columns:
+A data frame with 1844 rows (300 students, one row per student
+and observed occasion, 3 to 7 occasions each, no missing values) and 5
+columns:
 \describe{
 \item{student}{Integer student identifier, 1 to 300. Pass it as \code{id}.}
 \item{wave}{Integer test occasion, 0 to 6. The time variable.}
-\item{score}{Achievement score.}
-\item{motivation}{Standardized motivation, constant within student.}
+\item{score}{Numeric achievement score, 24.9 to 81.2.}
+\item{motivation}{Numeric, standardized motivation, constant within
+student.}
 \item{trajectory}{Factor, \code{"improving"}, \code{"stable"} or \code{"declining"}:
 the student's generating class; retained for assessing class recovery.}
 }

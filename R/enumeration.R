@@ -1,6 +1,7 @@
 utils::globalVariables("statistic")
 
-#' Class enumeration and comparison of mixture models
+#' Fit models with different numbers of classes and collect their criteria and
+#' diagnostics for comparison
 #'
 #' @description
 #' `enumerate_classes()` fits every candidate in a grid of class counts
@@ -28,101 +29,189 @@ utils::globalVariables("statistic")
 #'   `NULL` enumerates single-level models, with a message; [enumerate_lpa()]
 #'   and [enumerate_lca()] do that directly.
 #' @param n_profiles Profile (class) counts to try (default `1:4`; `2:4` for
-#'   transition models).
+#'   transition models, which need at least two profiles).
 #' @param n_group_classes Group-class counts to try (default `1:3`; default
-#'   `1` with `time`, and only `1` with `id = NULL`).
-#' @param model Covariance structures to cross with the class counts.
-#'   `"basic"` (the default for profile grids) fits EEI (equal variances, no
-#'   covariances), VVI (varying variances), EEE (one covariance matrix
-#'   shared by all profiles) and VVV (a covariance matrix per profile).
-#'   `"all"` fits all fourteen structures.
-#'   Otherwise mclust's three-letter codes (volume, shape and orientation,
-#'   each equal `E` or varying `V`, `I` for no covariances), or `NULL` for
-#'   none, which is the default for a transition grid. With one continuous
-#'   indicator, codes that coincide are fitted once; with only categorical
-#'   indicators no structure is crossed. Giving `variance_model`,
+#'   `1` with `time`, and only `1` with `id = NULL`). Every count is crossed
+#'   with every value of `n_profiles`. A candidate with one profile and more
+#'   than one group class is not identified: it is recorded as failed, with
+#'   the reason in the `error` column.
+#' @param model The covariance structures of the continuous indicators to
+#'   fit at every combination of class counts:
+#'   * `"basic"` (default for profile models): four structures. `"EEI"`: the
+#'     profiles share their variances and the indicators are uncorrelated
+#'     within a profile. `"VVI"`: each profile has its own variances, still
+#'     uncorrelated. `"EEE"`: the profiles share one covariance matrix.
+#'     `"VVV"`: each profile has its own covariance matrix.
+#'   * `"all"`: all fourteen structures of mclust.
+#'   * One or more of the codes `"EII"`, `"VII"`, `"EEI"`, `"VEI"`, `"EVI"`,
+#'     `"VVI"`, `"EEE"`, `"VEE"`, `"EVE"`, `"VVE"`, `"EEV"`, `"VEV"`,
+#'     `"EVV"`, `"VVV"`: those structures only. The three letters are the
+#'     volume, shape and orientation, each equal (`E`) or varying (`V`)
+#'     across profiles, with `I` for a spherical shape or no covariances;
+#'     [multilpa()] explains them.
+#'   * `NULL`: no structure is crossed, and every candidate has the
+#'     structure [multilpa()] fits by default (`"VVI"`). This is the default
+#'     with `time`.
+#'
+#'   With `time`, only codes and `NULL` are accepted (`"basic"` and `"all"`
+#'   are not). With one continuous indicator, codes that coincide are fitted
+#'   once. With no continuous indicator there is no structure to cross, and
+#'   an explicit `model` is an error. Giving `variance_model`,
 #'   `covariance_model`, `volume`, `shape` or `orientation` in `...` sets
-#'   one structure instead.
+#'   one structure for every candidate; `model` must then be left out.
 #' @param seed Optional integer seed, reproducing the starting values for
 #'   the same data and controls.
-#' @param family `"profiles"` (default) enumerates the profile model over
-#'   `n_profiles`, `n_group_classes` and `model`. One or more of
-#'   `"additive"`, `"dispersion"` and `"additive_dispersion"` enumerates
-#'   those group-class families over `family`, `n_group_classes` and
-#'   `between_variance` instead; they need `id`, refuse `n_profiles` and
-#'   `model`, and return a `latents_family_enumeration`.
-#' @param between_variance For the group-class families, the restrictions to
-#'   cross: `"varying"`, `"equal"` or both (default). The dispersion family
-#'   is fitted with `"equal"` only.
+#' @param family Which model family to enumerate:
+#'   * `"profiles"` (default): the profile model, over `n_profiles`,
+#'     `n_group_classes` and `model`;
+#'   * one or more of `"additive"`, `"dispersion"` and
+#'     `"additive_dispersion"`: those group-class families of [multilpa()],
+#'     over `family`, `n_group_classes` and `between_variance`. They need
+#'     `id`, refuse `n_profiles`, `model` and `time`, and return a
+#'     `latents_family_enumeration`.
+#'
+#'   The cross-level families of [multilpa()] are not enumerated.
+#' @param between_variance For the group-class families only, the
+#'   restrictions on the between-group variances to cross:
+#'   * `"varying"`: each group class has its own between-group variances;
+#'   * `"equal"`: all group classes share them.
+#'
+#'   The default, `c("varying", "equal")`, fits both. The dispersion family
+#'   is fitted with `"equal"` only. Giving the argument with
+#'   `family = "profiles"` is an error.
 #' @param time The occasion column. Enumerates latent transition models
 #'   ([lta()]) over `n_profiles` and `n_group_classes`, every other `lta()`
 #'   argument in `...` held fixed; `model`, when given, crosses structures.
 #'   Profile family only; returns a `latents_transition_enumeration`.
+#'   `NULL` (default) enumerates profile or class models.
 #' @param ... Further arguments of [multilpa()], or of [lta()] with `time`,
-#'   used for every candidate: typically `n_starts`, `max_iter`, `missing`,
-#'   `categorical`, `centering`, `scaling`, `drop_empty` and `boundary`. The
-#'   group-class families take only `n_starts`, `max_iter`, `tol` and
-#'   `min_variance`.
+#'   used for every candidate: typically `n_starts`, `max_iter`, `missing`
+#'   (`"error"` or `"fiml"`), `categorical`, `centering`, `scaling`,
+#'   `drop_empty` and `boundary` (`"allow"` or `"exclude"`). The group-class
+#'   families take only `n_starts`, `max_iter`, `tol` and `min_variance`. A
+#'   name that is not an argument of the fitting function is refused.
 #' @param cores Maximum number of parallel workers (default 1, serial). With
 #'   `seed`, parallel and serial runs give the same result. On Windows, and
 #'   on macOS with Apple's Accelerate BLAS, each worker is a separate R
 #'   process, so memory grows with `cores`.
-#' @param type `"lca"`, `"lpa"` or `"lta"`; `NULL` (default) reads the type
-#'   from the other arguments. `"lca"` treats every indicator as categorical,
-#'   numeric codes included, as [multilca()] does (indicators in `ordinal` or
-#'   `count` keep those distributions, and `categorical` adds to the set).
-#'   `"lpa"` needs continuous indicators and no `categorical`, `ordinal` or
-#'   `count`. Both need `time = NULL`. `"lta"` needs `time` and reads the
-#'   measurement from `categorical`, as [lta()] does, without making numeric
-#'   indicators categorical. An explicit type needs `family = "profiles"`.
-#' @param verbose Whether to report progress: one message each when the
-#'   candidates are prepared, when starts are screened, when they are fitted
-#'   and when the grid is done. Default on when `cores > 1`. Not reported
-#'   for the group-class families.
+#' @param type The kind of model, stated explicitly:
+#'   * `NULL` (default): read from the other arguments. `time` gives
+#'     transition models; otherwise the indicators named in `categorical`,
+#'     `ordinal` and `count` decide between profile, class and mixed models;
+#'   * `"lpa"`: latent profile models. Every indicator is continuous;
+#'     `categorical`, `ordinal` and `count` are refused;
+#'   * `"lca"`: latent class models. Every indicator is categorical, numeric
+#'     codes included, as [multilca()] does (indicators in `ordinal` or
+#'     `count` keep those distributions, and `categorical` adds to the set);
+#'   * `"lta"`: latent transition models. Needs `time`, and reads the
+#'     measurement from `categorical`, as [lta()] does, without making
+#'     numeric indicators categorical.
 #'
-#' @return A `multilpa_enumeration` object, or the transition or family
-#'   enumeration named under `time` and `family`; the print header names
-#'   the resolved type (LPA, LCA, LTA, mixed or family). On every grid:
-#'   [get_candidates()] gives one row per candidate (named like
-#'   `"profiles3_groups2"`) with its class counts, log likelihood, criteria,
-#'   entropy, convergence, boundary and replication, leaving out columns
-#'   empty in every row; [get_best()] the best candidate per criterion;
-#'   [get_tree()] and [plot_tree()] how classes split; [get_entropy()],
-#'   [get_avepp()] and [get_classification()] the classification tables of
-#'   every candidate; [plot_criteria()] the criteria; [get_candidate()] one
-#'   fitted candidate; [compare_models()] candidates by name (a family grid
-#'   is compared in its own candidates table). A profile or
-#'   class grid also has the AvePP summaries at each level in its candidates
-#'   table, [get_deltas()] and [get_knees()], and a `summary()` that prints
-#'   one screen of the evidence; a transition or family grid's `summary()`
-#'   is its candidates table. Invalid arguments are refused with the
-#'   classed conditions listed on [latents-conditions]. When a converged
-#'   candidate fitted from two or more starts reached its best log
-#'   likelihood from one of them only, a
-#'   `latents_single_start` message names it once per grid.
+#'   `"lpa"` and `"lca"` need `time = NULL`, and an explicit type needs
+#'   `family = "profiles"`.
+#' @param verbose `TRUE` reports progress with one message each when the
+#'   candidates are prepared, when starts are screened, when they are fitted
+#'   and when the grid is done; `FALSE` is silent. The default is `TRUE` when
+#'   `cores > 1` and `FALSE` otherwise. Not reported for the group-class
+#'   families.
+#'
+#' @return An enumeration grid that keeps every fitted candidate. Its class
+#'   depends on what was enumerated:
+#'   * `multilpa_enumeration`: profile, class or mixed models (the default);
+#'   * `latents_transition_enumeration`: transition models (with `time`);
+#'   * `latents_family_enumeration`: group-class families (with `family`).
+#'
+#'   The print header names the resolved type (LPA, LCA, LTA, mixed or
+#'   family).
+#'
+#'   On every grid, [get_candidates()] (also [as.data.frame()]) gives one
+#'   row per candidate, named like `"profiles3_groups2"`: with the structure
+#'   appended, as in `"profiles3_groups2_VVI"`, when several are crossed;
+#'   with `classes` for `profiles` when every indicator is categorical;
+#'   without the `groups` part on a single-level grid (`"profiles3"`); and
+#'   by family on a family grid (`"additive_groups2"`). Its columns:
+#'   * `n_profiles`, `n_group_classes`, `model`, `log_likelihood` and
+#'     `n_parameters`;
+#'   * the information criteria `aic`, `kic`, `bic`, `sabic`, `caic`, `awe`,
+#'     `icl` and `clc`. On a profile or class grid each except `aic` and
+#'     `kic` has two columns: `_groups` uses the number of groups as the
+#'     sample size and `_individual` the number of rows. Lower is better.
+#'     A transition or family grid has `aic`, `bic` (groups) and
+#'     `bic_individual`;
+#'   * `profile_entropy` and `group_entropy` (`entropy` on a transition or
+#'     family grid): relative entropy between 0 and 1, higher meaning
+#'     clearer classification;
+#'   * on a profile or class grid, the average posterior probability of the
+#'     assigned class (`avepp_min`, `avepp_max`, `avepp_mean`, and
+#'     `avepp_below`, the number of classes under 0.8), with the same for
+#'     group classes as `group_avepp_*`;
+#'   * `converged`, `boundary` (an estimate at its bound) and
+#'     `n_best_replicated` (the number of starts that reached the best log
+#'     likelihood);
+#'   * `error`: why a candidate could not be fitted. Such a candidate keeps
+#'     its row, with `NA` values. A transition or family grid also has
+#'     `warnings`, the warnings of each candidate.
+#'
+#'   Columns empty in every row are left out. The other accessors:
+#'   [get_best()] gives the best candidate per criterion; [get_tree()] and
+#'   [plot_tree()] how classes split; [get_entropy()], [get_avepp()] and
+#'   [get_classification()] the classification tables of every candidate;
+#'   [plot_criteria()] the criteria; [get_candidate()] one fitted candidate;
+#'   [compare_models()] candidates by name (a family grid is compared in its
+#'   own candidates table). A profile or class grid also has [get_deltas()]
+#'   and [get_knees()], and a `summary()` that prints one screen of the
+#'   evidence; a transition or family grid's `summary()` is its candidates
+#'   table. No candidate is selected automatically.
+#'
+#' @section Conditions:
+#' `latents_bad_argument` for an argument value or combination that is not
+#' accepted: a `type` that conflicts with `time`, `family` or the
+#' measurement arguments; `model` given with another structure argument,
+#' with no continuous indicator, or naming an unknown structure;
+#' `n_profiles` or `model` with a group-class family; `between_variance`
+#' with the profile family; more than one group class with `id = NULL`; a
+#' name in `...` that the fitting function does not have.
+#' `latents_bad_transition` for a transition grid with fewer than two
+#' profiles. A candidate that fails for a reason of its own stays in the
+#' grid with its `error`. When every candidate fails for the same reason in
+#' the data or the arguments (a column that does not exist, for example),
+#' that error is raised instead: `latents_bad_data`,
+#' `latents_bad_categorical`, `latents_missing_data`, `latents_bad_weights`
+#' or `latents_bad_argument`. The candidates' warnings are raised once the
+#' grid is fitted. When a converged candidate fitted from two or more
+#' starts reached its best log likelihood from one of them only, a
+#' `latents_single_start` message names it once per grid.
+#' [latents-conditions] lists every condition.
 #'
 #' @seealso [get_candidate()], [bootstrap_lrt()] to test one class count
 #'   against the next, [enumerate_regressions()] for mixture regressions.
 #' @examples
-#' set.seed(1)
-#' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
-#' candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
-#'                               n_group_classes = 1, n_starts = 2, seed = 1)
-#' as.data.frame(candidates)
-#' summary(candidates)
+#' # Course sessions nested in students: numbers of session profiles and of
+#' # student classes.
+#' activity <- c("browse", "lectures")
+#' candidates <- enumerate_classes(course_engagement, activity, id = "student",
+#'                                 n_profiles = 2:3, n_group_classes = 1:2,
+#'                                 model = "VVI", n_starts = 2, seed = 1)
+#' candidates
+#' get_best(candidates)
+#' get_candidate(candidates, "profiles2_groups2")
 #'
-#' # Numeric response codes, explicitly categorical:
-#' codes <- data.frame(g = rep(seq_len(10), each = 10), item = rep(0:1, 50))
-#' classes <- enumerate_classes(codes, "item", "g", type = "lca",
-#'                              n_profiles = 1, n_group_classes = 1,
-#'                              n_starts = 1, seed = 1)
+#' # Latent transition models over each student's sequence of sessions:
+#' moves <- enumerate_classes(course_engagement,
+#'                            c(activity, "forum_read", "forum_post",
+#'                              "attendance"),
+#'                            id = "student", time = "sequence",
+#'                            n_profiles = 2:3, n_starts = 2, seed = 1)
+#' get_candidates(moves)
 #'
-#' # Single level, crossing class counts with two named structures:
-#' single <- enumerate_lpa(iris, c("Sepal.Length", "Sepal.Width",
-#'                                 "Petal.Length", "Petal.Width"),
-#'                         n_profiles = 1:3, model = c("VVV", "EEE"),
-#'                         n_starts = 2, seed = 1)
-#' summary(single)
+#' # Latent class models, stated explicitly with `type`:
+#' items <- c("time_with_friends", "on_social_media", "tv_video_games",
+#'            "sports")
+#' classes <- enumerate_classes(subset(student_esm, day <= 1), items,
+#'                              id = "student", type = "lca",
+#'                              n_profiles = 1:2, n_group_classes = 1,
+#'                              n_starts = 2, seed = 1)
+#' classes
 #' @export
 enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
                               n_group_classes = 1:3, model = "basic",
@@ -422,14 +511,13 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
   codes
 }
 
-#' Retrieve a fitted model from an enumeration or comparison
+#' Get one fitted model out of an enumeration grid or a model comparison
 #'
 #' @description
-#' `get_candidate()` retrieves a specified fitted model from an enumeration
-#' grid or model comparison for detailed inspection and subsequent analysis.
-#' The returned object retains its original model class and supports the
-#' summary, diagnostic, plotting, and inference methods available for that
-#' model.
+#' `get_candidate()` returns one fitted model from an enumeration grid or a
+#' model comparison, for detailed inspection and further analysis. The returned
+#' object keeps its original model class and supports the summary, diagnostic,
+#' plotting and inference methods available for that model.
 #'
 #' A candidate can be identified by its name or, for supported enumeration
 #' grids, by its class counts and model specification. When several
@@ -446,24 +534,37 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
 #' comparison, give the row label: `get_candidate(comparison,
 #' "profiles3_groups4")`.
 #'
-#' @param x An enumeration grid from [enumerate_classes()] (a profile, latent
-#'   class, transition or group-class family grid), or a comparison from
-#'   [compare_models()]. On a family grid, give the name, or `n_group_classes`
-#'   with `model`. A grid of mixture regressions from
-#'   [enumerate_regressions()] is not supported (`latents_bad_argument`):
-#'   `get_results(grid, "model", n_classes = )` returns one of its models.
-#' @param n_profiles Number of individual profiles of the candidate, the
-#'   candidate's name (`"profiles3_groups4"`), or its two class counts
-#'   (`c(3, 4)`). For a comparison, the row label, as its `model` column shows
-#'   it.
-#' @param n_group_classes Number of group classes of the candidate. Default 1.
-#' @param model The covariance structure of the candidate, needed when
-#'   [enumerate_classes()] crossed several structures and the class counts
-#'   match several candidates; on a group-class family grid, the family model
-#'   as the grid's `model` column shows it.
-#' @return The fitted object for the selected candidate, with the class and
-#'   methods of its fitting function (for example, `multilpa` for a profile
-#'   model).
+#' @param x An enumeration grid from [enumerate_classes()], [enumerate_lpa()]
+#'   or [enumerate_lca()] (a profile, latent class, transition or
+#'   group-class family grid), or a comparison from [compare_models()]. On a
+#'   family grid, give the name, or `n_group_classes` with `model`. A grid
+#'   of mixture regressions from [enumerate_regressions()] is not supported
+#'   (`latents_bad_argument`): `get_results(grid, "model", n_classes = )`
+#'   returns one of its models.
+#' @param n_profiles Which candidate, in one of three forms:
+#'   * a single number: the candidate's number of profiles (classes), used
+#'     together with `n_group_classes` and, where needed, `model`;
+#'   * a name: the candidate's name as the grid's `candidate` column shows
+#'     it, such as `"profiles3_groups4"`;
+#'   * two numbers: the number of profiles and the number of group classes,
+#'     such as `c(3, 4)`.
+#'
+#'   A name or a pair of numbers identifies the candidate on its own, so
+#'   `n_group_classes` and `model` are then left out. For a comparison, this
+#'   is the row label, as its `model` column shows it.
+#' @param n_group_classes Number of group classes of the candidate. Default
+#'   1, which is also the value for every candidate of a single-level grid.
+#' @param model `NULL` (default), or the covariance structure of the
+#'   candidate as a single code such as `"VVI"`, needed when the grid crossed
+#'   several structures and the class counts match several candidates. On a
+#'   group-class family grid, the family model as the grid's `model` column
+#'   shows it, such as `"additive_equal"`.
+#' @return The fitted model of the selected candidate, with the class its
+#'   fitting function gives it: `multilpa` or `multilpa_covariates` from a
+#'   profile or class grid, `multilpa_transitions` or `multilpa_lta` from a
+#'   transition grid, `multilpa_additive` from a family grid. Every method
+#'   and accessor of that class applies. The stored fit is returned; nothing
+#'   is estimated again.
 #' @section Conditions:
 #'   `latents_unknown_candidate` for a name or class counts not in the grid,
 #'   for counts that match several candidates (the message lists their
@@ -476,17 +577,18 @@ enumerate_classes <- function(data, vars, id, n_profiles = 1:4,
 #'   models. Counts that are not single positive integers, and a `model`
 #'   that is not a single string, also raise `latents_bad_argument`.
 #' @examples
-#' set.seed(1)
-#' d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
-#' candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
-#'                               n_group_classes = 1, n_starts = 2, seed = 1)
-#' get_candidate(candidates, n_profiles = 2, n_group_classes = 1, model = "VVI")
 #' # This grid crosses two structures, so the names carry them:
-#' candidates
-#' get_candidate(candidates, "profiles2_groups1_VVI")
-#' compared <- compare_models(candidates, "profiles1_groups1_VVI",
-#'                            "profiles2_groups1_VVI")
-#' get_candidate(compared, "profiles2_groups1_VVI")
+#' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
+#'                       n_profiles = 1:2, model = c("EEI", "VVI"),
+#'                       n_starts = 2, seed = 1)
+#' grid
+#' # By name:
+#' get_candidate(grid, "profiles2_VVI")
+#' # By number of profiles and structure:
+#' get_candidate(grid, n_profiles = 2, model = "VVI")
+#' # From a comparison, by row label:
+#' compared <- compare_models(grid, "profiles1_VVI", "profiles2_VVI")
+#' get_candidate(compared, "profiles2_VVI")
 #' @export
 get_candidate <- function(x, n_profiles, n_group_classes = 1L,
                           model = NULL) {
@@ -1362,7 +1464,8 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
   invisible(NULL)
 }
 
-#' Parametric bootstrap likelihood-ratio test for nested mixture models
+#' Test whether a model with one more class improves on a nested model, with a
+#' parametric bootstrap likelihood ratio
 #'
 #' @description
 #' `bootstrap_lrt()` tests whether a more flexible model improves on a
@@ -1382,25 +1485,54 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #'   same data, in which `null_model` is nested.
 #' @param data The data frame both models were fitted to. Required for
 #'   transition models, whose simulations keep the observed groups,
-#'   occasions and covariates; otherwise taken from the fits when omitted,
-#'   and checked against them when supplied.
+#'   occasions and covariates. For the other models `NULL` (default) uses
+#'   the data stored in the fits; a supplied data frame is checked against
+#'   them.
 #' @param iter Number of simulated data sets (default 199; at least 2). More
 #'   replicates reduce the Monte Carlo error of the p-value but do not cure
-#'   estimation problems.
+#'   estimation problems. Both models are refitted to every data set, so the
+#'   run time grows with `iter` times the cost of the two fits.
 #' @param n_starts,max_iter,tol Controls for each simulated refit; `NULL`
 #'   (default) keeps each model's own controls and search strategy. A
 #'   supplied value applies to both models.
 #' @param seed Optional integer seed. The caller's random-number state is
 #'   restored on exit.
 #'
-#' @return A `multilpa_bootstrap_lrt` object: the observed statistic, the
-#'   bootstrap p-value and its Monte Carlo standard error, `n_valid` and
-#'   `n_invalid` replicates, `fixed` (the measurement blocks held in every
-#'   refit) and per-replicate diagnostics, including how many starts of
-#'   each refit replicated its best likelihood. `as.data.frame()` returns the one-row test
-#'   summary, `get_results(result, "replicates")` one row per replicate,
-#'   `summary()` both, and `plot()` the simulated distribution with the
-#'   observed statistic.
+#' @return An object of class `multilpa_bootstrap_lrt`, for every kind of
+#'   model compared. Printing it shows the two models, the observed
+#'   statistic and the p-value. Its tables:
+#'   * `as.data.frame(result)`: the one-row test summary, with the class
+#'     counts of both models, `statistic` (twice the difference in log
+#'     likelihoods), `p_value`, `monte_carlo_se`, `iter`, `n_valid` and
+#'     `n_invalid` (the replicates used and left out) and `fixed` (the
+#'     measurement blocks held in every refit);
+#'   * `get_results(result, "replicates")`: one row per simulated data set,
+#'     with its `statistic`, whether it is `valid`, whether a refit was at a
+#'     bound, how many starts of each refit replicated its best likelihood,
+#'     and any warning or error;
+#'   * `summary(result)`: both tables.
+#'
+#'   `plot(result)` draws the simulated distribution with the observed
+#'   statistic.
+#'
+#' @section Conditions:
+#' Errors, raised before anything is simulated: `latents_bad_argument` for
+#' two models of different kinds, an invalid `iter`, `n_starts`, `max_iter`
+#' or `tol`, or transition models without `data`; `latents_bad_nesting` for
+#' profile or class models that do not differ by exactly one profile or one
+#' group class; `latents_incomparable_models` for models that differ in
+#' their observations, grouping, covariance structure, centring, scaling,
+#' missing-data handling or `drop_empty`; `latents_no_converge` for an
+#' original model that did not converge or has a variance at its bound;
+#' `latents_reversed_likelihood` when the alternative has the lower log
+#' likelihood; `latents_bad_inference_data` for `data` that are not the
+#' rows the models were fitted to; `latents_unsupported_weights`,
+#' `latents_unsupported_prior`, `latents_unsupported_noise` and
+#' `latents_unsupported_bootstrap` for fits with sampling weights, a prior,
+#' a noise component, or person centring or scaling.
+#'
+#' A `latents_failed_replicates` warning says how many replicates were
+#' invalid and left out; see *Calculation*.
 #'
 #' @section Supported comparisons:
 #' Both models must be of one kind: profile or class models, transition
@@ -1455,19 +1587,13 @@ as.data.frame.summary_multilpa_enumeration <- function(x, row.names = NULL, opti
 #' @seealso [enumerate_classes()] for fitting the candidates;
 #'   [compare_models()] for information-criterion comparisons.
 #' @examples
-#' set.seed(1)
-#' example_data <- data.frame(
-#'   school = rep(seq_len(10), each = 10),
-#'   score = rnorm(100, rep(c(-2, 2), each = 50))
-#' )
-#' smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
-#'                     n_group_classes = 1, n_starts = 2, seed = 1)
-#' larger <- multilpa(example_data, "score", "school", n_profiles = 2,
-#'                    n_group_classes = 1, n_starts = 2, seed = 1)
+#' indicators <- c("eruptions", "waiting")
+#' smaller <- lpa(faithful, indicators, n_profiles = 1, n_starts = 2, seed = 1)
+#' larger <- lpa(faithful, indicators, n_profiles = 2, n_starts = 2, seed = 1)
 #' # `iter` is small so the example runs quickly; use many more for inference.
-#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
-#'                             max_iter = 2000, tol = 1e-6, seed = 1)
+#' comparison <- bootstrap_lrt(smaller, larger, iter = 9, seed = 1)
 #' comparison
+#' as.data.frame(comparison)
 #' @export
 bootstrap_lrt <- function(null_model, alternative_model, data = NULL,
                                  iter = 199L, n_starts = NULL, max_iter = NULL,

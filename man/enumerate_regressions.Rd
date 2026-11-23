@@ -2,7 +2,8 @@
 % Please edit documentation in R/mixture-regression-enumerate.R
 \name{enumerate_regressions}
 \alias{enumerate_regressions}
-\title{Assess the number of classes in mixture regression models}
+\title{Fit mixture regression models with different numbers of classes, and compare
+them}
 \usage{
 enumerate_regressions(
   formula,
@@ -24,52 +25,80 @@ interactions and \code{offset()} are supported.}
 \item{n_classes}{Positive integer class counts to fit. Default \code{1:4}.}
 
 \item{n_group_classes}{Positive integer group-class counts (two-level
-model; needs \code{id}), crossed with \code{n_classes}. Default 1.}
+model; needs \code{id} in \code{...}), crossed with \code{n_classes}. Default 1, no
+group classes.}
 
 \item{bootstrap}{Number of bootstrap replicates for the likelihood-ratio
-test; \code{0} (the default) skips it. Not available with sampling weights.}
+test of \code{k - 1} against \code{k} classes. \code{0} (the default) skips the test.
+A positive number adds the \code{blrt_} columns to the table; each replicate
+refits two models, so the run time grows with it. Not available with
+sampling weights.}
 
 \item{bootstrap_starts}{Random starts for each bootstrap refit. Default 3.}
 
-\item{seed}{Optional integer seed; when given, the caller's random-number
-state is restored on exit.}
+\item{seed}{Optional integer seed for the starts and the bootstrap; when
+given, the caller's random-number state is restored on exit.}
 
-\item{...}{Further arguments to \code{\link[=mixture_regression]{mixture_regression()}}, such as \code{family},
-\code{id}, \code{class_level}, \code{common}, \code{membership} or \code{variance}. \code{n_classes},
-\code{n_group_classes} and \code{vcov_type} are not accepted here.}
+\item{...}{Further arguments to \code{\link[=mixture_regression]{mixture_regression()}}, used for every
+model:
+\itemize{
+\item \code{family}: \code{"gaussian"} (default), \code{"binomial"}, \code{"poisson"},
+\code{"negative_binomial"} or \code{"ordinal"};
+\item \code{id} and \code{class_level}: \code{"observation"} (default, a class per row) or
+\code{"group"} (a class per unit of \code{id});
+\item \code{variance}: \code{"varying"} (default) or \code{"equal"};
+\item \code{common}, \code{membership}, \code{random} and the other model arguments;
+\item \code{n_starts}, \code{max_iter}, \code{tol} and \code{missing} (\code{"error"} or \code{"omit"}).
+}
+
+\code{n_classes}, \code{n_group_classes} and \code{vcov_type} are not accepted here:
+the class counts are this function's own arguments, and the models are
+fitted without a stored covariance matrix. A name that is not an
+argument of \code{mixture_regression()} is refused.}
 }
 \value{
 An object of class \code{latents_regression_enumeration}. Its table
-(from \code{\link[=as.data.frame]{as.data.frame()}} or \code{get_results(x, "fit")}) has one row per
-model, with columns \code{n_classes}, \code{n_group_classes}, \code{log_likelihood},
-\code{n_parameters}, \code{aic}, \code{bic}, \code{bic_rows}, \code{sabic}, \code{icl}, \code{entropy},
-\code{smallest_share}, \code{converged}, \code{n_best_replicated}, \code{note} (why a model
-could not be fitted), \code{best_bic} (\code{TRUE} for rows attaining the smallest
-reported BIC, without filtering on convergence), and,
-with \code{bootstrap > 0}, \code{blrt_statistic}, \code{blrt_p_value},
-\code{blrt_replicates} (the valid replicates), \code{blrt_n_invalid} (the failed,
-unconverged, separated or reversed-likelihood replicates) and
-\code{blrt_flagged} (a compatibility alias for \code{blrt_n_invalid}). The test
-columns are \code{NA} where the \code{k - 1} or \code{k} class model is missing or
-failed, and the p-value is \code{NA} when the observed fits fail validation or
-fewer than half of the requested replicates are valid.
+(from \code{\link[=as.data.frame]{as.data.frame()}}, \code{summary()} or \code{get_results(x, "fit")}) has
+one row per model, with these columns:
+\itemize{
+\item \code{n_classes}, \code{n_group_classes}, \code{log_likelihood}, \code{n_parameters};
+\item \code{aic}, \code{bic}, \code{bic_rows} (BIC with the number of rows as the sample
+size), \code{sabic} and \code{icl}: lower is better;
+\item \code{entropy}: between 0 and 1, higher meaning clearer classification;
+\item \code{smallest_share}: the proportion of the smallest class;
+\item \code{converged} and \code{n_best_replicated} (the number of starts that
+reached the best log likelihood);
+\item \code{note}: why a model could not be fitted; its other columns are \code{NA};
+\item \code{best_bic}: \code{TRUE} for the rows with the smallest reported BIC,
+without filtering on convergence;
+\item with \code{bootstrap > 0}: \code{blrt_statistic}, \code{blrt_p_value},
+\code{blrt_replicates} (the valid replicates), \code{blrt_n_invalid} (the
+failed, unconverged, separated or reversed-likelihood replicates)
+and \code{blrt_flagged} (a compatibility alias for \code{blrt_n_invalid}). The
+test of a row compares it with the row that has one class fewer.
+These columns are \code{NA} where the \code{k - 1} or \code{k} class model is
+missing or failed, and the p-value is \code{NA} when the observed fits
+fail validation or fewer than half of the requested replicates are
+valid.
+}
+
 \code{get_results(x, "model", n_classes = , n_group_classes = )} returns one
-fitted model, \code{get_results(x, "tree")} the class tree and
-\code{get_results(x, "all")} the named list of the \code{fit} and \code{tree} tables;
-any other \code{what} raises \code{latents_bad_argument}. \code{print()} shows the main
-columns of the table. \code{summary()} returns the same table as
-\code{\link[=as.data.frame]{as.data.frame()}}.
+fitted model (a \code{latents_mixture_regression} or
+\code{latents_growth_mixture} fit), \code{get_results(x, "tree")} the class tree
+and \code{get_results(x, "all")} the named list of the \code{fit} and \code{tree}
+tables; any other \code{what} raises \code{latents_bad_argument}. \code{print()} shows
+the main columns of the table.
 \code{plot()} draws AIC, BIC, SABIC and ICL across the classes (see
 \code{\link[=plot_enumeration]{plot_enumeration()}} for its other views, and \code{plot_views(x)} for the
 views a regression grid offers).
 }
 \description{
-\code{enumerate_regressions()} compares mixture regression models with different
-numbers of latent classes. It fits the same outcome model across the
-requested class counts, allowing researchers to assess whether additional
-classes provide a useful representation of variation in outcome--predictor
-relationships. The outcome distribution, predictors, and other supplied
-model settings remain common across candidates.
+\code{enumerate_regressions()} fits mixture regression models with different
+numbers of latent classes and compares them. The same outcome model is fitted
+across the requested class counts, so that researchers can assess whether
+additional classes provide a useful representation of variation in
+outcome-predictor relationships. The outcome distribution, predictors, and
+other supplied model settings remain common across candidates.
 
 For supported two-level models, the function can also vary the number of
 group classes and fit each requested combination of class counts. The
@@ -135,11 +164,14 @@ replicates are valid (the p-value is then \code{NA}).
 classes <- enumerate_regressions(score ~ hours, data = study_hours,
                                  n_classes = 1:3, n_starts = 3, seed = 1)
 classes
+get_results(classes, "model", n_classes = 2)
 \donttest{
-# A small bootstrap count is used only to limit example execution time.
+# With the bootstrap likelihood-ratio test of one against two classes.
+# `bootstrap` is small so the example runs quickly; use many more
+# replicates for inference.
 with_test <- enumerate_regressions(score ~ hours, data = study_hours,
-                                   n_classes = 1:2, n_starts = 3, seed = 1,
-                                   bootstrap = 4)
+                                   n_classes = 1:2, variance = "equal",
+                                   n_starts = 3, seed = 1, bootstrap = 4)
 as.data.frame(with_test)
 }
 }

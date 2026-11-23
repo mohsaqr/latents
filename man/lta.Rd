@@ -2,7 +2,8 @@
 % Please edit documentation in R/transitions.R
 \name{lta}
 \alias{lta}
-\title{Fit a latent transition model}
+\title{Fit a latent transition model of how units move between latent states over
+repeated occasions}
 \usage{
 lta(
   data,
@@ -48,8 +49,9 @@ lta(
 \item{vars}{Names of the indicator columns. Those not named in
 \code{categorical}, \code{ordinal} or \code{count} are continuous.}
 
-\item{id}{Name of the group identifier column (character, factor or
-numeric, without missing values). Required.}
+\item{id}{Name of the column identifying the units (persons) whose
+occasions are followed (character, factor or numeric, without missing
+values). Required.}
 
 \item{n_profiles}{Number of profiles, at least two.}
 
@@ -58,11 +60,23 @@ values must be unique within a group and sort in their intended order
 (numbers numerically, factors by level, text alphabetically, so \code{"T2"},
 \code{"T10"} is refused; use a factor or zero-pad).}
 
-\item{n_group_classes}{Number of group classes (default 1). More than one
-fits a mixture of transition models over the units.}
+\item{n_group_classes}{Number of group classes (default 1). With 1, every
+unit follows the same initial and transition probabilities. More than
+one fits a mixture of transition models: each unit belongs to one group
+class, and each group class has its own initial and transition
+probabilities.}
 
-\item{variance_model}{\code{"varying"} (default): each profile has its own
-variances or covariance matrix; \code{"equal"}: one shared by all profiles.}
+\item{variance_model}{Whether the profiles share the variances of the
+continuous indicators:
+\itemize{
+\item \code{"varying"} (default): each profile has its own variances (its own
+covariance matrix under \code{covariance_model = "full"}), so profiles can
+differ in spread as well as in level;
+\item \code{"equal"}: one set of variances (one covariance matrix) shared by all
+profiles, so profiles differ only in their means. This uses fewer
+parameters and is less prone to solutions in which one profile's
+variance collapses towards zero.
+}}
 
 \item{n_starts}{Number of EM starts (default 10). The first is
 deterministic (Ward's clustering), the rest random; the reported start
@@ -87,13 +101,31 @@ estimate at the bound is a boundary solution and warns.}
 \item{seed}{Optional integer seed. The caller's random-number state is
 restored on exit.}
 
-\item{missing}{\code{"error"} (default) rejects missing indicator values;
-\code{"fiml"} maximizes the observed-data likelihood under MAR. Covariates
-must be complete either way. See \emph{Occasions without data}.}
+\item{missing}{What to do with missing indicator values:
+\itemize{
+\item \code{"error"} (default): stop, naming the indicators that have them;
+\item \code{"fiml"}: keep every row and fit each one on the indicators it
+observes (full-information maximum likelihood), valid when the
+missingness depends only on observed values. A row with no observed
+indicator keeps its place in the sequence.
+}
 
-\item{covariance_model}{\code{"diagonal"} (default): the indicators are
-independent within a profile; \code{"full"}: within-profile covariances are
-estimated.}
+Covariates must be complete either way. See \emph{Occasions without data}.}
+
+\item{covariance_model}{Whether continuous indicators are correlated
+within a profile:
+\itemize{
+\item \code{"diagonal"} (default): no covariances, so within a profile the
+indicators are independent and all their association is explained by
+the profiles;
+\item \code{"full"}: the within-profile covariances are estimated, one matrix
+per profile under \code{variance_model = "varying"} and one shared matrix
+under \code{"equal"}.
+}
+
+With \code{variance_model} this gives four of the structures of \code{model}: VVI
+(\code{"varying"} and \code{"diagonal"}), EEI (\code{"equal"} and \code{"diagonal"}), VVV
+(\code{"varying"} and \code{"full"}) and EEE (\code{"equal"} and \code{"full"}).}
 
 \item{categorical}{Indicators modelled by profile-specific response
 probabilities over their observed categories, the latent class
@@ -103,25 +135,45 @@ parameterization. Naming a subset of \code{vars} fits a mixed-mode model.}
 \item{min_probability}{Lower bound on every categorical response
 probability (default \code{1e-10}).}
 
-\item{occasions}{How a group's occasions are placed on the transition
-grid. \code{"observed"} (default) numbers each group's own rows
-consecutively, so a transition always links two adjacent rows. \code{"grid"}
-places them on the grid of every position seen in the data, so a group
-that skips a position still makes a transition across the gap and
-contributes no measurement at it. The two agree when every group is
-observed at every position. Under either, a group's first row is its
-first occasion: occasion-specific transitions and measurement count
-occasions from each group's own start, not from the first position in
-the data.}
+\item{occasions}{How a group's rows are placed on the sequence of
+occasions:
+\itemize{
+\item \code{"observed"} (default): each group's own rows are numbered
+consecutively, so a transition always links two adjacent rows,
+whatever the gap between their \code{time} values;
+\item \code{"grid"}: the rows are placed on the grid of every \code{time} value seen
+in the data, so a group that skips a value still makes a transition
+across the gap and contributes no measurement at it.
+}
 
-\item{select_start}{Which start is reported. \code{"likelihood"} (default): the
-highest log likelihood, preferring a converged start among those tied
-within tolerance. \code{"converged"}: the best converged start when there is
-one. \code{summary()} and \code{get_results(fit, "starts")} report every start.}
+The two agree when every group is observed at every \code{time} value. Under
+either, a group's first row is its first occasion: occasion-specific
+transitions and measurement count occasions from each group's own
+start, not from the first \code{time} value in the data.}
 
-\item{transitions}{\code{"homogeneous"} (default): one transition matrix for
-every occasion. \code{"occasion"}: a separate matrix for each move (occasion 1
-to 2, 2 to 3, and so on). See \emph{Occasions without data}.}
+\item{select_start}{Which start is reported:
+\itemize{
+\item \code{"likelihood"} (default): the start with the highest log likelihood,
+whether or not it converged. Among starts tied within the convergence
+tolerance, a converged one is preferred;
+\item \code{"converged"}: the start with the highest log likelihood among those
+that converged, or among all starts when none converged.
+}
+
+\code{summary()} and \code{get_results(fit, "starts")} report every start.}
+
+\item{transitions}{Whether the transition probabilities change over
+occasions:
+\itemize{
+\item \code{"homogeneous"} (default): one transition matrix for every move, so
+the chance of moving from one profile to another is the same at every
+occasion;
+\item \code{"occasion"}: a separate matrix for each move (occasion 1 to 2, 2 to
+3, and so on), with \code{n_profiles * (n_profiles - 1)} more parameters
+per group class for each additional move.
+}
+
+See \emph{Occasions without data}.}
 
 \item{transition_covariates}{Columns whose values shift the transition
 probabilities through a multinomial logit per origin profile (the log
@@ -130,41 +182,64 @@ change over occasions; the value at the destination occasion is used.
 Factors are expanded to indicator columns after dropping unused levels.
 With \code{occasions = "grid"}, a skipped position has no row to read the
 covariates from and is refused: use \code{"observed"}, or add the skipped
-rows with their covariate values and missing indicators under FIML.}
+rows with their covariate values and missing indicators under FIML.
+The default, \code{character()}, is no covariates.}
 
 \item{initial_covariates}{Columns that shift the initial profile
 distribution (a multinomial logit, last profile as reference), read at
 each group's first occasion. Factors are expanded as for
-\code{transition_covariates}.}
+\code{transition_covariates}. The default, \code{character()}, is no covariates.}
 
-\item{measurement}{\code{"invariant"} (default) keeps the profiles' means,
-variances and response probabilities equal across occasions;
-\code{"occasion"} estimates them separately at each occasion.}
+\item{measurement}{Whether the profiles keep their definition over
+occasions:
+\itemize{
+\item \code{"invariant"} (default): the profiles' means, variances and response
+probabilities are equal at every occasion, so a profile means the
+same thing throughout and a transition is a change of profile;
+\item \code{"occasion"}: they are estimated separately at each occasion. The
+profiles may then drift, and the same label need not mean the same
+thing at two occasions.
+}}
 
-\item{order}{\code{1} (default) or \code{2}. With \code{2}, the profile at each occasion
-from the third on depends on the profiles at the two previous occasions;
-the first transition stays first order.}
+\item{order}{The order of the chain:
+\itemize{
+\item \code{1} (default): the profile at an occasion depends on the profile at
+the previous occasion only;
+\item \code{2}: from the third occasion on it depends on the profiles at the two
+previous occasions; the first transition stays first order. This
+needs at least three occasions.
+}}
 
-\item{model}{A covariance structure as \code{\link[=multilpa]{multilpa()}} takes it (mclust's
-codes, such as \code{"VVI"}). A \code{multilpa_transitions} fit gives standard
-errors for EEI, VVI, EEE and VVV only; a \code{multilpa_lta} fit (see
-\emph{Value}) gives them for every structure.}
+\item{model}{The covariance structure as one of mclust's fourteen codes
+(\code{"EII"}, \code{"VII"}, \code{"EEI"}, \code{"VEI"}, \code{"EVI"}, \code{"VVI"}, \code{"EEE"}, \code{"VEE"},
+\code{"EVE"}, \code{"VVE"}, \code{"EEV"}, \code{"VEV"}, \code{"EVV"}, \code{"VVV"}), explained under
+\code{\link[=multilpa]{multilpa()}}. \code{NULL} (default) follows \code{variance_model} and
+\code{covariance_model}. Unlike in \code{multilpa()}, a \code{model} given together
+with \code{variance_model} or \code{covariance_model} is not refused: \code{model} is
+used and the other two are ignored. A \code{multilpa_transitions} fit gives
+standard errors for EEI, VVI, EEE and VVV only; a \code{multilpa_lta} fit
+(see \emph{Value}) gives them for every structure.}
 
-\item{mover_stayer}{\code{TRUE} adds a class of stayers: units that never change
-profile (identity transitions) with their own initial distribution, the
-mover-stayer model. \code{n_group_classes} then counts the
-mover classes; the stayer class is reported as \code{"stayers"}.}
+\item{mover_stayer}{\code{FALSE} (default) fits the model as described.
+\code{TRUE} adds a class of stayers: units that never change profile, with
+their own initial distribution (the mover-stayer model). It separates
+units that are stable throughout from units that can move.
+\code{n_group_classes} then counts the mover classes only, and the stayer
+class is reported as \code{"stayers"}.}
 
 \item{weights}{Name of a column holding one sampling weight per \code{id}
 (constant over its occasions): pseudo maximum likelihood with sandwich
 standard errors, as under \code{\link[=multilpa]{multilpa()}}. The model-implied
 \code{"transitions"} and \code{"initial"} tables then average the units with their
-weights.}
+weights. \code{NULL} (default) weights every unit equally.}
 
 \item{ordinal, count, count_model, count_dispersion}{Ordinal and count
-indicators, as under \code{\link[=multilpa]{multilpa()}}; with \code{measurement = "occasion"} their
-parameters are estimated per occasion. Read with
-\code{get_results(fit, "ordinal")} and \code{get_results(fit, "count_means")}.}
+indicators, as under \code{\link[=multilpa]{multilpa()}}: \code{count_model} is \code{"poisson"}
+(default) or \code{"negative_binomial"}, and \code{count_dispersion} is
+\code{"varying"} (default, one dispersion per profile) or \code{"equal"}. With
+\code{measurement = "occasion"} their parameters are estimated per occasion.
+Read with \code{get_results(fit, "ordinal")} and
+\code{get_results(fit, "count_means")}.}
 
 \item{drop_empty}{\code{TRUE} (default) leaves rows with no observed indicator,
 and groups made only of such rows, out of the sample sizes, entropies
@@ -177,49 +252,97 @@ transition models, \code{FALSE} also counts all positive-weight rows in the
 individual-level BIC. Estimation is the same either way;
 fits with different settings are not compared.}
 
-\item{search}{\code{"kmeans"} (default) or \code{"emEM"}, as under \code{\link[=multilpa]{multilpa()}}.
+\item{search}{How the starting values are searched:
+\itemize{
+\item \code{"kmeans"} (default): every one of the \code{n_starts} starts is run to
+convergence;
+\item \code{"emEM"}: a larger pool of \code{n_screen} starts is screened with a short
+EM run each, and only the first start and the best of the rest,
+\code{n_starts} in all, are run to convergence.
+}
+
 Unlike \code{multilpa()}, \code{lta()} does not pick the default by covariance
 structure.}
 
 \item{n_screen}{For \code{search = "emEM"} only, the size of the screened pool
-(default five times \code{n_starts}, at least \code{n_starts}).}
+(default five times \code{n_starts}, at least \code{n_starts}). It is refused
+under \code{search = "kmeans"}, the default.}
 
-\item{acceleration}{\code{"squarem"} (default) accelerates EM with SQUAREM,
-as under \code{\link[=multilpa]{multilpa()}}; \code{"none"} runs plain EM.}
+\item{acceleration}{How EM is run:
+\itemize{
+\item \code{"squarem"} (default): EM accelerated with SQUAREM, which usually
+needs fewer iterations and never lowers the likelihood;
+\item \code{"none"}: plain EM.
+}}
 
 \item{cores}{Number of processor cores for the starts (default 1); with
 \code{seed} the result is identical to one core. To fit several models, give
 \code{cores} to \code{\link[=enumerate_classes]{enumerate_classes()}} instead.}
 }
 \value{
-A \code{multilpa_transitions} object with \code{means}, \code{variances} (and
-\code{covariances} or \code{response_probabilities}), \code{initial_probabilities}
-(group classes by profiles), \code{transition_probabilities} (profiles by
-profiles by group classes, rows indexing the profile moved from),
-\code{group_probabilities}, the posterior matrices and classifications,
-\code{log_likelihood}, the information criteria, the starts table and the
-convergence history. \code{\link[=get_results]{get_results()}} returns its tables,
-\code{\link[=parameter_inference]{parameter_inference()}} Wald or bootstrap standard errors and
-\code{\link[=bootstrap_lrt]{bootstrap_lrt()}} compares nested fits.
+A fitted model of one of two classes.
 
-With \code{transitions = "occasion"}, \code{transition_covariates},
+\strong{\code{multilpa_transitions}} is returned for the basic model: continuous
+or categorical indicators, homogeneous first-order transitions,
+invariant measurement, no covariates, no stayer class and no weights.
+\code{\link[=get_results]{get_results()}} returns its tables by name, among them:
+\itemize{
+\item \code{"transitions"}: one row per group class, origin profile (\code{from}) and
+destination profile (\code{to}), with the transition probability, the
+expected number of moves, and the flags \code{supported} and \code{estimated}
+(see \emph{Occasions without data});
+\item \code{"initial"}: the probability of each profile at the first occasion
+and its prevalence over all occasions;
+\item \code{"profiles"} (also \code{as.data.frame(fit)}) and \code{"responses"}: the
+profile means and variances, and the response probabilities of
+categorical indicators;
+\item \code{"assignments"}: the data with each row's most likely profile, its
+unit's group class and the posterior probabilities;
+\item \code{"sequences"}, \code{"sequence_summary"} and \code{"sequence_lengths"}: the
+profile assigned to each unit at each occasion, and the lengths of
+the sequences;
+\item \code{"classification"}, \code{"entropy"}, \code{"information_criteria"} and
+\code{"starts"}, as for a \code{\link[=multilpa]{multilpa()}} fit.
+}
+
+Profiles and group classes are numbered 1, 2, and so on.
+
+\strong{\code{multilpa_lta}} is returned when any of these is used:
+\code{transitions = "occasion"}, \code{transition_covariates},
 \code{initial_covariates}, \code{measurement = "occasion"}, \code{order = 2},
-\code{mover_stayer = TRUE}, \code{weights}, \code{ordinal} or \code{count}, the result is a
-\code{multilpa_lta} object: its tables are transition and initial logit
-coefficients with Wald standard errors, model-implied transition
-probabilities per occasion (with an \code{estimated} column), profiles per
-occasion and the assignments.
+\code{mover_stayer = TRUE}, \code{weights}, \code{ordinal} or \code{count}. Its tables:
+\itemize{
+\item \code{"transitions"} (also \code{as.data.frame(fit)}): the model-implied
+transition probabilities, per occasion where they differ, with
+\code{supported} and \code{estimated};
+\item \code{"transition_coefficients"} and \code{"initial_coefficients"}: the logit
+coefficients with Wald standard errors, confidence limits and odds
+ratios;
+\item \code{"initial"}: the initial profile probabilities;
+\item \code{"profiles"}: the measurement parameters, per occasion under
+\code{measurement = "occasion"};
+\item \code{"group_classes"}: the proportion of each group class, the stayers
+included;
+\item \code{"assignments"}, \code{"posteriors"}, \code{"entropy"},
+\code{"information_criteria"}, \code{"fit"} and \code{"starts"}.
+}
 
-Profile labels are arbitrary and not comparable across fits without
-alignment.
+The parameter tables of this class label profiles and group classes
+\code{"profile_1"}, \code{"group_class_1"}, and so on; its \code{"assignments"} table
+numbers them.
+
+For both classes \code{\link[=parameter_inference]{parameter_inference()}} gives Wald or bootstrap
+standard errors, \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} compares nested fits,
+\code{\link[=plot_transitions]{plot_transitions()}} draws the transition probabilities and
+\code{\link[=plot_sequences]{plot_sequences()}} the sequences. Profile labels are arbitrary and not
+comparable across fits without alignment.
 }
 \description{
-Latent transition analysis describes stability and change in latent
-states across repeated occasions. The states (profiles) are patterns in
-continuous or discrete indicators; transition probabilities give the
-chance of staying in a state or moving to another between successive
-occasions. \code{lta()} estimates the measurement and transition parameters
-jointly.
+\code{lta()} fits a latent transition model, which describes stability and change
+in latent states across repeated occasions. The states (profiles) are
+patterns in continuous or discrete indicators; transition probabilities give
+the chance of staying in a state or moving to another between successive
+occasions. The measurement and transition parameters are estimated jointly.
 
 By default the chain is first order and time-homogeneous: the state at an
 occasion depends on the state before it, with the same transition matrix
@@ -231,6 +354,29 @@ transitions or measurement, second-order dependence, a mover-stayer
 class, sampling weights and ordinal or count indicators; any of these
 changes the result class (see \emph{Value}).
 }
+\section{Conditions}{
+
+Errors: \code{latents_bad_argument} when \code{id} or \code{time} is left out or an
+argument has a value that is not accepted; \code{latents_bad_data} for a
+column that \code{data} does not have or missing indicator values under
+\code{missing = "error"}; \code{latents_bad_time} for \code{time} values that repeat
+within a group or do not sort; \code{latents_bad_transition} for fewer than
+two profiles, for data in which no group is observed at two occasions or
+no indicator is observed after the first occasion, and for \code{order = 2}
+with fewer than three occasions; \code{latents_unidentified} for the
+specifications listed under \emph{Short panels and bootstrap support}, and
+for more profiles than distinct rows or more group classes than groups;
+\code{latents_bad_covariate} for a constant or collinear covariate.
+
+Warnings: \code{latents_unconverged} when the reported start stopped at
+\code{max_iter}; \code{latents_boundary} when a variance or a probability is at its
+bound; \code{latents_empty_transition_row}, \code{latents_weak_transition_support}
+and \code{latents_unidentified_occasion} for the cases under \emph{Occasions
+without data}; \code{latents_small_classes} when a profile or group class has
+an effective size below one; \code{latents_failed_starts} when some starts
+failed. \link{latents-conditions} lists every condition.
+}
+
 \section{Occasions without data}{
 
 A transition the data never observe is not estimated. A profile that no

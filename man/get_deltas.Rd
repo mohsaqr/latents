@@ -2,23 +2,44 @@
 % Please edit documentation in R/wildcards.R
 \name{get_deltas}
 \alias{get_deltas}
-\title{Change in the criterion with each added class}
+\title{Get how much each information criterion improves as a class or a group class
+is added}
 \usage{
 get_deltas(x)
 }
 \arguments{
-\item{x}{An enumeration grid from \code{\link[=enumerate_classes]{enumerate_classes()}},
-\code{\link[=enumerate_lpa]{enumerate_lpa()}} or \code{\link[=enumerate_lca]{enumerate_lca()}}.}
+\item{x}{A profile or class grid from \code{\link[=enumerate_lpa]{enumerate_lpa()}},
+\code{\link[=enumerate_lca]{enumerate_lca()}} or \code{\link[=enumerate_classes]{enumerate_classes()}}. Transition grids, grids of
+group-class families and regression grids have no such table and are
+refused.}
 }
 \value{
-A data frame, one row per candidate: \verb{candidate, n_profiles, n_group_classes, model, criterion, value, delta_profile, from_profile, delta_group_class, from_group_class}.
-A regression, transition or family grid has no deltas and raises
-\code{latents_bad_argument}, naming the tables it has.  Any other object raises \code{latents_not_a_fit}.
+A data frame with one row per candidate and the columns:
+\itemize{
+\item \code{candidate}, \code{n_profiles}, \code{n_group_classes}, \code{model}: the candidate,
+its numbers of classes and its covariance structure;
+\item \code{criterion}: the name of the criterion, \code{bic_groups};
+\item \code{value}: the candidate's value of the criterion;
+\item \code{delta_profile}: the criterion of the candidate with one profile
+fewer (and the same group classes and structure) minus \code{value}. A
+positive number means that this candidate is lower;
+\item \code{from_profile}: the name of that smaller candidate;
+\item \code{delta_group_class}, \code{from_group_class}: the same for the candidate
+with one group class fewer.
+}
+
+A delta is \code{NA} where there is no such smaller candidate, or where
+either of the two did not converge.
+
+Errors: \code{latents_bad_argument} for a transition, family or regression
+grid, naming the tables it has; \code{latents_not_a_fit} when \code{x} is not an
+enumeration grid.
 }
 \description{
-The decrease in the information criterion from the candidate with one
-profile fewer, and from the one with one group class fewer (BIC over
-groups).
+\code{get_deltas()} returns, for every candidate of a profile or class grid, how
+much lower its information criterion is than that of the candidate with one
+profile fewer, and than that of the candidate with one group class fewer. The
+criterion is \code{bic_groups}, BIC with the number of groups as the sample size.
 }
 \examples{
 grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
@@ -27,5 +48,5 @@ grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
 get_deltas(grid)
 }
 \seealso{
-\code{\link[=plot_deltas]{plot_deltas()}} draws it; \code{\link[=get_knees]{get_knees()}}.
+\code{\link[=plot_deltas]{plot_deltas()}} draws the changes; \code{\link[=get_knees]{get_knees()}}, \code{\link[=get_best]{get_best()}}.
 }

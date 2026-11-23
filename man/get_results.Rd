@@ -2,46 +2,70 @@
 % Please edit documentation in R/get-data.R
 \name{get_results}
 \alias{get_results}
-\title{Extract model estimates and analysis results}
+\title{Get any table of a fitted model, grid, comparison, test or diagnostics result
+as a data frame}
 \usage{
 get_results(x, what = NULL, ...)
 }
 \arguments{
-\item{x}{A fitted model of this package, an enumeration grid, a model
-comparison, a bootstrap comparison, a starting-value set, a diagnostics
-result, or the summary of any of them.}
+\item{x}{A fitted model, an enumeration grid, a model comparison, a
+bootstrap test, a starting-value set, a diagnostics result or pooled
+imputations; or the \code{summary()} of a fitted model, of a profile or
+class grid or of a bootstrap test, which holds the same tables.}
 
-\item{what}{Name of the table, or \code{"all"}. \code{NULL} (default) gives the
-primary table: the measurement model of a fit, the candidates of a
-grid, the test row of a bootstrap comparison, the entropy table of a
-diagnostics result. An unknown name is refused with the names the
-object offers.}
+\item{what}{Which table to return:
+\itemize{
+\item \code{NULL} (default): the object's primary table, the same table as
+\code{as.data.frame(x)} and the first one listed for the object below. A
+profile or class fit without continuous indicators returns the first
+of \code{"responses"}, \code{"ordinal"} and \code{"count_means"} that it has; a
+general transition fit (class \code{multilpa_lta}) returns \code{"transitions"};
+\item one table name, matched in full and not by its first letters;
+\item \code{"all"}: every table the object builds by default, as a named list.
+}}
 
-\item{...}{Arguments of the requested table, named in its catalogue entry
-and described under \emph{Table arguments}; a table refuses any other.}
+\item{...}{Arguments of the requested table, named in its entry below
+and described there or under \emph{Table arguments}.}
 }
 \value{
-A data frame for one \code{what}, or a named list of them for
-\code{"all"}. \code{"all"} builds each table with its defaults and leaves out the
-tables this object cannot produce (a sequence table of a fit without
-\code{time}, for example) and those that must be asked for (\code{"lmr"},
-\code{"recovery"}), so the names of the list say what was available. Every object also has \code{print()}, \code{summary()} (taking \code{level}
-and \code{vcov_type} where the model has standard errors) and
-\code{as.data.frame()}.
+For one table, a data frame: the table's entry below gives what
+one row is and the columns. For \code{what = "all"}, a named list of data
+frames in the order of the entries, each built with its default
+arguments. The list leaves out the tables this object cannot produce
+(the sequence tables of a fit made without \code{time}, for example) and
+those built only when asked for (\code{"lmr"}, \code{"recovery"}, and
+\code{"group_posteriors"} of a fit with fewer than two group classes).
+
+Conditions raised:
+\itemize{
+\item \code{latents_bad_argument}: \code{what} is not a table of the object (the
+message lists the names it has), \code{...} holds an argument the table
+does not take, or \code{x} is not an object of this package;
+\item \code{latents_unused_argument} (a warning): such an argument, given to a
+table of a cross-level fit or of a transition or family grid;
+\item \code{latents_no_time}: a sequence table of a fit made without \code{time};
+\item \code{latents_no_local_dependence}, \code{latents_no_direct_effects}: the
+table of those terms, for a fit without them;
+\item \code{latents_unsupported_noise}: the classification errors, BCH weights
+or residuals of a fit with a noise component.
+}
 }
 \description{
-\code{get_results()} returns one table of a fitted model, an enumeration grid,
-a comparison, a bootstrap test, a starting-value set or a diagnostics
-result as a data frame, chosen by name with \code{what}. Without \code{what} it
-returns the object's primary table (the same as \code{as.data.frame()}), and
-with \code{what = "all"} a named list of the tables the object builds by
-default. The catalogue below gives each table's rows, columns and
-arguments. Many tables also have a verb of their own that takes any
-object, such as \code{\link[=get_entropy]{get_entropy()}}, \code{\link[=get_avepp]{get_avepp()}}, \code{\link[=get_best]{get_best()}} or
-\code{\link[=get_tree]{get_tree()}}.
+\code{get_results()} returns the results of an object of this package as data
+frames. Every fitted model, enumeration grid, model comparison, bootstrap
+test, starting-value set and diagnostics result holds a set of named
+tables, and \code{what} chooses among them. The sections below list every
+table name for each kind of object, with what one row is, its columns and
+the arguments it takes. Many tables also have a verb of their own that
+takes any object, such as \code{\link[=get_entropy]{get_entropy()}}, \code{\link[=get_best]{get_best()}} or \code{\link[=get_tree]{get_tree()}}.
 }
 \section{Tables of a profile, class or transition fit}{
 
+The tables of a fit from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}} or \code{\link[=multilca]{multilca()}},
+with or without membership covariates, and of an \code{\link[=lta]{lta()}} fit of class
+\code{multilpa_transitions} (the basic transition model). Any other \code{\link[=lta]{lta()}}
+fit has class \code{multilpa_lta} and the tables listed under \emph{Tables of the
+other model families}.
 \describe{
 \item{\code{"profiles"}}{The Gaussian measurement model, one row per profile
 and continuous indicator: \code{profile}, \code{indicator}, \code{mean}, \code{variance},
@@ -51,21 +75,24 @@ and continuous indicator: \code{profile}, \code{indicator}, \code{mean}, \code{v
 profile, indicator and category: \code{profile}, \code{indicator}, \code{category},
 \code{probability}, \code{threshold} (\code{qlogis(P(y <= category))}, \code{NA} for the
 last category), \code{probability_standard_error}. Takes \code{data}.}
-\item{\code{"covariances"}}{One row per profile and ordered pair of
-continuous indicators: \code{profile}, \code{indicator}, \code{indicator_2},
-\code{covariance} (exact zeros off the diagonal under a diagonal
-structure).}
-\item{\code{"ordinal"}, \code{"count_means"}}{The ordinal and count measurement
-models of fits with such indicators. Take \code{data}.}
+\item{\code{"covariances"}}{One row per profile and ordered pair of continuous
+indicators: \code{profile}, \code{indicator}, \code{indicator_2}, \code{covariance} (exact
+zeros off the diagonal under a diagonal structure).}
+\item{\code{"ordinal"}, \code{"count_means"}}{Only for fits with ordinal or
+count indicators. \code{"ordinal"} has one row per profile, indicator and
+category: \code{profile}, \code{indicator}, \code{category}, \code{probability},
+\code{location} (the profile's location on the indicator's latent scale)
+and \code{location_standard_error}. \code{"count_means"} has one row per
+profile and indicator: \code{profile}, \code{indicator}, \code{mean},
+\code{standard_error}. Take \code{data}.}
 \item{\code{"local_dependence"}, \code{"direct_effects"}}{For fits with those
 arguments. Local dependence has \code{pair}, \code{kind}, \code{profile}, \code{item_1},
 \code{category_1}, \code{item_2}, \code{category_2}, \code{probability}, \code{independent},
-\code{ratio}, \code{covariance}, \code{correlation}: a categorical pair has one row
-per profile and category combination with the joint \code{probability},
-the product of the marginals (\code{independent}) and their \code{ratio}; a
-continuous pair one row per profile with \code{covariance} and
-\code{correlation}. Direct effects
-have one row per effect: \code{indicator}, \code{covariate}, \code{estimate},
+\code{ratio}, \code{covariance}, \code{correlation}: a categorical pair has one row per
+profile and category combination with the joint \code{probability}, the
+product of the marginals (\code{independent}) and their \code{ratio}; a continuous
+pair one row per profile with \code{covariance} and \code{correlation}. Direct
+effects have one row per effect: \code{indicator}, \code{covariate}, \code{estimate},
 \code{standard_error}, \code{statistic}, \code{p_value}, \code{conf_low}, \code{conf_high}.}
 \item{\code{"counts"}}{Effective class sizes (summed posteriors), one row
 per level and class: \code{level}, \code{class}, \code{effective_count},
@@ -86,46 +113,43 @@ was built from (or those of \code{data}), \code{profile}, \code{group_class} whe
 there is one, \code{uncertainty} (one minus the posterior of the assigned
 profile), one \verb{posterior_profile_*} column per profile, and
 \code{posterior_noise} for a noise fit (profile 0). Takes \code{data} and
-\code{truth}; with \code{truth} it returns a recovery table (see \emph{Recovery}).
+\code{truth}; with \code{truth} it returns a recovery table (\emph{Table arguments}).
 Rows with no observed indicator have \code{NA} assignments under
 \code{drop_empty = TRUE}, but keep a group class supported by other rows.}
-\item{\code{"classification"}}{One row per level and class: \code{level},
-\code{class}, \code{n_modal}, \code{proportion_modal}, \code{estimated_n},
-\code{estimated_proportion}, \code{average_posterior},
-\code{odds_correct_classification}. Takes \code{level}. See \emph{Classification
-quality}.}
+\item{\code{"classification"}}{One row per level and class: \code{level}, \code{class},
+\code{n_modal}, \code{proportion_modal}, \code{estimated_n}, \code{estimated_proportion},
+\code{average_posterior}, \code{odds_correct_classification} (see \emph{Classification
+quality}). Takes \code{level}.}
 \item{\code{"average_posteriors"}}{For the units assigned to each class,
 their mean posterior for every class: \code{level}, \code{assigned_class},
 \code{class}, \code{n_assigned}, \code{average_posterior}; rows sum to one within
 an assigned class. Takes \code{level}.}
 \item{\code{"classification_errors"}, \code{"bch_weights"}}{The probability
 that a unit of one true class is assigned to another (\code{level},
-\code{true_class}, \code{assigned_class}, \code{probability}), and
-the BCH weights that invert that matrix (\code{level}, \code{unit},
-\code{assigned_class}, \code{class}, \code{weight}). Take \code{level}. On a covariate
-fit they are marginal over the units; not available for a noise fit.}
+\code{true_class}, \code{assigned_class}, \code{probability}), and the BCH weights
+that invert that matrix (\code{level}, \code{unit}, \code{assigned_class}, \code{class},
+\code{weight}). Take \code{level}. Marginal over the units on a covariate fit.}
 \item{\code{"entropy"}}{One row per level: \code{level}, \code{n_classes},
 \code{n_units}, \code{entropy_sum}, \code{relative_entropy}.}
-\item{\code{"replication"}}{One row: \code{n_starts}, \code{n_screened},
-\code{n_converged}, \code{n_failed}, \code{n_best_replicated} (starts within
-\code{tolerance} of the best log likelihood), \code{share}, \code{tolerance},
-\code{best_start}, \code{log_likelihood}.}
+\item{\code{"replication"}}{One row: the numbers of starts run, screened,
+converged and failed, and \code{n_best_replicated}, the starts within
+\code{tolerance} of the best log likelihood. See \code{\link[=get_replication]{get_replication()}}.}
 \item{\code{"starts"}}{One row per start: \code{start}, \code{log_likelihood},
 \code{converged}, \code{iterations}, \code{error}, \code{boundary} where recorded, and
 under \code{search = "emEM"} \code{kind}, \code{stage} (\code{"final"} or \code{"screened"})
 and \code{screened_log_likelihood}.}
 \item{\code{"residuals"}}{Bivariate residuals of every indicator pair:
-\code{profile}, \code{indicator_1}, \code{indicator_2}, \code{kind}, \code{observed},
-\code{expected}, \code{residual}, \code{effective_n}, \code{statistic}, \code{df},
-\code{p_value}, \code{p_adjusted}. Takes \code{data}, \code{by} and \code{adjust}. See
-\emph{Bivariate residuals}.}
-\item{\code{"gaussian_diagnostics"}}{One row per Gaussian component:
-\code{context}, \code{profile}, \code{gaussian_mass}, \code{positive_rows},
-\code{weight_effective_n}, \code{min_variance_ratio},
-\code{min_standardized_eigenvalue}, \code{boundary}: how much posterior mass a
-component carries, how concentrated it is, and how small its
-variances are relative to the data. Descriptive, with no cutoff and
-no effect on start selection.}
+\code{profile}, \code{indicator_1}, \code{indicator_2}, \code{kind}, \code{observed}, \code{expected},
+\code{residual}, \code{effective_n}, \code{statistic}, \code{df}, \code{p_value}, \code{p_adjusted}.
+One row per pair and profile, or per pair under \code{by = "overall"}. Takes
+\code{data}, \code{by} and \code{adjust}. See \emph{Bivariate residuals}.}
+\item{\code{"gaussian_diagnostics"}}{Only for fits with continuous
+indicators. One row per Gaussian component: \code{context}, \code{profile},
+\code{gaussian_mass}, \code{positive_rows}, \code{weight_effective_n},
+\code{min_variance_ratio}, \code{min_standardized_eigenvalue}, \code{boundary}: how
+much posterior mass a component carries, how concentrated it is, and
+how small its variances are relative to the data. Descriptive, with
+no cutoff and no effect on start selection.}
 \item{\code{"sequences"}, \code{"sequence_summary"}}{Fits with \code{time}: the
 assignments in occasion order (\code{group}, \code{group_class}, \code{time},
 \code{profile}; takes \code{format}) and one row per group class
@@ -135,172 +159,300 @@ assignments in occasion order (\code{group}, \code{group_class}, \code{time},
 identifier, the occasion, the rescaled weights and the indicators
 under their original names; not the covariates, so \code{\link[=three_step]{three_step()}}
 and \code{\link[=r3step]{r3step()}} take \code{data}.}
-\item{\code{"profile_probabilities"}, \code{"stages"}}{A \code{multilpa} fit: one
-row per group class and profile (\code{group_class}, \code{profile},
-\code{probability}, \code{group_class_probability}), and one row per
-estimation stage (\code{stage}, \code{group_classes}, \code{fixed},
+\item{\code{"profile_probabilities"}, \code{"stages"}}{A fit without membership
+covariates or transitions: one row per group class and profile
+(\code{group_class}, \code{profile}, \code{probability}, \code{group_class_probability}),
+and one row per estimation stage (\code{stage}, \code{group_classes}, \code{fixed},
 \code{log_likelihood}, \code{parameters}, \code{parameters_with_measurement},
 \code{converged}; two rows for a \code{\link[=fit_staged]{fit_staged()}} result).}
-\item{\code{"coefficients"}}{A covariate fit: one row per membership
+\item{\code{"coefficients"}}{A fit with membership covariates
+(\code{profile_covariates} or \code{group_covariates}): one row per membership
 coefficient (\code{level} \code{"profile"} or \code{"group"}, \code{outcome}, \code{term},
 \code{parameter}, always \code{"logit"}, \code{estimate}); standard errors come from
 \code{\link[=parameter_inference]{parameter_inference()}}.}
-\item{\code{"transitions"}, \code{"initial"}, \code{"sequence_lengths"}}{A
-transition fit: one row per group class and ordered pair of profiles
+\item{\code{"transitions"}, \code{"initial"}, \code{"sequence_lengths"}}{An \code{\link[=lta]{lta()}}
+fit: one row per group class and ordered pair of profiles
 (\code{group_class}, \code{from}, \code{to}, \code{probability}, \code{expected_count},
-\code{stable}, \code{estimated}, \code{origin_expected_count}, \code{supported},
-\code{group_class_probability}; takes \code{estimated}
-and \code{stable}); one row per group class and profile (\code{group_class},
-\code{profile}, \code{probability}, \code{prevalence}, \code{group_class_probability});
-one row per group (\code{group}, \code{group_class}, \code{occasions},
-\code{observations}, \code{complete}).}
+\code{origin_expected_count}, \code{supported}, \code{stable}, \code{estimated},
+\code{group_class_probability}; takes \code{estimated} and \code{stable}); one row
+per group class and profile (\code{group_class}, \code{profile}, \code{probability},
+\code{prevalence}, \code{group_class_probability}); one row per group (\code{group},
+\code{group_class}, \code{occasions}, \code{observations}, \code{complete}).}
 }
 Under sampling weights every population quantity, here and in the grid
 tables, is weighted: effective and estimated counts and proportions,
 average posteriors, the odds of correct classification, entropy,
-classification errors, BCH weights, the criteria and the tree's \code{mass};
-modal counts stay unweighted counts of the units of positive weight. A
-unit of weight zero keeps its row and posteriors in the assignment and
-posterior tables but enters no statistic.
+classification errors, BCH weights, the criteria and the tree's \code{mass}.
+Modal counts stay unweighted counts of the units of positive weight; a
+unit of weight zero keeps its row and posteriors but enters no statistic.
 }
 
 \section{Tables of an enumeration grid}{
 
+A profile or class grid from \code{\link[=enumerate_lpa]{enumerate_lpa()}}, \code{\link[=enumerate_lca]{enumerate_lca()}} or
+\code{\link[=enumerate_classes]{enumerate_classes()}} has the tables below. \code{\link[=get_candidates]{get_candidates()}},
+\code{\link[=get_best]{get_best()}}, \code{\link[=get_deltas]{get_deltas()}}, \code{\link[=get_knees]{get_knees()}} and \code{\link[=get_tree]{get_tree()}} return them
+too, and their pages describe the columns one by one.
 \describe{
-\item{\code{"candidates"}}{One row per candidate: \code{candidate}, its class
-counts and \code{model}, log likelihood, parameter count, every criterion
-under both sample-size conventions, both entropies, the AvePP
-summaries of each level (\code{avepp_min}, \code{avepp_max}, \code{avepp_mean},
-\code{avepp_below}, and the same with \code{group_}), convergence, boundary,
-replication, the Gaussian diagnostics, \code{warnings} and \code{error}.
-Failed candidates keep their row. Takes \code{cutoff} (default 0.8) for
-\code{avepp_below}; a class with no assigned unit counts as below it.
-\code{\link[=get_candidates]{get_candidates()}} drops the columns empty in every row.}
-\item{\code{"best"}}{One row per criterion and convention: \code{criterion},
-\code{convention}, \code{candidate} (the converged candidate with the lowest
-value), \code{n_profiles}, \code{n_group_classes}, \code{model}, \code{value}.
-\code{"criteria"} is its older name, still in \code{"all"}.}
+\item{\code{"candidates"}}{One row per candidate, failed ones included:
+\code{candidate}, its class counts and \code{model}, log likelihood, parameter
+count, every criterion under both sample-size conventions, both
+entropies, the AvePP summaries of each level, convergence, boundary,
+replication, the Gaussian diagnostics, \code{warnings} and \code{error}. Takes
+\code{cutoff} (default 0.8) for \code{avepp_below}; a class with no assigned
+unit counts as below it. \code{\link[=get_candidates]{get_candidates()}} drops the columns empty
+in every row.}
+\item{\code{"best"}}{One row per criterion and sample-size convention, with
+the converged candidate that has the lowest value. \code{"criteria"} is
+its older name, still in \code{"all"}.}
 \item{\code{"classification"}}{One row per fitted candidate, level and
 class: \code{candidate}, its class counts and \code{model}, the columns of a
 fit's \code{"classification"} table and the level's \code{relative_entropy}.}
-\item{\code{"deltas"}, \code{"knees"}}{Model-selection evidence, taking \code{using}
-(default \code{"bic_groups"}); neither selects a model. \code{"deltas"} has one
-row per candidate: \code{candidate}, \code{n_profiles}, \code{n_group_classes},
-\code{model}, \code{criterion}, \code{value}, \code{delta_profile} (the decrease from
-the converged candidate with one profile fewer; positive means this
-one is lower) with \code{from_profile}, and \code{delta_group_class} with
-\code{from_group_class}; \code{NA} where the neighbour is missing or
-unconverged. \code{"knees"} has one row per line of the grid
-(\code{direction} \code{"profiles"}, \code{"group_classes"} or \code{"parameters"},
-\code{line}, \code{criterion}, \code{from}, \code{to}, \code{n_points}, \code{knee_candidate},
-\code{distance}, \code{knee_without_largest}, \code{stable}, \code{note}): the candidate
-furthest below the chord of the line, a simplified Kneedle rule; a
-line needs three candidates for a knee and four for \code{stable}.}
-\item{\code{"tree"}}{The flows of \code{\link[=plot_tree]{plot_tree()}}, taking its arguments
-\code{n_group_classes}, \code{n_profiles} (\code{n_classes} on a regression grid),
-\code{model}, \code{candidates}, \code{from}, \code{to} and \code{level} (default
-\code{"individuals"}). One row per pair of classes in consecutive rows of
-a tree: \code{tree}, \code{level}, \code{from_candidate}, \code{from_class},
-\code{from_share}, \code{to_candidate}, \code{to_class}, \code{to_share}, \code{mass} (the
-share of all units the two classes share, summed over the products
-of their posteriors), \code{share_of_from}, \code{share_of_to}.}
+\item{\code{"deltas"}, \code{"knees"}}{Model-selection evidence, taking \code{using}, one
+criterion of the grid (default \code{"bic_groups"}); neither selects a model.
+\code{"deltas"} has one row per candidate, with the decrease in the criterion
+from the converged candidate with one profile fewer (\code{delta_profile}) and
+with one group class fewer (\code{delta_group_class}): positive when this
+candidate is lower, \code{NA} where the neighbour is missing or unconverged.
+\code{"knees"} has one row per line of the grid (along the profiles, the group
+classes or the parameters), with the candidate furthest below the chord
+of the line (\code{knee_candidate}), a simplified Kneedle rule; a line needs
+three candidates for a knee and four for \code{stable}.}
+\item{\code{"tree"}}{The flows of \code{\link[=plot_tree]{plot_tree()}}, one row per pair of classes
+in consecutive rows of a tree, with \code{mass}, the share of all units
+the two classes share (summed over the products of their
+posteriors). Takes the arguments of \code{\link[=plot_tree]{plot_tree()}}: \code{n_group_classes},
+\code{n_profiles} (\code{n_classes} on a regression grid), \code{model},
+\code{candidates}, \code{from}, \code{to} and \code{level} (default \code{"individuals"}).}
 \item{\code{"lmr"}}{The Vuong-Lo-Mendell-Rubin and adjusted Lo-Mendell-Rubin
-tests, one row per pair
-of converged candidates differing by one profile or one group class
-at the same structure: \code{direction}, \code{null_candidate},
-\code{alternative_candidate}, the alternative's class counts and \code{model},
-\code{n_units}, \code{parameters_added}, \code{lr}, \code{vlmr_p}, \code{adjusted_lr}
-(\code{lr / (1 + 1 / (parameters_added * log(n_units)))}), \code{almr_p},
-\code{reference_mean}, \code{reference_sd} and \code{note}. The reference is a
-weighted chi-square with the eigenvalues of Vuong's matrix as
+tests, one row per pair of converged candidates differing by one
+profile or one group class at the same structure: \code{direction},
+\code{null_candidate}, \code{alternative_candidate}, the alternative's class
+counts and \code{model}, \code{n_units}, \code{parameters_added}, \code{lr}, \code{vlmr_p},
+\code{adjusted_lr} (\code{lr / (1 + 1 / (parameters_added * log(n_units)))}),
+\code{almr_p}, \code{reference_mean}, \code{reference_sd} and \code{note}. The reference
+is a weighted chi-square with the eigenvalues of Vuong's matrix as
 weights, evaluated by Imhof's method; a pair with a singular
 information matrix or a boundary candidate keeps its row with \code{NA}
 and the reason in \code{note}. Built only when asked for.}
 }
-A transition or family grid has \code{"candidates"} (with one entropy and no
-AvePP summaries), \code{"best"} (taking \code{criterion}: \code{"bic"}, \code{"aic"} or
-\code{"bic_individual"}) and \code{"tree"} (not in its \code{"all"}). The models of a
-grid or a comparison are extracted with \code{\link[=get_candidate]{get_candidate()}}.
+A transition grid (\code{enumerate_classes(time = )}) or a family grid
+(\code{enumerate_classes(family = )}) has three tables:
+\describe{
+\item{\code{"candidates"}}{One row per candidate, with \code{model}, \code{warnings},
+\code{error} and the columns \code{\link[=get_candidates]{get_candidates()}} lists for the grid.}
+\item{\code{"best"}}{One row: the row of \code{"candidates"} with the lowest
+value of one criterion among the converged candidates. Takes
+\code{criterion}: \code{"bic"} (default), \code{"aic"} or \code{"bic_individual"}.}
+\item{\code{"tree"}}{As for a profile or class grid. Not in \code{"all"}.}
+}
+A regression grid from \code{\link[=enumerate_regressions]{enumerate_regressions()}} has:
+\describe{
+\item{\code{"fit"}}{One row per candidate, with the columns
+\code{\link[=get_candidates]{get_candidates()}} lists for a regression grid and \code{note}; \code{best_bic}
+is \code{TRUE} for the converged candidate with the lowest BIC.}
+\item{\code{"tree"}}{As for a profile or class grid, with \code{n_classes} in
+place of \code{n_profiles}.}
+\item{\code{"model"}}{Not a table: the fitted model of one candidate, chosen
+with \code{n_classes} and \code{n_group_classes} (default 1). Not in \code{"all"}.}
+}
+The fitted models of the other grids and of a comparison are extracted
+with \code{\link[=get_candidate]{get_candidate()}}.
 }
 
 \section{Tables of the other objects}{
 
-A \code{\link[=compare_models]{compare_models()}} result: \code{"comparison"} (its table) and
-\code{"classification"} (one row per model, level and class, for profile,
-class, covariate and transition models). A \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} result:
-\code{"test"} (one row) and \code{"replicates"} (one row per simulated data set).
-A starting-value set: \code{"profiles"}, \code{"responses"},
-\code{"profile_probabilities"} and \code{"covariances"}. A \code{\link[=diagnostics]{diagnostics()}} result:
-\code{"entropy"}, \code{"classification"}, \code{"average_posteriors"}, \code{"residuals"},
-\code{"replication"} and \code{"checks"}.
-
-The other model families return their own tables, the first being the
-default. Tables with intervals take \code{level} and \code{vcov_type}
-(\code{"observed"}, \code{"robust"} or \code{"opg"}; \code{NULL} reuses the type stored with
-a regression fit).
 \describe{
-\item{Mixture regressions}{\code{"coefficients"} (one row per class and
-term with Wald statistics, \code{p_adjusted} by Benjamini-Hochberg over
-the non-intercepts, and \code{exp_estimate} where the link makes it an
-odds or rate ratio; intercept ratios are \code{NA}),
-\code{"classes"}, \code{"membership"} (logits and odds ratios),
-\code{"group_classes"} (two-level fits), \code{"fit"} (\code{bic} on the
-rows under observation nesting and on groups under group or two-level
-nesting, \code{bic_rows} on the rows), \code{"assignments"},
-\code{"groups"}, \code{"fitted"} (ordinal observations, fitted values and residuals
-use category scores \verb{1,...,C}), \code{"starts"} (\code{stage} \code{"screened"} or
-\code{"completed"}), \code{"classification"} and \code{"recovery"} (\code{by = "class"}
-or \code{"group_class"}). Identifier columns that collide with output names
-use an \code{id_} or \code{cluster_} prefix, with a unique suffix if needed.}
-\item{Growth mixtures}{\code{"coefficients"}, \code{"classes"} (share with its
-interval, \code{expected_persons}, \code{assigned_persons},
-\code{average_posterior}, \code{residual_sd}), \code{"membership"}, \code{"fit"},
-\code{"assignments"} (one row per person: \code{class}, \code{probability}, one
-\verb{posterior_*} column per class), \code{"starts"}, \code{"recovery"},
-\code{"random"} (variances, standard deviations and correlations of the
-random effects, with intervals on the log and Fisher scales),
-\code{"random_effects"} (one row per person), \code{"trajectories"} (each
-class's mean curve with a band) and \code{"individual"} (each person's
-curve); the last two take \code{time}. A multilevel growth mixture adds
-\code{"group_classes"} and \code{"clusters"}, and its \code{"fit"} has \code{bic} on the
-clusters and \code{bic_persons} on the persons.}
-\item{Additive fits}{\code{"parameters"} (class means, between- and
-within-group variances and class weights, with variance intervals
-on the log scale and weight intervals on the logit scale; takes
-\code{adjust}, \code{"none"} by default),
-\code{"group_classes"} (with \code{effective_groups}, the number of perfectly
-classified groups that would estimate the class weight as precisely;
-below 50 the class's intervals warn), \code{"groups"}, \code{"intercepts"},
-\code{"conditional_intercepts"}, \code{"assignments"}, \code{"classification"},
-\code{"fit"}, \code{"recovery"} and \code{"starts"}.}
-\item{Cross-level fits}{\code{"profiles"} (the profiles, then the group
-classes' means of group means), \code{"group_classes"}, \code{"composition"}
-(profile shares within each class: model-implied for the full
-family, a posterior-weighted description for the restricted one),
-\code{"groups"}, \code{"assignments"}, \code{"fit"} and \code{"starts"}. The likelihood
-is a working likelihood that counts the ratings twice: its criteria
-favour group classes and the full form even with no group structure,
-and do not choose between them.}
-\item{General transition fits}{An \code{\link[=lta]{lta()}} fit with occasion-specific
-or covariate transitions, occasion-specific measurement, second
-order, a stayer class, weights, or ordinal or count indicators:
-\code{"transitions"},
-\code{"initial"} and \code{"second_order_transitions"} (model-implied,
-averaged over the groups and applicable occasions), with
-\code{origin_expected_count} and \code{supported} describing transition-row
-information, \code{"transition_coefficients"},
-\code{"initial_coefficients"} and \code{"second_order_coefficients"} (log odds
-with odds ratios), \code{"profiles"}, \code{"covariances"} (under
-\code{covariance_model = "full"}), \code{"responses"} (with \code{occasion}),
-\code{"ordinal"}, \code{"count_means"}, \code{"group_classes"}, \code{"assignments"},
-\code{"posteriors"} (with \code{format}), \code{"entropy"}, \code{"information_criteria"}
-(with \code{format} and \code{definitions}; one entropy per level, as for the
-other transition fits), \code{"fit"} and \code{"starts"}. \code{profile} is
-\code{"profile_1"}, ... in \code{"profiles"}, \code{"responses"} and the transition
-tables, and the profile's number in the others.}
-\item{Pooled imputations}{\code{"estimates"}, \code{"imputations"} (each
-imputation's aligned estimates) and \code{"fits"} (one row per
-imputation).}
+\item{A \code{\link[=compare_models]{compare_models()}} result}{\code{"comparison"}: one row per model,
+with the columns \code{\link[=compare_models]{compare_models()}} lists. \code{"classification"}: one
+row per model, level and class, with the columns of a fit's
+\code{"classification"} table and \code{relative_entropy}; only when every
+model compared is a profile, class, covariate or transition model.}
+\item{A \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} result}{\code{"test"}: one row, the test.
+\code{"replicates"}: one row per simulated data set.}
+\item{A starting-value set (\code{\link[=starting_values]{starting_values()}})}{\code{"profiles"},
+\code{"responses"}, \code{"profile_probabilities"} and \code{"covariances"}: the
+rows of a fit's tables of those names, with the estimates only (no
+standard errors or thresholds).}
+\item{A \code{\link[=diagnostics]{diagnostics()}} result}{\code{"entropy"}, \code{"classification"},
+\code{"average_posteriors"}, \code{"residuals"} and \code{"replication"}, each as
+the table of that name of a fit, and \code{"checks"}, one row per check
+(columns in \code{\link[=get_checks]{get_checks()}}). \code{"residuals"} exists only for a profile,
+class or \code{multilpa_transitions} fit.}
+}
+}
+
+\section{Tables of the other model families}{
+
+Each family has its own tables; the first is the primary one. Tables
+with intervals take \code{level} (the confidence level, default 0.95) and
+\code{vcov_type} (\code{"observed"}, \code{"robust"} or \code{"opg"}; \code{NULL} reuses the type
+stored with a regression fit).
+
+A mixture regression (\code{\link[=mixture_regression]{mixture_regression()}}):
+\describe{
+\item{\code{"coefficients"}}{One row per class and term: \code{class}, \code{term},
+\code{estimate}, \code{std_error}, \code{statistic}, \code{p_value}, \code{conf_low},
+\code{conf_high}, \code{p_adjusted} (Benjamini-Hochberg over the
+non-intercepts) and, where the link makes it an odds or rate ratio,
+\code{exp_estimate} (\code{NA} for intercepts).}
+\item{\code{"classes"}}{One row per class: \code{class}, \code{share}, \code{count},
+\code{n_assigned}, \code{mean_posterior}, \code{prior}, \code{prior_std_error}, and for
+a Gaussian model the residual standard deviation \code{sigma} with
+\code{sigma_std_error}.}
+\item{\code{"membership"}}{One row per coefficient of the class
+membership model: the logit \code{estimate} against a \code{reference} class,
+with its standard error, test, interval and \code{odds_ratio}.}
+\item{\code{"group_classes"}}{Two-level fits (empty otherwise): one row
+per group class and class, with the \code{probability} of the class
+within the group class and \code{group_share}.}
+\item{\code{"fit"}}{One row: the family, nesting, class counts, numbers of
+observations and groups, log likelihood, number of parameters, \code{aic},
+\code{bic} (on the rows under observation nesting, on the groups under
+group or two-level nesting), \code{bic_rows}, \code{sabic}, \code{icl}, \code{entropy},
+\code{group_entropy}, \code{smallest_share}, convergence and replication.}
+\item{\code{"assignments"}}{One row per observation: \code{row}, the identifier,
+\code{class}, \code{posterior} and one \verb{probability_class_*} column per class.}
+\item{\code{"groups"}}{Fits with \code{id} (empty otherwise): one row per group,
+with its number of rows, its class or group class and the
+posterior probabilities.}
+\item{\code{"fitted"}}{One row per observation: \code{row}, \code{observed},
+\code{fitted}, \code{fitted_modal}, \code{residual}, \code{class}. An ordinal outcome
+is scored \verb{1,...,C}.}
+\item{\code{"starts"}}{One row per start: \code{start}, \code{kind},
+\code{log_likelihood}, \code{converged}, \code{iterations}, \code{stage} (\code{"screened"}
+or \code{"completed"}), \code{degenerate}, \code{selected}.}
+\item{\code{"classification"}}{For the units assigned to each class,
+their mean posterior of every class: \code{assigned}, \code{class},
+\code{mean_posterior}, \code{n_assigned}.}
+\item{\code{"recovery"}}{The assigned classes against known ones: one row
+per assigned class and truth value, with \code{n} and \code{share}. Needs
+\code{data} and \code{truth} (one column of \code{data}), and takes
+\code{by = "class"} (default) or \code{"group_class"}. Not in \code{"all"}.}
+}
+Identifier columns that collide with output names use an \code{id_} or
+\code{cluster_} prefix, with a unique suffix if needed.
+
+A growth mixture (\code{\link[=mixture_regression]{mixture_regression()}} with \code{random}):
+\describe{
+\item{\code{"coefficients"}}{One row per class and term of the growth
+curve, with standard error, test and interval.}
+\item{\code{"classes"}}{One row per class: \code{share} with its standard error
+and interval, \code{expected_persons}, \code{assigned_persons},
+\code{average_posterior}, \code{residual_sd}.}
+\item{\code{"random"}}{Variances, standard deviations and correlations of
+the random effects, one row per class and parameter, with intervals
+on the log and Fisher scales.}
+\item{\code{"membership"}}{The coefficients of the class membership model.}
+\item{\code{"fit"}}{One row: class count, persons, observations, the
+random-effect structure, number of parameters, log likelihood, \code{aic},
+\code{bic}, \code{bic_rows}, \code{sabic}, \code{icl}, \code{entropy}, \code{smallest_share},
+convergence and replication. In a multilevel growth mixture \code{bic} is
+on the clusters and \code{bic_persons} on the persons.}
+\item{\code{"assignments"}}{One row per person: the identifier, \code{class},
+\code{probability} and one \verb{posterior_*} column per class.}
+\item{\code{"random_effects"}}{One row per person: the identifier,
+\code{class} and the predicted random effects.}
+\item{\code{"trajectories"}, \code{"individual"}}{Each class's mean curve with
+its band (\code{class}, the time variable, \code{estimate}, \code{std_error},
+\code{conf_low}, \code{conf_high}), and each person's curve (the identifier,
+the time variable, \code{class}, \code{observed}, \code{class_mean}, \code{predicted}).
+Both take \code{time}, the name of the numeric time variable.}
+\item{\code{"starts"}}{One row per start, as for a mixture regression.}
+\item{\code{"group_classes"}, \code{"clusters"}}{Only in a multilevel growth
+mixture: its group classes and its clusters.}
+\item{\code{"recovery"}}{As for a mixture regression, without \code{by}. Not
+in \code{"all"}.}
+}
+
+An additive fit (\code{multilpa()} with \code{family = "additive"}, \code{"dispersion"}
+or \code{"additive_dispersion"}):
+\describe{
+\item{\code{"parameters"}}{Class means, between- and within-group
+variances and class weights: \code{level}, \code{group_class}, \code{indicator},
+\code{parameter}, \code{estimate}, \code{standard_error}, \code{statistic}, \code{p_value},
+\code{p_adjusted}, \code{conf_low}, \code{conf_high}. Variance intervals are
+formed on the log scale and weight intervals on the logit scale.
+Takes \code{adjust} (\code{"none"} by default).}
+\item{\code{"group_classes"}}{One row per group class: \code{group_class},
+\code{weight}, \code{count}, \code{n_assigned}, \code{mean_posterior} and
+\code{effective_groups}, the number of perfectly classified groups that
+would estimate the weight as precisely (below 50, intervals warn).}
+\item{\code{"groups"}}{One row per group: the identifier, \code{n}, \code{group_class},
+\code{posterior} and one \verb{probability_group_class_*} column per group class.}
+\item{\code{"intercepts"}, \code{"conditional_intercepts"}}{The predicted
+intercept of each group on each indicator (\code{intercept_mean},
+\code{intercept_variance}): one row per group and indicator, and one row
+per group, indicator and group class.}
+\item{\code{"assignments"}}{One row per observation, with the group class
+of its group.}
+\item{\code{"classification"}}{For the groups assigned to each group
+class, their mean posterior of every group class.}
+\item{\code{"fit"}, \code{"starts"}}{One row describing the fit; one row per start.}
+\item{\code{"recovery"}}{The assigned group classes against known ones.
+Needs \code{data} and \code{truth}. Not in \code{"all"}.}
+}
+
+A cross-level fit (\code{multilpa(family = "restricted_cross_level")} or
+\code{"full_cross_level"}):
+\describe{
+\item{\code{"profiles"}}{The profiles, then the group classes' means of
+the group means: \code{level}, \code{profile}, \code{indicator}, \code{mean},
+\code{variance}, \code{prevalence}.}
+\item{\code{"group_classes"}}{One row per group class: \code{group_class},
+\code{weight}, \code{count}, \code{n_assigned}.}
+\item{\code{"composition"}}{The share of each profile within each group class
+(\code{group_class}, \code{profile}, \code{share}): model-implied for the full family, a
+posterior-weighted description for the restricted one.}
+\item{\code{"groups"}, \code{"assignments"}}{One row per group, and one row per
+observation, with their classes and posterior probabilities.}
+\item{\code{"fit"}, \code{"starts"}, \code{"gaussian_diagnostics"}}{One row describing the
+fit; the record of the starts (for the restricted family, one row per
+part of the search); one row per Gaussian component.}
+}
+The criteria of a cross-level fit come from a working likelihood and do
+not choose the number of group classes or the form; see \code{\link[=multilpa]{multilpa()}}.
+
+A general transition fit, the \code{\link[=lta]{lta()}} fit of class \code{multilpa_lta} that
+the extensions of the basic transition model listed in \code{\link[=lta]{lta()}} return:
+\describe{
+\item{\code{"transitions"}, \code{"initial"}}{The transition and initial
+probabilities the model implies, averaged over the groups and the
+occasions they apply to. \code{"transitions"} has one row per group class,
+occasion (\code{NA} when the transitions do not differ by occasion) and
+ordered pair of profiles: \code{group_class}, \code{occasion}, \code{from}, \code{to},
+\code{probability}, \code{origin_expected_count}, \code{supported}, \code{estimated}.
+\code{"initial"} has \code{group_class}, \code{profile}, \code{probability}.}
+\item{\code{"transition_coefficients"}, \code{"initial_coefficients"}}{The same
+parameters as log odds, one row per coefficient, with standard error,
+test, interval and \code{odds_ratio}.} \item{\code{"second_order_transitions"},
+\code{"second_order_coefficients"}}{Only for \code{order = 2}.} \item{\code{"profiles"},
+\code{"covariances"}, \code{"responses"}, \code{"ordinal"}, \code{"count_means"}}{The
+measurement model, each with an \code{occasion} column: profile means and
+variances, covariances (under \code{covariance_model = "full"}), and the
+categorical, ordinal and count models of fits with such indicators.}
+\item{\code{"group_classes"}}{One row per group class: \code{group_class}, \code{weight},
+\code{count}.} \item{\code{"assignments"}, \code{"posteriors"}, \code{"entropy"},
+\code{"information_criteria"}}{As for the other transition fits, with the same
+arguments.}
+\item{\code{"fit"}, \code{"starts"}, \code{"gaussian_diagnostics"}}{One row
+describing the fit; one row per start; and, for continuous
+indicators, one row per Gaussian component.}
+}
+\code{profile} is \code{"profile_1"}, ... in \code{"profiles"}, \code{"responses"} and the
+transition tables of a general transition fit, and the profile's number
+in its other tables.
+
+Pooled imputations (\code{\link[=pool_imputations]{pool_imputations()}}):
+\describe{
+\item{\code{"estimates"}}{One row per pooled parameter: \code{level}, \code{outcome},
+\code{term}, \code{parameter}, \code{estimate}, \code{standard_error}, \code{statistic},
+\code{p_value}, \code{p_adjusted}, \code{conf_low}, \code{conf_high}, \code{df}, and the
+\code{within} and \code{between} variances with \code{riv} and \code{fmi}.}
+\item{\code{"imputations"}}{Each imputation's aligned estimates, one row
+per imputation and parameter.}
+\item{\code{"fits"}}{One row per imputation: \code{imputation}, \code{log_likelihood},
+\code{n_parameters}, \code{converged} and the label orders used to align it.}
 }
 }
 
@@ -314,55 +466,54 @@ these data; a fit that cannot supply them gives \code{NA} with a message
 when \code{data} is omitted, and raises the condition when it is given.}
 \item{\code{scale}}{For \code{"profiles"}: \code{"raw"} (default) or
 \code{"standardized"}, each indicator's deviation from its grand mean in
-units of the observed population standard deviation. Weighted fits use a
-weighted mean and spread, excluding zero-weight rows; unweighted fits
-use the same population convention.}
+units of the observed population standard deviation (a weighted mean
+and spread, without zero-weight rows, for a weighted fit).}
 \item{\code{format}}{For the posterior tables and \code{"sequences"}, \code{"long"}
 (default, one row per unit and class) or \code{"wide"} (one row per unit).
 For \code{"information_criteria"}, \code{"wide"} (default, one row) or \code{"long"}
 (one row per criterion and convention).}
-\item{\code{level}}{\code{"individuals"}, \code{"groups"} or \code{"both"}; \code{NULL}
-(default) is \code{"both"} for a fit with group classes and
-\code{"individuals"} otherwise.}
+\item{\code{level}}{For the classification tables of a profile, class or
+transition fit: \code{"individuals"}, \code{"groups"} or \code{"both"}; \code{NULL}
+(default) is \code{"both"} for a fit with two or more group classes and
+\code{"individuals"} otherwise. For the other model families \code{level} is
+the confidence level of the intervals (default 0.95).}
 \item{\code{truth}}{For \code{"assignments"}, column names of \code{data} holding
-known labels. See \emph{Recovery}.}
-\item{\code{by}, \code{adjust}}{For \code{"residuals"}: \code{"profile"} (default) or
-\code{"overall"}, and the multiplicity correction across the pairs
-(\code{"none"} by default, or a \code{stats::p.adjust()} method).}
+known labels. The table then cross-tabulates the model's labels
+against them, one row per class and truth value: \code{assignment} (the
+label compared: \code{group_class} for a truth constant within every
+group of a fit with group classes, \code{profile} otherwise), \code{class},
+\code{truth}, \code{value}, \code{n} and \code{proportion} (the share of units with that
+truth value assigned to that class). Excluded units appear under
+\code{class = NA}. Labels are arbitrary, so a truth value assigned mostly
+to a class with another label is relabelling, not misclassification.}
+\item{\code{by}, \code{adjust}}{For \code{"residuals"}: \code{by} is \code{"profile"} (default, each
+profile separately) or \code{"overall"} (pooled over the profiles), and
+\code{adjust} is the multiplicity correction across the pairs: \code{"BH"}
+(default), \code{"none"} or another \code{stats::p.adjust()} method.}
 \item{\code{definitions}}{For \code{"information_criteria"} in long format,
-\code{TRUE} adds each criterion's formula and reference.}
-\item{\code{estimated}, \code{stable}}{For \code{"transitions"}, \code{TRUE} or \code{FALSE}
-keeps the rows estimated (or not) from observed occupancy, or the
-diagonal (or off-diagonal) cells.}
+\code{TRUE} adds each criterion's formula and reference; \code{FALSE}
+(default) leaves them out.}
+\item{\code{estimated}, \code{stable}}{For \code{"transitions"} of a
+\code{multilpa_transitions} fit; \code{NULL} (default) keeps every row.
+\code{estimated = TRUE} keeps the rows estimated from observed occupancy
+and \code{FALSE} the others; \code{stable = TRUE} keeps the diagonal cells
+(staying) and \code{FALSE} the off-diagonal ones (moving).}
 }
-}
-
-\section{Recovery}{
-
-\code{"assignments"} with \code{truth} cross-tabulates the model's labels against
-known ones: one row per class and truth value, with \code{assignment} (the
-label compared: \code{group_class} for a truth constant within every group
-of a fit with group classes, \code{profile} otherwise), \code{class}, \code{truth},
-\code{value}, \code{n} and \code{proportion}
-(the share of units with that truth value assigned to that class).
-Excluded units appear under \code{class = NA}. Labels are arbitrary, so a
-truth value assigned mostly to a class with another label is
-relabelling, not misclassification.
+\code{cutoff}, \code{using}, \code{criterion} and the tree arguments belong to the grid
+tables and are described with them.
 }
 
 \section{Information criteria}{
 
-With \code{q} free parameters, \code{n} the sample size and \code{EN} the entropy of
-the classification: \code{deviance = -2L}, \verb{aic = -2L + 2q},
-\verb{bic = -2L + q log(n)}, \verb{sabic = -2L + q log((n + 2) / 24)},
-\code{caic = -2L + q (log(n) + 1)}, \verb{awe = -2(L - EN) + 2q (1.5 + log(n))},
-\verb{icl = -2L + q log(n) + 2 EN}, \code{kic = -2L + 3(q + 1)} (as tidyLPA
-computes it) and \verb{clc = -2L + 2 EN} (on the entropy sum, so
-not comparable with tidyLPA's CLC on relative entropy). \code{EN} is the soft
-entropy of the complete-data classification, as in ICL, AWE
-and CLC; in a
-two-level model it is the group-class entropy plus each row's profile
-entropy within its group class.
+With \code{q} free parameters, \code{n} the sample size and \code{EN} the entropy of the
+classification: \code{deviance = -2L}, \verb{aic = -2L + 2q}, \verb{bic = -2L + q log(n)},
+\verb{sabic = -2L + q log((n + 2) / 24)}, \code{caic = -2L + q (log(n) + 1)},
+\verb{awe = -2(L - EN) + 2q (1.5 + log(n))}, \verb{icl = -2L + q log(n) + 2 EN},
+\code{kic = -2L + 3(q + 1)} (as tidyLPA computes it) and \verb{clc = -2L + 2 EN} (on
+the entropy sum, so not comparable with tidyLPA's CLC on relative entropy).
+\code{EN} is the soft entropy of the complete-data classification, as in ICL, AWE
+and CLC; in a two-level model it is the group-class entropy plus each row's
+profile entropy within its group class.
 
 Every criterion with a sample size is reported under two conventions,
 \code{"groups"} (\code{n} the number of groups) and \code{"individuals"} (\code{n} the number
@@ -370,8 +521,7 @@ of rows), which coincide in a single-level model; use one consistently
 across candidates. A transition fit keeps one entropy per level instead,
 since its profiles form a chain within a person. Rows with no observed
 indicator, groups made only of such rows, and units of weight zero are
-in no sample size and no entropy. The long format with
-\code{definitions = TRUE} reports each formula.
+in no sample size and no entropy.
 }
 
 \section{Classification quality}{
@@ -380,35 +530,32 @@ The odds of correct classification of a class is
 \code{(p / (1 - p)) / (r / (1 - r))}, with \code{p} the average posterior in the
 assigned class and \code{r} the estimated class proportion: near one, the
 classification is no better than the class proportions; five is a
-conventional benchmark, not a test. It is \code{NA} when \code{p} is missing or
-zero or \code{r} is zero or one (so always for a single class), and \code{Inf}
-when \code{p} is one at an interior \code{r}. \code{relative_entropy} is
-\verb{1 - entropy_sum / (n log K)}, with
-\code{entropy_sum} the level's own entropy, between zero and one, higher
-meaning sharper classification; \code{NA} for a level with one class. A fit
-without group classes reports individuals only.
+conventional benchmark, not a test. It is \code{NA} when \code{p} is missing or zero or
+\code{r} is zero or one (so always for a single class), and \code{Inf} when \code{p} is one
+at an interior \code{r}. \code{relative_entropy} is \verb{1 - entropy_sum / (n log K)}, with
+\code{entropy_sum} the level's own entropy, between zero and one, higher meaning
+sharper classification; \code{NA} for a level with one class. A fit without group
+classes reports individuals only.
 }
 
 \section{Bivariate residuals}{
 
 \code{"residuals"} checks, pair by pair, that the indicators are independent
-within a profile, weighting each observation by its posterior. Two
-Gaussian indicators (\code{kind = "gaussian"}): \code{observed} is the
-posterior-weighted residual correlation, \code{expected} the correlation the
-fitted covariance implies, and \code{statistic} the difference of their
-Fisher transforms times \code{sqrt(effective_n - 3)}, referred to the normal
-distribution. Two categorical or ordinal indicators (\code{"categorical"}):
-\code{statistic} is the Pearson chi-square of the posterior-weighted two-way
-table against the model's, Latent GOLD's bivariate residual times its
-\code{df = (R - 1)(C - 1)}, with \code{observed} and \code{expected} the two tables'
-Cramer's V; the reference ignores that the model's table is estimated
-from the same data and can be conservative. A mixed pair or a pair with a count indicator
-(\code{"mixed"}, \code{"count"}): \code{observed} is the posterior-weighted correlation
-of the values (a categorical indicator entering as its category number),
-\code{expected} zero, and no test. \code{p_adjusted} applies \code{adjust}
-(Benjamini-Hochberg by default, \code{"none"} for the raw p-values) across the
-pairs with a p-value. A weighted fit reports the descriptive columns and
-no tests.
+within a profile, weighting each observation by its posterior. Two Gaussian
+indicators (\code{kind = "gaussian"}): \code{observed} is the posterior-weighted
+residual correlation, \code{expected} the correlation the fitted covariance
+implies, and \code{statistic} the difference of their Fisher transforms times
+\code{sqrt(effective_n - 3)}, referred to the normal distribution. Two categorical
+or ordinal indicators (\code{"categorical"}): \code{statistic} is the Pearson
+chi-square of the posterior-weighted two-way table against the model's,
+Latent GOLD's bivariate residual times its \code{df = (R - 1)(C - 1)}, with
+\code{observed} and \code{expected} the two tables' Cramer's V; the reference ignores
+that the model's table is estimated from the same data and can be
+conservative. A mixed pair or a pair with a count indicator (\code{"mixed"},
+\code{"count"}): \code{observed} is the posterior-weighted correlation of the values (a
+categorical indicator entering as its category number), \code{expected} zero, and
+no test. \code{p_adjusted} applies \code{adjust} across the pairs with a p-value. A
+weighted fit reports the descriptive columns and no tests.
 }
 
 \examples{
@@ -425,13 +572,12 @@ names(get_results(fit, what = "all"))
 
 # Compare estimated assignments with the generating classes at both levels.
 get_results(fit, what = "assignments", data = course_engagement,
-         truth = c("engagement", "student_type"))
+            truth = c("engagement", "student_type"))
 }
 \seealso{
 \code{\link[=as.data.frame]{as.data.frame()}} for the primary table, \code{summary()} for every
-table, \code{\link[=diagnostics]{diagnostics()}} for the classification tables with their
-checks, and the verbs \code{\link[=get_checks]{get_checks()}}, \code{\link[=get_entropy]{get_entropy()}},
-\code{\link[=get_classification]{get_classification()}}, \code{\link[=get_avepp]{get_avepp()}}, \code{\link[=get_residuals]{get_residuals()}},
-\code{\link[=get_replication]{get_replication()}}, \code{\link[=get_candidates]{get_candidates()}}, \code{\link[=get_best]{get_best()}}, \code{\link[=get_deltas]{get_deltas()}},
-\code{\link[=get_knees]{get_knees()}} and \code{\link[=get_tree]{get_tree()}}.
+table, \code{\link[=diagnostics]{diagnostics()}} for the classification tables with their checks, and
+the verbs \code{\link[=get_checks]{get_checks()}}, \code{\link[=get_entropy]{get_entropy()}}, \code{\link[=get_classification]{get_classification()}},
+\code{\link[=get_avepp]{get_avepp()}}, \code{\link[=get_residuals]{get_residuals()}}, \code{\link[=get_replication]{get_replication()}}, \code{\link[=get_candidates]{get_candidates()}},
+\code{\link[=get_best]{get_best()}}, \code{\link[=get_deltas]{get_deltas()}}, \code{\link[=get_knees]{get_knees()}} and \code{\link[=get_tree]{get_tree()}}.
 }

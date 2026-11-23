@@ -3,64 +3,97 @@
 \name{get_group_tna}
 \alias{get_group_tna}
 \alias{get_group_tna.multilpa_transitions}
-\title{Construct transition networks for latent group classes}
+\title{Get one transition network per latent group class, to compare how their
+members move between profiles}
 \usage{
 get_group_tna(x, ...)
 
 \method{get_group_tna}{multilpa_transitions}(x, label = "Group class", ...)
 }
 \arguments{
-\item{x}{A supported time-homogeneous model from \code{\link[=lta]{lta()}}, or a \code{\link[=multilpa]{multilpa()}}
-or \code{\link[=multilca]{multilca()}} fit made with \code{time}, whose modal profile sequences are
-then used.}
+\item{x}{A transition fit from \code{\link[=lta]{lta()}}, or a profile or class fit made
+with \code{time}. See \emph{Which fits are supported}.}
 
-\item{...}{Passed to \code{\link[tna:build_model]{tna::tna()}} for each class.}
+\item{...}{Further arguments passed to \code{\link[tna:build_model]{tna::tna()}} for each class of a
+transition fit, or to \code{\link[tna:group_model]{tna::group_tna()}} for a profile or class fit.}
 
-\item{label}{Name given to the classes in tna's output (default
-\code{"Group class"}).}
+\item{label}{One string: what the classes are called in the names of
+the networks and in tna's output (default \code{"Group class"}, which
+gives \code{"Group class 1"}, \code{"Group class 2"}, and so on).}
 }
 \value{
-An object of class \code{group_tna}, a list of \code{tna} models, one per
-latent group class. \code{centralities()} returns one table with a \code{group}
-column, \code{compare()} contrasts two classes, and \code{plot()} draws all
-networks.
+An object of class \code{group_tna}: a named list of \code{tna} networks,
+one per latent group class, each as \code{\link[=get_tna]{get_tna()}} describes. The
+grouped functions of the tna package apply to it: \code{centralities()}
+returns one table with a \code{group} column, \code{compare()} contrasts two
+classes, and \code{plot()} draws every network.
+
+Conditions raised: \code{latents_no_time}, \code{latents_unsupported_tna} and
+\code{latents_not_a_fit} as described under \emph{Which fits are supported};
+\code{latents_missing_package} when the tna package is not installed;
+\code{latents_bad_argument} when \code{label} is not one string; and the warning
+\code{latents_empty_transition_row}.
 }
 \description{
-\code{get_group_tna()} constructs separate transition networks for latent group
-classes, allowing patterns of persistence and movement between states to be
-compared. Each network represents the same latent profiles or classes,
-making differences in transition probabilities directly comparable.
+\code{get_group_tna()} returns one transition network per latent group
+class, as a grouped object of the tna package, so that the group classes
+can be compared on how their members stay in and move between profiles.
+Every network has the same nodes, the profiles (classes) \code{profile_1},
+\code{profile_2}, and so on, and its edge weights are the probabilities of
+moving from one profile to another at the next occasion.
 
-For a supported latent transition model, each network uses the estimated
-transition matrix and initial state distribution of its group class.
-For a profile or class model fitted with \code{time}, it summarises the modal
-state sequences of observed groups assigned to each latent group class.
-The returned object supports grouped network analysis and visualisation
-with the tna package.
+Where the probabilities come from depends on the model:
+\itemize{
+\item for a transition fit from \code{\link[=lta]{lta()}}, each network is the transition
+matrix the model estimated for that group class, and starts from the
+class's estimated initial probabilities;
+\item for a profile or class fit made with \code{time}, the groups are split by
+their assigned (most likely) group class, and \code{\link[tna:group_model]{tna::group_tna()}}
+counts each network from the sequences of assigned profiles of the
+groups in that class.
+}
 }
 \details{
-For a transition-matrix row with no expected outgoing transitions, the
-fitted probabilities are retained and a \code{latents_empty_transition_row}
-warning identifies the row as unestimated. General \code{\link[=lta]{lta()}} models are
-currently unsupported; see \code{\link[=get_tna]{get_tna()}} for the supported model scope.
+A transition-matrix row with no expected moves out of its profile keeps
+its fitted probabilities, and a warning of class
+\code{latents_empty_transition_row} says that the row is not estimated from
+transitions.
 }
+\section{Which fits are supported}{
+
+The same fits as \code{\link[=get_tna]{get_tna()}}, and mover-stayer fits as well:
+\itemize{
+\item An \code{\link[=lta]{lta()}} fit of class \code{multilpa_transitions}: always.
+\item An \code{\link[=lta]{lta()}} fit of class \code{multilpa_lta}: when its transitions are
+first order, the same at every occasion and without transition
+covariates; otherwise it raises \code{latents_unsupported_tna}.
+\item A mover-stayer fit (\code{mover_stayer = TRUE}): one network per mover
+class and one named \code{"Stayers"}, whose matrix is the identity.
+\item A profile or class fit from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}} or
+\code{\link[=multilca]{multilca()}} (with or without membership covariates): when it was
+made with \code{time}; without it the fit raises \code{latents_no_time}.
+\item Any other model raises \code{latents_not_a_fit}.
+}
+}
+
 \section{Interpretation}{
 
-Networks represent latent group classes, rather than individual observed
-groups. Networks constructed from modal sequences treat both state and
-group-class assignments as known and do not account for uncertainty in
-either classification.
+The networks describe latent group classes, not the individual observed
+groups. Networks counted from assigned profiles treat both the profile
+and the group-class assignments as known and carry the uncertainty of
+neither.
 }
 
 \examples{
 if (requireNamespace("tna", quietly = TRUE)) {
   activity <- c("browse", "lectures", "forum_read")
   moves <- lta(course_engagement, vars = activity, id = "student",
-                           time = "sequence", n_profiles = 2,
-                           n_group_classes = 2, n_starts = 2, seed = 1)
+               time = "sequence", n_profiles = 2, n_group_classes = 2,
+               n_starts = 2, seed = 1)
   get_group_tna(moves)
 }
 }
 \seealso{
-\code{\link[=get_tna]{get_tna()}} for one network over the whole sample.
+\code{\link[=get_tna]{get_tna()}} for one network over the whole sample;
+\code{\link[=plot_transitions]{plot_transitions()}} for the transition matrices as a plot.
 }

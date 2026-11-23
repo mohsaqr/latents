@@ -2,7 +2,8 @@
 % Please edit documentation in R/plot-named.R
 \name{plot_diagnostics}
 \alias{plot_diagnostics}
-\title{Classification summaries of a fit}
+\title{Plot how well a fitted model separates its classes: sizes, posteriors,
+entropy and average posterior probabilities}
 \usage{
 plot_diagnostics(
   x,
@@ -13,36 +14,81 @@ plot_diagnostics(
 )
 }
 \arguments{
-\item{x}{A fitted model of any family.}
+\item{x}{One of:
+\itemize{
+\item a profile or class fit from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}} or
+\code{\link[=multilca]{multilca()}} (with or without membership covariates), or an \code{\link[=lta]{lta()}}
+fit of class \code{multilpa_transitions}: every view;
+\item a growth mixture or a mixture regression: \code{"posteriors"} only, each
+unit's posterior probability of its most likely class (\code{"all"} then
+holds that one view).
+}
 
-\item{what}{\code{"all"} (default) draws every view the fit supports, as a
-list; \code{"sizes"}, \code{"posteriors"}, \code{"entropy"} or \code{"avepp"} one view of
-the cases; \code{"group_sizes"}, \code{"group_posteriors"}, \code{"group_entropy"} or
-\code{"group_avepp"} one view of the groups.}
+Any other model (an \code{\link[=lta]{lta()}} fit of class \code{multilpa_lta}, an additive
+or cross-level fit, pooled imputations) raises
+\code{latents_nothing_to_plot}. \code{\link[=plot_sizes]{plot_sizes()}}, \code{\link[=plot_posteriors]{plot_posteriors()}},
+\code{\link[=plot_entropy]{plot_entropy()}} and \code{\link[=plot_avepp]{plot_avepp()}} draw those fits, pooled
+imputations excepted.}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{what}{Which view to draw:
+\itemize{
+\item \code{"all"} (default): every view the fit supports, as a list;
+\item \code{"sizes"}: the effective number of observations in each profile (the
+sum of their posterior probabilities), as bars labelled with the
+count and its share;
+\item \code{"posteriors"}: each observation's posterior probability of the
+profile it is assigned to, one strip per profile, with chance (one
+over the number of profiles) marked;
+\item \code{"entropy"}: each observation's entropy relative to a flat
+posterior (0 is certain, 1 is flat), one strip per profile;
+\item \code{"avepp"}: the average posterior probability matrix: for the
+observations assigned to each profile (rows), their mean posterior
+probability of every profile (columns). The diagonal is the
+classification accuracy;
+\item \code{"group_sizes"}, \code{"group_posteriors"}, \code{"group_entropy"},
+\code{"group_avepp"}: the same four views of the groups in their group
+classes.
+}
+
+\code{"all"} leaves out what the fit cannot draw: the group views of a fit
+with fewer than two group classes, \code{"posteriors"} and \code{"entropy"} of a
+fit with one profile, and every view but \code{"sizes"} of a fit with a
+noise component.}
+
+\item{main, subtitle}{Title and subtitle of the plot, each one string;
+\code{NULL} (default) keeps the view's own.}
 }
 \value{
-A ggplot object; a \code{latents_plots} list for \code{"all"}. A group view
-of a fit with fewer than two group classes raises
-\code{latents_no_group_classes}; a fit with a noise component (always one
-group class) draws only \code{"sizes"} and refuses the other case views
-with \code{latents_unsupported_noise}.
+A ggplot object, which draws the plot when printed; for \code{"all"}
+a \code{latents_plots} list of ggplot objects named by view, which draws
+every plot when printed. Conditions raised:
+\itemize{
+\item \code{latents_no_group_classes}: a group view of a fit with fewer than
+two group classes;
+\item \code{latents_unsupported_noise}: a view other than \code{"sizes"} of a fit
+with a noise component (such a fit always has one group class);
+\item \code{latents_nothing_to_plot}: \code{"posteriors"} or \code{"entropy"} of a fit
+with one profile, or a model without the view asked for; the
+message names the views and plot functions that apply;
+\item \code{latents_not_a_fit}: \code{x} is not a fitted model.
+}
 }
 \description{
-The four classification views of a profile, class or transition fit:
-effective class sizes, the posterior probability of each case's assigned
-class, each case's entropy and the average posterior matrix; and the same
-four for the groups of a fit with two or more group classes. Each view is
-also a function of its own that takes a fit of any family: \code{\link[=plot_sizes]{plot_sizes()}},
-\code{\link[=plot_posteriors]{plot_posteriors()}}, \code{\link[=plot_entropy]{plot_entropy()}} and \code{\link[=plot_avepp]{plot_avepp()}}.
+\code{plot_diagnostics()} plots how well a fitted model separates its classes. A
+profile, class or transition fit has four views of how its observations are
+classified into profiles: the class sizes, the posterior probability of each
+observation's assigned profile, each observation's entropy and the average
+posterior matrix. A fit with two or more group classes has the same four
+views of how its groups are classified into group classes. Each view is also
+a function of its own, which takes models of the other families too:
+\code{\link[=plot_sizes]{plot_sizes()}}, \code{\link[=plot_posteriors]{plot_posteriors()}}, \code{\link[=plot_entropy]{plot_entropy()}} and \code{\link[=plot_avepp]{plot_avepp()}}.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
            n_starts = 2, seed = 1)
 plot_diagnostics(fit, what = "avepp")
+plot_diagnostics(fit, what = "sizes")
 \dontshow{\}) # examplesIf}
 }
 \seealso{

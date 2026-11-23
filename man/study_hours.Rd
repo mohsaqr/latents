@@ -5,17 +5,20 @@
 \alias{study_hours}
 \title{Study hours and quiz scores under two study strategies}
 \format{
-A data frame with 900 rows (150 students by 6 weeks) and 10
-columns:
+A data frame with 900 rows (150 students by 6 weeks, one row per
+student and week, no missing values) and 10 columns:
 \describe{
-\item{student}{Integer student identifier, 1 to 150.}
+\item{student}{Integer student identifier, 1 to 150. Pass it as \code{id}.}
 \item{week}{Integer study week, 1 to 6.}
-\item{hours}{Hours studied that week, 0 to 12.}
-\item{sleep}{Hours slept the night before the quiz.}
-\item{motivation}{Standardized motivation, constant within student.}
-\item{score}{Quiz score.}
+\item{hours}{Numeric, hours studied that week, 0 to 12.}
+\item{sleep}{Numeric, hours slept the night before the quiz, 4.2 to
+9.8.}
+\item{motivation}{Numeric, standardized motivation, constant within
+student.}
+\item{score}{Numeric quiz score, 28.1 to 97.6.}
 \item{passed}{Integer 0/1: passed the weekly check.}
-\item{questions}{Count of questions the student asked that week.}
+\item{questions}{Integer count of questions the student asked that
+week, 0 to 12.}
 \item{strategy}{Factor, \code{"deep"} or \code{"surface"}: the week's generating
 strategy; retained for assessing class recovery.}
 \item{student_type}{Factor, \code{"steady"} or \code{"erratic"}: the student's

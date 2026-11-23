@@ -2,25 +2,56 @@
 % Please edit documentation in R/wildcards.R
 \name{get_checks}
 \alias{get_checks}
-\title{Every diagnostic check of a fit}
+\title{Get every diagnostic check of a fitted model, with its value, rule and status}
 \usage{
 get_checks(x)
 }
 \arguments{
-\item{x}{A fitted model of any family, an enumeration grid, or the
-result of \code{\link[=diagnostics]{diagnostics()}}.}
+\item{x}{One of:
+\itemize{
+\item a fitted model of any family: from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}},
+\code{\link[=multilca]{multilca()}}, \code{\link[=lta]{lta()}} or \code{\link[=mixture_regression]{mixture_regression()}}. The table is the one
+\code{\link[=diagnostics]{diagnostics()}} computes with its defaults;
+\item an enumeration grid of any kind, from \code{\link[=enumerate_lpa]{enumerate_lpa()}},
+\code{\link[=enumerate_lca]{enumerate_lca()}}, \code{\link[=enumerate_classes]{enumerate_classes()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}.
+The tables of the fitted candidates are stacked, with a first column
+\code{candidate} that names the candidate of each row. A candidate whose
+estimation failed has no rows;
+\item the result of \code{\link[=diagnostics]{diagnostics()}}. The table is the one the result holds.
+}}
 }
 \value{
-A data frame, one row per check (and candidate): \verb{domain, check, level, value, display, criterion, status, detail, reference}.
-Any other object raises \code{latents_not_a_fit}.
+A data frame with one row per check (per candidate and check for
+a grid) and the columns:
+\itemize{
+\item \code{domain}: the group of the check, one of \code{"Estimation"},
+\code{"Class size"}, \code{"Classification"}, \code{"Local independence"} and
+\code{"Information"};
+\item \code{check}: what is checked;
+\item \code{level}: \code{"model"} for a check of the whole fit, \code{"individuals"} or
+\code{"groups"} for a check of one classification level;
+\item \code{value}: the result as a number;
+\item \code{display}: the result as formatted text;
+\item \code{criterion}: the rule the status follows; empty when there is none;
+\item \code{status}: \code{"ok"} (passed), \code{"info"} (reported, not judged),
+\code{"check"} (look at it), \code{"fail"} (failed) or \code{"n/a"} (not available
+for this fit);
+\item \code{detail}: a note, for example the pair of indicators with the
+smallest adjusted p-value;
+\item \code{reference}: the source of the check.
+}
+
+Errors: \code{latents_not_a_fit} when \code{x} is none of these, for example a
+comparison, pooled imputations or a data frame.
 }
 \description{
-Each check \code{\link[=diagnostics]{diagnostics()}} runs, with its status, criterion and
-reference: estimation, class sizes, classification, local independence
-and information. For a fit, the table is the one \code{\link[=diagnostics]{diagnostics()}} computes with its
-defaults; for a grid, the tables of every candidate are stacked with
-a first column \code{candidate} (a candidate whose estimation failed has no
-row); for a diagnostics result, its own table.
+\code{get_checks()} returns the checks that \code{\link[=diagnostics]{diagnostics()}} runs on a fitted
+model, as one table: each check with its value, the rule it is judged by and
+its status. The checks cover the estimation (convergence, replication of the
+best log likelihood, failed starts, estimates at a bound), the class sizes,
+the quality of the classification (relative entropy, average posterior
+probability, odds of correct classification), local independence (the
+bivariate residuals) and the information criteria.
 }
 \examples{
 fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
@@ -28,7 +59,7 @@ fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 get_checks(fit)
 }
 \seealso{
-\code{\link[=diagnostics]{diagnostics()}} for the checks and their criteria; \code{\link[=get_entropy]{get_entropy()}},
-\code{\link[=get_classification]{get_classification()}}, \code{\link[=get_avepp]{get_avepp()}}, \code{\link[=get_replication]{get_replication()}},
+\code{\link[=diagnostics]{diagnostics()}} for the checks and their rules; \code{\link[=get_entropy]{get_entropy()}},
+\code{\link[=get_classification]{get_classification()}}, \code{\link[=get_avepp]{get_avepp()}}, \code{\link[=get_replication]{get_replication()}} and
 \code{\link[=get_residuals]{get_residuals()}} for the tables behind them; \code{\link[=overview]{overview()}}.
 }

@@ -2,7 +2,8 @@
 % Please edit documentation in R/report.R
 \name{report}
 \alias{report}
-\title{Display model estimates and diagnostic summaries}
+\title{Print the estimates, descriptive statistics and diagnostic checks of a fitted
+model, and draw its plots}
 \usage{
 report(
   x,
@@ -15,50 +16,76 @@ report(
 }
 \arguments{
 \item{x}{A profile, class or transition fit: from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}},
-\code{\link[=multilpa]{multilpa()}} or \code{\link[=multilca]{multilca()}} (with or without membership covariates), or
-from \code{\link[=lta]{lta()}} with time-homogeneous transitions. A fit of another family
-(a mixture regression, growth mixture, general transition, additive or
-cross-level model) raises \code{latents_not_a_fit}; its own \code{summary()},
+\code{\link[=multilpa]{multilpa()}} or \code{\link[=multilca]{multilca()}} (with or without membership covariates),
+or an \code{\link[=lta]{lta()}} fit of class \code{multilpa_transitions} (the basic
+transition model: continuous or categorical indicators and one
+first-order transition matrix for all occasions, without covariates,
+weights or a stayer class). Any other model (an \code{\link[=lta]{lta()}} fit of class
+\code{multilpa_lta}, a mixture regression, a growth mixture, an additive or
+cross-level fit) raises \code{latents_not_a_fit}; its own \code{summary()},
 \code{\link[=diagnostics]{diagnostics()}} and \code{plot()} report it.}
 
-\item{data}{Optional data frame used to fit the model. The required columns
-are stored in the fitted object.}
+\item{data}{The data frame the model was fitted to. \code{NULL} (default)
+uses the columns stored in the fit.}
 
-\item{plots}{\code{TRUE} (the default) draws the plots. \code{FALSE} prints only.}
+\item{plots}{Whether to draw the plots:
+\itemize{
+\item \code{TRUE} (default): after the printed output, draws every plot view
+the fit has the ingredients for, one after another (see
+\code{\link[=plot_views]{plot_views()}}), and then names the views that could not be drawn.
+Without the ggplot2 package a message says so and nothing is drawn;
+\item \code{FALSE}: prints only.
+}}
 
-\item{by}{Passed to \code{\link[=diagnostics]{diagnostics()}} for the bivariate residuals:
-\code{"profile"} (the default) assesses each profile separately, \code{"overall"}
-pools them.}
+\item{by}{How \code{\link[=diagnostics]{diagnostics()}} assesses the bivariate residuals:
+\itemize{
+\item \code{"profile"} (default): within each profile separately;
+\item \code{"overall"}: pooled over the profiles.
+}}
 
-\item{rows}{Number of rows of each summary table to print, passed to
-\code{print(summary(x))}. Default 10.}
+\item{rows}{How many rows of each table of \code{summary(x)} to print: one
+whole number of 0 or more (default 10). A longer table ends with the
+number of rows left out and the call that returns it whole.}
 
 \item{...}{Not used. Any further argument raises \code{latents_bad_argument}
 before anything is printed.}
 }
 \value{
-The fitted model, invisibly. Called for its printed and plotted
-output.
+The fitted model \code{x}, invisibly. The function is called for its
+printed and plotted output. Conditions raised:
+\itemize{
+\item \code{latents_not_a_fit}: \code{x} is not a profile, class or
+\code{multilpa_transitions} fit;
+\item \code{latents_bad_argument}: an argument \code{report()} does not take, or a
+\code{plots} or \code{by} with a value it does not take.
+}
 }
 \description{
-\code{report()} provides a combined overview of a fitted profile, class, or
-supported transition model. It brings together parameter estimates,
-descriptive statistics, and diagnostic checks to support examination of
-the estimated class structure, numerical convergence, classification
-uncertainty, and residual associations.
+\code{report()} prints a first look at a fitted profile, class or transition
+model in one call: its estimates, the descriptive statistics of its
+variables and its diagnostic checks, followed by its plots. It computes
+nothing of its own; each part is the output of another function, named
+under \emph{Report contents}, which returns the same numbers as tables.
 
-Output is displayed in the R session, with optional plots appropriate to
-the fitted model. The function returns the original fitted model
-invisibly. Individual tables remain available through \code{\link[=get_results]{get_results()}},
-\code{\link[=descriptives]{descriptives()}}, and \code{\link[=diagnostics]{diagnostics()}} for further analysis or reporting.
+The output goes to the R console and the graphics device. The function
+returns the fitted model invisibly, so it can end a pipeline.
 }
 \section{Report contents}{
 
-Output is presented in the following order: \code{\link[=summary]{summary()}}, \code{\link[=descriptives]{descriptives()}},
-the checks from \code{\link[=diagnostics]{diagnostics()}}, and the supported plot views. Any omitted
-views are listed after the plots. The underlying tables can be accessed
-separately using \code{\link[=get_results]{get_results()}}, \code{\link[=summary]{summary()}}, \code{\link[=descriptives]{descriptives()}} and
-\code{\link[=diagnostics]{diagnostics()}}.
+The parts are printed in this order:
+\enumerate{
+\item \code{summary(x)}: every table of the fit, each cut to \code{rows} rows;
+\item \code{\link[=descriptives]{descriptives()}} of the fit: the number of observations, missing
+values, mean, standard deviation and range of each variable, and
+for grouped data its intraclass correlation;
+\item the checks of \code{\link[=diagnostics]{diagnostics()}}: estimation, class sizes,
+classification, bivariate residuals, and the log likelihood with its
+BIC, each with its status;
+\item with \code{plots = TRUE}, the plot views of the fit.
+}
+
+The tables behind each part are returned by \code{\link[=get_results]{get_results()}},
+\code{\link[=descriptives]{descriptives()}} and \code{\link[=diagnostics]{diagnostics()}}.
 }
 
 \examples{
@@ -71,6 +98,6 @@ fit <- multilpa(
 report(fit, plots = FALSE)
 }
 \seealso{
-\code{\link[=summary]{summary()}}, \code{\link[=diagnostics]{diagnostics()}}, \code{\link[=descriptives]{descriptives()}},
-\code{\link[=plot_views]{plot_views()}}.
+\code{\link[=summary]{summary()}}, \code{\link[=diagnostics]{diagnostics()}}, \code{\link[=descriptives]{descriptives()}}, \code{\link[=plot_views]{plot_views()}};
+\code{\link[=plot_all]{plot_all()}} for the plots alone.
 }

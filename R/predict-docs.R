@@ -1,4 +1,5 @@
-#' Predict from and simulate a fitted model
+#' Predict class membership or outcomes from a fitted model, and simulate data
+#' from it
 #'
 #' @description
 #' `predict()` applies a fitted model to the original sample or new
@@ -56,28 +57,60 @@
 #' model (group classes first in a two-level model), random effects from
 #' each class's covariance, then outcomes from each row's class regression.
 #'
-#' @param object A fitted model.
-#' @param newdata `NULL` for the fitted rows, or a data frame with the
-#'   indicator or predictor columns (and `id` and membership covariates where
-#'   the model uses them).
-#' @param type For a profile or class model: `"class"` (modal profile and
-#'   group class with their posteriors), `"posterior"` (every profile's
-#'   probability as well) or `"density"` (each row's log density, marginal
-#'   over group classes, for scoring or held-out likelihood). For a mixture
-#'   regression: `"response"` (the mean outcome over classes; expected
-#'   successes for a binomial count response),
-#'   `"class_response"` (one row per observation and class), `"posterior"` (class
-#'   probabilities given the outcome, which `newdata` must contain) or
-#'   `"probabilities"` (each category under each class; ordinal family only).
-#'   For a growth mixture: `"response"` (the class trajectories averaged with
-#'   each person's prior class probabilities), `"class_response"` (one row per
-#'   observation and class, with random effects set to zero), and, using outcomes in
-#'   `newdata`, `"posterior"` (one row per person), `"class_conditional"`
-#'   (one row per observation and class: the class trajectory plus the person's
-#'   random effects predicted under that class, E(b | y, class)),
-#'   `"conditional"` (those averaged with the posterior class probabilities)
-#'   and `"random_effects"` (one row per person and class with its posterior
-#'   probability; their posterior-weighted mean is `lcmm::predictRE()`).
+#' @param object A fitted model with a prediction method:
+#'   * a profile or class model from [lpa()], [lca()], [multilpa()] or
+#'     [multilca()] without membership covariates;
+#'   * a mixture regression from [mixture_regression()];
+#'   * a growth mixture (`mixture_regression(random = )`).
+#'
+#'   A membership-covariate fit and an [lta()] fit raise
+#'   `latents_unsupported_prediction`; the additive, dispersion and
+#'   cross-level families of [multilpa()] have no `predict()` method.
+#'   `simulate()` takes a mixture regression or a growth mixture only.
+#' @param newdata `NULL` (default) for the fitted rows, or a data frame with
+#'   the indicator or predictor columns (and `id` and membership covariates
+#'   where the model uses them).
+#' @param type What to predict. The first value listed for each kind of
+#'   model is its default.
+#'
+#'   For a profile or class model:
+#'   * `"class"` (default): each row's most probable profile and its
+#'     posterior probability, and in a two-level model the group's most
+#'     probable group class and its posterior probability;
+#'   * `"posterior"`: the same, plus the posterior probability of every
+#'     profile;
+#'   * `"density"`: each row's log density under the fitted model, marginal
+#'     over profiles and group classes, for scoring or a held-out
+#'     likelihood.
+#'
+#'   For a mixture regression:
+#'   * `"response"` (default): the mean outcome averaged over the classes
+#'     with their prior probabilities (expected successes for a binomial
+#'     count response);
+#'   * `"class_response"`: the mean outcome under each class, one row per
+#'     observation and class;
+#'   * `"posterior"`: each row's class probabilities given its outcome,
+#'     which `newdata` must contain, and the most probable class;
+#'   * `"probabilities"`: the probability of each outcome category under
+#'     each class; ordinal family only.
+#'
+#'   For a growth mixture:
+#'   * `"response"` (default): the class mean trajectories averaged with
+#'     each person's prior class probabilities;
+#'   * `"class_response"`: each class's mean trajectory, with random effects
+#'     set to zero, one row per observation and class;
+#'   * `"posterior"`: each person's class probabilities given the observed
+#'     outcomes, one row per person;
+#'   * `"class_conditional"`: one row per observation and class: the class
+#'     trajectory plus the person's random effects predicted under that
+#'     class, E(b | y, class);
+#'   * `"conditional"`: the `"class_conditional"` trajectories averaged with
+#'     the posterior class probabilities, one row per observation;
+#'   * `"random_effects"`: the predicted random effects, one row per person
+#'     and class with its posterior probability; their posterior-weighted
+#'     mean is `lcmm::predictRE()`.
+#'
+#'   The last four use the outcomes, which `newdata` must then contain.
 #' @param trials For binomial mixture-regression predictions, the number of
 #'   trials: one non-negative whole number, a vector with one value per row,
 #'   or a column name in the prediction data. `NULL` uses the fitted trials
@@ -86,19 +119,55 @@
 #'   defaults to one trial. For `type = "posterior"`, any explicit value must
 #'   agree with the observed response. Predictions remain on the expected
 #'   success-count scale; `trials = 1` requests probabilities for each trial.
-#' @param nsim Number of simulated outcome vectors.
-#' @param seed `NULL` uses and advances the caller's random stream. An integer
-#'   makes simulation reproducible and restores the caller's `.Random.seed`.
+#' @param nsim Number of simulated outcome vectors (default 1).
+#' @param seed `NULL` (default) uses and advances the caller's random
+#'   stream. An integer makes the simulation reproducible and restores the
+#'   caller's `.Random.seed`.
 #'   R does not store the cached Box-Muller normal draw in `.Random.seed`, so
 #'   the next normal draw is not preserved when that generator has a cached draw.
-#' @param ... Unused.
-#' @return A base `data.frame` with one row per row of `newdata` (per row and
-#'   class for `"class_response"` and `"class_conditional"`, per row, class and
-#'   category for `"probabilities"`), starting with `row`, its position;
-#'   `"posterior"` and `"random_effects"` of a growth mixture have one row per
-#'   person (and class), starting with the `id` column. `simulate()`
-#'   returns one row per fitted row and one column per simulation, `sim_1`,
-#'   `sim_2`, ...
+#' @param ... Unused. A profile, class or growth mixture `predict()` warns
+#'   with `latents_unused_argument` for an argument it does not take.
+#' @return A base `data.frame`. Its rows and columns depend on the model and
+#'   `type`; `row` is the row's position in `newdata` (or in the fitted
+#'   data).
+#'
+#'   Profile or class model, one row per row of the data:
+#'   * `"class"`: `row`, the group identifier (two-level models), `profile`
+#'     (the most probable profile; 0 for the noise component), `posterior`
+#'     (its probability) and, with more than one group class, `group_class`
+#'     and `group_posterior`;
+#'   * `"posterior"`: the same, plus `probability_profile_1`,
+#'     `probability_profile_2` and so on;
+#'   * `"density"`: `row` and `log_density`.
+#'
+#'   Mixture regression:
+#'   * `"response"`: `row` and `fitted`, one row per observation;
+#'   * `"class_response"`: `row`, `class`, `prior` (the class's prior
+#'     probability for the row) and `fitted`, one row per observation and
+#'     class;
+#'   * `"posterior"`: `row`, the `id` column (when classes are assigned to
+#'     groups), `class` (the most probable class), `posterior` (its
+#'     probability) and `probability_class_1`, `probability_class_2` and so
+#'     on, one row per observation;
+#'   * `"probabilities"`: `row`, `class`, `category` and `probability`, one
+#'     row per observation, class and category.
+#'
+#'   Growth mixture:
+#'   * `"response"` and `"conditional"`: `row` and `fitted`, one row per
+#'     observation;
+#'   * `"class_response"`: `row`, `class`, `prior` and `fitted`, one row per
+#'     observation and class;
+#'   * `"class_conditional"`: `row`, `class`, `posterior` (the person's
+#'     posterior probability of the class) and `fitted`, one row per
+#'     observation and class;
+#'   * `"posterior"`: the `id` column, `class` (the most probable class),
+#'     `probability` (its probability) and `posterior_class_1`,
+#'     `posterior_class_2` and so on, one row per person;
+#'   * `"random_effects"`: the `id` column, `class`, `posterior` and one
+#'     column per random effect, one row per person and class.
+#'
+#'   `simulate()` returns one row per fitted row and one column per
+#'   simulation, `sim_1`, `sim_2`, ...
 #' @section Conditions: `latents_bad_data` when `newdata` lacks an indicator
 #'   or the `id` column, contains a category absent from the estimation data,
 #'   contains unsupported missing values, or does not allow evaluation of the
@@ -117,6 +186,13 @@
 #'   outcome, and warns with `latents_unused_argument` for arguments it
 #'   ignores.
 #' @examples
+#' # Classify new observations with a fitted profile model.
+#' profiles <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
+#'                 n_starts = 2, seed = 1)
+#' predict(profiles, data.frame(eruptions = c(2, 4.5), waiting = c(55, 80)),
+#'         type = "posterior")
+#'
+#' # The mean outcome under each class of a mixture regression.
 #' fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
 #'                           n_starts = 2, seed = 1)
 #' predict(fit, data.frame(hours = c(2, 10)), type = "class_response")

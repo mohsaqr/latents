@@ -2,37 +2,87 @@
 % Please edit documentation in R/wildcards.R
 \name{plot_entropy}
 \alias{plot_entropy}
-\title{Entropy of the classification}
+\title{Plot how uncertain the classification is, by unit for a fitted model or by
+candidate for a grid}
 \usage{
 plot_entropy(x, main = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{A fitted model of any family, an enumeration grid or a
-\code{\link[=diagnostics]{diagnostics()}} result (drawn from its fit).}
+\item{x}{One of:
+\itemize{
+\item a fitted model of any family: from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}},
+\code{\link[=multilca]{multilca()}}, \code{\link[=lta]{lta()}} or \code{\link[=mixture_regression]{mixture_regression()}}. This covers fits with
+covariates, growth mixtures, and the additive and cross-level families
+of \code{\link[=multilpa]{multilpa()}};
+\item an enumeration grid of any kind, from \code{\link[=enumerate_lpa]{enumerate_lpa()}},
+\code{\link[=enumerate_lca]{enumerate_lca()}}, \code{\link[=enumerate_classes]{enumerate_classes()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}};
+\item a \code{\link[=diagnostics]{diagnostics()}} result, which is drawn from the fit it checked.
+}}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot. \code{NULL} (default)
+keeps the view's own text. When two plots are returned, both get the
+same title and subtitle.}
 }
 \value{
-A ggplot object; a \code{latents_plots} list with elements
-\code{individuals} and \code{groups} for a fit that classifies at both levels.
-An object with nothing to draw raises \code{latents_nothing_to_plot},
-naming the plot functions that apply; an object the package did not
-return raises \code{latents_not_a_fit}.
+A ggplot object. A fit that classifies at both levels returns a
+\code{latents_plots} list of two ggplot objects named \code{individuals} and
+\code{groups}; printing the list draws both.
+
+Errors:
+\itemize{
+\item \code{latents_nothing_to_plot} when the package returned \code{x} but this
+function has no plot of it: a fit with one class or with a noise
+component, a grid in which no converged candidate has two or more
+classes, pooled imputations, a comparison, a bootstrap result or a
+sensitivity analysis. For an object of the wrong kind, the message names
+the plot functions that apply to it;
+\item \code{latents_not_a_fit} when \code{x} is not a fit, grid or other result of the
+package, for example a data frame;
+\item \code{latents_missing_package} when ggplot2 is not installed.
+}
 }
 \description{
-For a fit of any family, each unit's entropy relative to a flat
-posterior, by assigned class, at each level the fit classifies. For an
-enumeration grid, the relative entropy of every candidate. A level with
-one class has no entropy to draw.
+\code{plot_entropy()} plots how uncertain the classification is: for a fitted
+model, the entropy of each unit, by the class the unit is assigned to; for an
+enumeration grid, the relative entropy of every candidate.
+}
+\details{
+\strong{A fitted model.} One point per classified unit (a case or a group). The
+x-axis is the unit's entropy relative to a flat posterior: 0 means the
+unit belongs to one class with certainty, 1 means it is equally likely to
+belong to every class (dashed line). The rows are the assigned (most
+likely) classes, the largest at the top, each in its own colour; the
+points are spread within a row so that they do not overlap. A short
+vertical bar marks the mean of each class. The subtitle gives the relative
+entropy of the whole classification, which is one minus the mean of the
+points: there, higher means sharper.
+
+A fit with two or more group classes besides its profiles is drawn at
+both levels, as two plots. A level with one class has no entropy to draw,
+so a fit with a single profile or class is refused. A fit with a noise
+component is refused too.
+
+\strong{An enumeration grid.} The x-axis is the number of classes (the number
+of group classes for a grid of group-class families), the y-axis the
+relative entropy of each candidate: higher is sharper. There is one line
+per number of group classes, and per covariance structure when the grid
+has several. A grid with group classes has one panel for the individuals
+and one for the groups. A candidate with one class has no point.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
            n_starts = 2, seed = 1)
 plot_entropy(fit)
+
+# A grid: the relative entropy of every candidate
+grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
+                      n_profiles = 1:3, model = "EEI",
+                      n_starts = 2, seed = 1)
+plot_entropy(grid)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=get_entropy]{get_entropy()}} for the table; \code{\link[=plot_posteriors]{plot_posteriors()}}, \code{\link[=plot_avepp]{plot_avepp()}}.
+\code{\link[=get_entropy]{get_entropy()}} for the relative entropy as a table;
+\code{\link[=plot_posteriors]{plot_posteriors()}}, \code{\link[=plot_avepp]{plot_avepp()}}.
 }

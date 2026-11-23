@@ -2,7 +2,8 @@
 % Please edit documentation in R/plot.R
 \name{plot_enumeration}
 \alias{plot_enumeration}
-\title{Information criteria across a candidate grid}
+\title{Plot the information criteria of an enumeration grid against the number of
+classes}
 \usage{
 plot_enumeration(
   x,
@@ -21,49 +22,65 @@ plot_enumeration(
 \item{x}{An enumeration grid from \code{\link[=enumerate_classes]{enumerate_classes()}},
 \code{\link[=enumerate_lpa]{enumerate_lpa()}}, \code{\link[=enumerate_lca]{enumerate_lca()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}.}
 
-\item{what}{Criterion columns of \code{as.data.frame(x)}, such as
-\code{"bic_groups"}, or \code{"all"}. The default draws AIC, both BICs and ICL on
-a profile or class grid; AIC, BIC and BIC over individuals on a
-transition or family grid; AIC, BIC, SABIC and ICL on a regression
-grid. Otherwise one of \code{"entropy"}, \code{"avepp"}, \code{"diagnostics"} (both),
-\code{"deltas"}, \code{"heatmap"}, \code{"smallest"}, \code{"trust"}, \code{"selection"} (those
-four and \code{"diagnostics"}) or \code{"tree"}; these cannot be mixed with
-criteria.}
+\item{what}{One or more criteria (columns of \code{as.data.frame(x)}), or one
+or more views; not both in one call. The criteria come first below; of
+the views, a family grid has only the first three and \code{"tree"}:
+\itemize{
+\item criteria of a profile or class grid: \code{"aic"}, \code{"kic"}, and \code{"bic"},
+\code{"sabic"}, \code{"caic"}, \code{"awe"}, \code{"icl"}, \code{"clc"} with the suffix
+\verb{_groups} or \verb{_individual} (sample size: the groups, or the rows).
+Default: \code{"aic"}, \code{"bic_groups"}, \code{"bic_individual"}, \code{"icl_individual"};
+\item criteria of a transition or family grid (\code{enumerate_classes()} with
+\code{time} or \code{family}): \code{"aic"}, \code{"bic"}, \code{"bic_individual"}, the default;
+\item criteria of a regression grid: \code{"aic"}, \code{"bic"}, \code{"sabic"}, \code{"icl"}
+(the default) and \code{"bic_rows"};
+\item \code{"all"}: every criterion of the grid, equal ones drawn once;
+\item \code{"entropy"}: each candidate's relative entropy (\code{\link[=plot_entropy]{plot_entropy()}});
+\item \code{"avepp"}: its lowest average posterior probability (\code{\link[=plot_avepp]{plot_avepp()}});
+\item \code{"diagnostics"}: \code{"entropy"} and \code{"avepp"} together;
+\item \code{"deltas"}: the drop in \code{using} with each added class (\code{\link[=plot_deltas]{plot_deltas()}});
+\item \code{"heatmap"}: how far \code{using} is above its lowest (\code{\link[=plot_heatmap]{plot_heatmap()}});
+\item \code{"smallest"}: the smallest class's share, 5\% dashed (\code{\link[=plot_sizes]{plot_sizes()}});
+\item \code{"trust"}: convergence, bounds and replication (\code{\link[=plot_trust]{plot_trust()}});
+\item \code{"selection"}: the last four and \code{"diagnostics"} (\code{\link[=plot_selection]{plot_selection()}});
+\item \code{"tree"}: how classes split (\code{\link[=plot_tree]{plot_tree()}}); not with another view.
+}}
 
-\item{combine}{\code{TRUE} (default) draws the criteria as panels of one plot;
-\code{FALSE} returns one plot per criterion.}
+\item{combine}{\code{TRUE} (default) draws the criteria, or \code{"entropy"} and
+\code{"avepp"}, as panels of one plot; \code{FALSE} returns one plot each, as a
+list. With \code{"tree"} it goes to \code{\link[=plot_tree]{plot_tree()}}, whose default is \code{FALSE}.}
 
 \item{labels}{\code{TRUE} (default) labels each line directly; \code{FALSE} uses a
-legend.}
+legend instead.}
 
-\item{mark_minimum}{\code{TRUE} (default) circles each criterion's lowest value
-among converged candidates, without selecting a model.}
+\item{mark_minimum}{\code{TRUE} (default) circles each criterion's lowest
+value among the converged candidates; \code{FALSE} draws no circle.}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot, each one string;
+\code{NULL} (default) keeps the view's own.}
 
 \item{cutoff}{The AvePP cutoff drawn dashed by \code{"avepp"}, \code{"diagnostics"}
-and \code{"selection"} (default 0.8).}
+and \code{"selection"}: one number above 0 and at most 1 (default 0.8).}
 
-\item{using}{The criterion \code{"deltas"}, \code{"heatmap"} and \code{"selection"} use:
-when not given, \code{"bic_groups"} on a profile or class grid and \code{"bic"} on
-the others.}
+\item{using}{The criterion that \code{"deltas"}, \code{"heatmap"} and \code{"selection"}
+read; by default \code{"bic_groups"} on a profile or class grid, else \code{"bic"}.}
 
-\item{...}{With \code{what = "tree"}, the arguments of \code{\link[=plot_tree]{plot_tree()}}.}
+\item{...}{With \code{what = "tree"}, the other arguments of \code{\link[=plot_tree]{plot_tree()}}.
+Any other argument raises \code{latents_bad_argument}.}
 }
 \value{
-A ggplot object; a \code{latents_plots} list for several criteria with
-\code{combine = FALSE}, or for a \code{what} of several views. A criterion not in
-the grid raises \code{latents_unknown_criterion}; a view the kind of grid
-does not offer raises \code{latents_unsupported_view}.
+A ggplot object, or a \code{latents_plots} list of them when there are
+several (\code{combine = FALSE}, several views, \code{"selection"}, several trees).
+Errors: \code{latents_unknown_criterion} (\code{what} is neither a criterion nor
+a view), \code{latents_unsupported_view} (a view this kind of grid lacks),
+\code{latents_nothing_to_plot} (no converged candidate has a finite value),
+\code{latents_bad_argument} (no grid, criteria mixed with views, a bad value).
 }
 \description{
-Each information criterion against the number of classes, one panel per
-criterion and one line per number of group classes (or covariance
-structure), with each criterion's lowest value circled. \code{what} also names
-the other views of a grid, which \code{\link[=plot_entropy]{plot_entropy()}}, \code{\link[=plot_avepp]{plot_avepp()}},
-\code{\link[=plot_deltas]{plot_deltas()}}, \code{\link[=plot_heatmap]{plot_heatmap()}}, \code{\link[=plot_sizes]{plot_sizes()}}, \code{\link[=plot_trust]{plot_trust()}} and
-\code{\link[=plot_tree]{plot_tree()}} draw by name.
+\code{plot_enumeration()} plots the information criteria of an enumeration grid
+against the number of classes: one panel per criterion and one line per
+number of group classes (or structure). Lower is preferred; no model is
+selected.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -72,10 +89,10 @@ grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
                       n_starts = 2, seed = 1)
 plot_enumeration(grid)
 plot_enumeration(grid, what = "bic_individual")
+plot_enumeration(grid, what = "entropy")
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=plot_criteria]{plot_criteria()}} draws every criterion of any grid or
-comparison; \code{\link[=plot_views]{plot_views()}} lists the views a grid offers;
-\code{\link[=plot_selection]{plot_selection()}}.
+\code{\link[=plot_criteria]{plot_criteria()}} for any grid or comparison; \code{\link[=plot_views]{plot_views()}}
+lists what a grid offers; \code{\link[=get_candidates]{get_candidates()}} for the table.
 }

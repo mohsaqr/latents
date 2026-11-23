@@ -2,31 +2,67 @@
 % Please edit documentation in R/wildcards.R
 \name{plot_trajectories}
 \alias{plot_trajectories}
-\title{Class trajectories of the outcome}
+\title{Plot the curve of the outcome in each class of a mixture regression model}
 \usage{
 plot_trajectories(x, main = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{A growth mixture, or a mixture regression from
-\code{\link[=mixture_regression]{mixture_regression()}}.}
+\item{x}{A fit from \code{\link[=mixture_regression]{mixture_regression()}} of any kind, growth mixtures
+included, or a \code{\link[=diagnostics]{diagnostics()}} result, which is drawn from the fit it
+checked.}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot. \code{NULL} (default)
+keeps the view's own text.}
 }
 \value{
 A ggplot object.
-An object with nothing to draw raises \code{latents_nothing_to_plot},
-naming the plot functions that apply; an object the package did not
-return raises \code{latents_not_a_fit}.
+
+Errors:
+\itemize{
+\item \code{latents_nothing_to_plot} when the package returned \code{x} but this
+function has no plot of it: a profile, class, transition, additive or
+cross-level fit, or an enumeration grid. For an object of the wrong
+kind, the message names the plot functions that apply to it;
+\item \code{latents_bad_argument} when a mixture regression that classifies
+observations has no numeric predictor in its formula;
+\item \code{latents_not_a_fit} when \code{x} is not a fit, grid or other result of the
+package, for example a data frame;
+\item \code{latents_missing_package} when ggplot2 is not installed.
+}
 }
 \description{
-For a growth mixture or a regression that classifies persons, each
-class's mean trajectory over time with its band, the observed
-trajectories behind. For another mixture regression, the outcome
-against the first numeric predictor, one line per class. The fit's own
-\code{plot(x, what = "trajectories")} also takes \code{time}, \code{facet},
-\code{max_persons} and \code{spread}, and \code{plot(x, what = "fitted")} takes
-\code{predictor} and \code{level}.
+\code{plot_trajectories()} plots the curve of the outcome in each class of a model
+fitted with \code{\link[=mixture_regression]{mixture_regression()}}: over time when the classes are classes of
+persons, over a predictor otherwise.
+}
+\details{
+\strong{Classes of persons.} This is a growth mixture (a fit with \code{random}) or
+a fit with \code{class_level = "group"}. The x-axis is the time variable: the
+first numeric variable among the random-effect terms and then the
+predictors. The y-axis is the outcome. For each class the plot shows:
+\itemize{
+\item a thick line, the mean trajectory of the class, with the class named at
+its right end;
+\item a dark band, the 95\% confidence band of that mean;
+\item for a growth mixture, a light band in which 80\% of the trajectories of
+the class's persons lie;
+\item points with a range, the observed mean of the class at each time, with
+its interval (drawn when there are at most 30 distinct times);
+\item thin lines, the observed trajectories of up to 120 persons, coloured by
+their most likely class.
+}
+
+\code{plot(x, what = "trajectories")} draws the same view and takes \code{time}
+(another time variable), \code{facet = TRUE} (one panel per class),
+\code{max_persons}, \code{level} and, for a growth mixture, \code{spread}.
+
+\strong{Classes of observations.} For any other mixture regression the x-axis
+is the first numeric predictor of the formula and the y-axis the outcome.
+Each row of the data is a point with the colour and marker of its most
+likely class, and each class has one fitted line, drawn with the other
+predictors held at their means (factors at their first level).
+\code{plot(x, what = "fitted", predictor = )} draws the same view over another
+numeric predictor.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -34,8 +70,14 @@ fit <- mixture_regression(score ~ wave, subset(growth_scores, student <= 60),
                           n_classes = 2, id = "student", class_level = "group",
                           random = "wave", n_starts = 2, seed = 1)
 plot_trajectories(fit)
+
+# Classes of observations: the outcome against the first numeric predictor
+regression <- mixture_regression(score ~ hours, data = study_hours,
+                                 n_classes = 2, n_starts = 2, seed = 1)
+plot_trajectories(regression)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=plot_individuals]{plot_individuals()}}, \code{\link[=plot_coefficients]{plot_coefficients()}}, \code{\link[=plot_classification]{plot_classification()}}.
+\code{\link[=plot_individuals]{plot_individuals()}} for single persons, \code{\link[=plot_coefficients]{plot_coefficients()}}
+for the coefficients behind the curves, \code{\link[=plot_classification]{plot_classification()}}.
 }

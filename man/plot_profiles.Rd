@@ -2,7 +2,8 @@
 % Please edit documentation in R/plot-named.R
 \name{plot_profiles}
 \alias{plot_profiles}
-\title{Profile means across the indicators}
+\title{Plot how the profiles differ on the indicators: each profile's mean, or
+another summary, on every indicator}
 \usage{
 plot_profiles(
   x,
@@ -17,49 +18,70 @@ plot_profiles(
 )
 }
 \arguments{
-\item{x}{A fitted model of any family.}
+\item{x}{A fitted model, or pooled imputations. What each draws:
+\itemize{
+\item a profile or class fit (\code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}}, \code{\link[=multilca]{multilca()}}):
+every view it has the indicators for;
+\item an \code{\link[=lta]{lta()}} fit: \code{"lines"}, and \code{"bars"} and \code{"heatmap"} when its class
+is \code{multilpa_transitions}; nothing when it has only count indicators
+or \code{measurement = "occasion"};
+\item a growth mixture or mixture regression: \code{"lines"} only, each class's
+trajectory over time or fitted line over the first numeric predictor;
+\item an additive or cross-level fit: \code{"lines"} only;
+\item pooled imputations (\code{\link[=pool_imputations]{pool_imputations()}}): \code{"lines"} only, the pooled
+means with their intervals beside each imputation's estimates.
+}}
 
-\item{statistic}{\code{"mean"} (default), \code{"median"} or \code{"mode"}; they coincide
-for continuous indicators. For categorical ones the fitted probabilities
-are summarised on the numeric category scale, without intervals.}
+\item{statistic}{What \code{"lines"} joins. It matters only for a profile, class
+or \code{multilpa_lta} fit with only categorical or ordinal indicators:
+\itemize{
+\item \code{"mean"} (default): the probability-weighted category score;
+\item \code{"median"}: the first category where cumulative probability reaches 0.5;
+\item \code{"mode"}: the most probable category.
+}}
 
-\item{scale}{\code{"raw"} (default) keeps each indicator in its own units;
-\code{"standardized"} divides its deviation from the observed mean by the
-observed standard deviation.}
+\item{scale}{\code{"raw"} (default) draws each indicator in its own units;
+\code{"standardized"} in observed standard deviations from the observed mean
+(continuous indicators only). For \code{"lines"}, \code{"bars"} and \code{"raincloud"}
+of profile, class and \code{multilpa_transitions} fits.}
 
 \item{intervals}{\code{TRUE} (default) draws the 95\% intervals of
-\code{\link[=parameter_inference]{parameter_inference()}} when the fit has standard errors; otherwise the
-subtitle says why there are none.}
+\code{\link[=parameter_inference]{parameter_inference()}} on \code{"lines"} and \code{"bars"} of continuous indicators
+(the subtitle says why a fit has none); \code{FALSE} draws none.}
 
-\item{labels}{\code{TRUE} (default) labels each profile directly; \code{FALSE} uses
-a legend.}
+\item{labels}{\code{TRUE} (default) writes each profile's name at the end of
+its line; \code{FALSE} uses a legend instead. For \code{what = "lines"}.}
 
-\item{data}{The data the model was fitted to, used only for the intervals.
-\code{NULL} (default) uses the data stored in the fit.}
+\item{data}{The data frame the model was fitted to, used only to compute
+the intervals. \code{NULL} (default) uses the data stored in the fit.}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot, each one string;
+\code{NULL} (default) keeps the view's own.}
 
-\item{what}{\code{"lines"} (default). The other values draw the view of the
-function with that name (\code{\link[=plot_bars]{plot_bars()}}, \code{\link[=plot_heatmap]{plot_heatmap()}},
-\code{\link[=plot_raincloud]{plot_raincloud()}}, \code{\link[=plot_parallel]{plot_parallel()}}, \code{\link[=plot_pairs]{plot_pairs()}}); \code{"all"} draws
-every view the fit supports, as a list.}
+\item{what}{Which view to draw. The linked pages say what a view needs:
+\itemize{
+\item \code{"lines"} (default): each profile's mean of every indicator, joined;
+\item \code{"bars"}: the same means as bars (\code{\link[=plot_bars]{plot_bars()}});
+\item \code{"heatmap"}: the means in standard deviations (\code{\link[=plot_heatmap]{plot_heatmap()}});
+\item \code{"raincloud"}: each indicator's distribution (\code{\link[=plot_raincloud]{plot_raincloud()}});
+\item \code{"parallel"}: every case as a line, by profile (\code{\link[=plot_parallel]{plot_parallel()}});
+\item \code{"pairs"}: the cases in every pair of indicators (\code{\link[=plot_pairs]{plot_pairs()}});
+\item \code{"all"}: every view the fit supports, as a list.
+}}
 }
 \value{
-A ggplot object; a \code{latents_plots} list for \code{what = "all"}. A fit
-the function has no view for raises \code{latents_nothing_to_plot}, naming
-the plot functions that apply; an argument no view of the fit takes
-(for example \code{scale} on a growth mixture) raises \code{latents_bad_argument},
-and one that belongs to another view of the same fit is dropped with
-a warning.
+A ggplot object; for \code{what = "all"} a \code{latents_plots} list of the
+views the fit can draw, named by view (a message names the others).
+Errors: \code{latents_nothing_to_plot} (the fit has no such view),
+\code{latents_no_continuous} (too few continuous indicators),
+\code{latents_bad_argument} (an argument no view of the fit takes, or
+\code{"lines"} for category labels that are not numbers), \code{latents_not_a_fit}.
+An argument of another view gives a \code{latents_unused_argument} warning.
 }
 \description{
-One line per profile (class), joining its mean, median or mode of each
-indicator, with 95\% intervals when the fit has standard errors. On a
-growth mixture or a regression that classifies persons it draws the class
-trajectories, on another mixture regression the fitted lines, on an
-additive fit the group-class means, on a cross-level fit the profiles and
-on pooled imputations the pooled measurement parameters.
+\code{plot_profiles()} plots how the profiles (classes) of a fitted model differ
+on its indicators: by default one line per profile through its mean of each
+indicator, with 95\% intervals. \code{what} chooses another view of them.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -67,10 +89,9 @@ fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
            n_starts = 2, seed = 1)
 plot_profiles(fit)
 plot_profiles(fit, scale = "standardized")
+plot_profiles(fit, what = "bars")
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=plot_responses]{plot_responses()}} for categorical indicators; \code{\link[=plot_bars]{plot_bars()}},
-\code{\link[=plot_heatmap]{plot_heatmap()}}, \code{\link[=plot_raincloud]{plot_raincloud()}}, \code{\link[=plot_parallel]{plot_parallel()}}, \code{\link[=plot_pairs]{plot_pairs()}};
-\code{\link[=plot_all]{plot_all()}}.
+\code{\link[=plot_responses]{plot_responses()}} for categorical indicators; \code{\link[=plot_all]{plot_all()}}.
 }

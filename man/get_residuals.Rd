@@ -2,33 +2,72 @@
 % Please edit documentation in R/wildcards.R
 \name{get_residuals}
 \alias{get_residuals}
-\title{Bivariate residuals of the indicators}
+\title{Get the bivariate residuals: the association between pairs of indicators that
+each class leaves unexplained}
 \usage{
 get_residuals(x)
 }
 \arguments{
-\item{x}{A fitted model of any family, an enumeration grid, or the
-result of \code{\link[=diagnostics]{diagnostics()}}.}
+\item{x}{One of:
+\itemize{
+\item a profile, class or transition fit as described above. The table is
+the one \code{\link[=diagnostics]{diagnostics()}} computes with its defaults, which assesses
+each class separately;
+\item an enumeration grid of such fits. The tables of the fitted
+candidates are stacked, with a first column \code{candidate};
+\item the result of \code{\link[=diagnostics]{diagnostics()}}. The table is the one the result
+holds, so \code{diagnostics(fit, by = "overall")} gives the residuals
+pooled over the classes.
+}}
 }
 \value{
-A data frame, one row per class and indicator pair (and candidate): \verb{profile, indicator_1, indicator_2, kind, observed, expected, residual, effective_n, statistic, df, p_value, p_adjusted}.
-A family without bivariate residuals (regression, growth, additive
-and cross-level fits, a general transition fit with occasion-dependent
-structure, or a fit with a noise component) raises
-\code{latents_bad_argument}; a grid none of whose candidates has them
-does too.  Any other object raises \code{latents_not_a_fit}.
+A data frame with one row per class and pair of indicators (and
+per candidate for a grid) and the columns:
+\itemize{
+\item \code{profile}: the class, as \code{profile_1}, \code{profile_2}, ...; \code{overall}
+for residuals pooled over the classes;
+\item \code{indicator_1}, \code{indicator_2}: the pair;
+\item \code{kind}: the kind of pair, as listed above;
+\item \code{observed}, \code{expected}: the observed association and the one the
+model implies;
+\item \code{residual}: the residual association;
+\item \code{effective_n}: the effective number of units behind it;
+\item \code{statistic}, \code{df}, \code{p_value}: the test, \code{NA} where there is none;
+\item \code{p_adjusted}: the p-value adjusted across the pairs.
+}
+
+Errors: \code{latents_bad_argument} when the fit is of a family without
+bivariate residuals (a mixture regression, a growth mixture, an
+additive or cross-level fit, or a general transition fit of class
+\code{multilpa_lta}), and when no candidate of a grid has them; the message
+names the tables the object does have. \code{latents_unsupported_noise}
+when the fit has a noise component. \code{latents_not_a_fit} when \code{x} is
+not a fit, a grid or a diagnostics result.
 }
 \description{
-Each pair of indicators within each class, checked for association the
-model leaves unexplained: a residual correlation with a normal test for
-two Gaussian indicators, a chi-square of observed against expected
-counts for two categorical ones, and a descriptive correlation without a
-test for a mixed pair or one with a count indicator, with
-Benjamini-Hochberg adjusted p-values, for the families that define
-them. For a fit, the table is the one \code{\link[=diagnostics]{diagnostics()}} computes with its
-defaults; for a grid, the tables of every candidate are stacked with
-a first column \code{candidate} (a candidate whose estimation failed has no
-row); for a diagnostics result, its own table.
+\code{get_residuals()} returns the bivariate residuals, a check of local
+independence: for each pair of indicators within each class, the association
+that the model leaves unexplained.
+}
+\details{
+The statistic depends on the two indicators (column \code{kind}):
+\itemize{
+\item \code{"gaussian"}, two continuous indicators: the residual correlation,
+with a normal test;
+\item \code{"categorical"}, two categorical or ordinal indicators: a chi-square
+test of the observed two-way table against the one the model expects;
+\item \code{"mixed"} or \code{"count"}, a continuous with a categorical indicator or a
+pair with a count indicator: a correlation, without a test.
+}
+
+The p-values are adjusted across the pairs by the Benjamini-Hochberg
+method. A fit with sampling weights reports the associations without
+tests. \code{?get_results} describes the statistics in full.
+
+Only profile, class and transition fits have these residuals: fits of
+\code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}} and \code{\link[=multilca]{multilca()}}, with or without
+covariates, and transition fits of \code{\link[=lta]{lta()}} of class
+\code{multilpa_transitions}.
 }
 \examples{
 fit <- lca(student_esm, c("time_with_friends", "on_social_media", "sports"),
@@ -36,5 +75,6 @@ fit <- lca(student_esm, c("time_with_friends", "on_social_media", "sports"),
 get_residuals(fit)
 }
 \seealso{
-\code{\link[=diagnostics]{diagnostics()}} for the test; \code{\link[=get_checks]{get_checks()}}.
+\code{\link[=get_results]{get_results()}} for the statistics; \code{\link[=diagnostics]{diagnostics()}} and
+\code{\link[=get_checks]{get_checks()}} for the check that reads this table.
 }

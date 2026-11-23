@@ -2,36 +2,95 @@
 % Please edit documentation in R/wildcards.R
 \name{plot_heatmap}
 \alias{plot_heatmap}
-\title{Profile means, or a criterion, as a heat map}
+\title{Plot profile means as tiles of profiles by indicators, or a grid's criterion
+as tiles of candidates}
 \usage{
 plot_heatmap(x, main = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{A profile or class fit, or an enumeration grid.}
+\item{x}{One of:
+\itemize{
+\item a profile or class fit from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}} or
+\code{\link[=multilca]{multilca()}}, with or without covariates;
+\item a transition fit from \code{\link[=lta]{lta()}} of class \code{multilpa_transitions}. The
+general transition fits (class \code{multilpa_lta}) have no heat map and
+are refused; \code{class(x)} tells which one \code{\link[=lta]{lta()}} returned;
+\item an enumeration grid from \code{\link[=enumerate_lpa]{enumerate_lpa()}}, \code{\link[=enumerate_lca]{enumerate_lca()}},
+\code{\link[=enumerate_classes]{enumerate_classes()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}. A grid of
+group-class families (\code{enumerate_classes(family = )}) is refused;
+\item a \code{\link[=diagnostics]{diagnostics()}} result, which is drawn from the fit it checked.
+}}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot. \code{NULL} (default)
+keeps the view's own text.}
 }
 \value{
 A ggplot object.
-An object with nothing to draw raises \code{latents_nothing_to_plot},
-naming the plot functions that apply; an object the package did not
-return raises \code{latents_not_a_fit}.
+
+Errors:
+\itemize{
+\item \code{latents_nothing_to_plot} when the package returned \code{x} but this
+function has no plot of it: an additive or cross-level fit, a mixture
+regression, a growth mixture, a general transition fit or a grid of
+group-class families. For an object of the wrong kind, the message names
+the plot functions that apply to it;
+\item \code{latents_not_a_fit} when \code{x} is not a fit, grid or other result of the
+package, for example a data frame;
+\item \code{latents_missing_package} when ggplot2 is not installed.
+}
 }
 \description{
-For a profile or class fit, the profile means in observed standard
-deviations from the observed mean, or the response probabilities of
-categorical indicators. For an enumeration grid, the information
-criterion over profiles and group classes, relative to its lowest
-value (BIC over groups on a profile or class grid, BIC on the others).
+\code{plot_heatmap()} plots a grid of tiles: for a profile, class or transition
+fit, one row per profile and one column per indicator; for an enumeration
+grid, one tile per candidate, showing how far its information criterion is
+above the lowest.
+}
+\details{
+\strong{A fit with continuous indicators.} Each tile is the profile's mean of
+the indicator minus the indicator's observed mean, in observed standard
+deviations (weighted ones for a fit with sampling weights). The value is
+printed in the tile. Tiles below the mean are red, tiles above it blue,
+and a tile at the mean is white. Categorical, ordinal and count
+indicators of such a fit are not drawn; a caption names them.
+
+\strong{A fit with categorical or ordinal indicators only.} The tiles are
+response probabilities, darker for higher values. When every indicator
+has two categories, the tile is the probability of the last category.
+When an indicator has more, there is one panel per profile, with the
+indicators in rows and the categories in columns.
+
+\strong{An enumeration grid.} The x-axis is the number of classes and the
+y-axis the number of group classes. Each tile is one candidate, labelled
+with how far its criterion is above the lowest in the grid (\code{+12}); the
+lowest candidate is labelled \code{lowest}, and a candidate that was not
+fitted or did not converge is marked \code{x}. The fill is darker the closer
+the candidate is to the lowest. The criterion is \code{bic_groups} (BIC with
+the number of groups as the sample size) on a profile or class grid and
+\code{bic} on a transition or regression grid. A grid with several covariance
+structures has one panel per structure.
+\code{plot_selection(x, what = "heatmap", using = )} draws the same view with
+another criterion.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
            n_starts = 2, seed = 1)
 plot_heatmap(fit)
+
+# Categorical indicators: response probabilities
+classes <- lca(student_esm, c("time_with_friends", "on_social_media", "sports"),
+               n_classes = 2, n_starts = 2, seed = 1)
+plot_heatmap(classes)
+
+# A grid: BIC of every candidate above the lowest
+grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
+                      n_profiles = 1:3, model = "EEI",
+                      n_starts = 2, seed = 1)
+plot_heatmap(grid)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=plot_profiles]{plot_profiles()}}, \code{\link[=plot_bars]{plot_bars()}}; \code{\link[=plot_enumeration]{plot_enumeration()}}.
+\code{\link[=plot_profiles]{plot_profiles()}}, \code{\link[=plot_bars]{plot_bars()}} and \code{\link[=plot_responses]{plot_responses()}} for
+other views of the same means and probabilities; \code{\link[=plot_selection]{plot_selection()}}
+and \code{\link[=plot_enumeration]{plot_enumeration()}} for the other views of a grid.
 }

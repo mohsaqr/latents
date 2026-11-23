@@ -5,7 +5,7 @@
 #' @noRd
 .multilpa_require_time <- function(object) {
   stopifnot("`object` must be a fitted model of this package" =
-              .multilpa_any_fit(object))
+              .multilpa_any_fit(object) || inherits(object, "multilpa_lta"))
   if (is.null(object$time_values)) {
     stop(errorCondition(
       paste("This fit carries no ordering. Refit with `time =` naming the column",

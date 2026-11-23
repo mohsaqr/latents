@@ -725,16 +725,18 @@
   jacobian
 }
 
-#' Standard errors, confidence intervals and tests for model parameters
+#' Compute standard errors, confidence intervals and tests for the estimates of
+#' a fitted model
 #'
 #' @description
-#' `parameter_inference()` quantifies the sampling uncertainty of a fitted
-#' model's estimates: indicator means, response probabilities, membership
-#' coefficients or transition probabilities, according to the family. Wald
-#' inference inverts an estimated information matrix for the covariance of
-#' the estimates;
-#' bootstrap inference resamples the independent units, refits, and reads
-#' standard errors and percentile intervals off the replicates.
+#' `parameter_inference()` returns the sampling uncertainty of a fitted model's
+#' estimates: indicator means, response probabilities, membership coefficients
+#' or transition probabilities, according to the family. It gives one row per
+#' parameter with the estimate, its standard error, a confidence interval and,
+#' where a test against zero is meaningful, a z test. Wald inference inverts an
+#' estimated information matrix for the covariance of the estimates; bootstrap
+#' inference resamples the independent units, refits, and reads standard errors
+#' and percentile intervals off the replicates.
 #'
 #' Wald tests are omitted where a test against zero makes no sense
 #' (probabilities, variances, count means), or a coordinate has zero estimated
@@ -743,43 +745,78 @@
 #' number of classes, and does not account for having selected that model
 #' among candidates.
 #'
-#' @param x A converged fit from [multilpa()], [lpa()], [lca()] or
-#'   [multilca()] (with or without covariates), [lta()], the additive family
-#'   or a growth mixture. An unconverged fit, or one with a parameter at a
-#'   bound, is refused (`boundary` can hold one kind of bound). A fit made
-#'   with `prior` has no Wald inference, only the bootstrap; a fit with a
-#'   noise component has neither. Mixture regressions carry their inference
-#'   in `get_results(x, "coefficients")`, `confint()` and `vcov()`; the
-#'   cross-level families have none.
+#' @param x A converged fit. Accepted:
+#'   * a profile or class fit from [lpa()], [lca()], [multilpa()] or
+#'     [multilca()], with or without membership covariates (a covariate fit
+#'     has the Wald method only);
+#'   * a transition fit from [lta()];
+#'   * a group-class family fit (`multilpa(family = "additive")`,
+#'     `"dispersion"` or `"additive_dispersion"`), with the Wald method
+#'     only;
+#'   * a growth mixture ([mixture_regression()] with `random`).
+#'
+#'   Not accepted: a mixture regression without `random`
+#'   (`latents_bad_argument`; its inference is in
+#'   `get_results(x, "coefficients")`, `confint()` and `vcov()`), a
+#'   cross-level fit (`latents_unsupported_inference`) and a fit with a
+#'   noise component (`latents_unsupported_noise`). An unconverged fit
+#'   (`latents_no_converge`) or one with a parameter at a bound
+#'   (`latents_boundary_fit`) is refused; `boundary` can hold one kind of
+#'   bound. A fit made with `prior` has no Wald inference, only the
+#'   bootstrap.
 #' @param data Optional data frame the model was fitted to. When omitted it
 #'   is rebuilt from what the fit stores; when supplied it is checked against
-#'   the stored indicators and identifiers.
+#'   the stored indicators and identifiers, and data that do not reproduce
+#'   the fit raise `latents_bad_inference_data`. The bootstrap of a
+#'   transition fit needs it.
 #' @param level Confidence level (default 0.95).
 #' @param step Finite-difference step for the derivative of the analytic
 #'   score (default `1e-4`). Not used by the bootstrap.
-#' @param vcov_type Covariance estimator for the Wald method. `"observed"`
-#'   (default; a growth mixture defaults to the type it was fitted with)
-#'   inverts the observed information. `"robust"` is the sandwich over the
-#'   independent units (groups), with the `G / (G - 1)` small-sample factor;
-#'   it relaxes the within-group model, not the independence of groups.
-#'   `"opg"` inverts the outer product of the group scores. The last two need
-#'   more groups than parameters. Wald inference for a fit with sampling
-#'   weights, or with person centring or scaling, uses `"robust"` only. See
-#'   *Centred and scaled fits*.
-#' @param adjust Multiplicity correction for `p_value`, giving `p_adjusted`:
-#'   `"none"` (default) or a `stats::p.adjust()` method, taken over the tests
-#'   the table reports.
-#' @param method `"wald"` (default) or `"bootstrap"`. Both are available for
-#'   all fourteen covariance structures, except that a `multilpa_transitions`
-#'   fit has Wald inference under EEI, VVI, EEE and VVV only. The bootstrap
-#'   resamples the groups
-#'   with replacement, refits within the same structure and realigns each
-#'   replicate's labels to the original. It is not available for a covariate
-#'   fit, an additive fit, or a fit with held measurement blocks other than
-#'   a [fit_staged()] result whose measurement was estimated from the same
-#'   indicator observations. A separately supplied measurement from other
-#'   data, or without stored data to establish its origin, cannot be
-#'   resampled by this bootstrap.
+#' @param vcov_type Covariance estimator for the Wald method:
+#'   * `"observed"` (default): the inverse of the observed information,
+#'     which relies on the model being correct within groups. A growth
+#'     mixture defaults to the type it was fitted with instead;
+#'   * `"robust"`: the sandwich over the independent units (groups), with
+#'     the `G / (G - 1)` small-sample factor. It relaxes the within-group
+#'     model, not the independence of groups;
+#'   * `"opg"`: the inverse of the outer product of the group scores.
+#'
+#'   `"robust"` and `"opg"` need more groups than parameters
+#'   (`latents_too_few_groups` otherwise). A fit with sampling weights
+#'   defaults to `"robust"` and refuses the other two
+#'   (`latents_unsupported_weights`), as does a fit with person centring or
+#'   scaling (`latents_unsupported_inference`). See *Centred and scaled
+#'   fits*. Not used by the bootstrap.
+#' @param adjust Multiplicity correction of `p_value`, giving `p_adjusted`,
+#'   taken over the tests the table reports:
+#'   * `"none"` (default): no correction (`p_adjusted` equals `p_value`);
+#'   * `"holm"`, `"hochberg"`, `"hommel"`, `"bonferroni"`: control the
+#'     family-wise error rate;
+#'   * `"BH"` (or its alias `"fdr"`): Benjamini-Hochberg, controls the
+#'     false discovery rate;
+#'   * `"BY"`: Benjamini-Yekutieli, controls the false discovery rate under
+#'     any dependence.
+#'
+#'   These are the methods of [stats::p.adjust()].
+#' @param method How the uncertainty is estimated:
+#'   * `"wald"` (default): standard errors from the covariance chosen by
+#'     `vcov_type`, with normal-theory intervals and z tests;
+#'   * `"bootstrap"`: the groups (persons of a transition fit or a growth
+#'     mixture) are resampled with replacement `iter` times, the model is
+#'     refitted to each resample within the same structure, and each
+#'     replicate's labels are realigned to the original. The standard error
+#'     is the standard deviation of the replicates and the interval their
+#'     percentile interval; there are no tests.
+#'
+#'   Both are available for all fourteen covariance structures, except that
+#'   a homogeneous transition fit has Wald inference under EEI, VVI, EEE and
+#'   VVV only. The bootstrap is not available
+#'   (`latents_unsupported_inference`) for a covariate fit, a group-class
+#'   family fit, a multilevel growth mixture, or a fit with held measurement
+#'   blocks other than a [fit_staged()] result whose measurement was
+#'   estimated from the same indicator observations. A separately supplied
+#'   measurement from other data, or without stored data to establish its
+#'   origin, cannot be resampled by this bootstrap.
 #' @param iter Number of bootstrap resamples (default 199, at least 2). A 95%
 #'   percentile interval is more stable with 999 or more.
 #' @param n_starts,max_iter,tol Passed to each bootstrap refit. The defaults
@@ -788,25 +825,51 @@
 #' @param seed Optional integer seed for the resampling; when given, the
 #'   caller's random-number state is restored on exit. The Wald method uses
 #'   no random numbers.
-#' @param boundary What to do with categorical response probabilities at their
-#'   lower bound (at or below `min_probability`, or 1e-6 if that is larger),
-#'   where the information is singular.
-#'   `"error"` (default) refuses the fit. `"fix"` holds them at the bound and
-#'   reports every other parameter conditional on them, as Mplus does. The
-#'   held probabilities are left out of the table and named in the
-#'   `fixed_at_bound` attribute; a covariate fit keeps their rows with `NA`
-#'   standard errors. A homogeneous transition fit ([lta()]) holds its
-#'   response, initial and transition probabilities on the bound the same
-#'   way; a general one (covariates, occasion-specific measurement, second
-#'   order, stayers) holds nothing, and `method = "bootstrap"` is the
-#'   alternative there.
+#' @param boundary What the Wald method does with categorical response
+#'   probabilities at their lower bound (at or below `min_probability`, or
+#'   1e-6 if that is larger), where the information is singular:
+#'   * `"error"` (default): the fit is refused (`latents_boundary_fit`);
+#'   * `"fix"`: they are held at the bound and every other parameter is
+#'     reported conditional on them, as Mplus does. The held probabilities
+#'     are left out of the table and named in the `fixed_at_bound`
+#'     attribute; a covariate fit keeps their rows with `NA` standard
+#'     errors.
 #'
-#' @return A data frame with one row per reported parameter. For a profile,
-#'   class or covariate fit the columns are `level` (`"measurement"`,
-#'   `"profile"` or `"group"`), `outcome`, `term`, `parameter`, `estimate`,
-#'   `standard_error`, `statistic`, `p_value`, `p_adjusted`, `conf_low` and
-#'   `conf_high`; the transition and growth-mixture tables are described in
-#'   their sections. Estimates are on the natural scale. A parameter whose
+#'   Under `"fix"` a homogeneous transition fit ([lta()] with its default
+#'   transitions and measurement) holds its response, initial and
+#'   transition probabilities on the bound the same way, and a growth
+#'   mixture reports the parameters off the bound. A general transition
+#'   fit (covariates, occasion-specific transitions or measurement, second
+#'   order, stayers, ordinal or count indicators) holds nothing and is
+#'   refused under either value; `method = "bootstrap"` is the alternative
+#'   there. A variance at `min_variance`, a zero mixing probability and a
+#'   count parameter on its bound are refused under either value.
+#'
+#' @return A `data.frame` with one row per reported parameter. Estimates
+#'   are on the natural scale (means, variances, probabilities, logit
+#'   coefficients). The estimate columns are the same in every table:
+#'   `estimate`, `standard_error`, `statistic` (the estimate over its
+#'   standard error), `p_value` (two-sided, normal), `p_adjusted`,
+#'   `conf_low` and `conf_high`. The columns that identify a parameter
+#'   depend on the family:
+#'   * a profile, class or covariate fit, and a homogeneous transition fit:
+#'     `level` (`"measurement"`, `"profile"` or `"group"`), `outcome` (the
+#'     profile or group class the row is about), `term` (the indicator of
+#'     a measurement parameter, `indicator:category` for a response
+#'     probability and `indicator:indicator` for a covariance; the
+#'     covariate of a membership coefficient; the group class a profile
+#'     share is within; `NA` for a group-class share) and `parameter`
+#'     (`"mean"`, `"variance"`, `"covariance"`, `"response"`,
+#'     `"probability"`, `"coefficient"`, and for a transition fit
+#'     `"initial_probability"` and `"transition_probability"`);
+#'   * a group-class family fit: `level` (`"between"`, `"within"` or
+#'     `"group_class"`), `group_class` (`"shared"` for a quantity every
+#'     group class shares), `indicator` and `parameter` (`"mean"`,
+#'     `"variance"` or `"weight"`, the group-class share);
+#'   * a general transition fit and a growth mixture: see *Transition fits*
+#'     and *Growth mixtures*.
+#'
+#'   A parameter whose
 #'   null value sits on the edge of its space (a variance, a covariance
 #'   diagonal, a probability, a count mean or dispersion) has `NA` test
 #'   columns but an interval. Wald intervals for probabilities are formed on
@@ -821,14 +884,15 @@
 #'   include its uncertainty. For a [fit_staged()] result the bootstrap
 #'   refits both stages, so that uncertainty is propagated.
 #'
-#'   With `method = "bootstrap"` the table has the same columns and class
-#'   `latents_bootstrap`: `estimate` is the fitted value, `standard_error` the
-#'   standard deviation of the replicates, `conf_low`/`conf_high` the
-#'   percentile interval, the test columns `NA`.
+#'   With `method = "bootstrap"` the table has the same columns and the
+#'   additional class `latents_bootstrap`: `estimate` is the fitted value,
+#'   `standard_error` the standard deviation of the replicates,
+#'   `conf_low`/`conf_high` the percentile interval, the test columns `NA`.
 #'   `as.data.frame(x, what = "replicates")` returns the replicates (one row
-#'   per kept resample and parameter) and `plot(x)` draws each estimate with
-#'   its interval; `n_valid` and `messages` (why a resample was dropped) are
-#'   attributes.
+#'   per kept resample and parameter: `replicate`, the identifying columns
+#'   and `estimate`) and `plot(x)` draws each estimate with
+#'   its interval; `n_valid` (the number of resamples kept) and `messages`
+#'   (why a resample was dropped) are attributes.
 #'
 #'   For the Wald method on a profile or class fit, the attributes hold
 #'   `covariance` (returned by `vcov()`), `fixed_at_bound`, `adjust` and the

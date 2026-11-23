@@ -403,76 +403,203 @@
     class = c("latents_not_a_fit", "latents_bad_argument"), call = NULL))
 }
 
-#' Class sizes
+#' Plot how many units each class holds, or the size of the smallest class of
+#' every candidate in a grid
 #'
-#' For a fit of any family, the effective number of units in each class
-#' with its share, at each level the fit classifies (the cases, and the
-#' groups when there are two or more group classes). For an enumeration
-#' grid, the share of the smallest class of every candidate, with 5%
-#' dashed.
+#' `plot_sizes()` plots how many units belong to each class of a fitted model,
+#' as bars, or how large the smallest class of every candidate of an enumeration
+#' grid is, as a line.
 #'
-#' @param x A fitted model of any family, an enumeration grid or a
-#'   [diagnostics()] result (drawn from its fit).
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
-#' @return A ggplot object; a `latents_plots` list with elements
-#'   `individuals` and `groups` for a fit that classifies at both levels.
-#'   An object with nothing to draw raises `latents_nothing_to_plot`,
-#'   naming the plot functions that apply; an object the package did not
-#'   return raises `latents_not_a_fit`.
-#' @seealso [get_classification()] for the table; [plot_posteriors()],
-#'   [plot_entropy()], [plot_avepp()].
+#' @details
+#' **A fitted model.** One horizontal bar per class, the largest at the top.
+#' The length of a bar is the effective number of units in the class: the sum
+#' of the units' posterior probabilities of that class. Each bar is labelled
+#' with that number and its share of the total, and each class has its own
+#' colour.
+#'
+#' A fit classifies at one or two levels. The individual level sorts the
+#' cases (rows) into profiles or classes. The group level sorts the groups
+#' (the persons, for example) into group classes. A fit with two or more
+#' group classes besides its profiles is drawn at both levels, as two plots.
+#' An additive fit and a mixture regression with `class_level = "group"`
+#' classify the groups only and give one plot. A fit with a noise component
+#' draws the sizes of its profiles; the noise cases are left out of the bars
+#' and a caption says so.
+#'
+#' **An enumeration grid.** The x-axis is the number of classes, the y-axis
+#' the estimated share of the smallest class of each candidate. There is one
+#' line per number of group classes, and per covariance structure when the
+#' grid has several. A dashed line marks 5%. A grid with group classes has a
+#' second panel for the smallest group class.
+#'
+#' @param x One of:
+#'   * a fitted model of any family: from [lpa()], [lca()], [multilpa()],
+#'     [multilca()], [lta()] or [mixture_regression()]. This covers fits with
+#'     covariates, growth mixtures, and the additive and cross-level families
+#'     of [multilpa()];
+#'   * an enumeration grid from [enumerate_lpa()], [enumerate_lca()],
+#'     [enumerate_classes()] or [enumerate_regressions()]. A grid of
+#'     group-class families (`enumerate_classes(family = )`) has no such
+#'     view and is refused;
+#'   * a [diagnostics()] result, which is drawn from the fit it checked.
+#' @param main,subtitle Title and subtitle of the plot. `NULL` (default)
+#'   keeps the view's own text. When two plots are returned, both get the
+#'   same title and subtitle.
+#' @return A ggplot object. A fit that classifies at both levels returns a
+#'   `latents_plots` list of two ggplot objects named `individuals` and
+#'   `groups`; printing the list draws both.
+#'
+#'   Errors:
+#'   * `latents_nothing_to_plot` when the package returned `x` but this
+#'     function has no plot of it: a grid of group-class families, a grid in
+#'     which no converged candidate has two or more classes, pooled
+#'     imputations, a comparison, a bootstrap result or a sensitivity analysis.
+#'     For an object of the wrong kind, the message names the plot functions
+#'     that apply to it;
+#'   * `latents_not_a_fit` when `x` is not a fit, grid or other result of the
+#'     package, for example a data frame;
+#'   * `latents_missing_package` when ggplot2 is not installed.
+#' @seealso [get_classification()] for the sizes as a table;
+#'   [plot_posteriors()], [plot_entropy()], [plot_avepp()].
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 #'            n_starts = 2, seed = 1)
 #' plot_sizes(fit)
+#'
+#' # Two levels: profiles of the rows and group classes of the students
+#' two_level <- multilpa(course_engagement, c("browse", "lectures", "forum_read"),
+#'                       "student", n_profiles = 2, n_group_classes = 2,
+#'                       n_starts = 2, seed = 1)
+#' plot_sizes(two_level)
+#'
+#' # A grid: the smallest class of every candidate
+#' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
+#'                       n_profiles = 1:3, model = "EEI",
+#'                       n_starts = 2, seed = 1)
+#' plot_sizes(grid)
 #' @export
 plot_sizes <- function(x, main = NULL, subtitle = NULL) {
   .latents_wild_plot(x, "plot_sizes", substitute(x), main, subtitle)
 }
 
-#' Entropy of the classification
+#' Plot how uncertain the classification is, by unit for a fitted model or by
+#' candidate for a grid
 #'
-#' For a fit of any family, each unit's entropy relative to a flat
-#' posterior, by assigned class, at each level the fit classifies. For an
-#' enumeration grid, the relative entropy of every candidate. A level with
-#' one class has no entropy to draw.
+#' `plot_entropy()` plots how uncertain the classification is: for a fitted
+#' model, the entropy of each unit, by the class the unit is assigned to; for an
+#' enumeration grid, the relative entropy of every candidate.
 #'
-#' @param x A fitted model of any family, an enumeration grid or a
-#'   [diagnostics()] result (drawn from its fit).
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
-#' @return A ggplot object; a `latents_plots` list with elements
-#'   `individuals` and `groups` for a fit that classifies at both levels.
-#'   An object with nothing to draw raises `latents_nothing_to_plot`,
-#'   naming the plot functions that apply; an object the package did not
-#'   return raises `latents_not_a_fit`.
-#' @seealso [get_entropy()] for the table; [plot_posteriors()], [plot_avepp()].
+#' @details
+#' **A fitted model.** One point per classified unit (a case or a group). The
+#' x-axis is the unit's entropy relative to a flat posterior: 0 means the
+#' unit belongs to one class with certainty, 1 means it is equally likely to
+#' belong to every class (dashed line). The rows are the assigned (most
+#' likely) classes, the largest at the top, each in its own colour; the
+#' points are spread within a row so that they do not overlap. A short
+#' vertical bar marks the mean of each class. The subtitle gives the relative
+#' entropy of the whole classification, which is one minus the mean of the
+#' points: there, higher means sharper.
+#'
+#' A fit with two or more group classes besides its profiles is drawn at
+#' both levels, as two plots. A level with one class has no entropy to draw,
+#' so a fit with a single profile or class is refused. A fit with a noise
+#' component is refused too.
+#'
+#' **An enumeration grid.** The x-axis is the number of classes (the number
+#' of group classes for a grid of group-class families), the y-axis the
+#' relative entropy of each candidate: higher is sharper. There is one line
+#' per number of group classes, and per covariance structure when the grid
+#' has several. A grid with group classes has one panel for the individuals
+#' and one for the groups. A candidate with one class has no point.
+#'
+#' @param x One of:
+#'   * a fitted model of any family: from [lpa()], [lca()], [multilpa()],
+#'     [multilca()], [lta()] or [mixture_regression()]. This covers fits with
+#'     covariates, growth mixtures, and the additive and cross-level families
+#'     of [multilpa()];
+#'   * an enumeration grid of any kind, from [enumerate_lpa()],
+#'     [enumerate_lca()], [enumerate_classes()] or [enumerate_regressions()];
+#'   * a [diagnostics()] result, which is drawn from the fit it checked.
+#' @param main,subtitle Title and subtitle of the plot. `NULL` (default)
+#'   keeps the view's own text. When two plots are returned, both get the
+#'   same title and subtitle.
+#' @return A ggplot object. A fit that classifies at both levels returns a
+#'   `latents_plots` list of two ggplot objects named `individuals` and
+#'   `groups`; printing the list draws both.
+#'
+#'   Errors:
+#'   * `latents_nothing_to_plot` when the package returned `x` but this
+#'     function has no plot of it: a fit with one class or with a noise
+#'     component, a grid in which no converged candidate has two or more
+#'     classes, pooled imputations, a comparison, a bootstrap result or a
+#'     sensitivity analysis. For an object of the wrong kind, the message names
+#'     the plot functions that apply to it;
+#'   * `latents_not_a_fit` when `x` is not a fit, grid or other result of the
+#'     package, for example a data frame;
+#'   * `latents_missing_package` when ggplot2 is not installed.
+#' @seealso [get_entropy()] for the relative entropy as a table;
+#'   [plot_posteriors()], [plot_avepp()].
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 #'            n_starts = 2, seed = 1)
 #' plot_entropy(fit)
+#'
+#' # A grid: the relative entropy of every candidate
+#' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
+#'                       n_profiles = 1:3, model = "EEI",
+#'                       n_starts = 2, seed = 1)
+#' plot_entropy(grid)
 #' @export
 plot_entropy <- function(x, main = NULL, subtitle = NULL) {
   .latents_wild_plot(x, "plot_entropy", substitute(x), main, subtitle)
 }
 
-#' Certainty of each unit's classification
+#' Plot the posterior probability of each unit's assigned class, by class
 #'
-#' The posterior probability of each unit's assigned class, by class, at
-#' each level a fit of any family classifies. A level with one class has
-#' nothing to draw.
+#' `plot_posteriors()` plots how certain the classification of each unit is: the
+#' posterior probability of the class the unit is assigned to, by class.
 #'
-#' @param x A fitted model of any family or a [diagnostics()] result
-#'   (drawn from its fit).
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
-#' @return A ggplot object; a `latents_plots` list with elements
-#'   `individuals` and `groups` for a fit that classifies at both levels.
-#'   An object with nothing to draw raises `latents_nothing_to_plot`,
-#'   naming the plot functions that apply; an object the package did not
-#'   return raises `latents_not_a_fit`.
-#' @seealso [get_classification()] for the table; [plot_entropy()], [plot_avepp()].
+#' @details
+#' One point per classified unit (a case or a group). The x-axis is the
+#' posterior probability of the unit's assigned (most likely) class. It runs
+#' from chance, one divided by the number of classes (dashed line), to 1,
+#' which is certainty. The rows are the assigned classes, the largest at the
+#' top, each in its own colour; the points are spread within a row so that
+#' they do not overlap. A short vertical bar marks the mean of each class,
+#' which is the class's average posterior probability.
+#'
+#' A fit with two or more group classes besides its profiles is drawn at
+#' both levels, as two plots. A level with one class has nothing to draw, so
+#' a fit with a single profile or class is refused. A fit with a noise
+#' component is refused too. Enumeration grids have no such view; use
+#' [plot_avepp()] or [plot_entropy()] for a grid.
+#'
+#' @param x One of:
+#'   * a fitted model of any family: from [lpa()], [lca()], [multilpa()],
+#'     [multilca()], [lta()] or [mixture_regression()]. This covers fits with
+#'     covariates, growth mixtures, and the additive and cross-level families
+#'     of [multilpa()];
+#'   * a [diagnostics()] result, which is drawn from the fit it checked.
+#' @param main,subtitle Title and subtitle of the plot. `NULL` (default)
+#'   keeps the view's own text. When two plots are returned, both get the
+#'   same title and subtitle.
+#' @return A ggplot object. A fit that classifies at both levels returns a
+#'   `latents_plots` list of two ggplot objects named `individuals` and
+#'   `groups`; printing the list draws both.
+#'
+#'   Errors:
+#'   * `latents_nothing_to_plot` when the package returned `x` but this
+#'     function has no plot of it: a fit with one class or with a noise
+#'     component, an enumeration grid, pooled imputations, a comparison, a
+#'     bootstrap result or a sensitivity analysis. For an object of the wrong
+#'     kind, the message names the plot functions that apply to it;
+#'   * `latents_not_a_fit` when `x` is not a fit, grid or other result of the
+#'     package, for example a data frame;
+#'   * `latents_missing_package` when ggplot2 is not installed.
+#' @seealso [get_classification()] for the average posterior probability of
+#'   each class as a table; [plot_entropy()], [plot_avepp()];
+#'   [plot_classification()] for every class probability of each person of a
+#'   growth model.
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 #'            n_starts = 2, seed = 1)
@@ -482,70 +609,200 @@ plot_posteriors <- function(x, main = NULL, subtitle = NULL) {
   .latents_wild_plot(x, "plot_posteriors", substitute(x), main, subtitle)
 }
 
-#' Average posterior probabilities
+#' Plot the average posterior probability matrix of a fit, or the lowest average
+#' posterior probability of every candidate
 #'
-#' For a fit of any family, the average posterior probability matrix
-#' (assigned class by posterior class), at each level the fit classifies.
-#' For an enumeration grid, the lowest average posterior of every
-#' candidate, with the 0.8 cutoff dashed.
+#' `plot_avepp()` plots the average posterior probability (AvePP) matrix of a
+#' fitted model: how much of their probability the units assigned to each class
+#' place on every class. For an enumeration grid it plots the lowest average
+#' posterior probability of every candidate.
 #'
-#' @param x A fitted model of any family, an enumeration grid or a
-#'   [diagnostics()] result (drawn from its fit).
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
-#' @return A ggplot object; a `latents_plots` list with elements
-#'   `individuals` and `groups` for a fit that classifies at both levels.
-#'   An object with nothing to draw raises `latents_nothing_to_plot`,
-#'   naming the plot functions that apply; an object the package did not
-#'   return raises `latents_not_a_fit`.
-#' @seealso [get_avepp()] for the table; [plot_entropy()], [plot_posteriors()].
+#' @details
+#' **A fitted model.** A square of tiles. Each row is the class the units are
+#' assigned to (their most likely class), labelled with the number of units
+#' assigned. Each column is a class. A tile holds the mean posterior
+#' probability of the column's class among the units of the row; the number
+#' is printed in the tile and the fill is darker for higher values. The
+#' outlined diagonal is the average posterior probability of each class
+#' among its own units: values near 1 mean that the class is well separated.
+#' A fit with one class draws a single tile.
+#'
+#' A fit with two or more group classes besides its profiles is drawn at
+#' both levels, as two plots. A fit with a noise component is refused.
+#'
+#' **An enumeration grid.** The x-axis is the number of classes (the number
+#' of group classes for a grid of group-class families), the y-axis the
+#' lowest average posterior probability of each candidate, that is, the
+#' smallest value on its diagonal. There is one line per number of group
+#' classes, and per covariance structure when the grid has several. A dashed
+#' line marks the cutoff 0.8;
+#' `plot_enumeration(x, what = "avepp", cutoff = )` draws the same view with
+#' another cutoff. A grid with group classes has one panel for the
+#' individuals and one for the groups.
+#'
+#' @param x One of:
+#'   * a fitted model of any family: from [lpa()], [lca()], [multilpa()],
+#'     [multilca()], [lta()] or [mixture_regression()]. This covers fits with
+#'     covariates, growth mixtures, and the additive and cross-level families
+#'     of [multilpa()];
+#'   * an enumeration grid of any kind, from [enumerate_lpa()],
+#'     [enumerate_lca()], [enumerate_classes()] or [enumerate_regressions()];
+#'   * a [diagnostics()] result, which is drawn from the fit it checked.
+#' @param main,subtitle Title and subtitle of the plot. `NULL` (default)
+#'   keeps the view's own text. When two plots are returned, both get the
+#'   same title and subtitle.
+#' @return A ggplot object. A fit that classifies at both levels returns a
+#'   `latents_plots` list of two ggplot objects named `individuals` and
+#'   `groups`; printing the list draws both.
+#'
+#'   Errors:
+#'   * `latents_nothing_to_plot` when the package returned `x` but this
+#'     function has no plot of it: a fit with a noise component, a grid in
+#'     which no converged candidate has two or more classes, pooled
+#'     imputations, a comparison, a bootstrap result or a sensitivity analysis.
+#'     For an object of the wrong kind, the message names the plot functions
+#'     that apply to it;
+#'   * `latents_not_a_fit` when `x` is not a fit, grid or other result of the
+#'     package, for example a data frame;
+#'   * `latents_missing_package` when ggplot2 is not installed.
+#' @seealso [get_avepp()] for the matrix as a table; [plot_entropy()],
+#'   [plot_posteriors()].
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 #'            n_starts = 2, seed = 1)
 #' plot_avepp(fit)
+#'
+#' # A grid: the lowest average posterior probability of every candidate
+#' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
+#'                       n_profiles = 1:3, model = "EEI",
+#'                       n_starts = 2, seed = 1)
+#' plot_avepp(grid)
 #' @export
 plot_avepp <- function(x, main = NULL, subtitle = NULL) {
   .latents_wild_plot(x, "plot_avepp", substitute(x), main, subtitle)
 }
 
-#' Profile means, or a criterion, as a heat map
+#' Plot profile means as tiles of profiles by indicators, or a grid's criterion
+#' as tiles of candidates
 #'
-#' For a profile or class fit, the profile means in observed standard
-#' deviations from the observed mean, or the response probabilities of
-#' categorical indicators. For an enumeration grid, the information
-#' criterion over profiles and group classes, relative to its lowest
-#' value (BIC over groups on a profile or class grid, BIC on the others).
+#' `plot_heatmap()` plots a grid of tiles: for a profile, class or transition
+#' fit, one row per profile and one column per indicator; for an enumeration
+#' grid, one tile per candidate, showing how far its information criterion is
+#' above the lowest.
 #'
-#' @param x A profile or class fit, or an enumeration grid.
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
+#' @details
+#' **A fit with continuous indicators.** Each tile is the profile's mean of
+#' the indicator minus the indicator's observed mean, in observed standard
+#' deviations (weighted ones for a fit with sampling weights). The value is
+#' printed in the tile. Tiles below the mean are red, tiles above it blue,
+#' and a tile at the mean is white. Categorical, ordinal and count
+#' indicators of such a fit are not drawn; a caption names them.
+#'
+#' **A fit with categorical or ordinal indicators only.** The tiles are
+#' response probabilities, darker for higher values. When every indicator
+#' has two categories, the tile is the probability of the last category.
+#' When an indicator has more, there is one panel per profile, with the
+#' indicators in rows and the categories in columns.
+#'
+#' **An enumeration grid.** The x-axis is the number of classes and the
+#' y-axis the number of group classes. Each tile is one candidate, labelled
+#' with how far its criterion is above the lowest in the grid (`+12`); the
+#' lowest candidate is labelled `lowest`, and a candidate that was not
+#' fitted or did not converge is marked `x`. The fill is darker the closer
+#' the candidate is to the lowest. The criterion is `bic_groups` (BIC with
+#' the number of groups as the sample size) on a profile or class grid and
+#' `bic` on a transition or regression grid. A grid with several covariance
+#' structures has one panel per structure.
+#' `plot_selection(x, what = "heatmap", using = )` draws the same view with
+#' another criterion.
+#'
+#' @param x One of:
+#'   * a profile or class fit from [lpa()], [lca()], [multilpa()] or
+#'     [multilca()], with or without covariates;
+#'   * a transition fit from [lta()] of class `multilpa_transitions`. The
+#'     general transition fits (class `multilpa_lta`) have no heat map and
+#'     are refused; `class(x)` tells which one [lta()] returned;
+#'   * an enumeration grid from [enumerate_lpa()], [enumerate_lca()],
+#'     [enumerate_classes()] or [enumerate_regressions()]. A grid of
+#'     group-class families (`enumerate_classes(family = )`) is refused;
+#'   * a [diagnostics()] result, which is drawn from the fit it checked.
+#' @param main,subtitle Title and subtitle of the plot. `NULL` (default)
+#'   keeps the view's own text.
 #' @return A ggplot object.
-#'   An object with nothing to draw raises `latents_nothing_to_plot`,
-#'   naming the plot functions that apply; an object the package did not
-#'   return raises `latents_not_a_fit`.
-#' @seealso [plot_profiles()], [plot_bars()]; [plot_enumeration()].
+#'
+#'   Errors:
+#'   * `latents_nothing_to_plot` when the package returned `x` but this
+#'     function has no plot of it: an additive or cross-level fit, a mixture
+#'     regression, a growth mixture, a general transition fit or a grid of
+#'     group-class families. For an object of the wrong kind, the message names
+#'     the plot functions that apply to it;
+#'   * `latents_not_a_fit` when `x` is not a fit, grid or other result of the
+#'     package, for example a data frame;
+#'   * `latents_missing_package` when ggplot2 is not installed.
+#' @seealso [plot_profiles()], [plot_bars()] and [plot_responses()] for
+#'   other views of the same means and probabilities; [plot_selection()]
+#'   and [plot_enumeration()] for the other views of a grid.
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 #'            n_starts = 2, seed = 1)
 #' plot_heatmap(fit)
+#'
+#' # Categorical indicators: response probabilities
+#' classes <- lca(student_esm, c("time_with_friends", "on_social_media", "sports"),
+#'                n_classes = 2, n_starts = 2, seed = 1)
+#' plot_heatmap(classes)
+#'
+#' # A grid: BIC of every candidate above the lowest
+#' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
+#'                       n_profiles = 1:3, model = "EEI",
+#'                       n_starts = 2, seed = 1)
+#' plot_heatmap(grid)
 #' @export
 plot_heatmap <- function(x, main = NULL, subtitle = NULL) {
   .latents_wild_plot(x, "plot_heatmap", substitute(x), main, subtitle)
 }
 
-#' Profile means as bars
+#' Plot the mean of each continuous indicator in each profile as bars
 #'
-#' The profile means of a profile or class fit as grouped bars from zero,
-#' with 95% intervals when the fit has standard errors.
+#' `plot_bars()` plots the mean of each continuous indicator in each profile as
+#' bars that start at zero.
 #'
-#' @param x A profile or class fit with continuous indicators.
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
+#' @details
+#' The x-axis lists the continuous indicators and the y-axis is the
+#' estimated mean, in each indicator's own units. Within an indicator there
+#' is one bar per profile, side by side. A profile has its own fill colour
+#' and its own marker at the end of its bar, shown in the legend. When the
+#' fit has standard errors, each bar carries its 95% interval; when it has
+#' none, the subtitle says why. Categorical, ordinal and count indicators
+#' are not drawn; a caption names them.
+#'
+#' `plot_profiles(x, what = "bars", scale = "standardized")` draws the same
+#' bars in standard deviations, and `intervals = FALSE` there leaves the
+#' intervals out.
+#'
+#' @param x One of:
+#'   * a profile fit from [lpa()] or [multilpa()], with or without
+#'     covariates, that has at least one continuous indicator;
+#'   * a transition fit from [lta()] of class `multilpa_transitions` with at
+#'     least one continuous indicator. The general transition fits (class
+#'     `multilpa_lta`) are refused;
+#'   * a [diagnostics()] result, which is drawn from the fit it checked.
+#' @param main,subtitle Title and subtitle of the plot. `NULL` (default)
+#'   keeps the view's own text.
 #' @return A ggplot object.
-#'   An object with nothing to draw raises `latents_nothing_to_plot`,
-#'   naming the plot functions that apply; an object the package did not
-#'   return raises `latents_not_a_fit`.
-#' @seealso [plot_profiles()], [plot_heatmap()], [plot_raincloud()].
+#'
+#'   Errors:
+#'   * `latents_nothing_to_plot` when the package returned `x` but this
+#'     function has no plot of it: a fit without continuous indicators (a
+#'     latent class fit), an additive or cross-level fit, a mixture regression,
+#'     a growth mixture, a general transition fit or an enumeration grid. For
+#'     an object of the wrong kind, the message names the plot functions that
+#'     apply to it;
+#'   * `latents_not_a_fit` when `x` is not a fit, grid or other result of the
+#'     package, for example a data frame;
+#'   * `latents_missing_package` when ggplot2 is not installed.
+#' @seealso [plot_profiles()] for the same means as lines and for the
+#'   options of this view; [plot_heatmap()], [plot_raincloud()].
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 #'            n_starts = 2, seed = 1)
@@ -555,19 +812,49 @@ plot_bars <- function(x, main = NULL, subtitle = NULL) {
   .latents_wild_plot(x, "plot_bars", substitute(x), main, subtitle)
 }
 
-#' Distribution of each indicator by profile
+#' Plot the distribution of each continuous indicator in each profile as a
+#' density, its quartiles and the points
 #'
-#' Each continuous indicator's distribution by assigned profile: density,
-#' box and the observations.
+#' `plot_raincloud()` plots the observed values of each continuous indicator,
+#' split by profile: a density, a line over the middle half of the values (first
+#' to third quartile) with a point at the median, and every case as a point.
 #'
-#' @param x A profile or class fit with continuous indicators.
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
+#' @details
+#' There is one panel per continuous indicator, each with its own x-axis in
+#' the indicator's units. The rows of a panel are the profiles, the largest
+#' at the top, each in its own colour. For each profile the panel shows the
+#' density of the indicator as a filled curve, the interquartile range as a
+#' thick line with a white point at the median, and each case as a small
+#' point below. A case counts for its most likely profile.
+#'
+#' The view draws the stored data of the fit. A fit with person or grand
+#' centering or scaling is refused, because its stored data are not on the
+#' scale of the model. Transition fits are refused as well.
+#'
+#' `plot_profiles(x, what = "raincloud", scale = "standardized")` draws the
+#' same view in standard deviations.
+#'
+#' @param x One of:
+#'   * a profile fit from [lpa()] or [multilpa()], with or without
+#'     covariates, that has at least one continuous indicator and was fitted
+#'     without centering or scaling;
+#'   * a [diagnostics()] result, which is drawn from the fit it checked.
+#' @param main,subtitle Title and subtitle of the plot. `NULL` (default)
+#'   keeps the view's own text.
 #' @return A ggplot object.
-#'   An object with nothing to draw raises `latents_nothing_to_plot`,
-#'   naming the plot functions that apply; an object the package did not
-#'   return raises `latents_not_a_fit`.
-#' @seealso [plot_parallel()], [plot_pairs()], [plot_profiles()].
+#'
+#'   Errors:
+#'   * `latents_nothing_to_plot` when the package returned `x` but this
+#'     function has no plot of it: a fit without continuous indicators (a
+#'     latent class fit), a centred or scaled fit, a transition fit, an
+#'     additive or cross-level fit, a mixture regression, a growth mixture or
+#'     an enumeration grid. For an object of the wrong kind, the message names
+#'     the plot functions that apply to it;
+#'   * `latents_not_a_fit` when `x` is not a fit, grid or other result of the
+#'     package, for example a data frame;
+#'   * `latents_missing_package` when ggplot2 is not installed.
+#' @seealso [plot_parallel()] and [plot_pairs()] for the other views of the
+#'   cases; [plot_profiles()] for the profile means.
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 #'            n_starts = 2, seed = 1)
@@ -577,19 +864,47 @@ plot_raincloud <- function(x, main = NULL, subtitle = NULL) {
   .latents_wild_plot(x, "plot_raincloud", substitute(x), main, subtitle)
 }
 
-#' Every case as a line across the indicators
+#' Plot every case as a line across the continuous indicators, one panel per
+#' profile
 #'
-#' Each case's values on the continuous indicators as one line, one panel
-#' per assigned profile.
+#' `plot_parallel()` plots each case as one line that joins its values on the
+#' continuous indicators, with one panel per profile (a parallel-coordinates
+#' plot).
 #'
-#' @param x A profile or class fit with continuous indicators.
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
+#' @details
+#' The x-axis lists the continuous indicators and the y-axis is the
+#' standardized value (z), so that indicators on different scales can share
+#' one axis. Each panel holds the cases whose most likely profile it is,
+#' drawn in the profile's colour; a line is fainter the less certain the
+#' case's assignment. The cases of the other profiles are drawn in grey
+#' behind. The dark line with markers is the mean of the panel's profile.
+#'
+#' The view needs two or more continuous indicators and draws the stored
+#' data of the fit. A fit with person or grand centering or scaling is
+#' refused, because its stored data are not on the scale of the model.
+#' Transition fits are refused as well.
+#'
+#' @param x One of:
+#'   * a profile fit from [lpa()] or [multilpa()], with or without
+#'     covariates, that has two or more continuous indicators and was fitted
+#'     without centering or scaling;
+#'   * a [diagnostics()] result, which is drawn from the fit it checked.
+#' @param main,subtitle Title and subtitle of the plot. `NULL` (default)
+#'   keeps the view's own text.
 #' @return A ggplot object.
-#'   An object with nothing to draw raises `latents_nothing_to_plot`,
-#'   naming the plot functions that apply; an object the package did not
-#'   return raises `latents_not_a_fit`.
-#' @seealso [plot_raincloud()], [plot_pairs()], [plot_profiles()].
+#'
+#'   Errors:
+#'   * `latents_nothing_to_plot` when the package returned `x` but this
+#'     function has no plot of it: a fit with fewer than two continuous
+#'     indicators, a centred or scaled fit, a transition fit, an additive or
+#'     cross-level fit, a mixture regression, a growth mixture or an
+#'     enumeration grid. For an object of the wrong kind, the message names the
+#'     plot functions that apply to it;
+#'   * `latents_not_a_fit` when `x` is not a fit, grid or other result of the
+#'     package, for example a data frame;
+#'   * `latents_missing_package` when ggplot2 is not installed.
+#' @seealso [plot_raincloud()] and [plot_pairs()] for the other views of the
+#'   cases; [plot_profiles()] for the profile means.
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 #'            n_starts = 2, seed = 1)
@@ -599,19 +914,48 @@ plot_parallel <- function(x, main = NULL, subtitle = NULL) {
   .latents_wild_plot(x, "plot_parallel", substitute(x), main, subtitle)
 }
 
-#' Scatter-plot matrix of the indicators by profile
+#' Plot every pair of continuous indicators against each other, with the cases
+#' and an ellipse for each profile
 #'
-#' The continuous indicators against each other, cases coloured by
-#' assigned profile, with each profile's 95% covariance ellipse.
+#' `plot_pairs()` plots every pair of continuous indicators against each other,
+#' with the cases marked by profile and an ellipse for each profile.
 #'
-#' @param x A profile or class fit with continuous indicators.
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
+#' @details
+#' The plot is a matrix of panels with one row and one column per
+#' continuous indicator. A panel off the diagonal is a scatter plot of two
+#' indicators. Each case is a point with the colour and the marker of its
+#' most likely profile, drawn larger the less certain its assignment. Each
+#' profile has an ellipse that holds 95% of its fitted distribution, drawn
+#' around the profile's mean, which is marked. A panel on the diagonal shows
+#' the density of that indicator among the cases of each profile, scaled by
+#' the size of the profile.
+#'
+#' The view needs two or more continuous indicators and draws the stored
+#' data of the fit. A fit with person or grand centering or scaling is
+#' refused, because its stored data are not on the scale of the model.
+#' Transition fits are refused as well.
+#'
+#' @param x One of:
+#'   * a profile fit from [lpa()] or [multilpa()], with or without
+#'     covariates, that has two or more continuous indicators and was fitted
+#'     without centering or scaling;
+#'   * a [diagnostics()] result, which is drawn from the fit it checked.
+#' @param main,subtitle Title and subtitle of the plot. `NULL` (default)
+#'   keeps the view's own text.
 #' @return A ggplot object.
-#'   An object with nothing to draw raises `latents_nothing_to_plot`,
-#'   naming the plot functions that apply; an object the package did not
-#'   return raises `latents_not_a_fit`.
-#' @seealso [plot_raincloud()], [plot_parallel()], [plot_profiles()].
+#'
+#'   Errors:
+#'   * `latents_nothing_to_plot` when the package returned `x` but this
+#'     function has no plot of it: a fit with fewer than two continuous
+#'     indicators, a centred or scaled fit, a transition fit, an additive or
+#'     cross-level fit, a mixture regression, a growth mixture or an
+#'     enumeration grid. For an object of the wrong kind, the message names the
+#'     plot functions that apply to it;
+#'   * `latents_not_a_fit` when `x` is not a fit, grid or other result of the
+#'     package, for example a data frame;
+#'   * `latents_missing_package` when ggplot2 is not installed.
+#' @seealso [plot_raincloud()] and [plot_parallel()] for the other views of
+#'   the cases; [plot_profiles()] for the profile means.
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 #'            n_starts = 2, seed = 1)
@@ -621,63 +965,126 @@ plot_pairs <- function(x, main = NULL, subtitle = NULL) {
   .latents_wild_plot(x, "plot_pairs", substitute(x), main, subtitle)
 }
 
-#' Class trajectories of the outcome
+#' Plot the curve of the outcome in each class of a mixture regression model
 #'
-#' For a growth mixture or a regression that classifies persons, each
-#' class's mean trajectory over time with its band, the observed
-#' trajectories behind. For another mixture regression, the outcome
-#' against the first numeric predictor, one line per class. The fit's own
-#' `plot(x, what = "trajectories")` also takes `time`, `facet`,
-#' `max_persons` and `spread`, and `plot(x, what = "fitted")` takes
-#' `predictor` and `level`.
+#' `plot_trajectories()` plots the curve of the outcome in each class of a model
+#' fitted with [mixture_regression()]: over time when the classes are classes of
+#' persons, over a predictor otherwise.
 #'
-#' @param x A growth mixture, or a mixture regression from
-#'   [mixture_regression()].
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
+#' @details
+#' **Classes of persons.** This is a growth mixture (a fit with `random`) or
+#' a fit with `class_level = "group"`. The x-axis is the time variable: the
+#' first numeric variable among the random-effect terms and then the
+#' predictors. The y-axis is the outcome. For each class the plot shows:
+#'
+#' * a thick line, the mean trajectory of the class, with the class named at
+#'   its right end;
+#' * a dark band, the 95% confidence band of that mean;
+#' * for a growth mixture, a light band in which 80% of the trajectories of
+#'   the class's persons lie;
+#' * points with a range, the observed mean of the class at each time, with
+#'   its interval (drawn when there are at most 30 distinct times);
+#' * thin lines, the observed trajectories of up to 120 persons, coloured by
+#'   their most likely class.
+#'
+#' `plot(x, what = "trajectories")` draws the same view and takes `time`
+#' (another time variable), `facet = TRUE` (one panel per class),
+#' `max_persons`, `level` and, for a growth mixture, `spread`.
+#'
+#' **Classes of observations.** For any other mixture regression the x-axis
+#' is the first numeric predictor of the formula and the y-axis the outcome.
+#' Each row of the data is a point with the colour and marker of its most
+#' likely class, and each class has one fitted line, drawn with the other
+#' predictors held at their means (factors at their first level).
+#' `plot(x, what = "fitted", predictor = )` draws the same view over another
+#' numeric predictor.
+#'
+#' @param x A fit from [mixture_regression()] of any kind, growth mixtures
+#'   included, or a [diagnostics()] result, which is drawn from the fit it
+#'   checked.
+#' @param main,subtitle Title and subtitle of the plot. `NULL` (default)
+#'   keeps the view's own text.
 #' @return A ggplot object.
-#'   An object with nothing to draw raises `latents_nothing_to_plot`,
-#'   naming the plot functions that apply; an object the package did not
-#'   return raises `latents_not_a_fit`.
-#' @seealso [plot_individuals()], [plot_coefficients()], [plot_classification()].
+#'
+#'   Errors:
+#'   * `latents_nothing_to_plot` when the package returned `x` but this
+#'     function has no plot of it: a profile, class, transition, additive or
+#'     cross-level fit, or an enumeration grid. For an object of the wrong
+#'     kind, the message names the plot functions that apply to it;
+#'   * `latents_bad_argument` when a mixture regression that classifies
+#'     observations has no numeric predictor in its formula;
+#'   * `latents_not_a_fit` when `x` is not a fit, grid or other result of the
+#'     package, for example a data frame;
+#'   * `latents_missing_package` when ggplot2 is not installed.
+#' @seealso [plot_individuals()] for single persons, [plot_coefficients()]
+#'   for the coefficients behind the curves, [plot_classification()].
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- mixture_regression(score ~ wave, subset(growth_scores, student <= 60),
 #'                           n_classes = 2, id = "student", class_level = "group",
 #'                           random = "wave", n_starts = 2, seed = 1)
 #' plot_trajectories(fit)
+#'
+#' # Classes of observations: the outcome against the first numeric predictor
+#' regression <- mixture_regression(score ~ hours, data = study_hours,
+#'                                  n_classes = 2, n_starts = 2, seed = 1)
+#' plot_trajectories(regression)
 #' @export
 plot_trajectories <- function(x, main = NULL, subtitle = NULL) {
   .latents_wild_plot(x, "plot_trajectories", substitute(x), main, subtitle)
 }
 
-#' Trajectories of individual persons
+#' Plot individual persons' observations and predicted curves beside the
+#' trajectory of their class
 #'
-#' The observed and predicted trajectory of each of several persons of a
-#' growth mixture or a regression that classifies persons, coloured by
-#' class. Each panel is titled with the person's identifier, named as in the
-#' assignment table, and the person's class and posterior probability.
+#' `plot_individuals()` plots one panel per person of a growth model, with the
+#' person's observations, the person's own predicted curve and the trajectory of
+#' the person's class.
 #'
-#' @param x A growth mixture, or a mixture regression that classifies
-#'   persons (`class_level = "group"`).
-#' @param persons Which persons to draw. A single number is how many
-#'   (default 12), taken from each class's most to least certain members.
-#'   Two or more values, or text, are the persons' identifiers as they
-#'   appear in the data; a single numeric identifier is given as text,
-#'   `persons = "1001"`.
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
-#' @return A ggplot object, one panel per person.
-#'   An object with nothing to draw raises `latents_nothing_to_plot`,
-#'   naming the plot functions that apply; an object the package did not
-#'   return raises `latents_not_a_fit`. A `persons` that is not a positive
-#'   number or a vector of identifiers, or names none of the fitted persons,
-#'   raises `latents_bad_argument`.
-#' @seealso [plot_trajectories()], [plot_classification()].
+#' @details
+#' The x-axis is the time variable and the y-axis the outcome, as in
+#' [plot_trajectories()]. In each panel the points are the person's
+#' observations, the solid line is the curve predicted for that person and
+#' the dashed line is the mean trajectory of the person's most likely class.
+#' All three are drawn in the colour of that class. The panel title gives
+#' the name of the identifier column with the person's identifier, then the
+#' person's class and the posterior probability of that class.
+#'
+#' @param x One of:
+#'   * a growth mixture: a fit from [mixture_regression()] with `random`;
+#'   * a fit from [mixture_regression()] with `class_level = "group"`, which
+#'     classifies persons;
+#'   * a [diagnostics()] result, which is drawn from the fit it checked.
+#' @param persons Which persons to draw:
+#'   * one number (default `12`): how many persons. They are taken from the
+#'     classes in turn, and within a class they are spread from its most
+#'     certain to its least certain member;
+#'   * two or more values, or text: the identifiers of the persons to draw,
+#'     as they appear in the data, for example `c(3, 17, 42)`. A single
+#'     numeric identifier must be given as text, `persons = "1001"`,
+#'     because a single number is read as a count.
+#' @param main,subtitle Title and subtitle of the plot. `NULL` (default)
+#'   keeps the view's own text.
+#' @return A ggplot object with one panel per person.
+#'
+#'   Errors:
+#'   * `latents_nothing_to_plot` when the package returned `x` but this
+#'     function has no plot of it: a mixture regression that classifies
+#'     observations (including one with `n_group_classes` of two or more), a
+#'     fit of any other family or an enumeration grid. For an object of the
+#'     wrong kind, the message names the plot functions that apply to it;
+#'   * `latents_bad_argument` when `persons` is a number below 1 or contains a
+#'     missing value, or when none of the identifiers is in the fitted data;
+#'   * `latents_not_a_fit` when `x` is not a fit, grid or other result of the
+#'     package, for example a data frame;
+#'   * `latents_missing_package` when ggplot2 is not installed.
+#' @seealso [plot_trajectories()] for the classes, [plot_classification()]
+#'   for the class probabilities of every person.
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- mixture_regression(score ~ wave, subset(growth_scores, student <= 60),
 #'                           n_classes = 2, id = "student", class_level = "group",
 #'                           random = "wave", n_starts = 2, seed = 1)
 #' plot_individuals(fit)
+#' plot_individuals(fit, persons = 4)
 #' plot_individuals(fit, persons = c(3, 17, 42))
 #' @export
 plot_individuals <- function(x, persons = 12L, main = NULL, subtitle = NULL) {
@@ -685,22 +1092,46 @@ plot_individuals <- function(x, persons = 12L, main = NULL, subtitle = NULL) {
                      persons = persons)
 }
 
-#' Class probabilities of every person
+#' Plot each person's posterior probability of every class in a growth model as
+#' a stacked bar
 #'
-#' One stacked bar per person of a growth mixture or a regression that
-#' classifies persons: the probability of each class, persons ordered by
-#' assigned class and certainty.
+#' `plot_classification()` plots one stacked bar per person of a growth model,
+#' split by the person's posterior probability of each class.
 #'
-#' @param x A growth mixture, or a mixture regression that classifies
-#'   persons (`class_level = "group"`).
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
+#' @details
+#' The x-axis holds the persons and the y-axis the posterior probability,
+#' from 0 to 1. Each bar is one person and is divided into one segment per
+#' class, filled in the class's colour, so that a bar of a single colour is
+#' a person classified with certainty. There is one panel per assigned (most
+#' likely) class, the largest first; within a panel the persons are ordered
+#' from the most to the least certain. On the bar of the least certain
+#' person of each panel the segments are labelled with their class, where
+#' they are wide enough. The subtitle gives, for each class, the average
+#' probability of the assigned class.
+#'
+#' [plot_posteriors()] shows only the probability of the assigned class, and
+#' takes fits of every family.
+#'
+#' @param x One of:
+#'   * a growth mixture: a fit from [mixture_regression()] with `random`;
+#'   * a fit from [mixture_regression()] with `class_level = "group"`, which
+#'     classifies persons;
+#'   * a [diagnostics()] result, which is drawn from the fit it checked.
+#' @param main,subtitle Title and subtitle of the plot. `NULL` (default)
+#'   keeps the view's own text.
 #' @return A ggplot object.
-#'   An object with nothing to draw raises `latents_nothing_to_plot`,
-#'   naming the plot functions that apply; an object the package did not
-#'   return raises `latents_not_a_fit`.
-#' @seealso [plot_posteriors()] for the certainty of the assigned class alone;
-#'   [plot_individuals()].
+#'
+#'   Errors:
+#'   * `latents_nothing_to_plot` when the package returned `x` but this
+#'     function has no plot of it: a mixture regression that classifies
+#'     observations (including one with `n_group_classes` of two or more), a
+#'     fit of any other family or an enumeration grid. For an object of the
+#'     wrong kind, the message names the plot functions that apply to it;
+#'   * `latents_not_a_fit` when `x` is not a fit, grid or other result of the
+#'     package, for example a data frame;
+#'   * `latents_missing_package` when ggplot2 is not installed.
+#' @seealso [plot_posteriors()] for the certainty of the assigned class
+#'   alone; [plot_individuals()]; [get_classification()] for the table.
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- mixture_regression(score ~ wave, subset(growth_scores, student <= 60),
 #'                           n_classes = 2, id = "student", class_level = "group",
@@ -711,21 +1142,48 @@ plot_classification <- function(x, main = NULL, subtitle = NULL) {
   .latents_wild_plot(x, "plot_classification", substitute(x), main, subtitle)
 }
 
-#' Class coefficients with intervals
+#' Plot the regression coefficients of each class of a mixture regression, with
+#' 95% confidence intervals
 #'
-#' Each class's regression coefficients of a mixture regression or growth
-#' mixture with their intervals. The fit's own
-#' `plot(x, what = "coefficients")` takes `level` (default 0.95).
+#' `plot_coefficients()` plots the regression coefficients of each class of a
+#' model fitted with [mixture_regression()], each with its 95% confidence
+#' interval.
 #'
-#' @param x A growth mixture, or a mixture regression from
-#'   [mixture_regression()].
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
+#' @details
+#' **Classes of persons** (a growth mixture, or a fit with
+#' `class_level = "group"`). There is one panel per term of the model, each
+#' with its own x-axis. The rows of a panel are the classes, and a row
+#' `Shared by all classes` holds a term that is common to them. A point is
+#' the estimate and the horizontal bar its interval; each class has its own
+#' colour and marker. The estimate, the interval and the Wald p-value are
+#' printed beside each row, and a dashed line marks zero.
+#'
+#' **Classes of observations** (any other mixture regression). There is one
+#' panel. The rows are the terms of the model; within a term the classes
+#' are drawn one under the other, each with its own colour and marker. A
+#' point is the estimate and the horizontal line its interval, and a dotted
+#' line marks zero.
+#'
+#' `plot(x, what = "coefficients", level = )` draws the same view with
+#' another confidence level.
+#'
+#' @param x A fit from [mixture_regression()] of any kind, growth mixtures
+#'   included, or a [diagnostics()] result, which is drawn from the fit it
+#'   checked.
+#' @param main,subtitle Title and subtitle of the plot. `NULL` (default)
+#'   keeps the view's own text.
 #' @return A ggplot object.
-#'   An object with nothing to draw raises `latents_nothing_to_plot`,
-#'   naming the plot functions that apply; an object the package did not
-#'   return raises `latents_not_a_fit`.
-#' @seealso [plot_trajectories()]; [get_results()] for the coefficient table.
+#'
+#'   Errors:
+#'   * `latents_nothing_to_plot` when the package returned `x` but this
+#'     function has no plot of it: a profile, class, transition, additive or
+#'     cross-level fit, or an enumeration grid. For an object of the wrong
+#'     kind, the message names the plot functions that apply to it;
+#'   * `latents_not_a_fit` when `x` is not a fit, grid or other result of the
+#'     package, for example a data frame;
+#'   * `latents_missing_package` when ggplot2 is not installed.
+#' @seealso [plot_trajectories()] for the curves the coefficients give;
+#'   [get_results()] for the coefficients as a table.
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- mixture_regression(score ~ wave, subset(growth_scores, student <= 60),
 #'                           n_classes = 2, id = "student", class_level = "group",
@@ -736,45 +1194,124 @@ plot_coefficients <- function(x, main = NULL, subtitle = NULL) {
   .latents_wild_plot(x, "plot_coefficients", substitute(x), main, subtitle)
 }
 
-#' Every information criterion
+#' Plot every information criterion of a grid, or of a model comparison, against
+#' the number of classes
 #'
-#' For an enumeration grid, every information criterion against the
-#' number of classes, as panels of one plot with each criterion's lowest
-#' value circled. For a comparison from [compare_models()], the criteria
-#' of each compared model.
+#' `plot_criteria()` plots every information criterion of an enumeration grid
+#' against the number of classes, or the criteria of the models compared by
+#' [compare_models()].
 #'
-#' @param x An enumeration grid, or a comparison from [compare_models()].
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
+#' @details
+#' **An enumeration grid.** There is one panel per criterion, each with its
+#' own y-axis; lower values are preferred. The x-axis is the number of
+#' classes (the number of group classes for a grid of group-class families,
+#' or when the grid has one number of profiles and several numbers of group
+#' classes). There is one line per number of group classes, and per
+#' covariance structure when the grid has several. In each panel the lowest
+#' value among the converged candidates is circled, and a candidate that did
+#' not converge is marked with a cross at the bottom of the panel. The
+#' circle marks a minimum; it does not choose a model.
+#'
+#' The criteria depend on the kind of grid:
+#'
+#' * a profile or class grid: AIC, KIC, BIC, SABIC, CAIC, AWE, ICL and CLC.
+#'   BIC, SABIC, CAIC, AWE and ICL exist in two versions, with the number of
+#'   groups or the number of individuals as the sample size; the two are
+#'   drawn as separate panels where they differ and as one panel where they
+#'   are the same;
+#' * a transition grid or a grid of group-class families: AIC, BIC and BIC
+#'   with the individuals as the sample size;
+#' * a regression grid: AIC, BIC, BIC with the rows as the sample size,
+#'   SABIC and ICL.
+#'
+#' On these grids a criterion that takes the same values as one already
+#' drawn is not repeated.
+#'
+#' [plot_enumeration()] draws the criteria you name, and takes the options
+#' of this view (`labels`, `mark_minimum`, `combine`).
+#'
+#' **A comparison.** The x-axis lists the compared models and the y-axis is
+#' the value of the criterion; lower is better. AIC, BIC and SABIC are drawn
+#' as one line each, with their own colour and marker.
+#'
+#' @param x One of:
+#'   * an enumeration grid of any kind, from [enumerate_lpa()],
+#'     [enumerate_lca()], [enumerate_classes()] or [enumerate_regressions()];
+#'   * a comparison from [compare_models()].
+#' @param main,subtitle Title and subtitle of the plot. `NULL` (default)
+#'   keeps the view's own text.
 #' @return A ggplot object.
-#'   An object with nothing to draw raises `latents_nothing_to_plot`,
-#'   naming the plot functions that apply; an object the package did not
-#'   return raises `latents_not_a_fit`.
-#' @seealso [plot_enumeration()] to choose the criteria; [get_candidates()].
+#'
+#'   Errors:
+#'   * `latents_nothing_to_plot` when the package returned `x` but this
+#'     function has no plot of it: a fitted model, a diagnostics result, pooled
+#'     imputations, a bootstrap result or a sensitivity analysis. For an object
+#'     of the wrong kind, the message names the plot functions that apply to
+#'     it;
+#'   * `latents_not_a_fit` when `x` is not a fit, grid or other result of the
+#'     package, for example a data frame;
+#'   * `latents_missing_package` when ggplot2 is not installed.
+#' @seealso [plot_enumeration()] to choose the criteria; [get_candidates()]
+#'   and [get_best()] for the values as tables; [plot_deltas()].
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
 #'                       n_profiles = 1:3, model = "EEI",
 #'                       n_starts = 2, seed = 1)
 #' plot_criteria(grid)
+#'
+#' # A comparison of two fitted models
+#' one <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 1,
+#'            n_starts = 2, seed = 1)
+#' two <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
+#'            n_starts = 2, seed = 1)
+#' plot_criteria(compare_models(one, two))
 #' @export
 plot_criteria <- function(x, main = NULL, subtitle = NULL) {
   .latents_wild_plot(x, "plot_criteria", substitute(x), main, subtitle)
 }
 
-#' Change in the criterion with each added class
+#' Plot how much the information criterion falls each time a class or a group
+#' class is added
 #'
-#' The decrease in the information criterion of an enumeration grid with
-#' each added profile and each added group class (BIC over groups on a
-#' profile or class grid, BIC on the others).
+#' `plot_deltas()` plots how much the information criterion of an enumeration
+#' grid falls each time one class, or one group class, is added.
 #'
-#' @param x An enumeration grid.
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
+#' @details
+#' The plot has up to two panels. In the left panel the x-axis is the number
+#' of classes after the step, and each point is the decrease in the
+#' criterion from the candidate with one class fewer and the same number of
+#' group classes. There is one line per number of group classes, named at
+#' its right end. In the right panel the x-axis is the number of group
+#' classes after the step, and each point is the decrease from the candidate
+#' with one group class fewer and the same number of classes; a grid with
+#' one number of group classes has no such panel. A point above the zero
+#' line means that the larger model has the lower criterion. A small
+#' decrease after a large one is where further classes stop paying.
+#'
+#' The criterion is `bic_groups` (BIC with the number of groups as the
+#' sample size) on a profile or class grid and `bic` on a transition or
+#' regression grid. `plot_selection(x, what = "deltas", using = )` draws the
+#' same view with another criterion.
+#'
+#' @param x An enumeration grid from [enumerate_lpa()], [enumerate_lca()],
+#'   [enumerate_classes()] or [enumerate_regressions()]. A grid of
+#'   group-class families (`enumerate_classes(family = )`) has no such view
+#'   and is refused.
+#' @param main,subtitle Title and subtitle of the plot. `NULL` (default)
+#'   keeps the view's own text.
 #' @return A ggplot object.
-#'   An object with nothing to draw raises `latents_nothing_to_plot`,
-#'   naming the plot functions that apply; an object the package did not
-#'   return raises `latents_not_a_fit`.
-#' @seealso [get_deltas()] and [get_knees()] for the tables; [plot_selection()].
+#'
+#'   Errors:
+#'   * `latents_nothing_to_plot` when the package returned `x` but this
+#'     function has no plot of it: a fitted model, a comparison or another
+#'     result, a grid of group-class families, or a grid in which no converged
+#'     candidate has a converged neighbour one step smaller. For an object of
+#'     the wrong kind, the message names the plot functions that apply to it;
+#'   * `latents_not_a_fit` when `x` is not a fit, grid or other result of the
+#'     package, for example a data frame;
+#'   * `latents_missing_package` when ggplot2 is not installed.
+#' @seealso [get_deltas()] and [get_knees()] for the numbers of a profile or
+#'   class grid; [plot_selection()] for the other selection views.
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
 #'                       n_profiles = 1:3, model = "EEI",
@@ -785,19 +1322,51 @@ plot_deltas <- function(x, main = NULL, subtitle = NULL) {
   .latents_wild_plot(x, "plot_deltas", substitute(x), main, subtitle)
 }
 
-#' Convergence, boundary and replication of every candidate
+#' Plot whether each candidate of a grid converged, lies on a boundary and
+#' replicated its best log likelihood
 #'
-#' Whether each candidate of an enumeration grid converged, reached a
-#' boundary and replicated its best log likelihood across starts.
+#' `plot_trust()` plots whether the estimate of each candidate of an enumeration
+#' grid can be relied on: did it converge, is it on a boundary, and did more
+#' than one start reach its best log likelihood.
 #'
-#' @param x An enumeration grid.
-#' @param main,subtitle Title and subtitle; `NULL` (default) keeps the
-#'   view's own.
+#' @details
+#' The x-axis is the number of classes and the y-axis the number of group
+#' classes, so each tile is one candidate. A grid with several covariance
+#' structures has one panel per structure. The fill and the text of a tile
+#' give the status of the candidate:
+#'
+#' * `replicated`: converged, and two or more starts reached the best log
+#'   likelihood;
+#' * `once`: converged, but only one start reached the best log likelihood,
+#'   so a higher maximum may exist;
+#' * `n/a`: converged, with no replication count stored;
+#' * `boundary`: converged with an estimate on the boundary of the
+#'   parameter space;
+#' * `not conv.`: the best start did not converge;
+#' * `not fitted`: the candidate has no log likelihood.
+#'
+#' Under the status the tile gives the number of starts that reached the
+#' best log likelihood, for example `2x`. Replication does not prove that
+#' the global maximum was found.
+#'
+#' @param x An enumeration grid from [enumerate_lpa()], [enumerate_lca()],
+#'   [enumerate_classes()] or [enumerate_regressions()]. A grid of
+#'   group-class families (`enumerate_classes(family = )`) has no such view
+#'   and is refused.
+#' @param main,subtitle Title and subtitle of the plot. `NULL` (default)
+#'   keeps the view's own text.
 #' @return A ggplot object.
-#'   An object with nothing to draw raises `latents_nothing_to_plot`,
-#'   naming the plot functions that apply; an object the package did not
-#'   return raises `latents_not_a_fit`.
-#' @seealso [get_replication()] for the table; [plot_selection()].
+#'
+#'   Errors:
+#'   * `latents_nothing_to_plot` when the package returned `x` but this
+#'     function has no plot of it: a fitted model, a comparison or another
+#'     result, or a grid of group-class families. For an object of the wrong
+#'     kind, the message names the plot functions that apply to it;
+#'   * `latents_not_a_fit` when `x` is not a fit, grid or other result of the
+#'     package, for example a data frame;
+#'   * `latents_missing_package` when ggplot2 is not installed.
+#' @seealso [get_replication()] for the counts of starts as a table;
+#'   [get_candidates()] for `converged` and `boundary`; [plot_selection()].
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
 #'                       n_profiles = 1:3, model = "EEI",
@@ -808,20 +1377,62 @@ plot_trust <- function(x, main = NULL, subtitle = NULL) {
   .latents_wild_plot(x, "plot_trust", substitute(x), main, subtitle)
 }
 
-#' Every plot of an object
+#' Plot every view an object has and return the plots as one list
 #'
-#' Every view the object can draw, as a list that draws each plot when
-#' printed: for a fit, its views and the classification views at each level;
-#' for an enumeration grid, the criteria, entropy, AvePP, smallest class,
-#' criterion changes, trust and tree; for a comparison, bootstrap test or
-#' sensitivity analysis, its one plot; for a diagnostics result, the views
-#' of the fit it checked. A view the
-#' object lacks the ingredients for is left out and named in a message.
+#' `plot_all()` plots every view that an object of the package has, and returns
+#' the plots as one list. Printing the list shows each plot in turn.
 #'
-#' @param x Any object returned by the package.
-#' @return A `latents_plots` list of ggplot objects named by view. An object
-#'   the package did not return raises `latents_not_a_fit`.
-#' @seealso [overview()] prints the summary and checks as well.
+#' @details
+#' Which plots the list holds depends on the object. The names of the list
+#' are the names of the views:
+#'
+#' * a profile, class or transition fit of [lpa()], [lca()], [multilpa()],
+#'   [multilca()] or [lta()] (class `multilpa_transitions`): the views its
+#'   data allow among `profiles`, `bars`, `heatmap`, `raincloud`,
+#'   `parallel`, `pairs`, `responses`, `probabilities`, `sequences`,
+#'   `transitions`, `sizes`, `entropy`, `posteriors` and `avepp`. A fit with
+#'   two or more group classes adds `group_sizes`, `group_posteriors`,
+#'   `group_entropy` and `group_avepp`;
+#' * a fit of another family: the views of its own `plot()`, then the four
+#'   classification views `sizes`, `posteriors`, `entropy` and `avepp`. A
+#'   mixture regression has `fitted` and `coefficients`; one that classifies
+#'   persons also `trajectories`, `individuals` and `classification`; a
+#'   growth mixture has those three, `coefficients` and `random`; a general
+#'   transition fit `transitions`, `profiles` and `sequences`; an additive
+#'   fit `means`, `variances` and `intercepts`; a cross-level fit
+#'   `profiles`, `group_means` and `composition`. When such a fit classifies
+#'   at two levels, each classification view is drawn twice, as
+#'   `sizes_individuals`, `sizes_groups` and so on;
+#' * pooled imputations: the pooled estimates of each level the pooled table
+#'   has, among `profile`, `group` and `measurement`;
+#' * an enumeration grid: `criteria` (every criterion, as [plot_criteria()]),
+#'   `entropy`, `avepp`, `deltas`, `heatmap`, `smallest`, `trust` and
+#'   `tree`. A grid of group-class families has `criteria`, `entropy`,
+#'   `avepp` and `tree`. A grid with several trees has one plot per tree,
+#'   named `tree_` and the tree's name;
+#' * a comparison, a bootstrap test, a bootstrap table of
+#'   [parameter_inference()] or a sensitivity analysis: its one plot, named
+#'   `plot`;
+#' * a [diagnostics()] result: the plots of the fit it checked.
+#'
+#' Only the views the object can draw are returned. A view that was tried
+#' and refused is left out and named in a message
+#' (`Not drawn for this object: ...`).
+#'
+#' @param x Any object returned by the package: a fitted model, pooled
+#'   imputations, an enumeration grid, a comparison, a bootstrap result, a
+#'   sensitivity analysis or a diagnostics result.
+#' @return A `latents_plots` list of ggplot objects, named by view. Printing
+#'   it draws every plot; in an interactive session R waits for a key press
+#'   before each new plot.
+#'
+#'   Errors: `latents_not_a_fit` when `x` is not a fit, grid or other result
+#'   of the package, for example a data frame; `latents_nothing_to_plot`
+#'   when none of the object's views can be drawn;
+#'   `latents_missing_package` when ggplot2 is not installed.
+#' @seealso [overview()] prints the summary and the checks as well; the
+#'   functions named after single views, such as [plot_profiles()],
+#'   [plot_sizes()] and [plot_criteria()].
 #' @examplesIf requireNamespace("ggplot2", quietly = TRUE)
 #' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 #'            n_starts = 2, seed = 1)
@@ -997,21 +1608,48 @@ plot_all <- function(x) {
   sprintf("classes%d_groups%d", as.integer(grid$n_classes), as.integer(groups))
 }
 
-#' Every diagnostic check of a fit
+#' Get every diagnostic check of a fitted model, with its value, rule and status
 #'
-#' Each check [diagnostics()] runs, with its status, criterion and
-#' reference: estimation, class sizes, classification, local independence
-#' and information. For a fit, the table is the one [diagnostics()] computes with its
-#' defaults; for a grid, the tables of every candidate are stacked with
-#' a first column `candidate` (a candidate whose estimation failed has no
-#' row); for a diagnostics result, its own table.
+#' `get_checks()` returns the checks that [diagnostics()] runs on a fitted
+#' model, as one table: each check with its value, the rule it is judged by and
+#' its status. The checks cover the estimation (convergence, replication of the
+#' best log likelihood, failed starts, estimates at a bound), the class sizes,
+#' the quality of the classification (relative entropy, average posterior
+#' probability, odds of correct classification), local independence (the
+#' bivariate residuals) and the information criteria.
 #'
-#' @param x A fitted model of any family, an enumeration grid, or the
-#'   result of [diagnostics()].
-#' @return A data frame, one row per check (and candidate): `domain, check, level, value, display, criterion, status, detail, reference`.
-#'   Any other object raises `latents_not_a_fit`.
-#' @seealso [diagnostics()] for the checks and their criteria; [get_entropy()],
-#'   [get_classification()], [get_avepp()], [get_replication()],
+#' @param x One of:
+#'   * a fitted model of any family: from [lpa()], [lca()], [multilpa()],
+#'     [multilca()], [lta()] or [mixture_regression()]. The table is the one
+#'     [diagnostics()] computes with its defaults;
+#'   * an enumeration grid of any kind, from [enumerate_lpa()],
+#'     [enumerate_lca()], [enumerate_classes()] or [enumerate_regressions()].
+#'     The tables of the fitted candidates are stacked, with a first column
+#'     `candidate` that names the candidate of each row. A candidate whose
+#'     estimation failed has no rows;
+#'   * the result of [diagnostics()]. The table is the one the result holds.
+#' @return A data frame with one row per check (per candidate and check for
+#'   a grid) and the columns:
+#'   * `domain`: the group of the check, one of `"Estimation"`,
+#'     `"Class size"`, `"Classification"`, `"Local independence"` and
+#'     `"Information"`;
+#'   * `check`: what is checked;
+#'   * `level`: `"model"` for a check of the whole fit, `"individuals"` or
+#'     `"groups"` for a check of one classification level;
+#'   * `value`: the result as a number;
+#'   * `display`: the result as formatted text;
+#'   * `criterion`: the rule the status follows; empty when there is none;
+#'   * `status`: `"ok"` (passed), `"info"` (reported, not judged),
+#'     `"check"` (look at it), `"fail"` (failed) or `"n/a"` (not available
+#'     for this fit);
+#'   * `detail`: a note, for example the pair of indicators with the
+#'     smallest adjusted p-value;
+#'   * `reference`: the source of the check.
+#'
+#'   Errors: `latents_not_a_fit` when `x` is none of these, for example a
+#'   comparison, pooled imputations or a data frame.
+#' @seealso [diagnostics()] for the checks and their rules; [get_entropy()],
+#'   [get_classification()], [get_avepp()], [get_replication()] and
 #'   [get_residuals()] for the tables behind them; [overview()].
 #' @examples
 #' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
@@ -1022,19 +1660,43 @@ get_checks <- function(x) {
   .latents_wild_table(x, "checks", "get_checks", substitute(x))
 }
 
-#' Relative entropy of the classification
+#' Get the relative entropy, from 0 to 1, of how sharply a model separates its
+#' classes
 #'
-#' The entropy of the posterior class probabilities relative to a flat
-#' posterior, at each level the fit classifies. For a fit, the table is the one [diagnostics()] computes with its
-#' defaults; for a grid, the tables of every candidate are stacked with
-#' a first column `candidate` (a candidate whose estimation failed has no
-#' row); for a diagnostics result, its own table.
+#' `get_entropy()` returns one number per classification level that says how
+#' sharply the model separates its classes: the relative entropy, from 0 (every
+#' unit is equally likely to be in every class) to 1 (every unit belongs to one
+#' class with certainty).
 #'
-#' @param x A fitted model of any family, an enumeration grid, or the
-#'   result of [diagnostics()].
-#' @return A data frame, one row per classification level (and candidate): `level, n_classes, n_units, entropy_sum, relative_entropy`.
-#'   Any other object raises `latents_not_a_fit`.
-#' @seealso [plot_entropy()] draws it; [get_classification()], [get_avepp()].
+#' @param x One of:
+#'   * a fitted model of any family: from [lpa()], [lca()], [multilpa()],
+#'     [multilca()], [lta()] or [mixture_regression()]. The table is the one
+#'     [diagnostics()] computes with its defaults;
+#'   * an enumeration grid of any kind, from [enumerate_lpa()],
+#'     [enumerate_lca()], [enumerate_classes()] or [enumerate_regressions()].
+#'     The tables of the fitted candidates are stacked, with a first column
+#'     `candidate` that names the candidate of each row. A candidate whose
+#'     estimation failed has no rows;
+#'   * the result of [diagnostics()]. The table is the one the result holds.
+#' @return A data frame with one row per classification level (per
+#'   candidate and level for a grid) and the columns:
+#'   * `level`: `"individuals"` (the cases sorted into profiles or classes)
+#'     or `"groups"` (the groups sorted into group classes);
+#'   * `n_classes`: the number of classes at that level;
+#'   * `n_units`: the number of classified units;
+#'   * `entropy_sum`: the sum of the units' entropies;
+#'   * `relative_entropy`: one minus the mean entropy of a unit divided by
+#'     its largest possible value, the logarithm of `n_classes`. `NA` for a
+#'     level with one class.
+#'
+#'   A profile, class or transition fit always has both rows; without group
+#'   classes its `"groups"` row has one class and `NA`. A fit of another
+#'   family has a row for each level it classifies.
+#'
+#'   Errors: `latents_not_a_fit` when `x` is none of these, for example a
+#'   comparison, pooled imputations or a data frame.
+#' @seealso [plot_entropy()] draws the entropy of each unit;
+#'   [get_classification()], [get_avepp()].
 #' @examples
 #' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 #'            n_starts = 2, seed = 1)
@@ -1044,19 +1706,43 @@ get_entropy <- function(x) {
   .latents_wild_table(x, "entropy", "get_entropy", substitute(x))
 }
 
-#' Class sizes and classification certainty
+#' Get how many units each class holds and how certain their assignment is
 #'
-#' Modal and estimated class sizes, average posterior probability and
-#' odds of correct classification, at each level the fit classifies. For a fit, the table is the one [diagnostics()] computes with its
-#' defaults; for a grid, the tables of every candidate are stacked with
-#' a first column `candidate` (a candidate whose estimation failed has no
-#' row); for a diagnostics result, its own table.
+#' `get_classification()` returns, for every class, how many units it holds,
+#' counted two ways, and how certain the assignment of its units is.
 #'
-#' @param x A fitted model of any family, an enumeration grid, or the
-#'   result of [diagnostics()].
-#' @return A data frame, one row per level and class (and candidate): `level, class, n_modal, proportion_modal, estimated_n, estimated_proportion, average_posterior, odds_correct_classification`.
-#'   Any other object raises `latents_not_a_fit`.
-#' @seealso [plot_sizes()] and [plot_posteriors()] draw it; [get_avepp()].
+#' @param x One of:
+#'   * a fitted model of any family: from [lpa()], [lca()], [multilpa()],
+#'     [multilca()], [lta()] or [mixture_regression()]. The table is the one
+#'     [diagnostics()] computes with its defaults;
+#'   * an enumeration grid of any kind, from [enumerate_lpa()],
+#'     [enumerate_lca()], [enumerate_classes()] or [enumerate_regressions()].
+#'     The tables of the fitted candidates are stacked, with a first column
+#'     `candidate` that names the candidate of each row. A candidate whose
+#'     estimation failed has no rows;
+#'   * the result of [diagnostics()]. The table is the one the result holds.
+#' @return A data frame with one row per level and class (per candidate,
+#'   level and class for a grid) and the columns:
+#'   * `level`: `"individuals"` or `"groups"`;
+#'   * `class`: the number of the class; `0` is the noise component of a fit
+#'     that has one;
+#'   * `n_modal`: the number of units whose most likely class this is;
+#'   * `proportion_modal`: `n_modal` as a share of the units;
+#'   * `estimated_n`: the sum of the units' posterior probabilities of the
+#'     class;
+#'   * `estimated_proportion`: `estimated_n` as a share of the units;
+#'   * `average_posterior`: the mean posterior probability of the class
+#'     among the units assigned to it;
+#'   * `odds_correct_classification`: the odds of `average_posterior`
+#'     divided by the odds of `estimated_proportion`.
+#'
+#'   A fit without group classes has rows for the individuals only; a fit
+#'   that classifies groups only has rows for the groups only.
+#'
+#'   Errors: `latents_not_a_fit` when `x` is none of these, for example a
+#'   comparison, pooled imputations or a data frame.
+#' @seealso [plot_sizes()] and [plot_posteriors()] draw it; [get_avepp()]
+#'   for the full matrix of average posterior probabilities.
 #' @examples
 #' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 #'            n_starts = 2, seed = 1)
@@ -1066,19 +1752,40 @@ get_classification <- function(x) {
   .latents_wild_table(x, "classification", "get_classification", substitute(x))
 }
 
-#' Average posterior probability matrix
+#' Get the average posterior probability of every class among the units assigned
+#' to each class
 #'
-#' The average posterior probability of each class among the units
-#' assigned to each class, at each level the fit classifies. For a fit, the table is the one [diagnostics()] computes with its
-#' defaults; for a grid, the tables of every candidate are stacked with
-#' a first column `candidate` (a candidate whose estimation failed has no
-#' row); for a diagnostics result, its own table.
+#' `get_avepp()` returns the average posterior probability (AvePP) matrix in
+#' long form: for the units assigned to each class, their mean posterior
+#' probability of every class.
 #'
-#' @param x A fitted model of any family, an enumeration grid, or the
-#'   result of [diagnostics()].
-#' @return A data frame, one row per level, assigned class and class (and candidate): `level, assigned_class, class, n_assigned, average_posterior`.
-#'   Any other object raises `latents_not_a_fit`.
-#' @seealso [plot_avepp()] draws it; [get_classification()], [get_entropy()].
+#' @param x One of:
+#'   * a fitted model of any family: from [lpa()], [lca()], [multilpa()],
+#'     [multilca()], [lta()] or [mixture_regression()]. The table is the one
+#'     [diagnostics()] computes with its defaults;
+#'   * an enumeration grid of any kind, from [enumerate_lpa()],
+#'     [enumerate_lca()], [enumerate_classes()] or [enumerate_regressions()].
+#'     The tables of the fitted candidates are stacked, with a first column
+#'     `candidate` that names the candidate of each row. A candidate whose
+#'     estimation failed has no rows;
+#'   * the result of [diagnostics()]. The table is the one the result holds.
+#' @return A data frame with one row per level, assigned class and class
+#'   (and per candidate for a grid) and the columns:
+#'   * `level`: `"individuals"` or `"groups"`;
+#'   * `assigned_class`: the class the units are assigned to (their most
+#'     likely class);
+#'   * `class`: the class whose probability is averaged;
+#'   * `n_assigned`: the number of units assigned to `assigned_class`;
+#'   * `average_posterior`: the mean posterior probability of `class` among
+#'     those units.
+#'
+#'   The rows in which `assigned_class` equals `class` are the diagonal of
+#'   the matrix: values near 1 mean that the class is well separated.
+#'
+#'   Errors: `latents_not_a_fit` when `x` is none of these, for example a
+#'   comparison, pooled imputations or a data frame.
+#' @seealso [plot_avepp()] draws the matrix; [get_classification()],
+#'   [get_entropy()].
 #' @examples
 #' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 #'            n_starts = 2, seed = 1)
@@ -1088,28 +1795,63 @@ get_avepp <- function(x) {
   .latents_wild_table(x, "average_posteriors", "get_avepp", substitute(x))
 }
 
-#' Bivariate residuals of the indicators
+#' Get the bivariate residuals: the association between pairs of indicators that
+#' each class leaves unexplained
 #'
-#' Each pair of indicators within each class, checked for association the
-#' model leaves unexplained: a residual correlation with a normal test for
-#' two Gaussian indicators, a chi-square of observed against expected
-#' counts for two categorical ones, and a descriptive correlation without a
-#' test for a mixed pair or one with a count indicator, with
-#' Benjamini-Hochberg adjusted p-values, for the families that define
-#' them. For a fit, the table is the one [diagnostics()] computes with its
-#' defaults; for a grid, the tables of every candidate are stacked with
-#' a first column `candidate` (a candidate whose estimation failed has no
-#' row); for a diagnostics result, its own table.
+#' `get_residuals()` returns the bivariate residuals, a check of local
+#' independence: for each pair of indicators within each class, the association
+#' that the model leaves unexplained.
 #'
-#' @param x A fitted model of any family, an enumeration grid, or the
-#'   result of [diagnostics()].
-#' @return A data frame, one row per class and indicator pair (and candidate): `profile, indicator_1, indicator_2, kind, observed, expected, residual, effective_n, statistic, df, p_value, p_adjusted`.
-#'   A family without bivariate residuals (regression, growth, additive
-#'   and cross-level fits, a general transition fit with occasion-dependent
-#'   structure, or a fit with a noise component) raises
-#'   `latents_bad_argument`; a grid none of whose candidates has them
-#'   does too.  Any other object raises `latents_not_a_fit`.
-#' @seealso [diagnostics()] for the test; [get_checks()].
+#' @details
+#' The statistic depends on the two indicators (column `kind`):
+#'
+#' * `"gaussian"`, two continuous indicators: the residual correlation,
+#'   with a normal test;
+#' * `"categorical"`, two categorical or ordinal indicators: a chi-square
+#'   test of the observed two-way table against the one the model expects;
+#' * `"mixed"` or `"count"`, a continuous with a categorical indicator or a
+#'   pair with a count indicator: a correlation, without a test.
+#'
+#' The p-values are adjusted across the pairs by the Benjamini-Hochberg
+#' method. A fit with sampling weights reports the associations without
+#' tests. `?get_results` describes the statistics in full.
+#'
+#' Only profile, class and transition fits have these residuals: fits of
+#' [lpa()], [lca()], [multilpa()] and [multilca()], with or without
+#' covariates, and transition fits of [lta()] of class
+#' `multilpa_transitions`.
+#'
+#' @param x One of:
+#'   * a profile, class or transition fit as described above. The table is
+#'     the one [diagnostics()] computes with its defaults, which assesses
+#'     each class separately;
+#'   * an enumeration grid of such fits. The tables of the fitted
+#'     candidates are stacked, with a first column `candidate`;
+#'   * the result of [diagnostics()]. The table is the one the result
+#'     holds, so `diagnostics(fit, by = "overall")` gives the residuals
+#'     pooled over the classes.
+#' @return A data frame with one row per class and pair of indicators (and
+#'   per candidate for a grid) and the columns:
+#'   * `profile`: the class, as `profile_1`, `profile_2`, ...; `overall`
+#'     for residuals pooled over the classes;
+#'   * `indicator_1`, `indicator_2`: the pair;
+#'   * `kind`: the kind of pair, as listed above;
+#'   * `observed`, `expected`: the observed association and the one the
+#'     model implies;
+#'   * `residual`: the residual association;
+#'   * `effective_n`: the effective number of units behind it;
+#'   * `statistic`, `df`, `p_value`: the test, `NA` where there is none;
+#'   * `p_adjusted`: the p-value adjusted across the pairs.
+#'
+#'   Errors: `latents_bad_argument` when the fit is of a family without
+#'   bivariate residuals (a mixture regression, a growth mixture, an
+#'   additive or cross-level fit, or a general transition fit of class
+#'   `multilpa_lta`), and when no candidate of a grid has them; the message
+#'   names the tables the object does have. `latents_unsupported_noise`
+#'   when the fit has a noise component. `latents_not_a_fit` when `x` is
+#'   not a fit, a grid or a diagnostics result.
+#' @seealso [get_results()] for the statistics; [diagnostics()] and
+#'   [get_checks()] for the check that reads this table.
 #' @examples
 #' fit <- lca(student_esm, c("time_with_friends", "on_social_media", "sports"),
 #'            n_classes = 2, n_starts = 2, seed = 1)
@@ -1119,50 +1861,100 @@ get_residuals <- function(x) {
   .latents_wild_table(x, "residuals", "get_residuals", substitute(x))
 }
 
-#' How many starts reached the best log likelihood
+#' Get how many random starts converged, failed and reached the best log
+#' likelihood
 #'
-#' The number of starts, how many were screened, converged and failed,
-#' and how many replicated the best log likelihood within tolerance. For a fit, the table is the one [diagnostics()] computes with its
-#' defaults; for a grid, the tables of every candidate are stacked with
-#' a first column `candidate` (a candidate whose estimation failed has no
-#' row); for a diagnostics result, its own table.
+#' `get_replication()` returns how many of a model's random starts ran,
+#' converged and failed, and how many arrived at the best log likelihood. A best
+#' solution that only one start reached may not be the highest one.
 #'
-#' @param x A fitted model of any family, an enumeration grid, or the
-#'   result of [diagnostics()].
-#' @return A data frame, one row per fit (and candidate): `n_starts, n_screened, n_converged, n_failed, n_best_replicated, share, tolerance, best_start, log_likelihood`.
-#'   Any other object raises `latents_not_a_fit`.
-#' @seealso [plot_trust()] draws it for a grid; [get_checks()].
+#' @param x One of:
+#'   * a fitted model of any family: from [lpa()], [lca()], [multilpa()],
+#'     [multilca()], [lta()] or [mixture_regression()]. The table is the one
+#'     [diagnostics()] computes with its defaults;
+#'   * an enumeration grid of any kind, from [enumerate_lpa()],
+#'     [enumerate_lca()], [enumerate_classes()] or [enumerate_regressions()].
+#'     The tables of the fitted candidates are stacked, with a first column
+#'     `candidate` that names the candidate of each row. A candidate whose
+#'     estimation failed has no rows;
+#'   * the result of [diagnostics()]. The table is the one the result holds.
+#' @return A data frame with one row per fit (one row per candidate for a
+#'   grid) and the columns:
+#'   * `n_starts`: the number of starts that were run to the end;
+#'   * `n_screened`: the number of starts that were only screened in a
+#'     short run; 0 when the fit screened none;
+#'   * `n_converged`: the number of starts that converged;
+#'   * `n_failed`: the number of starts that failed or gave no log
+#'     likelihood;
+#'   * `n_best_replicated`: the number of starts whose log likelihood is
+#'     within `tolerance` of the best;
+#'   * `share`: `n_best_replicated` divided by `n_starts`;
+#'   * `tolerance`: the difference in log likelihood up to which two starts
+#'     count as the same solution;
+#'   * `best_start`: the number of the start that gave the fit;
+#'   * `log_likelihood`: the log likelihood of the fit.
+#'
+#'   A count the fit does not record is `NA`.
+#'
+#'   Errors: `latents_not_a_fit` when `x` is none of these, for example a
+#'   comparison, pooled imputations or a data frame.
+#' @seealso [plot_trust()] draws the replication of every candidate of a
+#'   grid; [get_checks()]; [sensitivity()] refits a model from other seeds.
 #' @examples
 #' fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 #'            n_starts = 2, seed = 1)
 #' get_replication(fit)
+#'
+#' # One row per candidate of a grid
+#' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
+#'                       n_profiles = 1:3, model = "EEI",
+#'                       n_starts = 2, seed = 1)
+#' get_replication(grid)
 #' @export
 get_replication <- function(x) {
   .latents_wild_table(x, "replication", "get_replication", substitute(x))
 }
 
-#' Everything about any object, printed and drawn
+#' Print and plot everything about any object of the package: its summary, its
+#' checks and every plot
 #'
 #' @description
-#' `overview()` takes any object the package returns and shows all of it: the
-#' summary, the diagnostic checks and every plot the object can draw.
+#' `overview()` prints and plots everything about any object the package
+#' returns: the summary, the diagnostic checks where the object has them, and
+#' every plot the object can draw. What is shown depends on the object:
 #'
-#' * A profile, class or transition fit: [report()] (summary, descriptives,
-#'   checks, every plot view).
-#' * Any other fit (mixture regression, growth mixture, general transition,
-#'   additive, cross-level, pooled): its summary, its [diagnostics()] checks
-#'   where defined, and [plot_all()].
-#' * An enumeration grid: its summary and [plot_all()] (criteria, entropy,
-#'   AvePP, smallest class, BIC changes, trust, tree).
-#' * A comparison, bootstrap test, sensitivity analysis or diagnostics result:
-#'   the object printed and its plot.
+#' * a profile, class or transition fit of [lpa()], [lca()], [multilpa()],
+#'   [multilca()] or [lta()] (class `multilpa_transitions`): the output of
+#'   [report()], that is, the summary, the descriptives, the checks and
+#'   every plot view;
+#' * a fit of another family (a mixture regression, a growth mixture, a
+#'   general transition fit, an additive or a cross-level fit): its
+#'   summary, the checks of [diagnostics()], and the plots of [plot_all()];
+#' * pooled imputations: the summary and the plots of [plot_all()];
+#' * an enumeration grid: its summary and the plots of [plot_all()]
+#'   (criteria, entropy, AvePP, criterion changes, heat map, smallest
+#'   class, trust and tree);
+#' * a comparison, a bootstrap test, a bootstrap table of
+#'   [parameter_inference()] or a sensitivity analysis: the object or its
+#'   summary printed, and its plot;
+#' * a [diagnostics()] result: the result printed, and the plots of the fit
+#'   it checked.
 #'
-#' @param x Any object returned by the package.
-#' @param plots `TRUE` (the default) draws the plots; `FALSE` prints only.
-#' @return `x`, invisibly. Called for its printed and drawn output.
+#' @param x Any object returned by the package: a fitted model, pooled
+#'   imputations, an enumeration grid, a comparison, a bootstrap result, a
+#'   sensitivity analysis or a diagnostics result.
+#' @param plots Whether to draw the plots:
+#'   * `TRUE` (default): prints, then draws every plot. The plots need the
+#'     ggplot2 package; without it only the printed part is shown;
+#'   * `FALSE`: prints only.
+#' @return `x`, invisibly. The function is called for what it prints and
+#'   draws.
 #'
-#'   An object the package did not return raises `latents_not_a_fit`.
-#' @seealso [report()], [plot_all()], [get_checks()].
+#'   Errors: `latents_not_a_fit` when `x` is not a fit, grid or other
+#'   result of the package, for example a data frame; `latents_bad_argument`
+#'   when `plots` is not `TRUE` or `FALSE`.
+#' @seealso [report()] for the fits it covers; [plot_all()] for the plots
+#'   alone; [get_checks()] for the checks as a table.
 #' @examples
 #' fit <- mixture_regression(score ~ hours, data = study_hours, n_classes = 2,
 #'                           n_starts = 2, seed = 1)
@@ -1248,22 +2040,56 @@ overview <- function(x, plots = TRUE) {
   get_results(x, table)
 }
 
-#' Every candidate of a grid
+#' Get the table of every candidate model in an enumeration grid, with its
+#' criteria and diagnostics
 #'
-#' One row per candidate with its class counts, log likelihood, every
-#' information criterion and quality measure, and its convergence,
-#' boundary and replication status. Columns empty in every row are left
-#' out (for a class grid, the covariance `model` and the Gaussian checks;
-#' `error` when every candidate fitted); `get_results(x, "candidates")`
-#' keeps them.
+#' `get_candidates()` returns the main table of an enumeration grid: one row per
+#' candidate model, with its numbers of classes, its log likelihood, its
+#' information criteria, its classification quality and whether its estimation
+#' can be relied on.
 #'
-#' @param x An enumeration grid from [enumerate_classes()],
-#'   [enumerate_lpa()], [enumerate_lca()] or [enumerate_regressions()].
-#' @return A data frame, one row per candidate. On a profile or class grid: candidate, n_profiles, n_group_classes, model, log_likelihood, n_parameters, the criteria (`aic`, `bic_groups`, ...), `profile_entropy`, the AvePP summaries, `converged`, `boundary`, `n_best_replicated`, and the Gaussian checks where they apply.
-#'   A transition or family grid has one `entropy`, `bic` and `bic_individual`, and no AvePP summaries; a regression grid has `n_classes`, `bic`, `bic_rows`, `sabic`, `icl`, `entropy`, `smallest_share` and `best_bic`, without `candidate` or `boundary`.
-#'   Any other object raises `latents_not_a_fit`.
-#' @seealso [get_best()], [get_deltas()], [plot_criteria()]; [get_results()] for
-#'   the columns.
+#' @details
+#' The table is `get_results(x, "candidates")` without the columns that are
+#' empty in every row. On a class grid, for example, the covariance
+#' structure `model` and the checks of Gaussian indicators are left out,
+#' and the columns `warnings` and `error` appear only when a candidate has
+#' a warning or failed.
+#'
+#' @param x An enumeration grid of any kind, from [enumerate_lpa()],
+#'   [enumerate_lca()], [enumerate_classes()] or [enumerate_regressions()].
+#' @return A data frame with one row per candidate. The columns depend on
+#'   the kind of grid:
+#'   * a profile or class grid: `candidate` (its name), `n_profiles`,
+#'     `n_group_classes`, `model` (the covariance structure),
+#'     `log_likelihood`, `n_parameters`, the criteria (`aic`, `kic`, and
+#'     `bic`, `sabic`, `caic`, `awe`, `icl` and `clc` with the suffix
+#'     `_groups` or `_individual` for the sample size they use),
+#'     `profile_entropy` and `group_entropy` (relative entropy at each
+#'     level), `avepp_min`, `avepp_max`, `avepp_mean` and `avepp_below`
+#'     (the average posterior probabilities of the classes and how many
+#'     fall below the cutoff 0.8; with the prefix `group_` for the group
+#'     classes), `converged`, `boundary`, `min_standardized_eigenvalue`
+#'     and `min_gaussian_mass` (checks of Gaussian indicators) and
+#'     `n_best_replicated` (the number of starts that reached the best log
+#'     likelihood);
+#'   * a transition grid: `candidate`, `n_profiles`, `n_group_classes`,
+#'     `log_likelihood`, `n_parameters`, `aic`, `bic`, `bic_individual`,
+#'     `entropy`, `converged`, `boundary` and `n_best_replicated`;
+#'   * a grid of group-class families: `candidate`, `model`, `family`,
+#'     `between_variance`, `n_group_classes`, `log_likelihood`,
+#'     `n_parameters`, `aic`, `bic`, `bic_individual`, `entropy`,
+#'     `smallest_class`, `min_effective_groups`, `converged`, `boundary`
+#'     and `n_best_replicated`;
+#'   * a regression grid: `n_classes`, `n_group_classes`, `log_likelihood`,
+#'     `n_parameters`, `aic`, `bic`, `bic_rows`, `sabic`, `icl`, `entropy`,
+#'     `smallest_share`, `converged`, `n_best_replicated` and `best_bic`
+#'     (`TRUE` for the candidate with the lowest BIC). It has no
+#'     `candidate` or `boundary` column.
+#'
+#'   Errors: `latents_not_a_fit` when `x` is not an enumeration grid.
+#' @seealso [get_best()], [get_deltas()] and [get_knees()] for what the
+#'   criteria say; [plot_criteria()] draws them; [get_results()] for the
+#'   full table.
 #' @examples
 #' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
 #'                       n_profiles = 1:3, model = "EEI",
@@ -1280,18 +2106,39 @@ get_candidates <- function(x) {
   table[, !empty, drop = FALSE]
 }
 
-#' The best candidate under each criterion
+#' Get the converged candidate with the lowest value of each information
+#' criterion
 #'
-#' The candidate with the lowest (or, by the criterion's convention,
-#' highest) value of each information criterion. Several criteria may
-#' name the same candidate; none selects a model on its own.
+#' `get_best()` returns, for each information criterion of an enumeration grid,
+#' the converged candidate with the lowest value. Several criteria may name the
+#' same candidate, and no criterion chooses a model on its own.
 #'
-#' @param x An enumeration grid from [enumerate_classes()],
-#'   [enumerate_lpa()] or [enumerate_lca()].
-#' @return A data frame. On a profile or class grid, one row per criterion and convention: `criterion, convention, candidate, n_profiles, n_group_classes, model, value`.
-#'   On a transition or family grid, the one row of the candidates table with the lowest BIC.
-#'   A regression grid raises `latents_bad_argument`, naming the tables it has. Any other object raises `latents_not_a_fit`.
-#' @seealso [get_candidates()], [get_deltas()], [get_knees()].
+#' @param x An enumeration grid from [enumerate_lpa()], [enumerate_lca()]
+#'   or [enumerate_classes()]. A regression grid from
+#'   [enumerate_regressions()] has no such table and is refused; its
+#'   [get_candidates()] table marks the lowest BIC in `best_bic`.
+#' @return A data frame.
+#'
+#'   On a profile or class grid it has one row per criterion and sample
+#'   size, with the columns:
+#'   * `criterion`: `aic`, `kic`, `bic`, `sabic`, `caic`, `awe`, `icl` or
+#'     `clc`;
+#'   * `convention`: `"groups"` or `"individuals"`, the sample size the
+#'     criterion uses; `NA` for AIC and KIC, which use none;
+#'   * `candidate`: the name of the converged candidate with the lowest
+#'     value;
+#'   * `n_profiles`, `n_group_classes`, `model`: that candidate's numbers
+#'     of classes and covariance structure;
+#'   * `value`: its value of the criterion.
+#'
+#'   On a transition grid or a grid of group-class families it is one row:
+#'   the row of `get_results(x, "candidates")` with the lowest BIC.
+#'
+#'   Errors: `latents_bad_argument` for a regression grid, naming the
+#'   tables it has; `latents_not_a_fit` when `x` is not an enumeration
+#'   grid.
+#' @seealso [get_candidates()] for every candidate and criterion;
+#'   [get_deltas()], [get_knees()]; [plot_criteria()].
 #' @examples
 #' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
 #'                       n_profiles = 1:3, model = "EEI",
@@ -1302,18 +2149,37 @@ get_best <- function(x) {
   .latents_wild_grid_table(x, "best", "get_best", substitute(x))
 }
 
-#' Change in the criterion with each added class
+#' Get how much each information criterion improves as a class or a group class
+#' is added
 #'
-#' The decrease in the information criterion from the candidate with one
-#' profile fewer, and from the one with one group class fewer (BIC over
-#' groups).
+#' `get_deltas()` returns, for every candidate of a profile or class grid, how
+#' much lower its information criterion is than that of the candidate with one
+#' profile fewer, and than that of the candidate with one group class fewer. The
+#' criterion is `bic_groups`, BIC with the number of groups as the sample size.
 #'
-#' @param x An enumeration grid from [enumerate_classes()],
-#'   [enumerate_lpa()] or [enumerate_lca()].
-#' @return A data frame, one row per candidate: `candidate, n_profiles, n_group_classes, model, criterion, value, delta_profile, from_profile, delta_group_class, from_group_class`.
-#'   A regression, transition or family grid has no deltas and raises
-#'   `latents_bad_argument`, naming the tables it has.  Any other object raises `latents_not_a_fit`.
-#' @seealso [plot_deltas()] draws it; [get_knees()].
+#' @param x A profile or class grid from [enumerate_lpa()],
+#'   [enumerate_lca()] or [enumerate_classes()]. Transition grids, grids of
+#'   group-class families and regression grids have no such table and are
+#'   refused.
+#' @return A data frame with one row per candidate and the columns:
+#'   * `candidate`, `n_profiles`, `n_group_classes`, `model`: the candidate,
+#'     its numbers of classes and its covariance structure;
+#'   * `criterion`: the name of the criterion, `bic_groups`;
+#'   * `value`: the candidate's value of the criterion;
+#'   * `delta_profile`: the criterion of the candidate with one profile
+#'     fewer (and the same group classes and structure) minus `value`. A
+#'     positive number means that this candidate is lower;
+#'   * `from_profile`: the name of that smaller candidate;
+#'   * `delta_group_class`, `from_group_class`: the same for the candidate
+#'     with one group class fewer.
+#'
+#'   A delta is `NA` where there is no such smaller candidate, or where
+#'   either of the two did not converge.
+#'
+#'   Errors: `latents_bad_argument` for a transition, family or regression
+#'   grid, naming the tables it has; `latents_not_a_fit` when `x` is not an
+#'   enumeration grid.
+#' @seealso [plot_deltas()] draws the changes; [get_knees()], [get_best()].
 #' @examples
 #' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
 #'                       n_profiles = 1:3, model = "EEI",
@@ -1324,17 +2190,50 @@ get_deltas <- function(x) {
   .latents_wild_grid_table(x, "deltas", "get_deltas", substitute(x))
 }
 
-#' Where each criterion line bends
+#' Get the candidate after which adding classes improves each information
+#' criterion much less
 #'
-#' The knee of each line of the criterion over the number of classes,
-#' and whether it holds when the largest candidate is left out.
+#' `get_knees()` returns the knee of every line of a profile or class grid: the
+#' candidate after which adding classes lowers the criterion much less than
+#' before, and whether the knee stays the same when the largest candidate is
+#' left out. The criterion is `bic_groups`, BIC with the number of groups as the
+#' sample size.
 #'
-#' @param x An enumeration grid from [enumerate_classes()],
-#'   [enumerate_lpa()] or [enumerate_lca()].
-#' @return A data frame, one row per line and direction: `direction, line, criterion, from, to, n_points, knee_candidate, distance, knee_without_largest, stable, note`.
-#'   A regression, transition or family grid has no knees and raises
-#'   `latents_bad_argument`, naming the tables it has.  Any other object raises `latents_not_a_fit`.
-#' @seealso [get_deltas()], [get_best()].
+#' @details
+#' Both axes of a line are rescaled to run from 0 to 1. The knee is the
+#' candidate that lies furthest below the straight line from the first
+#' candidate to the last. A line needs three candidates to have a knee and
+#' four for its stability to be assessed, and a line whose criterion does
+#' not fall from its first to its last candidate has none.
+#'
+#' @param x A profile or class grid from [enumerate_lpa()],
+#'   [enumerate_lca()] or [enumerate_classes()]. Transition grids, grids of
+#'   group-class families and regression grids have no such table and are
+#'   refused.
+#' @return A data frame with one row per line and the columns:
+#'   * `direction`: `"profiles"` (along the number of profiles, at a fixed
+#'     number of group classes), `"group_classes"` (along the number of
+#'     group classes, at a fixed number of profiles) or `"parameters"`
+#'     (every candidate, ordered by its number of parameters);
+#'   * `line`: what is held fixed along the line;
+#'   * `criterion`: the name of the criterion, `bic_groups`;
+#'   * `from`, `to`: the first and the last candidate of the line;
+#'   * `n_points`: the number of candidates on the line;
+#'   * `knee_candidate`: the candidate at the knee; `NA` when the line has
+#'     none;
+#'   * `distance`: how far the knee lies below the straight line, in the
+#'     rescaled units;
+#'   * `knee_without_largest`: the knee when the largest candidate is left
+#'     out;
+#'   * `stable`: `TRUE` when the two knees are the same candidate; `NA`
+#'     when the line has fewer than four candidates;
+#'   * `note`: why a knee or its stability is missing.
+#'
+#'   Errors: `latents_bad_argument` for a transition, family or regression
+#'   grid, naming the tables it has; `latents_not_a_fit` when `x` is not an
+#'   enumeration grid.
+#' @seealso [get_deltas()] for the changes behind the lines; [get_best()];
+#'   [plot_deltas()].
 #' @examples
 #' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
 #'                       n_profiles = 1:3, model = "EEI",
@@ -1345,17 +2244,34 @@ get_knees <- function(x) {
   .latents_wild_grid_table(x, "knees", "get_knees", substitute(x))
 }
 
-#' How the classes of each candidate split into the next
+#' Get how the classes of each candidate split into the classes of the next, as
+#' a table
 #'
-#' The flows [plot_tree()] draws: for each pair of consecutive candidates
-#' of a tree, how much of each class goes to each class of the next.
+#' `get_tree()` returns the flows that [plot_tree()] plots, as a table: for each
+#' pair of consecutive candidates of a tree, how much of each class of the
+#' smaller candidate goes to each class of the larger one.
 #'
-#' @param x An enumeration grid from [enumerate_classes()],
-#'   [enumerate_lpa()], [enumerate_lca()] or [enumerate_regressions()].
-#' @return A data frame, one row per flow: `tree, level, from_candidate, from_class, from_share, to_candidate, to_class, to_share, mass, share_of_from, share_of_to`.
-#'   A grid without a tree raises `latents_bad_argument`, naming the
-#'   tables it has.  Any other object raises `latents_not_a_fit`.
-#' @seealso [plot_tree()] draws it.
+#' @param x An enumeration grid of any kind, from [enumerate_lpa()],
+#'   [enumerate_lca()], [enumerate_classes()] or [enumerate_regressions()].
+#' @return A data frame with one row per flow, that is, per pair of a class
+#'   of one candidate and a class of the next, and the columns:
+#'   * `tree`: the name of the tree. A grid can hold several trees, for
+#'     example one per covariance structure;
+#'   * `level`: `"individuals"` when the cases are divided into profiles or
+#'     classes, `"groups"` when the groups are divided into group classes;
+#'   * `from_candidate`, `from_class`, `from_share`: the smaller candidate,
+#'     one of its classes and that class's share of the units;
+#'   * `to_candidate`, `to_class`, `to_share`: the same for the next
+#'     candidate;
+#'   * `mass`: the share of all units that goes from `from_class` to
+#'     `to_class`;
+#'   * `share_of_from`: `mass` as a share of `from_class`;
+#'   * `share_of_to`: `mass` as a share of `to_class`.
+#'
+#'   Errors: `latents_no_tree` when the grid has fewer than two candidates
+#'   that can form a tree; `latents_not_a_fit` when `x` is not an
+#'   enumeration grid.
+#' @seealso [plot_tree()] draws the flows and chooses the trees.
 #' @examples
 #' grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
 #'                       n_profiles = 1:3, model = "EEI",

@@ -314,10 +314,12 @@ test_that("refusals are classed and name the views of the fit's plot()", {
   expect_error(plot_sequences(fits$pooled), class = "latents_nothing_to_plot")
   expect_error(plot_responses(fits$mixture_regression),
                class = "latents_nothing_to_plot")
-  # A general lta() fit points to the function that draws it.
-  expect_error(plot_profiles(fits$general_transitions), "plot_transitions()",
+  # A general lta() fit draws its profiles; a view it lacks points to the
+  # functions that draw it.
+  expect_s3_class(plot_profiles(fits$general_transitions), "ggplot")
+  expect_error(plot_prevalence(fits$general_transitions), "plot_transitions()",
                fixed = TRUE)
-  expect_error(plot_profiles(fits$general_transitions),
+  expect_error(plot_prevalence(fits$general_transitions),
                class = "latents_bad_argument")
   # A trajectory view is for fits that classify persons only: an observation
   # regression draws its fitted lines instead.

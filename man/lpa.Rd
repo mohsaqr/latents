@@ -2,7 +2,8 @@
 % Please edit documentation in R/lpa.R
 \name{lpa}
 \alias{lpa}
-\title{Fit a latent profile model}
+\title{Fit a latent profile model that groups observations by their pattern on
+continuous indicators}
 \usage{
 lpa(data, vars, n_profiles, ...)
 }
@@ -14,22 +15,61 @@ indicators; categorical ones are named in \code{categorical}.}
 
 \item{n_profiles}{Number of profiles; a positive integer.}
 
-\item{...}{Further arguments for \code{\link[=multilpa]{multilpa()}}: the covariance structure
-(\code{model}, or \code{variance_model} and \code{covariance_model}, or \code{volume},
-\code{shape} and \code{orientation}), \code{missing}, \code{categorical}, \code{n_starts},
-\code{seed}, \code{boundary}, \code{prior}, \code{noise} and \code{profile_covariates}.
-Arguments \code{id} and \code{n_group_classes} are not accepted.}
+\item{...}{Further arguments, passed to \code{\link[=multilpa]{multilpa()}}, which documents all
+of them. The ones used most often:
+\itemize{
+\item \code{variance_model}: \code{"varying"} (default) gives each profile its own
+variances; \code{"equal"} gives all profiles the same variances.
+\item \code{covariance_model}: \code{"diagonal"} (default) treats the indicators as
+uncorrelated within a profile; \code{"full"} estimates their within-profile
+covariances.
+\item \code{model}: the covariance structure as one of mclust's fourteen codes
+(\code{"EII"}, \code{"VII"}, \code{"EEI"}, \code{"VEI"}, \code{"EVI"}, \code{"VVI"}, \code{"EEE"},
+\code{"VEE"}, \code{"EVE"}, \code{"VVE"}, \code{"EEV"}, \code{"VEV"}, \code{"EVV"}, \code{"VVV"}),
+instead of \code{variance_model} and \code{covariance_model}. The default
+structure is \code{"VVI"}.
+\item \code{missing}: \code{"error"} (default) stops when an indicator has a missing
+value; \code{"fiml"} keeps every row and uses the values it has.
+\item \code{categorical}, \code{ordinal}, \code{count}: indicators in \code{vars} that are not
+continuous.
+\item \code{n_starts} (default 10) and \code{seed}: the number of starts and the seed
+that makes them reproducible.
+\item \code{boundary}: \code{"allow"} (default) or \code{"exclude"}, whether a solution
+with a variance at its lower bound may be reported.
+\item \code{prior}, \code{noise} and \code{profile_covariates}: a prior on the Gaussian
+parameters, a noise component for outliers, and covariates that
+predict profile membership.
+}
+
+\code{id} and \code{n_group_classes} are not accepted: they belong to the
+two-level model.}
 }
 \value{
-A fitted object as returned by \code{\link[=multilpa]{multilpa()}}, usually of class
-\code{multilpa}, or \code{multilpa_covariates} with membership covariates. Its
-\code{call} records the original \code{lpa()} call.
+A fitted model of class \code{multilpa}, or \code{multilpa_covariates} when
+\code{profile_covariates} is given. Printing it shows the log likelihood,
+convergence, profile sizes and profile means; \code{summary()} prints every
+table. \code{\link[=get_results]{get_results()}} returns the tables by name, among them:
+\itemize{
+\item \code{"profiles"} (also \code{as.data.frame(fit)}): one row per profile and
+indicator, with the mean, variance and their standard errors;
+\item \code{"profile_probabilities"}: the proportion of each profile;
+\item \code{"assignments"}: the data with each row's most likely profile and its
+posterior probabilities;
+\item \code{"classification"} and \code{"entropy"}: how clearly the rows are
+classified;
+\item \code{"information_criteria"}: the log likelihood, AIC, BIC and related
+criteria;
+\item \code{"starts"}: the log likelihood and convergence of every start.
+}
+
+\code{get_results(fit, "all")} returns every table. The fit's \code{call} records
+the original \code{lpa()} call.
 }
 \description{
-Latent profile analysis describes heterogeneity in continuous indicators
-through a specified number of latent profiles. Each profile represents a
-pattern of indicator means and within-profile variation. \code{lpa()} estimates
-these patterns using a finite mixture of multivariate normal distributions.
+\code{lpa()} fits a latent profile model, which describes heterogeneity in
+continuous indicators through a specified number of latent profiles. Each
+profile represents a pattern of indicator means and within-profile variation,
+estimated as a finite mixture of multivariate normal distributions.
 
 By default, indicators are independent within profiles and their variances
 differ across profiles. Alternative covariance structures allow associations
@@ -44,8 +84,14 @@ continuous and discrete indicators.
 }
 \section{Conditions}{
 
-\code{latents_bad_argument} when \code{id} or \code{n_group_classes} is passed; the
-conditions \code{\link[=multilpa]{multilpa()}} raises otherwise.
+Errors: \code{latents_bad_argument} when \code{id} or \code{n_group_classes} is passed
+or an argument has a value that is not accepted; \code{latents_bad_data} when
+a column is missing from \code{data} or an indicator has missing values under
+\code{missing = "error"}; \code{latents_unidentified} when there are more profiles
+than distinct rows. Warnings: \code{latents_unconverged} when the reported
+start did not converge, \code{latents_boundary} when a variance is at its
+lower bound, and \code{latents_small_classes} when a profile is nearly empty.
+\code{\link[=multilpa]{multilpa()}} raises the others, and \link{latents-conditions} lists them all.
 }
 
 \examples{
@@ -54,6 +100,7 @@ fit <- lpa(srl, c("cognitive_strategies", "intrinsic_value",
            n_profiles = 2, variance_model = "equal",
            covariance_model = "full", n_starts = 3, seed = 1)
 fit
+get_results(fit, "profile_probabilities")
 plot(fit, what = "raincloud")
 }
 \seealso{

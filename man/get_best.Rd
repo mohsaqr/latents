@@ -2,23 +2,45 @@
 % Please edit documentation in R/wildcards.R
 \name{get_best}
 \alias{get_best}
-\title{The best candidate under each criterion}
+\title{Get the converged candidate with the lowest value of each information
+criterion}
 \usage{
 get_best(x)
 }
 \arguments{
-\item{x}{An enumeration grid from \code{\link[=enumerate_classes]{enumerate_classes()}},
-\code{\link[=enumerate_lpa]{enumerate_lpa()}} or \code{\link[=enumerate_lca]{enumerate_lca()}}.}
+\item{x}{An enumeration grid from \code{\link[=enumerate_lpa]{enumerate_lpa()}}, \code{\link[=enumerate_lca]{enumerate_lca()}}
+or \code{\link[=enumerate_classes]{enumerate_classes()}}. A regression grid from
+\code{\link[=enumerate_regressions]{enumerate_regressions()}} has no such table and is refused; its
+\code{\link[=get_candidates]{get_candidates()}} table marks the lowest BIC in \code{best_bic}.}
 }
 \value{
-A data frame. On a profile or class grid, one row per criterion and convention: \verb{criterion, convention, candidate, n_profiles, n_group_classes, model, value}.
-On a transition or family grid, the one row of the candidates table with the lowest BIC.
-A regression grid raises \code{latents_bad_argument}, naming the tables it has. Any other object raises \code{latents_not_a_fit}.
+A data frame.
+
+On a profile or class grid it has one row per criterion and sample
+size, with the columns:
+\itemize{
+\item \code{criterion}: \code{aic}, \code{kic}, \code{bic}, \code{sabic}, \code{caic}, \code{awe}, \code{icl} or
+\code{clc};
+\item \code{convention}: \code{"groups"} or \code{"individuals"}, the sample size the
+criterion uses; \code{NA} for AIC and KIC, which use none;
+\item \code{candidate}: the name of the converged candidate with the lowest
+value;
+\item \code{n_profiles}, \code{n_group_classes}, \code{model}: that candidate's numbers
+of classes and covariance structure;
+\item \code{value}: its value of the criterion.
+}
+
+On a transition grid or a grid of group-class families it is one row:
+the row of \code{get_results(x, "candidates")} with the lowest BIC.
+
+Errors: \code{latents_bad_argument} for a regression grid, naming the
+tables it has; \code{latents_not_a_fit} when \code{x} is not an enumeration
+grid.
 }
 \description{
-The candidate with the lowest (or, by the criterion's convention,
-highest) value of each information criterion. Several criteria may
-name the same candidate; none selects a model on its own.
+\code{get_best()} returns, for each information criterion of an enumeration grid,
+the converged candidate with the lowest value. Several criteria may name the
+same candidate, and no criterion chooses a model on its own.
 }
 \examples{
 grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
@@ -27,5 +49,6 @@ grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
 get_best(grid)
 }
 \seealso{
-\code{\link[=get_candidates]{get_candidates()}}, \code{\link[=get_deltas]{get_deltas()}}, \code{\link[=get_knees]{get_knees()}}.
+\code{\link[=get_candidates]{get_candidates()}} for every candidate and criterion;
+\code{\link[=get_deltas]{get_deltas()}}, \code{\link[=get_knees]{get_knees()}}; \code{\link[=plot_criteria]{plot_criteria()}}.
 }

@@ -2,22 +2,56 @@
 % Please edit documentation in R/wildcards.R
 \name{get_knees}
 \alias{get_knees}
-\title{Where each criterion line bends}
+\title{Get the candidate after which adding classes improves each information
+criterion much less}
 \usage{
 get_knees(x)
 }
 \arguments{
-\item{x}{An enumeration grid from \code{\link[=enumerate_classes]{enumerate_classes()}},
-\code{\link[=enumerate_lpa]{enumerate_lpa()}} or \code{\link[=enumerate_lca]{enumerate_lca()}}.}
+\item{x}{A profile or class grid from \code{\link[=enumerate_lpa]{enumerate_lpa()}},
+\code{\link[=enumerate_lca]{enumerate_lca()}} or \code{\link[=enumerate_classes]{enumerate_classes()}}. Transition grids, grids of
+group-class families and regression grids have no such table and are
+refused.}
 }
 \value{
-A data frame, one row per line and direction: \verb{direction, line, criterion, from, to, n_points, knee_candidate, distance, knee_without_largest, stable, note}.
-A regression, transition or family grid has no knees and raises
-\code{latents_bad_argument}, naming the tables it has.  Any other object raises \code{latents_not_a_fit}.
+A data frame with one row per line and the columns:
+\itemize{
+\item \code{direction}: \code{"profiles"} (along the number of profiles, at a fixed
+number of group classes), \code{"group_classes"} (along the number of
+group classes, at a fixed number of profiles) or \code{"parameters"}
+(every candidate, ordered by its number of parameters);
+\item \code{line}: what is held fixed along the line;
+\item \code{criterion}: the name of the criterion, \code{bic_groups};
+\item \code{from}, \code{to}: the first and the last candidate of the line;
+\item \code{n_points}: the number of candidates on the line;
+\item \code{knee_candidate}: the candidate at the knee; \code{NA} when the line has
+none;
+\item \code{distance}: how far the knee lies below the straight line, in the
+rescaled units;
+\item \code{knee_without_largest}: the knee when the largest candidate is left
+out;
+\item \code{stable}: \code{TRUE} when the two knees are the same candidate; \code{NA}
+when the line has fewer than four candidates;
+\item \code{note}: why a knee or its stability is missing.
+}
+
+Errors: \code{latents_bad_argument} for a transition, family or regression
+grid, naming the tables it has; \code{latents_not_a_fit} when \code{x} is not an
+enumeration grid.
 }
 \description{
-The knee of each line of the criterion over the number of classes,
-and whether it holds when the largest candidate is left out.
+\code{get_knees()} returns the knee of every line of a profile or class grid: the
+candidate after which adding classes lowers the criterion much less than
+before, and whether the knee stays the same when the largest candidate is
+left out. The criterion is \code{bic_groups}, BIC with the number of groups as the
+sample size.
+}
+\details{
+Both axes of a line are rescaled to run from 0 to 1. The knee is the
+candidate that lies furthest below the straight line from the first
+candidate to the last. A line needs three candidates to have a knee and
+four for its stability to be assessed, and a line whose criterion does
+not fall from its first to its last candidate has none.
 }
 \examples{
 grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
@@ -26,5 +60,6 @@ grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
 get_knees(grid)
 }
 \seealso{
-\code{\link[=get_deltas]{get_deltas()}}, \code{\link[=get_best]{get_best()}}.
+\code{\link[=get_deltas]{get_deltas()}} for the changes behind the lines; \code{\link[=get_best]{get_best()}};
+\code{\link[=plot_deltas]{plot_deltas()}}.
 }

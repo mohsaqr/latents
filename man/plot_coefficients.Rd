@@ -2,27 +2,55 @@
 % Please edit documentation in R/wildcards.R
 \name{plot_coefficients}
 \alias{plot_coefficients}
-\title{Class coefficients with intervals}
+\title{Plot the regression coefficients of each class of a mixture regression, with
+95\% confidence intervals}
 \usage{
 plot_coefficients(x, main = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{A growth mixture, or a mixture regression from
-\code{\link[=mixture_regression]{mixture_regression()}}.}
+\item{x}{A fit from \code{\link[=mixture_regression]{mixture_regression()}} of any kind, growth mixtures
+included, or a \code{\link[=diagnostics]{diagnostics()}} result, which is drawn from the fit it
+checked.}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot. \code{NULL} (default)
+keeps the view's own text.}
 }
 \value{
 A ggplot object.
-An object with nothing to draw raises \code{latents_nothing_to_plot},
-naming the plot functions that apply; an object the package did not
-return raises \code{latents_not_a_fit}.
+
+Errors:
+\itemize{
+\item \code{latents_nothing_to_plot} when the package returned \code{x} but this
+function has no plot of it: a profile, class, transition, additive or
+cross-level fit, or an enumeration grid. For an object of the wrong
+kind, the message names the plot functions that apply to it;
+\item \code{latents_not_a_fit} when \code{x} is not a fit, grid or other result of the
+package, for example a data frame;
+\item \code{latents_missing_package} when ggplot2 is not installed.
+}
 }
 \description{
-Each class's regression coefficients of a mixture regression or growth
-mixture with their intervals. The fit's own
-\code{plot(x, what = "coefficients")} takes \code{level} (default 0.95).
+\code{plot_coefficients()} plots the regression coefficients of each class of a
+model fitted with \code{\link[=mixture_regression]{mixture_regression()}}, each with its 95\% confidence
+interval.
+}
+\details{
+\strong{Classes of persons} (a growth mixture, or a fit with
+\code{class_level = "group"}). There is one panel per term of the model, each
+with its own x-axis. The rows of a panel are the classes, and a row
+\verb{Shared by all classes} holds a term that is common to them. A point is
+the estimate and the horizontal bar its interval; each class has its own
+colour and marker. The estimate, the interval and the Wald p-value are
+printed beside each row, and a dashed line marks zero.
+
+\strong{Classes of observations} (any other mixture regression). There is one
+panel. The rows are the terms of the model; within a term the classes
+are drawn one under the other, each with its own colour and marker. A
+point is the estimate and the horizontal line its interval, and a dotted
+line marks zero.
+
+\code{plot(x, what = "coefficients", level = )} draws the same view with
+another confidence level.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -33,5 +61,6 @@ plot_coefficients(fit)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=plot_trajectories]{plot_trajectories()}}; \code{\link[=get_results]{get_results()}} for the coefficient table.
+\code{\link[=plot_trajectories]{plot_trajectories()}} for the curves the coefficients give;
+\code{\link[=get_results]{get_results()}} for the coefficients as a table.
 }

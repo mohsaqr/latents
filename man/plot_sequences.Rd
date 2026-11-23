@@ -2,7 +2,8 @@
 % Please edit documentation in R/plot-named.R
 \name{plot_sequences}
 \alias{plot_sequences}
-\title{Assigned profiles over the occasions}
+\title{Plot each unit's sequence of assigned profiles across the occasions as a row
+of coloured cells}
 \usage{
 plot_sequences(
   x,
@@ -13,23 +14,50 @@ plot_sequences(
 )
 }
 \arguments{
-\item{x}{A fitted model of any family.}
+\item{x}{A fit with ordered occasions:
+\itemize{
+\item a transition fit from \code{\link[=lta]{lta()}}, of either class
+(\code{multilpa_transitions} or \code{multilpa_lta}), except one with
+\code{measurement = "occasion"}, whose profiles differ by occasion;
+\item a profile or class fit from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}} or
+\code{\link[=multilca]{multilca()}} (with or without membership covariates) made with
+\code{time}.
+}}
 
-\item{labels}{\code{TRUE} (default) groups the rows by group class under
-labelled strips; \code{FALSE} does not.}
+\item{labels}{\code{TRUE} (default) puts the rows in blocks under labelled
+strips: one block per group class when the fit has two or more group
+classes, otherwise one per most frequent profile. \code{FALSE} draws the
+rows in the same order as one block without strips.}
 
-\item{cell_labels}{\code{TRUE} (default) prints the profile in each cell when
-the cells are large enough for the text.}
+\item{cell_labels}{\code{TRUE} (default) prints the profile number in each
+cell when the grid has at most 60 rows and 40 occasions; a larger grid
+shows the profiles by colour, with a dash still marking an occasion that
+observed nothing when the grid also has noise or absent occasions.
+\code{FALSE} never prints the numbers.}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot, each one string;
+\code{NULL} (default) keeps the view's own.}
 }
 \value{
-A ggplot object. A fit without occasions raises \code{latents_no_time}.
+A ggplot object, which draws the plot when printed. Conditions
+raised:
+\itemize{
+\item \code{latents_no_time}: a profile or class fit made without \code{time};
+\item \code{latents_nothing_to_plot}: a model with no sequence view (an
+\code{\link[=lta]{lta()}} fit with \code{measurement = "occasion"}, a growth mixture, a
+mixture regression, an additive or cross-level fit, pooled
+imputations);
+\item \code{latents_not_a_fit}: \code{x} is not a fitted model.
+}
 }
 \description{
-One row per group (person) and one cell per occasion, coloured by the
-profile assigned at that occasion, for a fit with \code{time}.
+\code{plot_sequences()} plots each group's (person's) sequence of profiles as a
+row of coloured cells: one row per group, one cell per occasion, coloured by
+the profile the observation at that occasion is assigned to (its most likely
+one). Within a block the rows are sorted by each group's most frequent
+profile, so groups with similar sequences sit together. An occasion at which
+nothing was observed is shown grey, and one absent from the data is left
+blank.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -40,5 +68,9 @@ plot_sequences(fit)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=plot_transitions]{plot_transitions()}} for the transition matrix.
+\code{\link[=plot_transitions]{plot_transitions()}} for the transition matrix. The sequences as
+a table: \code{get_results(x, "sequences")} for a profile or class model and
+a transition fit of class \code{multilpa_transitions};
+\code{get_results(x, "assignments")} (one row per observation, with its
+profile) for a general transition fit of class \code{multilpa_lta}.
 }

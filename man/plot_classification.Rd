@@ -2,27 +2,55 @@
 % Please edit documentation in R/wildcards.R
 \name{plot_classification}
 \alias{plot_classification}
-\title{Class probabilities of every person}
+\title{Plot each person's posterior probability of every class in a growth model as
+a stacked bar}
 \usage{
 plot_classification(x, main = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{A growth mixture, or a mixture regression that classifies
-persons (\code{class_level = "group"}).}
+\item{x}{One of:
+\itemize{
+\item a growth mixture: a fit from \code{\link[=mixture_regression]{mixture_regression()}} with \code{random};
+\item a fit from \code{\link[=mixture_regression]{mixture_regression()}} with \code{class_level = "group"}, which
+classifies persons;
+\item a \code{\link[=diagnostics]{diagnostics()}} result, which is drawn from the fit it checked.
+}}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot. \code{NULL} (default)
+keeps the view's own text.}
 }
 \value{
 A ggplot object.
-An object with nothing to draw raises \code{latents_nothing_to_plot},
-naming the plot functions that apply; an object the package did not
-return raises \code{latents_not_a_fit}.
+
+Errors:
+\itemize{
+\item \code{latents_nothing_to_plot} when the package returned \code{x} but this
+function has no plot of it: a mixture regression that classifies
+observations (including one with \code{n_group_classes} of two or more), a
+fit of any other family or an enumeration grid. For an object of the
+wrong kind, the message names the plot functions that apply to it;
+\item \code{latents_not_a_fit} when \code{x} is not a fit, grid or other result of the
+package, for example a data frame;
+\item \code{latents_missing_package} when ggplot2 is not installed.
+}
 }
 \description{
-One stacked bar per person of a growth mixture or a regression that
-classifies persons: the probability of each class, persons ordered by
-assigned class and certainty.
+\code{plot_classification()} plots one stacked bar per person of a growth model,
+split by the person's posterior probability of each class.
+}
+\details{
+The x-axis holds the persons and the y-axis the posterior probability,
+from 0 to 1. Each bar is one person and is divided into one segment per
+class, filled in the class's colour, so that a bar of a single colour is
+a person classified with certainty. There is one panel per assigned (most
+likely) class, the largest first; within a panel the persons are ordered
+from the most to the least certain. On the bar of the least certain
+person of each panel the segments are labelled with their class, where
+they are wide enough. The subtitle gives, for each class, the average
+probability of the assigned class.
+
+\code{\link[=plot_posteriors]{plot_posteriors()}} shows only the probability of the assigned class, and
+takes fits of every family.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -33,6 +61,6 @@ plot_classification(fit)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=plot_posteriors]{plot_posteriors()}} for the certainty of the assigned class alone;
-\code{\link[=plot_individuals]{plot_individuals()}}.
+\code{\link[=plot_posteriors]{plot_posteriors()}} for the certainty of the assigned class
+alone; \code{\link[=plot_individuals]{plot_individuals()}}; \code{\link[=get_classification]{get_classification()}} for the table.
 }

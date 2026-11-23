@@ -2,52 +2,91 @@
 % Please edit documentation in R/report.R
 \name{diagnostics}
 \alias{diagnostics}
-\title{Diagnostics of a fitted model}
+\title{Diagnose a fitted model: convergence, replication, class sizes, separation
+and local independence}
 \usage{
 diagnostics(x, data = NULL, plots = TRUE, by = c("profile", "overall"), ...)
 }
 \arguments{
-\item{x}{A fitted model of this package.}
+\item{x}{A fitted model: a profile or class fit (\code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}},
+\code{\link[=multilpa]{multilpa()}}, \code{\link[=multilca]{multilca()}}, with or without membership covariates), a
+transition fit (\code{\link[=lta]{lta()}}), an additive or cross-level fit, a mixture
+regression or a growth mixture (\code{\link[=mixture_regression]{mixture_regression()}}). Anything else,
+including pooled imputations and enumeration grids, raises
+\code{latents_not_a_fit}.}
 
-\item{data}{Optional data frame used to fit the model. When omitted, the
-required columns are reconstructed from the fitted object.}
+\item{data}{The data frame the model was fitted to, used for the
+bivariate residuals. \code{NULL} (default) uses the columns stored in the
+fit.}
 
-\item{plots}{\code{TRUE} (the default) draws classification plots for model
-families that support them: effective profile sizes, posterior
-probabilities of assigned profiles, case entropy, and the average
-posterior probability matrix. If ggplot2 is unavailable or the model
-family has no classification plots, a message is issued and the tables
-are returned without plots. \code{FALSE} returns only the tables.}
+\item{plots}{Whether to draw the classification plots as well:
+\itemize{
+\item \code{TRUE} (default): for a profile or class fit and an \code{\link[=lta]{lta()}} fit of
+class \code{multilpa_transitions}, draws the views of
+\code{\link[=plot_diagnostics]{plot_diagnostics()}}: effective profile sizes, the posterior
+probability of each observation's assigned profile, each
+observation's entropy and the average posterior probability matrix,
+and the same four for the groups of a fit with two or more group
+classes. For any other model a message says that it has no
+classification plots here, and the tables are returned without
+them. Without the ggplot2 package a message says so, and the tables
+are returned;
+\item \code{FALSE}: returns the tables and draws nothing.
+}}
 
-\item{by}{\code{"profile"} (the default) assesses each profile's bivariate
-residuals separately; \code{"overall"} pools them. This argument is forwarded
-to the residual calculations. The classification levels are determined
-by the fitted model.}
+\item{by}{How the bivariate residuals are assessed:
+\itemize{
+\item \code{"profile"} (default): within each profile separately, one row per
+profile and pair of indicators;
+\item \code{"overall"}: pooled over the profiles, one row per pair of
+indicators.
+}}
 
-\item{...}{Not used. For \code{diagnostics()} and \code{plot()}, any further argument
-raises \code{latents_bad_argument}; style the returned plots with ggplot2.}
+\item{...}{Not used. Any further argument to \code{diagnostics()}, or to
+\code{plot()} of its result, raises \code{latents_bad_argument}; style the
+returned plots with ggplot2.}
 }
 \value{
-An object of class \code{multilpa_diagnostics}. The checks table,
-accessed with \code{get_results(result, "checks")}, contains one row per check
-and columns \code{domain}, \code{check}, \code{level}, \code{value} (numeric), \code{display}
-(formatted value), \code{criterion}, \code{status}, \code{detail} and \code{reference}.
-Tables are accessed with \code{\link[=get_results]{get_results()}}, using \code{what = "checks"}, \code{"entropy"},
-\code{"classification"}, \code{"average_posteriors"}, \code{"residuals"},
-\code{"replication"} or \code{"all"}. A
-model family without bivariate residuals (a mixture regression, growth
-mixture, additive or cross-level model, or a general transition fit) has no
-such table: it is left out
-of \code{"all"}, and asking for it by name raises \code{latents_bad_argument}. A
+An object of class \code{multilpa_diagnostics}. It prints the checks
+grouped by domain, with those that need review marked. Its tables are
+data frames read with \code{\link[=get_results]{get_results()}}:
+\itemize{
+\item \code{"entropy"} (the default, also \code{as.data.frame()}): one row per
+level of classification: \code{level}, \code{n_classes}, \code{n_units},
+\code{entropy_sum}, \code{relative_entropy};
+\item \code{"classification"}: one row per level and class: \code{level}, \code{class},
+\code{n_modal}, \code{proportion_modal}, \code{estimated_n},
+\code{estimated_proportion}, \code{average_posterior},
+\code{odds_correct_classification};
+\item \code{"average_posteriors"}: for the units assigned to each class, their
+mean posterior probability of every class: \code{level},
+\code{assigned_class}, \code{class}, \code{n_assigned}, \code{average_posterior};
+\item \code{"residuals"}: the bivariate residuals, one row per pair of
+indicators (and per profile under \code{by = "profile"}): \code{profile},
+\code{indicator_1}, \code{indicator_2}, \code{kind}, \code{observed}, \code{expected},
+\code{residual}, \code{effective_n}, \code{statistic}, \code{df}, \code{p_value},
+\code{p_adjusted} (Benjamini-Hochberg);
+\item \code{"replication"}: one row on the starts: \code{n_starts}, \code{n_screened},
+\code{n_converged}, \code{n_failed}, \code{n_best_replicated}, \code{share},
+\code{tolerance}, \code{best_start}, \code{log_likelihood};
+\item \code{"checks"}: one row per check: \code{domain}, \code{check}, \code{level}, \code{value}
+(numeric), \code{display} (the value formatted), \code{criterion}, \code{status}
+(\code{"ok"}, \code{"check"}, \code{"fail"}, \code{"info"} or \code{"n/a"}), \code{detail} and
+\code{reference};
+\item \code{"all"}: a named list of the tables above.
+}
+
+\code{"residuals"} exists for profile and class fits and for \code{\link[=lta]{lta()}} fits
+of class \code{multilpa_transitions}. Any other model (an \code{\link[=lta]{lta()}} fit of
+class \code{multilpa_lta}, an additive or cross-level fit, a mixture
+regression, a growth mixture) has no such table: it is left out of
+\code{"all"}, and asking for it by name raises \code{latents_bad_argument}. A
 fit with a noise component has none either, and asking for it raises
 \code{latents_unsupported_noise}.
 
-\code{print()} groups checks by domain, highlights those requiring review and
-returns the object invisibly. For supported model families, \code{plot()}
-returns four classification plots as a \code{latents_plots} list of ggplot
-objects; printing the list draws
-all four plots. \code{as.data.frame()} returns the entropy table. \code{summary()}
-returns the diagnostics object.
+\code{plot()} of the result is \code{\link[=plot_diagnostics]{plot_diagnostics()}} of the fit: a
+\code{latents_plots} list of ggplot objects, which draws every plot when
+printed. \code{summary()} returns the result itself.
 }
 \description{
 \code{diagnostics()} examines the estimation and interpretation of a fitted
@@ -71,6 +110,7 @@ and classes with no assigned observations are identified for further
 examination.
 }
 \details{
+The checks are grouped in five domains:
 \itemize{
 \item \strong{Estimation}: convergence of the selected solution; replication of the
 best log likelihood across completed starts; failed or
@@ -133,9 +173,12 @@ quality <- diagnostics(fit, plots = FALSE)
 quality
 get_results(quality, "checks")
 get_results(quality, what = "classification")
-get_results(diagnostics(fit, by = "overall", plots = FALSE), what = "residuals")
+pooled <- diagnostics(fit, by = "overall", plots = FALSE)
+get_results(pooled, what = "residuals")
 }
 \seealso{
-\code{\link[=get_results]{get_results()}} for these and the other tables, \code{\link[=descriptives]{descriptives()}}
-for the variables before fitting, and \code{\link[=summary]{summary()}} for the estimates.
+\code{\link[=get_results]{get_results()}} for these and the other tables, \code{\link[=get_checks]{get_checks()}}
+for the checks alone, \code{\link[=plot_diagnostics]{plot_diagnostics()}} for the plots,
+\code{\link[=descriptives]{descriptives()}} for the variables before fitting, and \code{\link[=summary]{summary()}} for
+the estimates.
 }

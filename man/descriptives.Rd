@@ -3,36 +3,63 @@
 \name{descriptives}
 \alias{descriptives}
 \alias{descriptives.data.frame}
-\title{Descriptive statistics and intraclass correlations of model variables}
+\title{Describe each variable of a data frame or a fitted model, with its variation
+within and between groups}
 \usage{
 descriptives(x, ...)
 
 \method{descriptives}{data.frame}(x, vars = NULL, id = NULL, by = NULL, ...)
 }
 \arguments{
-\item{x}{A data frame, or a profile, class or transition fit (from
-\code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}}, \code{\link[=multilca]{multilca()}}, or \code{\link[=lta]{lta()}} with
-time-homogeneous transitions), whose own \code{vars} and \code{id} are then used. A
-single-level fit has no groups, so its table has no \code{n_groups} or \code{icc}.
-Anything else, including a fit of another family, raises
-\code{latents_not_a_fit}; describe the data frame it was fitted to instead.}
+\item{x}{What to describe:
+\itemize{
+\item a data frame, with \code{vars}, \code{id} and \code{by} naming its columns;
+\item a profile or class fit from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}} or
+\code{\link[=multilca]{multilca()}}, with or without membership covariates;
+\item an \code{\link[=lta]{lta()}} fit with its default homogeneous first-order transitions,
+invariant measurement and continuous or categorical indicators.
+}
+
+A fit is described on its own indicators and group identifier, so
+\code{vars} and \code{id} are not given with it. A single-level fit has no
+groups, so its table has no \code{n_groups}, \code{sd_within}, \code{sd_between} or
+\code{icc}. Anything else raises
+\code{latents_not_a_fit}, including the other \code{multilpa()} families
+(additive, dispersion and cross-level), an \code{lta()} fit with ordinal or
+count indicators, covariates, occasion-specific or second-order
+transitions, occasion-specific measurement, a stayer class or weights,
+and a fit from \code{\link[=mixture_regression]{mixture_regression()}}; describe the data frame it was
+fitted to instead.}
 
 \item{...}{Not used. For a data frame, any further argument raises a
 \code{latents_unused_argument} warning; for a fit, it raises
 \code{latents_bad_argument}.}
 
-\item{vars}{Character vector of column names to describe; repeated names
-are described once. Columns must be vectors: matrix-valued columns raise
-\code{latents_bad_data}. For a data frame, defaults to every numeric column
-other than \code{id} and \code{by}.}
+\item{vars}{For a data frame: character vector of column names to
+describe; repeated names are described once. \code{NULL} (default) takes
+every numeric column other than \code{id} and \code{by}. Columns must be vectors:
+matrix-valued columns raise \code{latents_bad_data}.}
 
-\item{id}{Optional. The column identifying the groups the rows are nested
-in. Supplying it adds \code{n_groups} and \code{icc}.}
+\item{id}{For a data frame: optional name of the column identifying the
+groups the rows are nested in (for example the person in repeated
+measures). Supplying it adds \code{n_groups}, \code{sd_within}, \code{sd_between} and
+\code{icc}.}
 
-\item{by}{Optional. On a fitted model, \code{"profile"} or \code{"group_class"}; on a
-data frame, a column name. Each variable is then described once per level
-of it. Rows whose stratifier is \code{NA} form their own stratum, labelled \code{NA}
-and reported last, so every input row is counted in exactly one stratum.}
+\item{by}{Optional stratifier; each variable is then described once per
+level of it. \code{NULL} (default) describes all rows together.
+\itemize{
+\item On a data frame: the name of one of its columns.
+\item On a fitted model, \code{"profile"}: the profile (class) each observation
+is assigned to.
+\item On a fitted model, \code{"group_class"}: the group class the observation's
+group is assigned to; a single-level fit has one group class, so one
+stratum.
+}
+
+Rows whose stratifier is \code{NA} form their own stratum, labelled \code{NA}
+and reported last, so every input row is counted in exactly one
+stratum. On a fitted model any other value raises
+\code{latents_bad_argument}.}
 }
 \value{
 A base \code{data.frame}, one row per variable (or per variable and \code{by}
@@ -41,36 +68,61 @@ level), with the columns
 \item{\code{variable}}{character: the column described.}
 \item{\code{n}}{integer: observations with a value.}
 \item{\code{n_missing}}{integer: observations without one.}
-\item{\code{mean},\code{sd},\code{min},\code{max}}{numeric; \code{NA_real_} for a variable
-that is not numeric.}
+\item{\code{mean},\code{sd},\code{min},\code{max}}{numeric: the mean, standard deviation,
+minimum and maximum of the observed values; \code{NA_real_} for a
+variable that is not numeric, such as a categorical indicator.}
 \item{\code{n_distinct}}{integer: distinct observed values.}
-\item{\code{n_groups},\code{icc}}{present only when \code{id} is known. \code{icc} is the
-one-way random-effects estimate. It can be negative when the
-between-group mean square is smaller than the within-group mean
-square; this does not represent a negative population variance.
-Rows with a missing group identifier contribute to neither statistic.}
+\item{\code{n_groups}}{integer, present only when \code{id} is known: the groups
+with an observed value of the variable.}
+\item{\code{sd_within}}{numeric, present only when \code{id} is known: the
+pooled within-group standard deviation, how much the values vary
+around their own group's mean (the square root of the within-group
+mean square). \code{NA} when no group holds more than one value, and for
+a variable that is not numeric.}
+\item{\code{sd_between}}{numeric, present only when \code{id} is known: the
+standard deviation of the group means, each group counted once, how
+much the groups differ from each other. \code{NA} with fewer than two
+groups, and for a variable that is not numeric.}
+\item{\code{icc}}{numeric, present only when \code{id} is known: the one-way
+random-effects intraclass correlation,
+\code{(MSB - MSW) / (MSB + (n0 - 1) * MSW)}, from the between-group and
+within-group mean squares of a one-way analysis of variance, with
+\code{n0} the average group size corrected for unequal sizes. It can be
+negative when the between-group mean square is smaller than the
+within-group mean square; this does not represent a negative
+population variance. It is \code{NA} for a variable that is not numeric,
+with fewer than two groups, with no group holding more than one
+value, or constant over all rows. Rows with a missing group
+identifier contribute to neither statistic.}
 }
 With \code{by}, a first column named after the stratifier holds each stratum's
 value (\code{NA} for the stratum of missing values). For every variable,
 \code{n + n_missing} summed over the strata equals the number of input rows.
 When describing a fit by \code{"profile"} or \code{"group_class"}, the model's
 assignment is used as the stratifier without replacing an indicator of
-the same name. A \code{by} named like one of the summary's own columns raises
-\code{latents_bad_data}. Describing no variables raises
-\code{latents_nothing_to_describe}.
+the same name.
+
+Errors: \code{latents_not_a_fit} for an \code{x} that is neither a data frame
+nor a supported fit; \code{latents_bad_data} for a \code{vars} name the data
+frame does not have, a matrix-valued column, or a \code{by} named like one
+of the summary's own columns; \code{latents_nothing_to_describe} when there
+are no variables to describe; \code{latents_bad_argument} for any other
+invalid argument. Describing a fit with sampling weights warns with
+\code{latents_unweighted_descriptives}.
 }
 \description{
-\code{descriptives()} summarizes the characteristics of variables used in latent
-profile and class analyses. It supports inspection of variability, observed
-ranges, and missingness before model estimation, as well as descriptive
-comparisons across groups.
+\code{descriptives()} describes each variable of a data frame, or each indicator
+of a fitted model: the number of observed and missing values, the mean,
+standard deviation, minimum and maximum of a numeric variable, and the number
+of distinct values. When the rows are nested in groups it adds the number of
+groups, the standard deviations within and between groups, and the intraclass
+correlation, the share of a variable's variance that lies between groups.
 
-For numeric variables, the function reports measures of central tendency
-and dispersion. When a grouping identifier is supplied, it also estimates
-intraclass correlations to describe clustering within groups. Summaries can
-be calculated for the full dataset or separately by an observed grouping
-variable. For supported fitted models, variables can also be summarized by
-assigned profile or group class.
+The table can be computed for the whole data set, or once per level of an
+observed grouping column (\code{by}). For a fitted model it can be computed
+once per assigned profile or group class. Use it to inspect variability,
+ranges and missingness before fitting, and to describe the observations
+assigned to each class afterwards.
 }
 \details{
 Summaries by fitted class use assigned membership and do not incorporate

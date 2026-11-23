@@ -2,24 +2,51 @@
 % Please edit documentation in R/wildcards.R
 \name{get_classification}
 \alias{get_classification}
-\title{Class sizes and classification certainty}
+\title{Get how many units each class holds and how certain their assignment is}
 \usage{
 get_classification(x)
 }
 \arguments{
-\item{x}{A fitted model of any family, an enumeration grid, or the
-result of \code{\link[=diagnostics]{diagnostics()}}.}
+\item{x}{One of:
+\itemize{
+\item a fitted model of any family: from \code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}},
+\code{\link[=multilca]{multilca()}}, \code{\link[=lta]{lta()}} or \code{\link[=mixture_regression]{mixture_regression()}}. The table is the one
+\code{\link[=diagnostics]{diagnostics()}} computes with its defaults;
+\item an enumeration grid of any kind, from \code{\link[=enumerate_lpa]{enumerate_lpa()}},
+\code{\link[=enumerate_lca]{enumerate_lca()}}, \code{\link[=enumerate_classes]{enumerate_classes()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}.
+The tables of the fitted candidates are stacked, with a first column
+\code{candidate} that names the candidate of each row. A candidate whose
+estimation failed has no rows;
+\item the result of \code{\link[=diagnostics]{diagnostics()}}. The table is the one the result holds.
+}}
 }
 \value{
-A data frame, one row per level and class (and candidate): \verb{level, class, n_modal, proportion_modal, estimated_n, estimated_proportion, average_posterior, odds_correct_classification}.
-Any other object raises \code{latents_not_a_fit}.
+A data frame with one row per level and class (per candidate,
+level and class for a grid) and the columns:
+\itemize{
+\item \code{level}: \code{"individuals"} or \code{"groups"};
+\item \code{class}: the number of the class; \code{0} is the noise component of a fit
+that has one;
+\item \code{n_modal}: the number of units whose most likely class this is;
+\item \code{proportion_modal}: \code{n_modal} as a share of the units;
+\item \code{estimated_n}: the sum of the units' posterior probabilities of the
+class;
+\item \code{estimated_proportion}: \code{estimated_n} as a share of the units;
+\item \code{average_posterior}: the mean posterior probability of the class
+among the units assigned to it;
+\item \code{odds_correct_classification}: the odds of \code{average_posterior}
+divided by the odds of \code{estimated_proportion}.
+}
+
+A fit without group classes has rows for the individuals only; a fit
+that classifies groups only has rows for the groups only.
+
+Errors: \code{latents_not_a_fit} when \code{x} is none of these, for example a
+comparison, pooled imputations or a data frame.
 }
 \description{
-Modal and estimated class sizes, average posterior probability and
-odds of correct classification, at each level the fit classifies. For a fit, the table is the one \code{\link[=diagnostics]{diagnostics()}} computes with its
-defaults; for a grid, the tables of every candidate are stacked with
-a first column \code{candidate} (a candidate whose estimation failed has no
-row); for a diagnostics result, its own table.
+\code{get_classification()} returns, for every class, how many units it holds,
+counted two ways, and how certain the assignment of its units is.
 }
 \examples{
 fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
@@ -27,5 +54,6 @@ fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 get_classification(fit)
 }
 \seealso{
-\code{\link[=plot_sizes]{plot_sizes()}} and \code{\link[=plot_posteriors]{plot_posteriors()}} draw it; \code{\link[=get_avepp]{get_avepp()}}.
+\code{\link[=plot_sizes]{plot_sizes()}} and \code{\link[=plot_posteriors]{plot_posteriors()}} draw it; \code{\link[=get_avepp]{get_avepp()}}
+for the full matrix of average posterior probabilities.
 }

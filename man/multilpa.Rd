@@ -2,7 +2,8 @@
 % Please edit documentation in R/multilpa.R
 \name{multilpa}
 \alias{multilpa}
-\title{Fit a two-level latent profile model}
+\title{Fit a two-level latent profile model: profiles of observations and classes of
+the groups they are nested in}
 \usage{
 multilpa(
   data,
@@ -65,7 +66,8 @@ in which each row is its own unit; \code{n_group_classes} must then be one.}
 
 \item{n_profiles}{Number of individual profiles.}
 
-\item{n_group_classes}{Number of group classes (default 2).}
+\item{n_group_classes}{Number of group classes (default 2; 1 with
+\code{id = NULL}). With 1, every group has the same profile proportions.}
 
 \item{profile_covariates, group_covariates}{Complete numeric columns of
 \code{data} that predict profile and group-class membership through
@@ -73,12 +75,20 @@ multinomial logits (last class as reference), estimated in one step and
 entering in their own units. A group covariate must be constant within
 its group. See \emph{Covariates}.}
 
-\item{variance_model}{\code{"varying"} (default): each profile has its own
-variances or covariance matrix; \code{"equal"}: one shared by all profiles.}
+\item{variance_model}{Whether the profiles share the variances of the
+continuous indicators:
+\itemize{
+\item \code{"varying"} (default): each profile has its own variances (its own
+covariance matrix under \code{covariance_model = "full"}), so profiles can
+differ in spread as well as in level;
+\item \code{"equal"}: one set of variances (one covariance matrix) shared by all
+profiles, so profiles differ only in their means. This uses fewer
+parameters and is less prone to solutions in which one profile's
+variance collapses towards zero.
+}}
 
-\item{n_starts}{Number of EM starts (default 10). The first is
-deterministic (Ward's clustering), the rest random. See \emph{Starts and
-convergence}.}
+\item{n_starts}{Number of EM starts (default 10). The first is deterministic
+(Ward's clustering), the rest random. See \emph{Starts and convergence}.}
 
 \item{max_iter}{Maximum EM updates per start (default 1000). \code{max_iter = 0}
 evaluates the starts without updating them; with \code{start}, that is the
@@ -104,19 +114,39 @@ has them \code{covariances} and \code{response_probabilities} (one
 profiles-by-categories matrix per categorical indicator).
 \code{\link[=starting_values]{starting_values()}} produces one from a fit.}
 
-\item{missing}{\code{"error"} (default) rejects missing indicator values;
-\code{"fiml"} maximizes the observed-data likelihood under MAR, integrating
-the missing values out. Covariates must be complete either way. See
-\emph{Missing data}.}
+\item{missing}{What to do with missing indicator values (covariates must
+be complete either way; see \emph{Missing data}):
+\itemize{
+\item \code{"error"} (default): stop, naming the indicators that have them;
+\item \code{"fiml"}: keep every row and fit each one on the indicators it
+observes (full-information maximum likelihood). This is valid when the
+missingness depends only on observed values (missing at random).
+}}
 
-\item{profile_slopes}{\code{"shared"} (default): one slope per profile logit,
-common to all group classes. \code{"group_class"}: separate slopes in each
-group class, a cross-level interaction with \code{n_group_classes} times as
-many slope parameters.}
+\item{profile_slopes}{With \code{profile_covariates} and more than one group
+class, whether the covariate slopes differ between group classes:
+\itemize{
+\item \code{"shared"} (default): one slope per profile logit, common to all
+group classes;
+\item \code{"group_class"}: separate slopes in each group class, a cross-level
+interaction with \code{n_group_classes} times as many slope parameters.
+It needs \code{profile_covariates}.
+}}
 
-\item{covariance_model}{\code{"diagonal"} (default): the indicators are
-independent within a profile; \code{"full"}: within-profile covariances are
-estimated.}
+\item{covariance_model}{Whether continuous indicators are correlated
+within a profile:
+\itemize{
+\item \code{"diagonal"} (default): no covariances, so within a profile the
+indicators are independent and all their association is explained by
+the profiles;
+\item \code{"full"}: the within-profile covariances are estimated, one matrix
+per profile under \code{variance_model = "varying"} and one shared matrix
+under \code{"equal"}.
+}
+
+With \code{variance_model} this gives four of the structures of \code{model}: VVI
+(\code{"varying"} and \code{"diagonal"}), EEI (\code{"equal"} and \code{"diagonal"}), VVV
+(\code{"varying"} and \code{"full"}) and EEE (\code{"equal"} and \code{"full"}).}
 
 \item{categorical}{Indicators modelled by profile-specific response
 probabilities over their observed categories, the latent class
@@ -126,103 +156,169 @@ parameterization. Naming a subset of \code{vars} fits a mixed-mode model.}
 \item{min_probability}{Lower bound on every categorical response
 probability (default \code{1e-10}).}
 
-\item{time}{Optional column giving each row's occasion within its group,
-used only to order the rows for \code{get_results(x, "sequences")},
-\code{"sequence_summary"} and \code{\link[=plot_sequences]{plot_sequences()}}. Values must be unique within a group and sort in
-their intended order (numbers numerically, factors by level, text
-alphabetically, so \code{"T2"}, \code{"T10"} is refused: use a factor or
+\item{time}{Optional column giving each row's occasion within its group, used
+only to order the rows for \code{get_results(x, "sequences")},
+\code{"sequence_summary"} and \code{\link[=plot_sequences]{plot_sequences()}}. Values must be unique within a
+group and sort in their intended order (numbers numerically, factors by
+level, text alphabetically, so \code{"T2"}, \code{"T10"} is refused: use a factor or
 zero-pad).}
 
-\item{fixed}{Measurement blocks held at the values in \code{start} instead of
-estimated: \code{"means"}, \code{"variances"} (EEI, VVI, EEE and VVV only),
-\code{"response_probabilities"}, or \code{"measurement"} for all; the mixing
-parameters cannot be held. A held block is not counted in
-\code{n_parameters}. \code{\link[=fit_staged]{fit_staged()}} runs the two-stage workflow in one call.}
+\item{fixed}{Measurement parameters held at the values in \code{start} instead
+of estimated. A character vector of one or more of:
+\itemize{
+\item \code{"means"}: the profile means of the continuous indicators;
+\item \code{"variances"}: their variances, or covariance matrices under a full
+covariance (structures EEI, VVI, EEE and VVV only);
+\item \code{"response_probabilities"}: the response probabilities of the
+categorical indicators;
+\item \code{"measurement"}: all of the above that the model has.
+}
 
-\item{centering}{How to centre the continuous indicators before fitting.
-\code{"none"} (default) fits them as supplied. \code{"person"} subtracts each
-group's own mean, so the profiles describe within-unit change and the
-group classes are types of change pattern.
-\code{"grand"} subtracts one mean per indicator. See \emph{Scale}.}
+The default, \code{character()}, holds nothing. \code{fixed} needs \code{start}; the
+profile and group-class probabilities cannot be held. A held block is
+not counted in \code{n_parameters}. \code{\link[=fit_staged]{fit_staged()}} runs the two-stage
+workflow in one call.}
 
-\item{volume, shape, orientation}{The covariance structure by its three
-components: \code{volume} \code{"equal"} or
-\code{"varying"}; \code{shape} \code{"equal"}, \code{"varying"} or \code{"spherical"};
-\code{orientation} \code{"axis"} (no covariances), \code{"equal"} or \code{"varying"}.
-\code{NULL} (default) follows \code{variance_model} and \code{covariance_model}. The
-combinations are the fourteen mclust models:
-\tabular{llll}{
-\code{volume} \tab \code{shape} \tab \code{orientation} \tab model \cr
-equal \tab spherical \tab - \tab EII \cr
-varying \tab spherical \tab - \tab VII \cr
-equal/varying \tab equal/varying \tab axis \tab EEI, VEI, EVI, VVI \cr
-equal/varying \tab equal/varying \tab equal \tab EEE, VEE, EVE, VVE \cr
-equal/varying \tab equal/varying \tab varying \tab EEV, VEV, EVV, VVV
+\item{centering}{How to centre the continuous indicators before fitting
+(see \emph{Scale}):
+\itemize{
+\item \code{"none"} (default): fit them as supplied;
+\item \code{"person"}: subtract each group's own mean, so the profiles describe
+deviations from a group's usual level and the group classes are types
+of change pattern;
+\item \code{"grand"}: subtract one mean per indicator, taken over the sample.
 }}
 
-\item{model}{The covariance structure as one of those fourteen codes, such
-as \code{"VVI"}, instead of the other structure arguments; the codes
-\code{\link[=enumerate_classes]{enumerate_classes()}} takes.}
+\item{volume, shape, orientation}{The covariance structure by its three
+components, each compared across profiles. \code{NULL} (default) follows
+\code{variance_model} and \code{covariance_model}.
+\itemize{
+\item \code{volume}: the overall size of a profile's spread. \code{"equal"} gives all
+profiles the same volume, \code{"varying"} gives each its own.
+\item \code{shape}: how the spread divides over the indicators. \code{"equal"} gives all
+profiles the same shape, \code{"varying"} gives each its own, and
+\code{"spherical"} gives every indicator the same variance within a profile.
+\item \code{orientation}: the within-profile covariances. \code{"axis"} has none (a
+diagonal covariance), \code{"equal"} gives all profiles the same
+orientation, and \code{"varying"} gives each its own. A spherical shape
+has no orientation, so \code{orientation} is then left out.
+}
 
-\item{select_start}{Which start is reported. \code{"likelihood"} (default): the
-highest log likelihood, preferring a converged start among those within
-the convergence tolerance of it. \code{"converged"}: the best converged start
-when there is one.
-See \emph{Starts and convergence}.}
+The combinations are the fourteen codes of \code{model}, whose three letters
+name the volume, the shape and the orientation.}
+
+\item{model}{The covariance structure as one of mclust's fourteen codes:
+\code{"EII"}, \code{"VII"}, \code{"EEI"}, \code{"VEI"}, \code{"EVI"}, \code{"VVI"}, \code{"EEE"}, \code{"VEE"},
+\code{"EVE"}, \code{"VVE"}, \code{"EEV"}, \code{"VEV"}, \code{"EVV"} or \code{"VVV"}. The three letters
+are the volume, shape and orientation: \code{E} is equal across profiles, \code{V}
+varies between profiles, and \code{I} is a spherical shape (in second place) or
+no covariances (in third place). The four in common use:
+\itemize{
+\item \code{"EEI"}: equal variances, no covariances;
+\item \code{"VVI"}: profile-specific variances, no covariances (the structure
+fitted when no structure argument is given);
+\item \code{"EEE"}: one covariance matrix shared by all profiles;
+\item \code{"VVV"}: a covariance matrix per profile.
+}
+
+\code{NULL} (default) follows the other structure arguments
+(\code{variance_model}, \code{covariance_model}, \code{volume}, \code{shape} and
+\code{orientation}); giving \code{model} with any of them is an error.}
+
+\item{select_start}{Which start is reported (see \emph{Starts and convergence}):
+\itemize{
+\item \code{"likelihood"} (default): the start with the highest log likelihood,
+whether or not it converged. Among starts within the convergence
+tolerance of the highest, a converged one is preferred;
+\item \code{"converged"}: the start with the highest log likelihood among those
+that converged, or among all starts when none converged.
+}}
 
 \item{prior}{\code{NULL} (default) for maximum likelihood, or a \code{\link[=prior_control]{prior_control()}}
 object for maximum a posteriori estimation of the Gaussian means and
 covariances under mclust's conjugate prior, with its data-dependent
-defaults. See \emph{Prior and noise}.}
+defaults. A prior is used to avoid solutions with a variance near
+zero. See \emph{Prior and noise}.}
 
-\item{noise}{\code{TRUE} adds a noise component of constant density over the
-data's hypervolume, which absorbs outliers and scatter no Gaussian
-profile explains. See \emph{Prior and noise}.}
+\item{noise}{\code{FALSE} (default) fits the profiles only. \code{TRUE} adds a noise
+component of constant density over the data's hypervolume, which absorbs
+outliers and scatter no Gaussian profile explains. See \emph{Prior and noise}.}
 
-\item{acceleration}{\code{"squarem"} (default) accelerates EM with SQUAREM,
-which never lowers the likelihood; \code{"none"}
-runs plain EM. Fits with \code{prior} or membership covariates always use
-plain EM.}
+\item{acceleration}{How EM is run:
+\itemize{
+\item \code{"squarem"} (default): EM accelerated with SQUAREM, which usually
+needs fewer iterations and never lowers the likelihood;
+\item \code{"none"}: plain EM, which fits with \code{prior} or membership covariates
+always use.
+}}
 
-\item{family}{\code{"profiles"} (default) is the model described above. The
-others have group classes without individual profiles (\code{"additive"},
-\code{"dispersion"}, \code{"additive_dispersion"}) or estimate profiles and group
-classes from the same indicators (\code{"restricted_cross_level"},
-\code{"full_cross_level"}). See \emph{Model families}.}
+\item{family}{The kind of two-level model. The families other than
+\code{"profiles"} take few of the other arguments and return a different
+class (see \emph{Model families}):
+\itemize{
+\item \code{"profiles"} (default): the model described above, with profiles of
+rows and group classes that differ in their profile proportions;
+\item \code{"additive"}: group classes only, which differ in their indicator means;
+\item \code{"dispersion"}: group classes only, which differ in their
+within-group variances;
+\item \code{"additive_dispersion"}: group classes only, which differ in both;
+\item \code{"restricted_cross_level"}: profiles and group classes estimated from the
+same indicators, with the profile proportions equal across group classes;
+\item \code{"full_cross_level"}: the same, with profile proportions that differ
+between group classes.
+}}
 
 \item{between_variance}{For the additive, additive-dispersion and
-cross-level families only (an error with the others): between-group
-variances per group class (\code{"varying"}, default) or one set shared by
-all classes (\code{"equal"}). The dispersion family takes \code{"equal"} only.}
+cross-level families only (an error with the others): whether the
+variances of the group intercepts differ between group classes.
+\itemize{
+\item \code{"varying"} (default): each group class has its own between-group
+variances;
+\item \code{"equal"}: one set shared by all group classes, the only value the
+dispersion family takes.
+}}
 
 \item{weights}{Name of a numeric column holding a sampling weight per
 independent unit: per group in a two-level fit (constant within the
-group), per row in a single-level one. See \emph{Weights}.}
+group), per row in a single-level one. \code{NULL} (default) weights every
+unit equally. See \emph{Weights}.}
 
 \item{ordinal}{Indicators modelled as ordinal (an ordered factor or
 integers): an adjacent-category logit with category intercepts shared
 by all profiles and one location per profile, Latent GOLD's default
 ordinal model, with \code{(K - 1) + (C - 1)} parameters per indicator against
-\code{K * (C - 1)} for \code{categorical} (\code{K} profiles, \code{C} categories).
-An unused factor level warns; drop it
-with \code{droplevels()}.}
+\code{K * (C - 1)} for \code{categorical} (\code{K} profiles, \code{C} categories). An
+unused factor level warns; drop it with \code{droplevels()}.}
 
 \item{count}{Indicators holding non-negative whole numbers, modelled as
 Poisson with one mean per profile, or negative binomial under
 \code{count_model}.}
 
-\item{count_model}{\code{"poisson"} (default) or \code{"negative_binomial"} (NB2,
-variance \code{mu + alpha * mu^2}) for counts more dispersed than a Poisson
-within a profile. A dispersion estimated at zero is a boundary solution.}
+\item{count_model}{The distribution of the \code{count} indicators within a
+profile; without such indicators it is ignored, with a warning:
+\itemize{
+\item \code{"poisson"} (default): the variance equals the mean;
+\item \code{"negative_binomial"}: the variance is \code{mu + alpha * mu^2} (NB2), for
+counts more dispersed than a Poisson within a profile. A dispersion
+\code{alpha} estimated at zero is a boundary solution.
+}}
 
-\item{count_dispersion}{One negative-binomial dispersion per profile
-(\code{"varying"}, default) or one shared by all (\code{"equal"}).}
+\item{count_dispersion}{Under \code{count_model = "negative_binomial"},
+whether the dispersion differs between profiles:
+\itemize{
+\item \code{"varying"} (default): one dispersion per profile;
+\item \code{"equal"}: one dispersion shared by all profiles.
+}}
 
 \item{scaling}{How to scale the continuous indicators before fitting, at
-the same levels as \code{centering}: \code{"none"} (default), \code{"grand"} (each
-indicator divided by its standard deviation over the sample) or
-\code{"person"} (by each group's own standard deviation). With the matching
-centring these are z-scores. See \emph{Scale}.}
+the same levels as \code{centering}; with the matching centring these are
+z-scores (see \emph{Scale}):
+\itemize{
+\item \code{"none"} (default): fit them as supplied;
+\item \code{"grand"}: divide each indicator by its standard deviation over the
+sample;
+\item \code{"person"}: divide by each group's own standard deviation.
+}}
 
 \item{drop_empty}{\code{TRUE} (default) leaves rows with no observed indicator,
 and groups made only of such rows, out of the sample sizes, entropies
@@ -247,70 +343,115 @@ continuous indicators, a joint distribution for two categorical ones
 \item{direct_effects}{Direct effects of covariates on continuous
 indicators, written \code{"indicator ~ covariate"} (several joined with
 \code{+}): the covariate shifts the indicator's mean by the same amount in
-every profile, so what it explains is not
-read as a profile difference; \code{means} are then at covariate zero. See
-\emph{Indicator types}.}
+every profile, so what it explains is not read as a profile difference;
+\code{means} are then at covariate zero. See \emph{Indicator types}.}
 
-\item{search}{\code{"kmeans"} runs \code{n_starts} starts to convergence; \code{"emEM"}
-screens a pool of \code{n_screen} starts with a short EM run each and runs
-the first start and the best of the rest, \code{n_starts} in all, to
-convergence. \code{NULL} (default) is
-\code{"emEM"} when continuous indicators share one covariance matrix across
-profiles (EII, EEI or EEE) and \code{"kmeans"} otherwise.}
+\item{search}{How the starting values are searched:
+\itemize{
+\item \code{"kmeans"}: every one of the \code{n_starts} starts is run to convergence;
+\item \code{"emEM"}: a larger pool of \code{n_screen} starts is screened with a short
+EM run each (at most 20 iterations), and only the first start and the
+best of the rest, \code{n_starts} in all, are run to convergence;
+\item \code{NULL} (default): \code{"emEM"} when the continuous indicators share one
+covariance matrix across profiles (EII, EEI or EEE), \code{"kmeans"}
+otherwise, including for models without continuous indicators.
+}}
 
 \item{n_screen}{For \code{search = "emEM"} only, the size of the screened pool
-(default five times \code{n_starts}, at least \code{n_starts}).}
+(default five times \code{n_starts}, at least \code{n_starts}). It is refused when
+the search is \code{"kmeans"}, whether requested or resolved from the default.}
 
 \item{boundary}{Whether a start with a variance at \code{min_variance} may be
-reported: \code{"allow"} (default) does, as Mplus does, with a warning;
-\code{"exclude"} chooses among the other starts, and reports the best with a
-warning when every start is at the bound.}
+reported:
+\itemize{
+\item \code{"allow"} (default): it may, as in Mplus, with a \code{latents_boundary}
+warning;
+\item \code{"exclude"}: the reported start is chosen among the starts with no
+variance at the bound. When every start is at the bound the best of
+them is reported, with a \code{latents_all_starts_boundary} warning.
+}}
 }
 \value{
-A \code{multilpa} object: the measurement parameters, the profile
-probabilities within each group class, the group-class proportions, the
-posteriors and classifications at both levels, \code{log_likelihood}, the
-information criteria (\code{bic} and \code{bic_groups} on the number of groups,
-\code{bic_individual} on the number of rows with an observed indicator), the
-starts table, \code{converged} and \code{boundary}. \code{\link[=get_results]{get_results()}} returns its
-tables, \code{\link[=parameter_inference]{parameter_inference()}} its standard errors and
-\code{\link[=bootstrap_lrt]{bootstrap_lrt()}} tests it against a nested fit.
+A fitted model. Its class depends on the model:
+\itemize{
+\item \code{multilpa}: the profile model (\code{family = "profiles"}) without
+membership covariates;
+\item \code{multilpa_covariates}: the profile model with \code{profile_covariates} or
+\code{group_covariates};
+\item \code{multilpa_additive}: \code{family = "additive"}, \code{"dispersion"} or
+\code{"additive_dispersion"};
+\item \code{multilpa_cross_level}: \code{family = "restricted_cross_level"} or
+\code{"full_cross_level"}.
+}
+
+Printing a fit shows its log likelihood, convergence, class sizes and
+profile means; \code{summary()} prints every table. \code{\link[=get_results]{get_results()}} returns the
+tables by name and describes each one. For a \code{multilpa} fit the main ones
+are \code{"profiles"} (also \code{as.data.frame(fit)}), \code{"responses"},
+\code{"profile_probabilities"}, \code{"assignments"}, \code{"posteriors"},
+\code{"group_posteriors"}, \code{"classification"}, \code{"entropy"},
+\code{"information_criteria"}, \code{"starts"}, \code{"replication"} and \code{"model"}. A
+\code{multilpa_covariates} fit has \code{"coefficients"} (the membership logits) in
+place of \code{"profile_probabilities"}; the other two classes have tables of
+their own. \code{\link[=parameter_inference]{parameter_inference()}} gives standard errors and confidence
+intervals, and \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} tests a fit against a nested one.
 }
 \description{
-Multilevel latent profile analysis describes heterogeneity among
-observations and among the groups they are nested in: measurements within
-persons, students within schools. Observation-level profiles are patterns
-in the indicators; group-level classes differ in how prevalent each
-profile is among their members. A profile has the same measurement
-parameters in every group class, so group classes differ only in
+\code{multilpa()} fits a multilevel latent profile model, which describes
+heterogeneity among observations and among the groups they are nested in:
+measurements within persons, students within schools. Observation-level
+profiles are patterns in the indicators; group-level classes differ in how
+prevalent each profile is among their members. A profile has the same
+measurement parameters in every group class, so group classes differ only in
 composition.
 
-\code{multilpa()} estimates the measurement parameters, the profile
-probabilities within each group class, the group-class proportions and
-the posterior memberships at both levels. The default is Gaussian
-indicators with diagonal within-profile covariances. The reported start
-need not have converged: read \emph{Starts and convergence} before
-interpreting a fit.
+\code{multilpa()} estimates the measurement parameters, the profile probabilities
+within each group class, the group-class proportions and the posterior
+memberships at both levels. The default is Gaussian indicators with diagonal
+within-profile covariances. The reported start need not have converged: read
+\emph{Starts and convergence} before interpreting a fit.
 }
+\section{Conditions}{
+
+The errors a call most often raises: \code{latents_bad_argument} for an argument
+value or a combination of arguments that is not accepted; \code{latents_bad_data}
+for a column that \code{data} does not have, a constant indicator, or missing
+indicator values under \code{missing = "error"}; \code{latents_bad_start} and
+\code{latents_bad_fixed} for a \code{start} or \code{fixed} the model cannot use;
+\code{latents_bad_time} for a \code{time} column that repeats within a group;
+\code{latents_unidentified} for more profiles than distinct rows, more group
+classes than groups, or more than one group class with one profile or with
+one row per group; \code{latents_unsupported_prior} and
+\code{latents_unsupported_noise} for a \code{prior} or \code{noise} the model cannot take.
+
+The warnings: \code{latents_unconverged} when the reported start stopped at
+\code{max_iter}; \code{latents_boundary} when a variance is at \code{min_variance};
+\code{latents_small_classes} when a profile or group class has an effective
+size below one; \code{latents_failed_starts} when some starts failed;
+\code{latents_unidentified} when a model of categorical and ordinal indicators
+has more free parameters than its table of response patterns has free
+cells; \code{latents_unused_argument} for an argument the model ignores. A
+single-level fit (\code{id = NULL}) gives a \code{latents_single_level} message.
+\link{latents-conditions} lists every condition.
+}
+
 \section{Starts and convergence}{
 
 The first start is Ward's clustering of the standardized indicators; the
-others are k-means from random centres, or under \code{search = "emEM"} a
-screened pool that also holds random partitions.
-\code{get_results(fit, "starts")} lists every start. The reported start is
-the one \code{select_start} picks; \code{converged} says whether it converged, and
-\code{summary()} says how many starts replicated its log likelihood. A
-replicated likelihood does not establish a global optimum. With
-profile-specific variances the highest likelihood can belong to a nearly
-degenerate profile on a few observations: a variance at \code{min_variance} warns, \code{boundary = "exclude"}
-sets such starts aside, and \code{get_results(fit, "gaussian_diagnostics")}
-describes each profile's support. Wald inference is refused for a fit
-that did not converge or has a parameter at its bound.
+others are k-means from random centres, or under \code{search = "emEM"} a screened
+pool that also holds random partitions. \code{get_results(fit, "starts")} lists
+every start. The reported start is the one \code{select_start} picks; \code{converged}
+says whether it converged, and \code{summary()} says how many starts replicated
+its log likelihood. A replicated likelihood does not establish a global
+optimum. With profile-specific variances the highest likelihood can belong to
+a nearly degenerate profile on a few observations: a variance at
+\code{min_variance} warns, \code{boundary = "exclude"} sets such starts aside, and
+\code{get_results(fit, "gaussian_diagnostics")} describes each profile's support.
+Wald inference is refused for a fit that did not converge or has a parameter
+at its bound.
 
-More than one group class needs more than one profile and a group with
-more than one row; a model of categorical and ordinal indicators with
-more free parameters than its table has free cells warns.
-Neither check establishes identification. Labels are arbitrary.
+The checks behind \code{latents_unidentified} (see \emph{Conditions}) do not
+establish identification. Labels are arbitrary.
 }
 
 \section{Missing data}{
@@ -324,37 +465,32 @@ statistics. Missing patterns can prevent identification.
 
 \section{Covariates}{
 
-Naming \code{profile_covariates} or \code{group_covariates} fits the one-step
-covariate model (class \code{multilpa_covariates}), with profile intercepts
-per group class, slopes shared unless \code{profile_slopes = "group_class"},
-and Wald standard errors from \code{\link[=parameter_inference]{parameter_inference()}}. With \code{start} and
-\code{fixed = "measurement"} from a fit without covariates, only the logits
-are estimated: the two-step estimator, whose
-criteria and standard errors condition on the held measurement.
-\code{\link[=three_step]{three_step()}} and \code{\link[=r3step]{r3step()}} are the staged alternatives. A covariate
-model does not take \code{prior}, \code{noise}, \code{direct_effects} or a continuous
-\code{local_dependence} pair.
+Naming \code{profile_covariates} or \code{group_covariates} fits the one-step covariate
+model (class \code{multilpa_covariates}), with profile intercepts per group class,
+slopes shared unless \code{profile_slopes = "group_class"}, and Wald standard
+errors from \code{\link[=parameter_inference]{parameter_inference()}}. With \code{start} and \code{fixed = "measurement"}
+from a fit without covariates, only the logits are estimated: the two-step
+estimator, whose criteria and standard errors condition on the held
+measurement. \code{\link[=three_step]{three_step()}} and \code{\link[=r3step]{r3step()}} are the staged alternatives.
 }
 
 \section{Indicator types}{
 
-Continuous indicators are Gaussian within profiles; \code{categorical},
-\code{ordinal} and \code{count} indicators are independent of each other and of
-the continuous ones given the profile. Ordinal and count indicators work
-with FIML, weights, two-level fits, covariates, inference, \code{\link[=predict]{predict()}}
-and \code{\link[=lta]{lta()}}, but not with \code{start}, \code{fixed}, \code{prior}, \code{noise} or the
-other families. A categorical \code{local_dependence} pair becomes one
-indicator over the combinations of its categories; an unobserved
-combination sits on the \code{min_probability} floor and still counts as a
-parameter. \code{local_dependence} is not combined with the structure
-arguments (\code{covariance_model}, \code{model}, \code{volume}, \code{shape},
-\code{orientation}), \code{time}, \code{prior}, \code{noise} or held variances, and a
-continuous pair not with covariates either; \code{direct_effects} needs a diagonal covariance
+Continuous indicators are Gaussian within profiles; \code{categorical}, \code{ordinal}
+and \code{count} indicators are independent of each other and of the continuous
+ones given the profile. Ordinal and count indicators work with FIML, weights,
+two-level fits, covariates, inference, \code{\link[=predict]{predict()}} and \code{\link[=lta]{lta()}}, but not with
+\code{start}, \code{fixed}, \code{prior}, \code{noise} or the other families. A categorical
+\code{local_dependence} pair becomes one indicator over the combinations of its
+categories; an unobserved combination sits on the \code{min_probability} floor and
+still counts as a parameter. \code{local_dependence} is not combined with the
+structure arguments (\code{covariance_model}, \code{model}, \code{volume}, \code{shape},
+\code{orientation}), \code{time}, \code{prior}, \code{noise} or held variances, and a continuous
+pair not with covariates either; \code{direct_effects} needs a diagonal covariance
 and complete covariates, and is not combined with membership covariates,
-continuous pairs, \code{time}, \code{prior}, \code{noise}, \code{fixed}, \code{start}, \code{centering}
-or \code{scaling}. The tables \code{"ordinal"}, \code{"count_means"},
-\code{"local_dependence"} and \code{"direct_effects"} of \code{\link[=get_results]{get_results()}} hold the
-estimates.
+continuous pairs, \code{time}, \code{prior}, \code{noise}, \code{fixed}, \code{start}, \code{centering} or
+\code{scaling}. The tables \code{"ordinal"}, \code{"count_means"}, \code{"local_dependence"} and
+\code{"direct_effects"} of \code{\link[=get_results]{get_results()}} hold the estimates.
 }
 
 \section{Scale}{
@@ -362,17 +498,16 @@ estimates.
 Centring and scaling are applied before fitting and stored on the fit, so
 \code{\link[=get_results]{get_results()}} returns the supplied data and \code{\link[=predict]{predict()}} transforms new
 units the same way. Estimates, likelihood and criteria are on the fitted
-scale, so only fits with the same centring and scaling are comparable.
-Grand scaling changes only the units under a structure unchanged by
-rescaling each indicator (EEI, VEI, EVI, VVI, EEE, VEE, EVV, VVV) and
-changes the solution under the others. Person centring needs each group
-observed more than once on each indicator, and refuses singly observed
-indicators even when other groups have repeats; person scaling also needs
-variation within the group, and a group observed exactly twice is
-flagged as uninformative.
-Grand offsets and scales use sampling weights when supplied. Grand scaling
-divides by the population standard deviation (observed weight in the
-denominator); person scaling uses the within-group sample standard deviation.
+scale, so only fits with the same centring and scaling are comparable. Grand
+scaling changes only the units under a structure unchanged by rescaling each
+indicator (EEI, VEI, EVI, VVI, EEE, VEE, EVV, VVV) and changes the solution
+under the others. Person centring needs each group observed more than once on
+each indicator, and refuses singly observed indicators even when other groups
+have repeats; person scaling also needs variation within the group, and a
+group observed exactly twice is flagged as uninformative. Grand offsets and
+scales use sampling weights when supplied. Grand scaling divides by the
+population standard deviation (observed weight in the denominator); person
+scaling uses the within-group sample standard deviation.
 }
 
 \section{Weights}{
@@ -390,60 +525,47 @@ categorical indicators and FIML; \code{\link[=bootstrap_lrt]{bootstrap_lrt()}}, 
 
 \section{Model families}{
 
-Three group-class-only families: each group has a Gaussian intercept per indicator drawn from its class's
-distribution, and its members vary around it. \code{"additive"}: classes
-differ in means (and in between-group variances under
-\code{between_variance = "varying"}), with one within-group variance per
-indicator; \code{"dispersion"}: in within-group variances;
-\code{"additive_dispersion"}: in both. They take only \code{data}, \code{vars}, \code{id},
-\code{n_group_classes}, \code{between_variance}, \code{n_starts}, \code{max_iter}, \code{tol},
-\code{min_variance}, \code{seed}, \code{weights}, \code{search} and \code{n_screen}, need complete
-continuous indicators, and return a \code{multilpa_additive} fit with
-\code{summary()}, \code{plot()}, Wald inference, \code{\link[=enumerate_classes]{enumerate_classes()}} by \code{family}
-and \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} across numbers of group classes. They are
-experimental: no bootstrap inference, FIML, covariates or discrete
-indicators.
+In the three group-class-only families each group has a Gaussian intercept
+per indicator drawn from its class's distribution, and its members vary
+around it; the additive family has one within-group variance per indicator.
+They take only \code{data}, \code{vars}, \code{id}, \code{n_group_classes}, \code{between_variance},
+\code{n_starts}, \code{max_iter}, \code{tol}, \code{min_variance}, \code{seed}, \code{weights}, \code{search}
+and \code{n_screen}, need complete continuous indicators, and return a
+\code{multilpa_additive} fit with \code{summary()}, \code{plot()}, Wald inference,
+\code{\link[=enumerate_classes]{enumerate_classes()}} by \code{family} and \code{\link[=bootstrap_lrt]{bootstrap_lrt()}} across numbers of
+group classes. They are experimental: no bootstrap inference, FIML,
+covariates or discrete indicators.
 
-Two cross-level families estimate profiles and group classes from the
-same indicators, each group's indicator means being between-level
-indicators of its class:
-\code{"restricted_cross_level"} holds the profile prevalences equal across
-classes and estimates the levels separately; \code{"full_cross_level"} lets
-them differ. They take \code{data}, \code{vars}, \code{id}, \code{n_profiles},
-\code{n_group_classes}, \code{variance_model}, \code{between_variance}, \code{n_starts},
-\code{max_iter}, \code{tol}, \code{min_variance}, \code{seed} and \code{weights}, have no
-standard errors, and return a \code{multilpa_cross_level} fit whose likelihood
-is computed on the same scale only between cross-level fits of the same
-data. It counts the ratings twice, once directly and once through their
-group means, so its criteria favour group classes and the full form even
-on data with no group structure: they do not choose the number of group
-classes or the form, and a fit with group classes warns with class
-\code{latents_cross_level_criteria}.
+In the two cross-level families each group's indicator means are
+between-level indicators of its class, and the restricted family estimates
+the two levels separately. They take the same arguments and \code{n_profiles} and
+\code{variance_model}, have no standard errors, and return a
+\code{multilpa_cross_level} fit whose likelihood is computed on the same scale
+only between cross-level fits of the same data. It counts the ratings twice,
+once directly and once through their group means, so its criteria favour
+group classes and the full form even on data with no group structure: they do
+not choose the number of group classes or the form, and a fit with group
+classes warns with class \code{latents_cross_level_criteria}.
 }
 
 \section{Prior and noise}{
 
-\code{prior} is available for EII, VII, EEI, VEI, EVI, VVI, EEE, EEV, VEV and
-VVV with complete continuous indicators and without \code{fixed} or
-covariates; the mixing proportions have no prior. As in mclust, the
-likelihood and criteria are unpenalized values at the posterior mode;
-Wald inference is not defined there, and the bootstrap refits each
-resample with the same prior.
+\code{prior} is available for EII, VII, EEI, VEI, EVI, VVI, EEE, EEV, VEV and VVV
+with complete continuous indicators and without \code{fixed} or covariates; the
+mixing proportions have no prior. As in mclust, the likelihood and criteria
+are unpenalized values at the posterior mode; Wald inference is not defined
+there, and the bootstrap refits each resample with the same prior.
 
-\code{noise} is available for complete continuous indicators with one group
-class, under any structure, with or without \code{prior}, and not with
-\code{fixed} or covariates. The component's density is \code{1 / V}, with \code{V}
-mclust's \code{hypvol()}, and it adds two parameters; a supplied \code{start}
-includes \code{noise_probability}. It is profile \code{0} in
-the classification: \code{subject_profiles} is \code{0} there, the assignment
-table has \code{posterior_noise}, and the posterior and profile-probability
-tables have profile-0 rows, while the measurement tables describe the
-Gaussian profiles only. Inference, the three-step functions,
-\code{\link[=bootstrap_lrt]{bootstrap_lrt()}}, \code{\link[=starting_values]{starting_values()}}, \code{\link[=fit_staged]{fit_staged()}}, bivariate
-residuals and the posterior plots refuse a noise fit.
-
-Every refusal above is a classed condition; \link{latents-conditions} lists
-them.
+\code{noise} is available for complete continuous indicators with one group class,
+under any structure, with or without \code{prior}, and not with \code{fixed} or
+covariates. The component's density is \code{1 / V}, with \code{V} mclust's \code{hypvol()},
+and it adds two parameters; a supplied \code{start} includes \code{noise_probability}.
+It is profile \code{0} in the classification: \code{subject_profiles} is \code{0} there, the
+assignment table has \code{posterior_noise}, and the posterior and
+profile-probability tables have profile-0 rows, while the measurement tables
+describe the Gaussian profiles only. Inference, the three-step functions,
+\code{\link[=bootstrap_lrt]{bootstrap_lrt()}}, \code{\link[=starting_values]{starting_values()}}, \code{\link[=fit_staged]{fit_staged()}}, bivariate residuals
+and the posterior plots refuse a noise fit.
 }
 
 \examples{

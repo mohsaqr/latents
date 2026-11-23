@@ -1,4 +1,5 @@
-#' Diagnostics of a fitted model
+#' Diagnose a fitted model: convergence, replication, class sizes, separation
+#' and local independence
 #'
 #' @description
 #' `diagnostics()` examines the estimation and interpretation of a fitted
@@ -30,6 +31,8 @@
 #' substantive meaning of the estimated classes.
 #'
 #' @details
+#' The checks are grouped in five domains:
+#'
 #' * **Estimation**: convergence of the selected solution; replication of the
 #'   best log likelihood across completed starts; failed or
 #'   unfinished starts; and estimates at parameter bounds. Preliminary
@@ -69,43 +72,77 @@
 #' fitted `drop_empty` policy, and zero-weight units are never classified.
 #' Bivariate residuals are gathered for families that support them.
 #'
-#' @param x A fitted model of this package.
-#' @param data Optional data frame used to fit the model. When omitted, the
-#'   required columns are reconstructed from the fitted object.
-#' @param plots `TRUE` (the default) draws classification plots for model
-#'   families that support them: effective profile sizes, posterior
-#'   probabilities of assigned profiles, case entropy, and the average
-#'   posterior probability matrix. If ggplot2 is unavailable or the model
-#'   family has no classification plots, a message is issued and the tables
-#'   are returned without plots. `FALSE` returns only the tables.
-#' @param by `"profile"` (the default) assesses each profile's bivariate
-#'   residuals separately; `"overall"` pools them. This argument is forwarded
-#'   to the residual calculations. The classification levels are determined
-#'   by the fitted model.
-#' @param ... Not used. For `diagnostics()` and `plot()`, any further argument
-#'   raises `latents_bad_argument`; style the returned plots with ggplot2.
-#' @return An object of class `multilpa_diagnostics`. The checks table,
-#'   accessed with `get_results(result, "checks")`, contains one row per check
-#'   and columns `domain`, `check`, `level`, `value` (numeric), `display`
-#'   (formatted value), `criterion`, `status`, `detail` and `reference`.
-#'   Tables are accessed with [get_results()], using `what = "checks"`, `"entropy"`,
-#'   `"classification"`, `"average_posteriors"`, `"residuals"`,
-#'   `"replication"` or `"all"`. A
-#'   model family without bivariate residuals (a mixture regression, growth
-#'   mixture, additive or cross-level model, or a general transition fit) has no
-#'   such table: it is left out
-#'   of `"all"`, and asking for it by name raises `latents_bad_argument`. A
+#' @param x A fitted model: a profile or class fit ([lpa()], [lca()],
+#'   [multilpa()], [multilca()], with or without membership covariates), a
+#'   transition fit ([lta()]), an additive or cross-level fit, a mixture
+#'   regression or a growth mixture ([mixture_regression()]). Anything else,
+#'   including pooled imputations and enumeration grids, raises
+#'   `latents_not_a_fit`.
+#' @param data The data frame the model was fitted to, used for the
+#'   bivariate residuals. `NULL` (default) uses the columns stored in the
+#'   fit.
+#' @param plots Whether to draw the classification plots as well:
+#'   * `TRUE` (default): for a profile or class fit and an [lta()] fit of
+#'     class `multilpa_transitions`, draws the views of
+#'     [plot_diagnostics()]: effective profile sizes, the posterior
+#'     probability of each observation's assigned profile, each
+#'     observation's entropy and the average posterior probability matrix,
+#'     and the same four for the groups of a fit with two or more group
+#'     classes. For any other model a message says that it has no
+#'     classification plots here, and the tables are returned without
+#'     them. Without the ggplot2 package a message says so, and the tables
+#'     are returned;
+#'   * `FALSE`: returns the tables and draws nothing.
+#' @param by How the bivariate residuals are assessed:
+#'   * `"profile"` (default): within each profile separately, one row per
+#'     profile and pair of indicators;
+#'   * `"overall"`: pooled over the profiles, one row per pair of
+#'     indicators.
+#' @param ... Not used. Any further argument to `diagnostics()`, or to
+#'   `plot()` of its result, raises `latents_bad_argument`; style the
+#'   returned plots with ggplot2.
+#' @return An object of class `multilpa_diagnostics`. It prints the checks
+#'   grouped by domain, with those that need review marked. Its tables are
+#'   data frames read with [get_results()]:
+#'   * `"entropy"` (the default, also `as.data.frame()`): one row per
+#'     level of classification: `level`, `n_classes`, `n_units`,
+#'     `entropy_sum`, `relative_entropy`;
+#'   * `"classification"`: one row per level and class: `level`, `class`,
+#'     `n_modal`, `proportion_modal`, `estimated_n`,
+#'     `estimated_proportion`, `average_posterior`,
+#'     `odds_correct_classification`;
+#'   * `"average_posteriors"`: for the units assigned to each class, their
+#'     mean posterior probability of every class: `level`,
+#'     `assigned_class`, `class`, `n_assigned`, `average_posterior`;
+#'   * `"residuals"`: the bivariate residuals, one row per pair of
+#'     indicators (and per profile under `by = "profile"`): `profile`,
+#'     `indicator_1`, `indicator_2`, `kind`, `observed`, `expected`,
+#'     `residual`, `effective_n`, `statistic`, `df`, `p_value`,
+#'     `p_adjusted` (Benjamini-Hochberg);
+#'   * `"replication"`: one row on the starts: `n_starts`, `n_screened`,
+#'     `n_converged`, `n_failed`, `n_best_replicated`, `share`,
+#'     `tolerance`, `best_start`, `log_likelihood`;
+#'   * `"checks"`: one row per check: `domain`, `check`, `level`, `value`
+#'     (numeric), `display` (the value formatted), `criterion`, `status`
+#'     (`"ok"`, `"check"`, `"fail"`, `"info"` or `"n/a"`), `detail` and
+#'     `reference`;
+#'   * `"all"`: a named list of the tables above.
+#'
+#'   `"residuals"` exists for profile and class fits and for [lta()] fits
+#'   of class `multilpa_transitions`. Any other model (an [lta()] fit of
+#'   class `multilpa_lta`, an additive or cross-level fit, a mixture
+#'   regression, a growth mixture) has no such table: it is left out of
+#'   `"all"`, and asking for it by name raises `latents_bad_argument`. A
 #'   fit with a noise component has none either, and asking for it raises
 #'   `latents_unsupported_noise`.
 #'
-#'   `print()` groups checks by domain, highlights those requiring review and
-#'   returns the object invisibly. For supported model families, `plot()`
-#'   returns four classification plots as a `latents_plots` list of ggplot
-#'   objects; printing the list draws
-#'   all four plots. `as.data.frame()` returns the entropy table. `summary()`
-#'   returns the diagnostics object.
-#' @seealso [get_results()] for these and the other tables, [descriptives()]
-#'   for the variables before fitting, and [summary()] for the estimates.
+#'   `plot()` of the result is [plot_diagnostics()] of the fit: a
+#'   `latents_plots` list of ggplot objects, which draws every plot when
+#'   printed. `summary()` returns the result itself.
+#' @seealso [get_results()] for these and the other tables, [get_checks()]
+#'   for the checks alone, [plot_diagnostics()] for the plots,
+#'   [descriptives()] for the variables before fitting, and [summary()] for
+#'   the estimates.
 #' @examples
 #' fit <- multilpa(
 #'   course_engagement,
@@ -117,7 +154,8 @@
 #' quality
 #' get_results(quality, "checks")
 #' get_results(quality, what = "classification")
-#' get_results(diagnostics(fit, by = "overall", plots = FALSE), what = "residuals")
+#' pooled <- diagnostics(fit, by = "overall", plots = FALSE)
+#' get_results(pooled, what = "residuals")
 #' @export
 diagnostics <- function(x, data = NULL, plots = TRUE,
                         by = c("profile", "overall"), ...) {
@@ -453,46 +491,66 @@ plot.multilpa_diagnostics <-function(x, ...) {
   plot_diagnostics(x$fit)
 }
 
-#' Display model estimates and diagnostic summaries
+#' Print the estimates, descriptive statistics and diagnostic checks of a fitted
+#' model, and draw its plots
 #'
 #' @description
-#' `report()` provides a combined overview of a fitted profile, class, or
-#' supported transition model. It brings together parameter estimates,
-#' descriptive statistics, and diagnostic checks to support examination of
-#' the estimated class structure, numerical convergence, classification
-#' uncertainty, and residual associations.
+#' `report()` prints a first look at a fitted profile, class or transition
+#' model in one call: its estimates, the descriptive statistics of its
+#' variables and its diagnostic checks, followed by its plots. It computes
+#' nothing of its own; each part is the output of another function, named
+#' under *Report contents*, which returns the same numbers as tables.
 #'
-#' Output is displayed in the R session, with optional plots appropriate to
-#' the fitted model. The function returns the original fitted model
-#' invisibly. Individual tables remain available through [get_results()],
-#' [descriptives()], and [diagnostics()] for further analysis or reporting.
+#' The output goes to the R console and the graphics device. The function
+#' returns the fitted model invisibly, so it can end a pipeline.
 #'
 #' @param x A profile, class or transition fit: from [lpa()], [lca()],
-#'   [multilpa()] or [multilca()] (with or without membership covariates), or
-#'   from [lta()] with time-homogeneous transitions. A fit of another family
-#'   (a mixture regression, growth mixture, general transition, additive or
-#'   cross-level model) raises `latents_not_a_fit`; its own `summary()`,
+#'   [multilpa()] or [multilca()] (with or without membership covariates),
+#'   or an [lta()] fit of class `multilpa_transitions` (the basic
+#'   transition model: continuous or categorical indicators and one
+#'   first-order transition matrix for all occasions, without covariates,
+#'   weights or a stayer class). Any other model (an [lta()] fit of class
+#'   `multilpa_lta`, a mixture regression, a growth mixture, an additive or
+#'   cross-level fit) raises `latents_not_a_fit`; its own `summary()`,
 #'   [diagnostics()] and `plot()` report it.
-#' @param data Optional data frame used to fit the model. The required columns
-#'   are stored in the fitted object.
-#' @param plots `TRUE` (the default) draws the plots. `FALSE` prints only.
-#' @param rows Number of rows of each summary table to print, passed to
-#'   `print(summary(x))`. Default 10.
-#' @param by Passed to [diagnostics()] for the bivariate residuals:
-#'   `"profile"` (the default) assesses each profile separately, `"overall"`
-#'   pools them.
+#' @param data The data frame the model was fitted to. `NULL` (default)
+#'   uses the columns stored in the fit.
+#' @param plots Whether to draw the plots:
+#'   * `TRUE` (default): after the printed output, draws every plot view
+#'     the fit has the ingredients for, one after another (see
+#'     [plot_views()]), and then names the views that could not be drawn.
+#'     Without the ggplot2 package a message says so and nothing is drawn;
+#'   * `FALSE`: prints only.
+#' @param rows How many rows of each table of `summary(x)` to print: one
+#'   whole number of 0 or more (default 10). A longer table ends with the
+#'   number of rows left out and the call that returns it whole.
+#' @param by How [diagnostics()] assesses the bivariate residuals:
+#'   * `"profile"` (default): within each profile separately;
+#'   * `"overall"`: pooled over the profiles.
 #' @param ... Not used. Any further argument raises `latents_bad_argument`
 #'   before anything is printed.
 #' @section Report contents:
-#'   Output is presented in the following order: [summary()], [descriptives()],
-#'   the checks from [diagnostics()], and the supported plot views. Any omitted
-#'   views are listed after the plots. The underlying tables can be accessed
-#'   separately using [get_results()], [summary()], [descriptives()] and
-#'   [diagnostics()].
-#' @return The fitted model, invisibly. Called for its printed and plotted
-#'   output.
-#' @seealso [summary()], [diagnostics()], [descriptives()],
-#'   [plot_views()].
+#' The parts are printed in this order:
+#'
+#' 1. `summary(x)`: every table of the fit, each cut to `rows` rows;
+#' 2. [descriptives()] of the fit: the number of observations, missing
+#'    values, mean, standard deviation and range of each variable, and
+#'    for grouped data its intraclass correlation;
+#' 3. the checks of [diagnostics()]: estimation, class sizes,
+#'    classification, bivariate residuals, and the log likelihood with its
+#'    BIC, each with its status;
+#' 4. with `plots = TRUE`, the plot views of the fit.
+#'
+#' The tables behind each part are returned by [get_results()],
+#' [descriptives()] and [diagnostics()].
+#' @return The fitted model `x`, invisibly. The function is called for its
+#'   printed and plotted output. Conditions raised:
+#'   * `latents_not_a_fit`: `x` is not a profile, class or
+#'     `multilpa_transitions` fit;
+#'   * `latents_bad_argument`: an argument `report()` does not take, or a
+#'     `plots` or `by` with a value it does not take.
+#' @seealso [summary()], [diagnostics()], [descriptives()], [plot_views()];
+#'   [plot_all()] for the plots alone.
 #' @examples
 #' fit <- multilpa(
 #'   course_engagement,
@@ -559,6 +617,14 @@ report <- function(x, data = NULL, plots = TRUE,
 #' @return A character vector of `what` values.
 #' @noRd
 .multilpa_supported_views <- function(x) {
+  # A general transition fit keeps its measurement per occasion block. With
+  # one block its profile and sequence views draw from that block, read here
+  # as the plot method reads it; with one block per occasion only the
+  # transition matrix has a single view.
+  if (inherits(x, "multilpa_lta")) {
+    if (length(x$measurement) != 1L) return("transitions")
+    x <- .lta_plot_view(x)
+  }
   # Ask the method that will be called what it accepts, rather than assuming
   # every class takes the full catalogue. A covariate fit's plot method offers
   # "profiles" and "sequences" only, so report() must not hand it a view it has
@@ -573,15 +639,15 @@ report <- function(x, data = NULL, plots = TRUE,
   # `plot(what = "all")` call themselves.
   candidates <- setdiff(eval(formals(method)$what), "all")
   Filter(function(view) {
-    if (identical(view, "responses")) return(length(x$categorical) > 0L)
+    if (identical(view, "responses")) return(length(.gg_response_blocks(x)) > 0L)
     if (identical(view, "sequences")) return(!is.null(x$time))
     if (identical(view, "profiles") &&
         length(.multilpa_continuous_names(x)) == 0L &&
-        length(x$response_probabilities) > 0L) {
+        length(.gg_response_blocks(x)) > 0L) {
       return(.multilpa_scored_profiles(x))
     }
     # The heatmap draws the response probabilities when there are no means.
-    if (identical(view, "heatmap") && length(x$response_probabilities) > 0L) {
+    if (identical(view, "heatmap") && length(.gg_response_blocks(x)) > 0L) {
       return(TRUE)
     }
     if (view %in% c("profiles", "bars", "heatmap")) {

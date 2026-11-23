@@ -2,25 +2,59 @@
 % Please edit documentation in R/wildcards.R
 \name{plot_trust}
 \alias{plot_trust}
-\title{Convergence, boundary and replication of every candidate}
+\title{Plot whether each candidate of a grid converged, lies on a boundary and
+replicated its best log likelihood}
 \usage{
 plot_trust(x, main = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{An enumeration grid.}
+\item{x}{An enumeration grid from \code{\link[=enumerate_lpa]{enumerate_lpa()}}, \code{\link[=enumerate_lca]{enumerate_lca()}},
+\code{\link[=enumerate_classes]{enumerate_classes()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}. A grid of
+group-class families (\code{enumerate_classes(family = )}) has no such view
+and is refused.}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot. \code{NULL} (default)
+keeps the view's own text.}
 }
 \value{
 A ggplot object.
-An object with nothing to draw raises \code{latents_nothing_to_plot},
-naming the plot functions that apply; an object the package did not
-return raises \code{latents_not_a_fit}.
+
+Errors:
+\itemize{
+\item \code{latents_nothing_to_plot} when the package returned \code{x} but this
+function has no plot of it: a fitted model, a comparison or another
+result, or a grid of group-class families. For an object of the wrong
+kind, the message names the plot functions that apply to it;
+\item \code{latents_not_a_fit} when \code{x} is not a fit, grid or other result of the
+package, for example a data frame;
+\item \code{latents_missing_package} when ggplot2 is not installed.
+}
 }
 \description{
-Whether each candidate of an enumeration grid converged, reached a
-boundary and replicated its best log likelihood across starts.
+\code{plot_trust()} plots whether the estimate of each candidate of an enumeration
+grid can be relied on: did it converge, is it on a boundary, and did more
+than one start reach its best log likelihood.
+}
+\details{
+The x-axis is the number of classes and the y-axis the number of group
+classes, so each tile is one candidate. A grid with several covariance
+structures has one panel per structure. The fill and the text of a tile
+give the status of the candidate:
+\itemize{
+\item \code{replicated}: converged, and two or more starts reached the best log
+likelihood;
+\item \code{once}: converged, but only one start reached the best log likelihood,
+so a higher maximum may exist;
+\item \code{n/a}: converged, with no replication count stored;
+\item \code{boundary}: converged with an estimate on the boundary of the
+parameter space;
+\item \verb{not conv.}: the best start did not converge;
+\item \verb{not fitted}: the candidate has no log likelihood.
+}
+
+Under the status the tile gives the number of starts that reached the
+best log likelihood, for example \verb{2x}. Replication does not prove that
+the global maximum was found.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -31,5 +65,6 @@ plot_trust(grid)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=get_replication]{get_replication()}} for the table; \code{\link[=plot_selection]{plot_selection()}}.
+\code{\link[=get_replication]{get_replication()}} for the counts of starts as a table;
+\code{\link[=get_candidates]{get_candidates()}} for \code{converged} and \code{boundary}; \code{\link[=plot_selection]{plot_selection()}}.
 }

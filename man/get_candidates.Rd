@@ -2,26 +2,61 @@
 % Please edit documentation in R/wildcards.R
 \name{get_candidates}
 \alias{get_candidates}
-\title{Every candidate of a grid}
+\title{Get the table of every candidate model in an enumeration grid, with its
+criteria and diagnostics}
 \usage{
 get_candidates(x)
 }
 \arguments{
-\item{x}{An enumeration grid from \code{\link[=enumerate_classes]{enumerate_classes()}},
-\code{\link[=enumerate_lpa]{enumerate_lpa()}}, \code{\link[=enumerate_lca]{enumerate_lca()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}.}
+\item{x}{An enumeration grid of any kind, from \code{\link[=enumerate_lpa]{enumerate_lpa()}},
+\code{\link[=enumerate_lca]{enumerate_lca()}}, \code{\link[=enumerate_classes]{enumerate_classes()}} or \code{\link[=enumerate_regressions]{enumerate_regressions()}}.}
 }
 \value{
-A data frame, one row per candidate. On a profile or class grid: candidate, n_profiles, n_group_classes, model, log_likelihood, n_parameters, the criteria (\code{aic}, \code{bic_groups}, ...), \code{profile_entropy}, the AvePP summaries, \code{converged}, \code{boundary}, \code{n_best_replicated}, and the Gaussian checks where they apply.
-A transition or family grid has one \code{entropy}, \code{bic} and \code{bic_individual}, and no AvePP summaries; a regression grid has \code{n_classes}, \code{bic}, \code{bic_rows}, \code{sabic}, \code{icl}, \code{entropy}, \code{smallest_share} and \code{best_bic}, without \code{candidate} or \code{boundary}.
-Any other object raises \code{latents_not_a_fit}.
+A data frame with one row per candidate. The columns depend on
+the kind of grid:
+\itemize{
+\item a profile or class grid: \code{candidate} (its name), \code{n_profiles},
+\code{n_group_classes}, \code{model} (the covariance structure),
+\code{log_likelihood}, \code{n_parameters}, the criteria (\code{aic}, \code{kic}, and
+\code{bic}, \code{sabic}, \code{caic}, \code{awe}, \code{icl} and \code{clc} with the suffix
+\verb{_groups} or \verb{_individual} for the sample size they use),
+\code{profile_entropy} and \code{group_entropy} (relative entropy at each
+level), \code{avepp_min}, \code{avepp_max}, \code{avepp_mean} and \code{avepp_below}
+(the average posterior probabilities of the classes and how many
+fall below the cutoff 0.8; with the prefix \code{group_} for the group
+classes), \code{converged}, \code{boundary}, \code{min_standardized_eigenvalue}
+and \code{min_gaussian_mass} (checks of Gaussian indicators) and
+\code{n_best_replicated} (the number of starts that reached the best log
+likelihood);
+\item a transition grid: \code{candidate}, \code{n_profiles}, \code{n_group_classes},
+\code{log_likelihood}, \code{n_parameters}, \code{aic}, \code{bic}, \code{bic_individual},
+\code{entropy}, \code{converged}, \code{boundary} and \code{n_best_replicated};
+\item a grid of group-class families: \code{candidate}, \code{model}, \code{family},
+\code{between_variance}, \code{n_group_classes}, \code{log_likelihood},
+\code{n_parameters}, \code{aic}, \code{bic}, \code{bic_individual}, \code{entropy},
+\code{smallest_class}, \code{min_effective_groups}, \code{converged}, \code{boundary}
+and \code{n_best_replicated};
+\item a regression grid: \code{n_classes}, \code{n_group_classes}, \code{log_likelihood},
+\code{n_parameters}, \code{aic}, \code{bic}, \code{bic_rows}, \code{sabic}, \code{icl}, \code{entropy},
+\code{smallest_share}, \code{converged}, \code{n_best_replicated} and \code{best_bic}
+(\code{TRUE} for the candidate with the lowest BIC). It has no
+\code{candidate} or \code{boundary} column.
+}
+
+Errors: \code{latents_not_a_fit} when \code{x} is not an enumeration grid.
 }
 \description{
-One row per candidate with its class counts, log likelihood, every
-information criterion and quality measure, and its convergence,
-boundary and replication status. Columns empty in every row are left
-out (for a class grid, the covariance \code{model} and the Gaussian checks;
-\code{error} when every candidate fitted); \code{get_results(x, "candidates")}
-keeps them.
+\code{get_candidates()} returns the main table of an enumeration grid: one row per
+candidate model, with its numbers of classes, its log likelihood, its
+information criteria, its classification quality and whether its estimation
+can be relied on.
+}
+\details{
+The table is \code{get_results(x, "candidates")} without the columns that are
+empty in every row. On a class grid, for example, the covariance
+structure \code{model} and the checks of Gaussian indicators are left out,
+and the columns \code{warnings} and \code{error} appear only when a candidate has
+a warning or failed.
 }
 \examples{
 grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
@@ -30,6 +65,7 @@ grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
 get_candidates(grid)
 }
 \seealso{
-\code{\link[=get_best]{get_best()}}, \code{\link[=get_deltas]{get_deltas()}}, \code{\link[=plot_criteria]{plot_criteria()}}; \code{\link[=get_results]{get_results()}} for
-the columns.
+\code{\link[=get_best]{get_best()}}, \code{\link[=get_deltas]{get_deltas()}} and \code{\link[=get_knees]{get_knees()}} for what the
+criteria say; \code{\link[=plot_criteria]{plot_criteria()}} draws them; \code{\link[=get_results]{get_results()}} for the
+full table.
 }

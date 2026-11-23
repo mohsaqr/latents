@@ -2,36 +2,64 @@
 % Please edit documentation in R/wildcards.R
 \name{plot_individuals}
 \alias{plot_individuals}
-\title{Trajectories of individual persons}
+\title{Plot individual persons' observations and predicted curves beside the
+trajectory of their class}
 \usage{
 plot_individuals(x, persons = 12L, main = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{A growth mixture, or a mixture regression that classifies
-persons (\code{class_level = "group"}).}
+\item{x}{One of:
+\itemize{
+\item a growth mixture: a fit from \code{\link[=mixture_regression]{mixture_regression()}} with \code{random};
+\item a fit from \code{\link[=mixture_regression]{mixture_regression()}} with \code{class_level = "group"}, which
+classifies persons;
+\item a \code{\link[=diagnostics]{diagnostics()}} result, which is drawn from the fit it checked.
+}}
 
-\item{persons}{Which persons to draw. A single number is how many
-(default 12), taken from each class's most to least certain members.
-Two or more values, or text, are the persons' identifiers as they
-appear in the data; a single numeric identifier is given as text,
-\code{persons = "1001"}.}
+\item{persons}{Which persons to draw:
+\itemize{
+\item one number (default \code{12}): how many persons. They are taken from the
+classes in turn, and within a class they are spread from its most
+certain to its least certain member;
+\item two or more values, or text: the identifiers of the persons to draw,
+as they appear in the data, for example \code{c(3, 17, 42)}. A single
+numeric identifier must be given as text, \code{persons = "1001"},
+because a single number is read as a count.
+}}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot. \code{NULL} (default)
+keeps the view's own text.}
 }
 \value{
-A ggplot object, one panel per person.
-An object with nothing to draw raises \code{latents_nothing_to_plot},
-naming the plot functions that apply; an object the package did not
-return raises \code{latents_not_a_fit}. A \code{persons} that is not a positive
-number or a vector of identifiers, or names none of the fitted persons,
-raises \code{latents_bad_argument}.
+A ggplot object with one panel per person.
+
+Errors:
+\itemize{
+\item \code{latents_nothing_to_plot} when the package returned \code{x} but this
+function has no plot of it: a mixture regression that classifies
+observations (including one with \code{n_group_classes} of two or more), a
+fit of any other family or an enumeration grid. For an object of the
+wrong kind, the message names the plot functions that apply to it;
+\item \code{latents_bad_argument} when \code{persons} is a number below 1 or contains a
+missing value, or when none of the identifiers is in the fitted data;
+\item \code{latents_not_a_fit} when \code{x} is not a fit, grid or other result of the
+package, for example a data frame;
+\item \code{latents_missing_package} when ggplot2 is not installed.
+}
 }
 \description{
-The observed and predicted trajectory of each of several persons of a
-growth mixture or a regression that classifies persons, coloured by
-class. Each panel is titled with the person's identifier, named as in the
-assignment table, and the person's class and posterior probability.
+\code{plot_individuals()} plots one panel per person of a growth model, with the
+person's observations, the person's own predicted curve and the trajectory of
+the person's class.
+}
+\details{
+The x-axis is the time variable and the y-axis the outcome, as in
+\code{\link[=plot_trajectories]{plot_trajectories()}}. In each panel the points are the person's
+observations, the solid line is the curve predicted for that person and
+the dashed line is the mean trajectory of the person's most likely class.
+All three are drawn in the colour of that class. The panel title gives
+the name of the identifier column with the person's identifier, then the
+person's class and the posterior probability of that class.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -39,9 +67,11 @@ fit <- mixture_regression(score ~ wave, subset(growth_scores, student <= 60),
                           n_classes = 2, id = "student", class_level = "group",
                           random = "wave", n_starts = 2, seed = 1)
 plot_individuals(fit)
+plot_individuals(fit, persons = 4)
 plot_individuals(fit, persons = c(3, 17, 42))
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=plot_trajectories]{plot_trajectories()}}, \code{\link[=plot_classification]{plot_classification()}}.
+\code{\link[=plot_trajectories]{plot_trajectories()}} for the classes, \code{\link[=plot_classification]{plot_classification()}}
+for the class probabilities of every person.
 }

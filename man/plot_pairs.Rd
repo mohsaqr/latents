@@ -2,25 +2,57 @@
 % Please edit documentation in R/wildcards.R
 \name{plot_pairs}
 \alias{plot_pairs}
-\title{Scatter-plot matrix of the indicators by profile}
+\title{Plot every pair of continuous indicators against each other, with the cases
+and an ellipse for each profile}
 \usage{
 plot_pairs(x, main = NULL, subtitle = NULL)
 }
 \arguments{
-\item{x}{A profile or class fit with continuous indicators.}
+\item{x}{One of:
+\itemize{
+\item a profile fit from \code{\link[=lpa]{lpa()}} or \code{\link[=multilpa]{multilpa()}}, with or without
+covariates, that has two or more continuous indicators and was fitted
+without centering or scaling;
+\item a \code{\link[=diagnostics]{diagnostics()}} result, which is drawn from the fit it checked.
+}}
 
-\item{main, subtitle}{Title and subtitle; \code{NULL} (default) keeps the
-view's own.}
+\item{main, subtitle}{Title and subtitle of the plot. \code{NULL} (default)
+keeps the view's own text.}
 }
 \value{
 A ggplot object.
-An object with nothing to draw raises \code{latents_nothing_to_plot},
-naming the plot functions that apply; an object the package did not
-return raises \code{latents_not_a_fit}.
+
+Errors:
+\itemize{
+\item \code{latents_nothing_to_plot} when the package returned \code{x} but this
+function has no plot of it: a fit with fewer than two continuous
+indicators, a centred or scaled fit, a transition fit, an additive or
+cross-level fit, a mixture regression, a growth mixture or an
+enumeration grid. For an object of the wrong kind, the message names the
+plot functions that apply to it;
+\item \code{latents_not_a_fit} when \code{x} is not a fit, grid or other result of the
+package, for example a data frame;
+\item \code{latents_missing_package} when ggplot2 is not installed.
+}
 }
 \description{
-The continuous indicators against each other, cases coloured by
-assigned profile, with each profile's 95\% covariance ellipse.
+\code{plot_pairs()} plots every pair of continuous indicators against each other,
+with the cases marked by profile and an ellipse for each profile.
+}
+\details{
+The plot is a matrix of panels with one row and one column per
+continuous indicator. A panel off the diagonal is a scatter plot of two
+indicators. Each case is a point with the colour and the marker of its
+most likely profile, drawn larger the less certain its assignment. Each
+profile has an ellipse that holds 95\% of its fitted distribution, drawn
+around the profile's mean, which is marked. A panel on the diagonal shows
+the density of that indicator among the cases of each profile, scaled by
+the size of the profile.
+
+The view needs two or more continuous indicators and draws the stored
+data of the fit. A fit with person or grand centering or scaling is
+refused, because its stored data are not on the scale of the model.
+Transition fits are refused as well.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
@@ -30,5 +62,6 @@ plot_pairs(fit)
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=plot_raincloud]{plot_raincloud()}}, \code{\link[=plot_parallel]{plot_parallel()}}, \code{\link[=plot_profiles]{plot_profiles()}}.
+\code{\link[=plot_raincloud]{plot_raincloud()}} and \code{\link[=plot_parallel]{plot_parallel()}} for the other views of
+the cases; \code{\link[=plot_profiles]{plot_profiles()}} for the profile means.
 }
