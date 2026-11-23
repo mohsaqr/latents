@@ -85,6 +85,7 @@ models <- enumerate_lca(student_esm, c("time_with_friends",
                                        "on_social_media", "sports"),
                         n_classes = 1:3, n_starts = 2, seed = 1)
 #> Warning: The model is not identified: it has 11 free parameters, but its indicators' 8 response patterns leave only 7 free cell probabilities (-4 degrees of freedom). Its class sizes and response probabilities are not determined by the data; fit fewer classes or use more indicators.
+#> 2 of 3 candidates reached their best log likelihood from one start only (classes2, classes3); refit those you consider with more starts.
 summary(models)
 #> Class enumeration: 3 candidates, 3 converged, 0 failed to fit
 #> 2 distinct candidate(s) are minimal under some criterion.

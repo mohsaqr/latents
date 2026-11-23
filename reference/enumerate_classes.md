@@ -188,6 +188,9 @@ screen of the evidence; a transition or family grid's
 table. Invalid arguments are refused with the classed conditions listed
 on
 [latents-conditions](https://pak.dynasite.org/latents/reference/latents-conditions.md).
+When a converged candidate fitted from two or more starts reached its
+best log likelihood from one of them only, a `latents_single_start`
+message names it once per grid.
 
 ## See also
 
@@ -292,6 +295,7 @@ single <- enumerate_lpa(iris, c("Sepal.Length", "Sepal.Width",
                                 "Petal.Length", "Petal.Width"),
                         n_profiles = 1:3, model = c("VVV", "EEE"),
                         n_starts = 2, seed = 1)
+#> 1 of 6 candidates reached their best log likelihood from one start only (profiles3_VVV); refit those you consider with more starts.
 summary(single)
 #> Class enumeration: 6 candidates, 6 converged, 0 failed to fit
 #> 2 distinct candidate(s) are minimal under some criterion.

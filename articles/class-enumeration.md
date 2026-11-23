@@ -160,6 +160,7 @@ models <- enumerate_classes(course_engagement, activity, "student",
 #> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
 #> Warning: Profile 6: 9.1 Gaussian membership mass for 10 free means and variances. This is a
 #> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+#> 7 of 21 candidates reached their best log likelihood from one start only (profiles5_groups1, profiles6_groups1, profiles5_groups2, profiles6_groups2, profiles5_groups3, profiles6_groups3, ...); refit those you consider with more starts.
 models
 #> Class enumeration: 24 candidate models (LPA)
 #>          candidate n_profiles n_group_classes model log_likelihood n_parameters   aic bic_groups
@@ -1657,6 +1658,7 @@ lca_models <- enumerate_classes(student_esm, activities, "student",
                                 n_profiles = 2:4, n_group_classes = 1:2,
                                 categorical = activities, n_starts = 5,
                                 seed = 1)
+#> 3 of 6 candidates reached their best log likelihood from one start only (classes4_groups1, classes3_groups2, classes4_groups2); refit those you consider with more starts.
 lca_models
 #> Class enumeration: 6 candidate models (LCA)
 #>         candidate n_profiles n_group_classes log_likelihood n_parameters   aic bic_groups
@@ -1735,6 +1737,7 @@ srl_models <- enumerate_lpa(srl, c("cognitive_strategies", "intrinsic_value",
 #> Warning: Profiles 3, 4: 1.0, 2.0 Gaussian membership mass for 10 free means and variances each.
 #> This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance
 #> diagnostics.
+#> 2 of 8 candidates reached their best log likelihood from one start only (profiles7, profiles8); refit those you consider with more starts.
 srl_models
 #> Class enumeration: 8 candidate models (LPA)
 #>  candidate n_profiles model log_likelihood n_parameters  aic bic_groups icl_individual
@@ -1814,6 +1817,7 @@ crossed_models <- enumerate_lpa(srl, c("cognitive_strategies",
                                        "self_regulation", "test_anxiety"),
                                 n_profiles = 2:4, model = c("VVI", "EEE"),
                                 n_starts = 5, seed = 1)
+#> 1 of 6 candidates reached their best log likelihood from one start only (profiles4_EEE); refit those you consider with more starts.
 crossed_models
 #> Class enumeration: 6 candidate models (LPA)
 #>      candidate n_profiles model log_likelihood n_parameters  aic bic_groups icl_individual
@@ -1858,6 +1862,7 @@ transition_models <- enumerate_classes(course_engagement, activity, "student",
 #> inference is withheld.
 #> Warning: An initial, transition or group-class probability is at its numerical boundary; Wald
 #> inference is withheld.
+#> 2 of 5 candidates reached their best log likelihood from one start only (profiles5_groups1, profiles6_groups1); refit those you consider with more starts.
 transition_models
 #> Transition-model enumeration: 5 candidates (LTA)
 #>          candidate n_profiles n_group_classes model log_likelihood n_parameters   bic   aic entropy

@@ -130,7 +130,13 @@ parameter_inference(
   fit. `"fix"` holds them at the bound and reports every other parameter
   conditional on them, as Mplus does. The held probabilities are left
   out of the table and named in the `fixed_at_bound` attribute; a
-  covariate fit keeps their rows with `NA` standard errors.
+  covariate fit keeps their rows with `NA` standard errors. A
+  homogeneous transition fit
+  ([`lta()`](https://pak.dynasite.org/latents/reference/lta.md)) holds
+  its response, initial and transition probabilities on the bound the
+  same way; a general one (covariates, occasion-specific measurement,
+  second order, stayers) holds nothing, and `method = "bootstrap"` is
+  the alternative there.
 
 ## Value
 
@@ -225,8 +231,12 @@ the estimate columns, `estimated` and, for a second-order fit,
 identify (see *Occasions without data* under
 [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)); such a
 row has `NA` standard error and test. The bootstrap rebases the initial
-logits when the reference profile moves. A transition fit of either kind
-with a parameter at a bound is refused under either `boundary`.
+logits when the reference profile moves. Under `boundary = "fix"` a
+homogeneous transition fit holds the probabilities on their bound and
+leaves their rows out (named in `fixed_at_bound`); a general one, a
+variance on its bound and an empty group class are refused under either
+value. The bootstrap refits each resample and reports percentile
+intervals for a fit on its bound.
 
 ## Growth mixtures
 

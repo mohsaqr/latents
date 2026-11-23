@@ -467,6 +467,7 @@ candidates <- enumerate_classes(course_engagement, vars, id = "student",
                                 max_iter = 2000, tol = 1e-10, seed = 1)
 #> Warning: Profile 2: 18.6 Gaussian membership mass for 20 free means and variances. This is a
 #> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+#> 1 of 8 candidates reached their best log likelihood from one start only (profiles3_groups2_VVV); refit those you consider with more starts.
 get_results(candidates, "candidates")
 #>               candidate n_profiles n_group_classes model log_likelihood n_parameters     aic
 #> 1 profiles2_groups2_VVI          2               2   VVI       -8439.82           23 16925.6

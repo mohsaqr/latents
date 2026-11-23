@@ -35,7 +35,7 @@ is the analyst's: when every criterion is lowest at its edge, extend it."><meta 
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -253,7 +253,10 @@ class grid also has the AvePP summaries at each level in its candidates
 table, <code><a href="get_deltas.html">get_deltas()</a></code> and <code><a href="get_knees.html">get_knees()</a></code>, and a <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> that prints
 one screen of the evidence; a transition or family grid's <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>
 is its candidates table. Invalid arguments are refused with the
-classed conditions listed on <a href="latents-conditions.html">latents-conditions</a>.</p>
+classed conditions listed on <a href="latents-conditions.html">latents-conditions</a>. When a converged
+candidate fitted from two or more starts reached its best log
+likelihood from one of them only, a
+<code>latents_single_start</code> message names it once per grid.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -355,6 +358,7 @@ against the next, <code><a href="enumerate_regressions.html">enumerate_regressio
 <span class="r-in"><span>                                <span class="st">"Petal.Length"</span>, <span class="st">"Petal.Width"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                        n_profiles <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"VVV"</span>, <span class="st">"EEE"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                        n_starts <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 1 of 6 candidates reached their best log likelihood from one start only (profiles3_VVV); refit those you consider with more starts.</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">single</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Class enumeration: 6 candidates, 6 converged, 0 failed to fit</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 distinct candidate(s) are minimal under some criterion.</span>

@@ -1,5 +1,51 @@
 # Changelog
 
+## latents 1.3.7
+
+- No change to the package. The verification material (`equivalence/`:
+  the comparison kits, the retained Latent GOLD, Mplus, SAS and Stata
+  output, the harness and its test files) moves to the repository
+  `mohsaqr/equivalence`, which holds the verification material of all
+  the packages. `equivalence/` here is no longer committed: it is copied
+  from that repository for a run
+  (`sh ../equivalence/restore.sh latents .`), and the ci jobs and the
+  `equivalence` and `pkgdown` workflows fetch it.
+
+## latents 1.3.6
+
+- No change to the package. The verification material gains comparison
+  bundles for the Latent GOLD cases
+  (`equivalence/latentgold/export-bundle.R`), each holding the latents
+  script, the Latent GOLD syntax, both programs’ output, the data and
+  the compared quantities.
+
+## latents 1.3.5
+
+- `parameter_inference(boundary = "fix")`,
+  [`vcov()`](https://rdrr.io/r/stats/vcov.html) and
+  [`confint()`](https://rdrr.io/r/stats/confint.html) now hold response,
+  initial and transition probabilities on their bound in an
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit
+  without covariates, occasion-specific measurement, second order or
+  stayers, and report the other parameters conditionally on them, as for
+  profile models. Before, such a fit was refused under either value.
+  Other transition fits are still refused; the message points to
+  `method = "bootstrap"`.
+- Rerun
+  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
+  on such a fit: its profile table now reports the standard errors of
+  the means and variances, conditional on the held probabilities as in
+  profile models, where it reported `NA`.
+- [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md),
+  [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md)
+  and
+  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md)
+  now say, in one message per grid, which candidates fitted from several
+  starts reached their best log likelihood from one of them only, so a
+  higher maximum may exist; refit those with more `n_starts` before
+  comparing their criteria. The message has class
+  `latents_single_start`. Results are unchanged.
+
 ## latents 1.3.4
 
 - No change to the package’s functions. A new article, “Verification and
@@ -713,8 +759,7 @@ CRAN release: 2026-10-16
   trajectory (the Gaussian growth mixture model). The likelihood is
   exact; estimation is EM with the random effects as missing data,
   finished by quasi-Newton with analytic scores. Validated against an
-  independent dense likelihood, numerical derivatives and
-  [`lcmm::hlme()`](https://cecileproust-lima.github.io/lcmm/reference/hlme.html)
+  independent dense likelihood, numerical derivatives and `lcmm::hlme()`
   (six configurations; the same likelihood at `hlme`’s estimates and at
   least its maximum).
 - Variable names may replace one-sided formulas: `random = "wave"`,

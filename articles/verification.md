@@ -38,7 +38,7 @@ López-Pernas 2026), follows the same discipline: its engines are
 verified against R, Python, SPSS, Mplus, NIST reference datasets and
 published results, and each comparison records the reference value, the
 computed value and its tolerance. This article states how the contract
-is met for latents 1.3.4 and what evidence supports it.
+is met for latents 1.3.9 and what evidence supports it.
 
 At this build, 40,172 current checks compare latents with 4 commercial
 programs, 19 R packages and 18 published analyses on 672 distinct
@@ -229,9 +229,9 @@ and differentiated numerically (1,395 checks).
 ### Layer 7. Refusal of invalid input
 
 A wrong answer returned without warning is the most damaging failure of
-statistical software. latents defines 102 classes of condition, each
-documented with the input that raises it. Of the 1,519 assertions in its
-test suites that an input is refused, 1,317 require a specific class, so
+statistical software. latents defines 103 classes of condition, each
+documented with the input that raises it. Of the 1,524 assertions in its
+test suites that an input is refused, 1,322 require a specific class, so
 a refusal for the wrong reason fails. A refusal-parity suite passes each
 degenerate input through every function that accepts it and requires the
 same class from each (58 checks).
@@ -296,7 +296,7 @@ refusal are reported separately and do not count as sources.
 
 The verification covers every exported function that estimates a model
 or computes a statistic from one. Plots, printed summaries and argument
-handling are covered by the unit tests in `tests/testthat/` (260 files),
+handling are covered by the unit tests in `tests/testthat/` (262 files),
 which check their structure and their refusals. The comparisons with
 Mplus, Latent GOLD, Stata and SAS run from listings kept in the source
 repository, outside the checks of the package on CRAN, so the package
@@ -320,7 +320,7 @@ and its treatment.
 | flexmix | the Gaussian M-step divides by $`n`$ minus the rank, so its fixed point is not the maximum likelihood estimate | the step is replaced in the comparison |
 | R3STEP, in latents and Mplus | intervals for class intercepts treat the first step as fixed | reported as a property of the method |
 | lcmm 2.2.2 | returns no subject-specific predictions | comparisons use lcmm 2.2.1 |
-| latents | `parameter_inference(boundary = "fix")` is not applied to transition fits, which are refused when a probability lies on its bound | recorded as an open defect |
+| latents | `parameter_inference(boundary = "fix")` held nothing in transition fits, which were refused when a probability lay on its bound | homogeneous transition fits now hold it; their conditional standard errors agree with a numerical Hessian of the likelihood over the free coordinates; general transition fits still refuse |
 
 ## References
 

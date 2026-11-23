@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -200,55 +200,57 @@ the same maximum.</p>
 <h2 id="how-many-profiles-and-classes">How many profiles and classes<a class="anchor" aria-label="anchor" href="#how-many-profiles-and-classes"></a>
 </h2>
 <p><code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> fits every combination of two to
-four profiles and one to three student classes, each from five random
-starts, and reports the information criteria and the diagnostics of each
-fit. It does not choose a model.</p>
+four profiles and one to three student classes, each from twenty random
+starts with a tight convergence tolerance, and reports the information
+criteria and the diagnostics of each fit. It does not choose a
+model.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">candidates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="va">student_esm</span>, vars <span class="op">=</span> <span class="va">activities</span>,</span>
 <span>                                categorical <span class="op">=</span> <span class="va">activities</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
 <span>                                n_profiles <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">4</span>, n_group_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
-<span>                                n_starts <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>                                n_starts <span class="op">=</span> <span class="fl">20</span>, tol <span class="op">=</span> <span class="fl">1e-10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 2 of 9 candidates reached their best log likelihood from one start only (classes3_groups3, classes4_groups3); refit those you consider with more starts.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">candidates</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          candidate n_profiles n_group_classes model log_likelihood n_parameters   aic   kic</span></span>
 <span><span class="co">#&gt; 1 classes2_groups1          2               1  &lt;NA&gt;          -7892           17 15819 15839</span></span>
 <span><span class="co">#&gt; 2 classes3_groups1          3               1  &lt;NA&gt;          -7848           26 15749 15778</span></span>
-<span><span class="co">#&gt; 3 classes4_groups1          4               1  &lt;NA&gt;          -7811           35 15692 15730</span></span>
+<span><span class="co">#&gt; 3 classes4_groups1          4               1  &lt;NA&gt;          -7807           35 15683 15721</span></span>
 <span><span class="co">#&gt; 4 classes2_groups2          2               2  &lt;NA&gt;          -7740           19 15518 15540</span></span>
-<span><span class="co">#&gt; 5 classes3_groups2          3               2  &lt;NA&gt;          -7695           29 15448 15480</span></span>
-<span><span class="co">#&gt; 6 classes4_groups2          4               2  &lt;NA&gt;          -7653           39 15383 15425</span></span>
+<span><span class="co">#&gt; 5 classes3_groups2          3               2  &lt;NA&gt;          -7678           29 15414 15446</span></span>
+<span><span class="co">#&gt; 6 classes4_groups2          4               2  &lt;NA&gt;          -7634           39 15346 15388</span></span>
 <span><span class="co">#&gt; 7 classes2_groups3          2               3  &lt;NA&gt;          -7710           21 15462 15486</span></span>
-<span><span class="co">#&gt; 8 classes3_groups3          3               3  &lt;NA&gt;          -7594           32 15253 15288</span></span>
-<span><span class="co">#&gt; 9 classes4_groups3          4               3  &lt;NA&gt;          -7536           43 15158 15204</span></span>
+<span><span class="co">#&gt; 8 classes3_groups3          3               3  &lt;NA&gt;          -7582           32 15228 15263</span></span>
+<span><span class="co">#&gt; 9 classes4_groups3          4               3  &lt;NA&gt;          -7520           43 15126 15172</span></span>
 <span><span class="co">#&gt;   bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups</span></span>
-<span><span class="co">#&gt; 1      15863          15918        15809            15864       15880           15935      17822</span></span>
+<span><span class="co">#&gt; 1      15863          15918        15809            15864       15880           15935      17836</span></span>
 <span><span class="co">#&gt; 2      15817          15901        15735            15819       15843           15927      17933</span></span>
-<span><span class="co">#&gt; 3      15783          15897        15672            15786       15818           15932      18265</span></span>
-<span><span class="co">#&gt; 4      15567          15629        15507            15569       15586           15648      16846</span></span>
-<span><span class="co">#&gt; 5      15524          15618        15432            15526       15553           15647      18330</span></span>
-<span><span class="co">#&gt; 6      15485          15612        15362            15488       15524           15651      18182</span></span>
+<span><span class="co">#&gt; 3      15774          15888        15664            15777       15809           15923      18078</span></span>
+<span><span class="co">#&gt; 4      15567          15629        15507            15569       15586           15648      16845</span></span>
+<span><span class="co">#&gt; 5      15490          15584        15398            15492       15519           15613      16767</span></span>
+<span><span class="co">#&gt; 6      15447          15574        15324            15450       15486           15613      18159</span></span>
 <span><span class="co">#&gt; 7      15517          15585        15450            15518       15538           15606      17027</span></span>
-<span><span class="co">#&gt; 8      15336          15440        15235            15338       15368           15472      17335</span></span>
-<span><span class="co">#&gt; 9      15270          15410        15134            15273       15313           15453      17502</span></span>
+<span><span class="co">#&gt; 8      15312          15416        15211            15314       15344           15448      17340</span></span>
+<span><span class="co">#&gt; 9      15238          15377        15102            15241       15281           15420      17238</span></span>
 <span><span class="co">#&gt;   awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy</span></span>
-<span><span class="co">#&gt; 1          17933      17693          17748      17615          17615           0.489            NA</span></span>
-<span><span class="co">#&gt; 2          18102      17735          17820      17615          17615           0.662            NA</span></span>
-<span><span class="co">#&gt; 3          18492      17998          18112      17837          17837           0.691            NA</span></span>
-<span><span class="co">#&gt; 4          16969      16701          16763      16614          16614           0.668         0.877</span></span>
-<span><span class="co">#&gt; 5          18518      18109          18204      17976          17976           0.529         0.910</span></span>
-<span><span class="co">#&gt; 6          18435      17885          18012      17706          17706           0.651         0.900</span></span>
-<span><span class="co">#&gt; 7          17164      16867          16936      16771          16771           0.609         0.814</span></span>
-<span><span class="co">#&gt; 8          17543      17091          17195      16944          16944           0.667         0.919</span></span>
-<span><span class="co">#&gt; 9          17781      17175          17314      16977          16977           0.714         0.894</span></span>
+<span><span class="co">#&gt; 1          17946      17706          17762      17628          17628           0.485            NA</span></span>
+<span><span class="co">#&gt; 2          18102      17735          17820      17616          17616           0.662            NA</span></span>
+<span><span class="co">#&gt; 3          18305      17812          17925      17650          17650           0.715            NA</span></span>
+<span><span class="co">#&gt; 4          16969      16701          16763      16613          16613           0.668         0.877</span></span>
+<span><span class="co">#&gt; 5          16956      16546          16641      16413          16413           0.804         0.878</span></span>
+<span><span class="co">#&gt; 6          18413      17863          17989      17683          17683           0.652         0.914</span></span>
+<span><span class="co">#&gt; 7          17163      16867          16935      16770          16770           0.609         0.814</span></span>
+<span><span class="co">#&gt; 8          17548      17097          17201      16950          16950           0.660         0.914</span></span>
+<span><span class="co">#&gt; 9          17517      16911          17050      16713          16713           0.745         0.908</span></span>
 <span><span class="co">#&gt;   avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean</span></span>
-<span><span class="co">#&gt; 1     0.704     0.941      0.822           1              NA              NA               NA</span></span>
-<span><span class="co">#&gt; 2     0.704     0.952      0.863           1              NA              NA               NA</span></span>
-<span><span class="co">#&gt; 3     0.723     0.997      0.814           3              NA              NA               NA</span></span>
+<span><span class="co">#&gt; 1     0.705     0.939      0.822           1              NA              NA               NA</span></span>
+<span><span class="co">#&gt; 2     0.705     0.952      0.863           1              NA              NA               NA</span></span>
+<span><span class="co">#&gt; 3     0.713     0.955      0.830           2              NA              NA               NA</span></span>
 <span><span class="co">#&gt; 4     0.859     0.926      0.892           0           0.960           0.980            0.970</span></span>
-<span><span class="co">#&gt; 5     0.647     0.846      0.778           1           0.974           0.984            0.979</span></span>
-<span><span class="co">#&gt; 6     0.635     0.883      0.793           1           0.966           0.976            0.971</span></span>
+<span><span class="co">#&gt; 5     0.858     0.991      0.927           0           0.952           0.971            0.962</span></span>
+<span><span class="co">#&gt; 6     0.630     0.992      0.819           1           0.974           0.986            0.980</span></span>
 <span><span class="co">#&gt; 7     0.878     0.888      0.883           0           0.885           0.931            0.912</span></span>
-<span><span class="co">#&gt; 8     0.795     0.912      0.855           1           0.959           0.976            0.969</span></span>
-<span><span class="co">#&gt; 9     0.839     0.989      0.881           0           0.951           0.961            0.955</span></span>
+<span><span class="co">#&gt; 8     0.828     0.888      0.853           0           0.941           0.980            0.967</span></span>
+<span><span class="co">#&gt; 9     0.813     0.991      0.887           0           0.948           0.970            0.957</span></span>
 <span><span class="co">#&gt;   group_avepp_below converged boundary min_standardized_eigenvalue min_gaussian_mass</span></span>
 <span><span class="co">#&gt; 1                NA      TRUE    FALSE                          NA                NA</span></span>
 <span><span class="co">#&gt; 2                NA      TRUE     TRUE                          NA                NA</span></span>
@@ -260,69 +262,73 @@ fit. It does not choose a model.</p>
 <span><span class="co">#&gt; 8                 0      TRUE     TRUE                          NA                NA</span></span>
 <span><span class="co">#&gt; 9                 0      TRUE     TRUE                          NA                NA</span></span>
 <span><span class="co">#&gt;   n_best_replicated warnings error</span></span>
-<span><span class="co">#&gt; 1                 5           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 2                 2           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 3                 1           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 4                 4           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 5                 1           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 6                 1           &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 7                 5           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 1                18           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2                 5           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3                 3           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4                13           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 5                 2           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 6                 2           &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 7                20           &lt;NA&gt;</span></span>
 <span><span class="co">#&gt; 8                 1           &lt;NA&gt;</span></span>
 <span><span class="co">#&gt; 9                 1           &lt;NA&gt;</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">candidates</span>, <span class="st">"best"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    criterion  convention        candidate n_profiles n_group_classes model value</span></span>
-<span><span class="co">#&gt; 1        aic        &lt;NA&gt; classes4_groups3          4               3  &lt;NA&gt; 15158</span></span>
-<span><span class="co">#&gt; 2        kic        &lt;NA&gt; classes4_groups3          4               3  &lt;NA&gt; 15204</span></span>
-<span><span class="co">#&gt; 3        bic      groups classes4_groups3          4               3  &lt;NA&gt; 15270</span></span>
-<span><span class="co">#&gt; 4        bic individuals classes4_groups3          4               3  &lt;NA&gt; 15410</span></span>
-<span><span class="co">#&gt; 5      sabic      groups classes4_groups3          4               3  &lt;NA&gt; 15134</span></span>
-<span><span class="co">#&gt; 6      sabic individuals classes4_groups3          4               3  &lt;NA&gt; 15273</span></span>
-<span><span class="co">#&gt; 7       caic      groups classes4_groups3          4               3  &lt;NA&gt; 15313</span></span>
-<span><span class="co">#&gt; 8       caic individuals classes4_groups3          4               3  &lt;NA&gt; 15453</span></span>
-<span><span class="co">#&gt; 9        awe      groups classes2_groups2          2               2  &lt;NA&gt; 16846</span></span>
-<span><span class="co">#&gt; 10       awe individuals classes2_groups2          2               2  &lt;NA&gt; 16969</span></span>
-<span><span class="co">#&gt; 11       icl      groups classes2_groups2          2               2  &lt;NA&gt; 16701</span></span>
-<span><span class="co">#&gt; 12       icl individuals classes2_groups2          2               2  &lt;NA&gt; 16763</span></span>
-<span><span class="co">#&gt; 13       clc      groups classes2_groups2          2               2  &lt;NA&gt; 16614</span></span>
-<span><span class="co">#&gt; 14       clc individuals classes2_groups2          2               2  &lt;NA&gt; 16614</span></span></code></pre></div>
+<span><span class="co">#&gt; 1        aic        &lt;NA&gt; classes4_groups3          4               3  &lt;NA&gt; 15126</span></span>
+<span><span class="co">#&gt; 2        kic        &lt;NA&gt; classes4_groups3          4               3  &lt;NA&gt; 15172</span></span>
+<span><span class="co">#&gt; 3        bic      groups classes4_groups3          4               3  &lt;NA&gt; 15238</span></span>
+<span><span class="co">#&gt; 4        bic individuals classes4_groups3          4               3  &lt;NA&gt; 15377</span></span>
+<span><span class="co">#&gt; 5      sabic      groups classes4_groups3          4               3  &lt;NA&gt; 15102</span></span>
+<span><span class="co">#&gt; 6      sabic individuals classes4_groups3          4               3  &lt;NA&gt; 15241</span></span>
+<span><span class="co">#&gt; 7       caic      groups classes4_groups3          4               3  &lt;NA&gt; 15281</span></span>
+<span><span class="co">#&gt; 8       caic individuals classes4_groups3          4               3  &lt;NA&gt; 15420</span></span>
+<span><span class="co">#&gt; 9        awe      groups classes3_groups2          3               2  &lt;NA&gt; 16767</span></span>
+<span><span class="co">#&gt; 10       awe individuals classes3_groups2          3               2  &lt;NA&gt; 16956</span></span>
+<span><span class="co">#&gt; 11       icl      groups classes3_groups2          3               2  &lt;NA&gt; 16546</span></span>
+<span><span class="co">#&gt; 12       icl individuals classes3_groups2          3               2  &lt;NA&gt; 16641</span></span>
+<span><span class="co">#&gt; 13       clc      groups classes3_groups2          3               2  &lt;NA&gt; 16413</span></span>
+<span><span class="co">#&gt; 14       clc individuals classes3_groups2          3               2  &lt;NA&gt; 16413</span></span></code></pre></div>
 <p>The criteria disagree, and the diagnostics explain why. BIC with the
 number of students keeps falling up to the largest model in the grid,
-four profiles and three classes. Most of the larger models reach their
-best solution from only one of the five starts
+four profiles and three classes. That model and the one with three
+profiles and three classes reach their best solution from a single start
 (<code>n_best_replicated</code>), so their low BIC rests on solutions
 that the starts do not replicate. The criteria that also penalize
 classification uncertainty (ICL, AWE and CLC counted over prompts)
-choose two profiles and two classes, a model whose best solution recurs
-in four of the five starts.</p>
-<p>The ICL plot shows the same choice across the grid.</p>
+choose three profiles and two classes, a model whose best solution
+recurs in 2 of the twenty starts.</p>
+<p>The number of starts is part of the analysis on these data. With five
+starts and the default tolerance, the three-profile, two-class model
+stops at a lower maximum of the likelihood, and the same criteria then
+choose two profiles and two classes.</p>
+<p>The ICL plot shows the choice across the grid.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_enumeration.html">plot_enumeration</a></span><span class="op">(</span><span class="va">candidates</span>, what <span class="op">=</span> <span class="st">"icl_individual"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-esm-lca_files/figure-html/icl-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
-<p>The plot marks the minimum at two profiles and two classes, and the
+<p>The plot marks the minimum at three profiles and two classes, and the
 analysis continues with that model.</p>
 </div>
 <div class="section level2">
 <h2 id="the-chosen-model">The chosen model<a class="anchor" aria-label="anchor" href="#the-chosen-model"></a>
 </h2>
 <p><code><a href="../reference/multilca.html">multilca()</a></code> fits it, treating every item as categorical,
-with ten random starts and a tight convergence tolerance, which the
+with twenty random starts and a tight convergence tolerance, which the
 standard errors below need.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilca.html">multilca</a></span><span class="op">(</span><span class="va">student_esm</span>, vars <span class="op">=</span> <span class="va">activities</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
-<span>                n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>                n_profiles <span class="op">=</span> <span class="fl">3</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>                tol <span class="op">=</span> <span class="fl">1e-10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"model"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   n_observations n_informative n_groups n_profiles n_group_classes centering scaling</span></span>
-<span><span class="co">#&gt; 1           2582          2582      100          2               2      none    none</span></span>
+<span><span class="co">#&gt; 1           2582          2582      100          3               2      none    none</span></span>
 <span><span class="co">#&gt;   covariance_structure n_parameters n_parameters_with_measurement log_likelihood   aic bic_groups</span></span>
-<span><span class="co">#&gt; 1                  VVI           19                            19          -7740 15518      15567</span></span>
+<span><span class="co">#&gt; 1                  VVI           29                            29          -7678 15414      15490</span></span>
 <span><span class="co">#&gt;   bic_individual converged iterations boundary small_classes best_start n_best_replicated weights</span></span>
-<span><span class="co">#&gt; 1          15629      TRUE         63    FALSE         FALSE          1                 6    &lt;NA&gt;</span></span></code></pre></div>
-<p>The fit converges, and six of the ten starts reach the best log
-likelihood of -7740.</p>
+<span><span class="co">#&gt; 1          15584      TRUE         81    FALSE         FALSE         16                 2    &lt;NA&gt;</span></span></code></pre></div>
+<p>The fit converges, and 2 of the twenty starts reach the best log
+likelihood of -7678.</p>
 </div>
 <div class="section level2">
-<h2 id="two-activity-profiles">Two activity profiles<a class="anchor" aria-label="anchor" href="#two-activity-profiles"></a>
+<h2 id="three-activity-profiles">Three activity profiles<a class="anchor" aria-label="anchor" href="#three-activity-profiles"></a>
 </h2>
 <p>The <code>"responses"</code> table gives the probability of each
 answer in each profile, with a “no” and a “yes” row for every item. The
@@ -331,56 +337,74 @@ sum to one.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"responses"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    profile         indicator category probability threshold probability_standard_error</span></span>
-<span><span class="co">#&gt; 1        1 time_with_friends       no     0.89380     2.130                    0.01497</span></span>
-<span><span class="co">#&gt; 2        2 time_with_friends       no     0.84295     1.680                    0.00926</span></span>
-<span><span class="co">#&gt; 3        1 time_with_friends      yes     0.10620        NA                    0.01497</span></span>
-<span><span class="co">#&gt; 4        2 time_with_friends      yes     0.15705        NA                    0.00926</span></span>
-<span><span class="co">#&gt; 5        1   on_social_media       no     0.23535    -1.178                    0.03509</span></span>
-<span><span class="co">#&gt; 6        2   on_social_media       no     0.88113     2.003                    0.01905</span></span>
-<span><span class="co">#&gt; 7        1   on_social_media      yes     0.76465        NA                    0.03509</span></span>
-<span><span class="co">#&gt; 8        2   on_social_media      yes     0.11887        NA                    0.01905</span></span>
-<span><span class="co">#&gt; 9        1    tv_video_games       no     0.60423     0.423                    0.02467</span></span>
-<span><span class="co">#&gt; 10       2    tv_video_games       no     0.85264     1.755                    0.01013</span></span>
-<span><span class="co">#&gt; 11       1    tv_video_games      yes     0.39577        NA                    0.02467</span></span>
-<span><span class="co">#&gt; 12       2    tv_video_games      yes     0.14736        NA                    0.01013</span></span>
-<span><span class="co">#&gt; 13       1    listened_music       no     0.63596     0.558                    0.03058</span></span>
-<span><span class="co">#&gt; 14       2    listened_music       no     0.92538     2.518                    0.00780</span></span>
-<span><span class="co">#&gt; 15       1    listened_music      yes     0.36404        NA                    0.03058</span></span>
-<span><span class="co">#&gt; 16       2    listened_music      yes     0.07462        NA                    0.00780</span></span>
-<span><span class="co">#&gt; 17       1            sports       no     0.92898     2.571                    0.01283</span></span>
-<span><span class="co">#&gt; 18       2            sports       no     0.92813     2.558                    0.00661</span></span>
-<span><span class="co">#&gt; 19       1            sports      yes     0.07102        NA                    0.01283</span></span>
-<span><span class="co">#&gt; 20       2            sports      yes     0.07187        NA                    0.00661</span></span>
-<span><span class="co">#&gt; 21       1           walking       no     0.90439     2.247                    0.01475</span></span>
-<span><span class="co">#&gt; 22       2           walking       no     0.86177     1.830                    0.00885</span></span>
-<span><span class="co">#&gt; 23       1           walking      yes     0.09561        NA                    0.01475</span></span>
-<span><span class="co">#&gt; 24       2           walking      yes     0.13823        NA                    0.00885</span></span>
-<span><span class="co">#&gt; 25       1           reading       no     0.84715     1.712                    0.01848</span></span>
-<span><span class="co">#&gt; 26       2           reading       no     0.90160     2.215                    0.00768</span></span>
-<span><span class="co">#&gt; 27       1           reading      yes     0.15285        NA                    0.01848</span></span>
-<span><span class="co">#&gt; 28       2           reading      yes     0.09840        NA                    0.00768</span></span>
-<span><span class="co">#&gt; 29       1     part_time_job       no     0.99024     4.619                    0.00494</span></span>
-<span><span class="co">#&gt; 30       2     part_time_job       no     0.94937     2.931                    0.00532</span></span>
-<span><span class="co">#&gt; 31       1     part_time_job      yes     0.00976        NA                    0.00494</span></span>
-<span><span class="co">#&gt; 32       2     part_time_job      yes     0.05063        NA                    0.00532</span></span></code></pre></div>
-<p>The two profiles differ mainly in media use. At prompts in profile 1,
-students used social media with probability 0.765, watched TV or played
-video games with probability 0.396, and listened to music with
-probability 0.364. In profile 2 the same probabilities are 0.119, 0.147
-and 0.075. Profile 2 is slightly more likely to include time with
-friends (0.157 against 0.106), walking (0.138 against 0.096) and a
-part-time job (0.051 against 0.010), and both profiles report sports at
-0.07. Profile 1 is therefore a media-heavy pattern, and profile 2 a
-pattern of little media use with the remaining activities at their usual
-low rates.</p>
+<span><span class="co">#&gt; 1        1 time_with_friends       no    9.78e-01     3.801                    0.01531</span></span>
+<span><span class="co">#&gt; 2        2 time_with_friends       no    8.35e-01     1.622                    0.00972</span></span>
+<span><span class="co">#&gt; 3        3 time_with_friends       no    9.00e-01     2.196                    0.01522</span></span>
+<span><span class="co">#&gt; 4        1 time_with_friends      yes    2.19e-02        NA                    0.01531</span></span>
+<span><span class="co">#&gt; 5        2 time_with_friends      yes    1.65e-01        NA                    0.00972</span></span>
+<span><span class="co">#&gt; 6        3 time_with_friends      yes    1.00e-01        NA                    0.01522</span></span>
+<span><span class="co">#&gt; 7        1   on_social_media       no    9.89e-01     4.468                    0.01353</span></span>
+<span><span class="co">#&gt; 8        2   on_social_media       no    8.73e-01     1.926                    0.01911</span></span>
+<span><span class="co">#&gt; 9        3   on_social_media       no    2.08e-01    -1.337                    0.03519</span></span>
+<span><span class="co">#&gt; 10       1   on_social_media      yes    1.13e-02        NA                    0.01353</span></span>
+<span><span class="co">#&gt; 11       2   on_social_media      yes    1.27e-01        NA                    0.01911</span></span>
+<span><span class="co">#&gt; 12       3   on_social_media      yes    7.92e-01        NA                    0.03519</span></span>
+<span><span class="co">#&gt; 13       1    tv_video_games       no    1.00e+00    23.026                         NA</span></span>
+<span><span class="co">#&gt; 14       2    tv_video_games       no    8.41e-01     1.665                    0.01077</span></span>
+<span><span class="co">#&gt; 15       3    tv_video_games       no    6.03e-01     0.419                    0.02436</span></span>
+<span><span class="co">#&gt; 16       1    tv_video_games      yes    1.00e-10        NA                         NA</span></span>
+<span><span class="co">#&gt; 17       2    tv_video_games      yes    1.59e-01        NA                    0.01077</span></span>
+<span><span class="co">#&gt; 18       3    tv_video_games      yes    3.97e-01        NA                    0.02436</span></span>
+<span><span class="co">#&gt; 19       1    listened_music       no    1.00e+00    23.026                         NA</span></span>
+<span><span class="co">#&gt; 20       2    listened_music       no    9.17e-01     2.402                    0.00821</span></span>
+<span><span class="co">#&gt; 21       3    listened_music       no    6.34e-01     0.547                    0.03200</span></span>
+<span><span class="co">#&gt; 22       1    listened_music      yes    1.00e-10        NA                         NA</span></span>
+<span><span class="co">#&gt; 23       2    listened_music      yes    8.31e-02        NA                    0.00821</span></span>
+<span><span class="co">#&gt; 24       3    listened_music      yes    3.66e-01        NA                    0.03200</span></span>
+<span><span class="co">#&gt; 25       1            sports       no    1.00e+00    23.026                         NA</span></span>
+<span><span class="co">#&gt; 26       2            sports       no    9.23e-01     2.486                    0.00684</span></span>
+<span><span class="co">#&gt; 27       3            sports       no    9.33e-01     2.634                    0.01269</span></span>
+<span><span class="co">#&gt; 28       1            sports      yes    1.00e-10        NA                         NA</span></span>
+<span><span class="co">#&gt; 29       2            sports      yes    7.68e-02        NA                    0.00684</span></span>
+<span><span class="co">#&gt; 30       3            sports      yes    6.70e-02        NA                    0.01269</span></span>
+<span><span class="co">#&gt; 31       1           walking       no    9.58e-01     3.120                    0.02162</span></span>
+<span><span class="co">#&gt; 32       2           walking       no    8.56e-01     1.784                    0.00912</span></span>
+<span><span class="co">#&gt; 33       3           walking       no    9.09e-01     2.304                    0.01459</span></span>
+<span><span class="co">#&gt; 34       1           walking      yes    4.23e-02        NA                    0.02162</span></span>
+<span><span class="co">#&gt; 35       2           walking      yes    1.44e-01        NA                    0.00912</span></span>
+<span><span class="co">#&gt; 36       3           walking      yes    9.08e-02        NA                    0.01459</span></span>
+<span><span class="co">#&gt; 37       1           reading       no    9.89e-01     4.508                    0.01088</span></span>
+<span><span class="co">#&gt; 38       2           reading       no    8.95e-01     2.141                    0.00802</span></span>
+<span><span class="co">#&gt; 39       3           reading       no    8.51e-01     1.744                    0.01897</span></span>
+<span><span class="co">#&gt; 40       1           reading      yes    1.09e-02        NA                    0.01088</span></span>
+<span><span class="co">#&gt; 41       2           reading      yes    1.05e-01        NA                    0.00802</span></span>
+<span><span class="co">#&gt; 42       3           reading      yes    1.49e-01        NA                    0.01897</span></span>
+<span><span class="co">#&gt; 43       1     part_time_job       no    5.66e-09   -18.989                         NA</span></span>
+<span><span class="co">#&gt; 44       2     part_time_job       no    1.00e+00    23.026                         NA</span></span>
+<span><span class="co">#&gt; 45       3     part_time_job       no    9.82e-01     3.995                    0.00568</span></span>
+<span><span class="co">#&gt; 46       1     part_time_job      yes    1.00e+00        NA                         NA</span></span>
+<span><span class="co">#&gt; 47       2     part_time_job      yes    1.00e-10        NA                         NA</span></span>
+<span><span class="co">#&gt; 48       3     part_time_job      yes    1.81e-02        NA                    0.00568</span></span></code></pre></div>
+<p>The three profiles differ in media use and in work. At prompts in
+profile 3, students used social media with probability 0.792, watched TV
+or played video games with probability 0.397, and listened to music with
+probability 0.366. In profile 2 the same probabilities are 0.127, 0.159
+and 0.083, and time with friends (0.165 against 0.100) and walking
+(0.144 against 0.091) are somewhat more likely. Both report sports at
+about 0.07. At prompts in profile 1 students worked at a part-time job
+with probability 1.000 and reported every other activity with
+probability below 0.05. Profile 3 is therefore a media-heavy pattern,
+profile 2 a pattern of little media use with the remaining activities at
+their usual low rates, and profile 1 a pattern of work with little
+else.</p>
 <p>The response plot draws the same probabilities, one line per profile
 across the items.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_responses.html">plot_responses</a></span><span class="op">(</span><span class="va">lca</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-esm-lca_files/figure-html/responses-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
-<p>The lines separate on the three media items and nearly coincide on
-sports, so the media items carry almost all of the difference between
-the profiles.</p>
+<p>The media-heavy and low-media lines separate on the three media items
+and nearly coincide on sports, while the work profile stands apart on
+the part-time job item.</p>
 </div>
 <div class="section level2">
 <h2 id="two-student-classes">Two student classes<a class="anchor" aria-label="anchor" href="#two-student-classes"></a>
@@ -391,30 +415,36 @@ mix of each student class.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"counts"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         level class effective_count effective_proportion</span></span>
-<span><span class="co">#&gt; 1 individuals     1           678.4                0.263</span></span>
-<span><span class="co">#&gt; 2 individuals     2          1903.6                0.737</span></span>
-<span><span class="co">#&gt; 3      groups     1            41.6                0.416</span></span>
-<span><span class="co">#&gt; 4      groups     2            58.4                0.584</span></span>
+<span><span class="co">#&gt; 1 individuals     1            91.4               0.0354</span></span>
+<span><span class="co">#&gt; 2 individuals     2          1848.0               0.7157</span></span>
+<span><span class="co">#&gt; 3 individuals     3           642.6               0.2489</span></span>
+<span><span class="co">#&gt; 4      groups     1            43.6               0.4357</span></span>
+<span><span class="co">#&gt; 5      groups     2            56.4               0.5643</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"profile_probabilities"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   group_class profile probability group_class_probability</span></span>
-<span><span class="co">#&gt; 1           1       1      0.5654                   0.416</span></span>
-<span><span class="co">#&gt; 2           1       2      0.4346                   0.416</span></span>
-<span><span class="co">#&gt; 3           2       1      0.0261                   0.584</span></span>
-<span><span class="co">#&gt; 4           2       2      0.9739                   0.584</span></span></code></pre></div>
-<p>The low-media profile holds 73.7% of prompts and the media-heavy
-profile 26.3%. The student classes differ sharply in their mix. In class
-2, which holds 58.4% of students, 0.974 of prompts fall in the low-media
-profile. In class 1, with 41.6% of students, the media-heavy profile is
-the more common, at 0.565. Media-heavy leisure is therefore concentrated
+<span><span class="co">#&gt; 1           1       1     0.00778                   0.436</span></span>
+<span><span class="co">#&gt; 2           1       2     0.46348                   0.436</span></span>
+<span><span class="co">#&gt; 3           1       3     0.52874                   0.436</span></span>
+<span><span class="co">#&gt; 4           2       1     0.05862                   0.564</span></span>
+<span><span class="co">#&gt; 5           2       2     0.92787                   0.564</span></span>
+<span><span class="co">#&gt; 6           2       3     0.01351                   0.564</span></span></code></pre></div>
+<p>The low-media profile holds 71.6% of prompts, the media-heavy profile
+24.9% and the work profile 3.5%. The student classes differ sharply in
+their mix. In class 2, which holds 56.4% of students, 0.928 of prompts
+fall in the low-media profile, 0.059 in the work profile and only 0.014
+in the media-heavy one. In class 1, with 43.6% of students, the
+media-heavy profile is the more common, at 0.529, and the work profile
+almost absent, at 0.008. Media-heavy leisure is therefore concentrated
 in a minority of students, and for them it is the usual pattern, while
-most students almost never report it.</p>
+most students almost never report it. Part-time work appears mainly
+among the students of the low-media class.</p>
 <p>The probability plot compares the two mixes.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_prevalence.html">plot_prevalence</a></span><span class="op">(</span><span class="va">lca</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-esm-lca_files/figure-html/probabilities-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p>Class 2 runs close to one on the low-media profile and close to zero
-on the media-heavy one; class 1 divides its prompts more evenly, with
-the larger share on the media-heavy profile.</p>
+on the media-heavy one; class 1 divides its prompts between those two
+profiles, with the larger share on the media-heavy profile.</p>
 </div>
 <div class="section level2">
 <h2 id="classification-certainty">Classification certainty<a class="anchor" aria-label="anchor" href="#classification-certainty"></a>
@@ -427,27 +457,30 @@ probability of each assigned class.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"entropy"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         level n_classes n_units entropy_sum relative_entropy</span></span>
-<span><span class="co">#&gt; 1 individuals         2    2582       594.8            0.668</span></span>
-<span><span class="co">#&gt; 2      groups         2     100         8.5            0.877</span></span>
+<span><span class="co">#&gt; 1 individuals         3    2582      556.82            0.804</span></span>
+<span><span class="co">#&gt; 2      groups         2     100        8.48            0.878</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"classification"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         level class n_modal proportion_modal estimated_n estimated_proportion average_posterior</span></span>
-<span><span class="co">#&gt; 1 individuals     1     621            0.241       678.4                0.263             0.859</span></span>
-<span><span class="co">#&gt; 2 individuals     2    1961            0.759      1903.6                0.737             0.926</span></span>
-<span><span class="co">#&gt; 3      groups     1      40            0.400        41.6                0.416             0.980</span></span>
-<span><span class="co">#&gt; 4      groups     2      60            0.600        58.4                0.584             0.960</span></span>
+<span><span class="co">#&gt; 1 individuals     1      92           0.0356        91.4               0.0354             0.991</span></span>
+<span><span class="co">#&gt; 2 individuals     2    1896           0.7343      1848.0               0.7157             0.930</span></span>
+<span><span class="co">#&gt; 3 individuals     3     594           0.2301       642.6               0.2489             0.858</span></span>
+<span><span class="co">#&gt; 4      groups     1      42           0.4200        43.6               0.4357             0.971</span></span>
+<span><span class="co">#&gt; 5      groups     2      58           0.5800        56.4               0.5643             0.952</span></span>
 <span><span class="co">#&gt;   odds_correct_classification</span></span>
-<span><span class="co">#&gt; 1                       17.07</span></span>
-<span><span class="co">#&gt; 2                        4.46</span></span>
-<span><span class="co">#&gt; 3                       68.32</span></span>
-<span><span class="co">#&gt; 4                       17.07</span></span></code></pre></div>
-<p>Relative entropy is 0.668 for prompts and 0.877 for students. A
+<span><span class="co">#&gt; 1                      3110.0</span></span>
+<span><span class="co">#&gt; 2                         5.3</span></span>
+<span><span class="co">#&gt; 3                        18.2</span></span>
+<span><span class="co">#&gt; 4                        43.6</span></span>
+<span><span class="co">#&gt; 5                        15.3</span></span></code></pre></div>
+<p>Relative entropy is 0.804 for prompts and 0.878 for students. A
 single prompt answers eight yes/no questions, which leaves its profile
-uncertain; a student contributes many prompts, which pins down the
-class. The average posterior probability is 0.926 for prompts assigned
-to the low-media profile and 0.859 for the media-heavy one, and 0.980
-and 0.960 for the two student classes. Conclusions about students are
-therefore well supported, while an analysis of individual prompts should
-carry the posterior probabilities forward.</p>
+less certain; a student contributes many prompts, which pins down the
+class. The average posterior probability is 0.991 for prompts assigned
+to the work profile, 0.930 for the low-media profile and 0.858 for the
+media-heavy one, and 0.952 and 0.971 for the two student classes.
+Conclusions about students are therefore well supported, while an
+analysis of individual prompts should carry the posterior probabilities
+forward.</p>
 </div>
 <div class="section level2">
 <h2 id="local-independence">Local independence<a class="anchor" aria-label="anchor" href="#local-independence"></a>
@@ -458,127 +491,150 @@ of items keeps within a profile, with a chi-square test for each pair;
 the ten largest are shown.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"residuals"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      profile       indicator_1   indicator_2        kind observed expected residual effective_n</span></span>
-<span><span class="co">#&gt; 1  profile_1            sports       walking categorical   0.1706 4.74e-17   0.1706         678</span></span>
-<span><span class="co">#&gt; 2  profile_1 time_with_friends       walking categorical   0.1404 6.76e-17   0.1404         678</span></span>
-<span><span class="co">#&gt; 3  profile_1    listened_music       walking categorical   0.1334 1.42e-16   0.1334         678</span></span>
-<span><span class="co">#&gt; 4  profile_1    listened_music       reading categorical   0.1063 0.00e+00   0.1063         678</span></span>
-<span><span class="co">#&gt; 5  profile_1    listened_music        sports categorical   0.1045 2.46e-17   0.1045         678</span></span>
-<span><span class="co">#&gt; 6  profile_2    tv_video_games       walking categorical   0.0940 4.19e-17   0.0940        1904</span></span>
-<span><span class="co">#&gt; 7  profile_2    tv_video_games part_time_job categorical   0.0925 3.75e-17   0.0925        1904</span></span>
-<span><span class="co">#&gt; 8  profile_2 time_with_friends part_time_job categorical   0.0865 0.00e+00   0.0865        1904</span></span>
-<span><span class="co">#&gt; 9  profile_2 time_with_friends       reading categorical   0.0727 1.47e-16   0.0727        1904</span></span>
-<span><span class="co">#&gt; 10 profile_2           reading part_time_job categorical   0.0683 3.49e-17   0.0683        1904</span></span>
+<span><span class="co">#&gt;      profile       indicator_1    indicator_2        kind observed expected residual effective_n</span></span>
+<span><span class="co">#&gt; 1  profile_1   on_social_media        walking categorical   0.4240 1.60e-16   0.4240        91.4</span></span>
+<span><span class="co">#&gt; 2  profile_3            sports        walking categorical   0.1661 3.80e-17   0.1661       642.6</span></span>
+<span><span class="co">#&gt; 3  profile_3 time_with_friends        walking categorical   0.1434 1.45e-17   0.1434       642.6</span></span>
+<span><span class="co">#&gt; 4  profile_3    listened_music        walking categorical   0.1331 7.66e-17   0.1331       642.6</span></span>
+<span><span class="co">#&gt; 5  profile_3    listened_music        reading categorical   0.1098 8.70e-17   0.1098       642.6</span></span>
+<span><span class="co">#&gt; 6  profile_3    listened_music         sports categorical   0.1082 1.42e-16   0.1082       642.6</span></span>
+<span><span class="co">#&gt; 7  profile_2    tv_video_games        walking categorical   0.0995 4.88e-17   0.0995      1848.0</span></span>
+<span><span class="co">#&gt; 8  profile_3    tv_video_games  part_time_job categorical   0.0862 1.42e-16   0.0862       642.6</span></span>
+<span><span class="co">#&gt; 9  profile_2 time_with_friends        reading categorical   0.0790 8.52e-17   0.0790      1848.0</span></span>
+<span><span class="co">#&gt; 10 profile_2 time_with_friends tv_video_games categorical   0.0707 6.35e-17   0.0707      1848.0</span></span>
 <span><span class="co">#&gt;    statistic df  p_value p_adjusted</span></span>
-<span><span class="co">#&gt; 1      19.75  1 8.82e-06   0.000494</span></span>
-<span><span class="co">#&gt; 2      13.37  1 2.55e-04   0.002860</span></span>
-<span><span class="co">#&gt; 3      12.07  1 5.12e-04   0.004776</span></span>
-<span><span class="co">#&gt; 4       7.67  1 5.61e-03   0.028551</span></span>
-<span><span class="co">#&gt; 5       7.41  1 6.49e-03   0.030292</span></span>
-<span><span class="co">#&gt; 6      16.83  1 4.08e-05   0.001023</span></span>
-<span><span class="co">#&gt; 7      16.27  1 5.48e-05   0.001023</span></span>
-<span><span class="co">#&gt; 8      14.25  1 1.60e-04   0.002244</span></span>
-<span><span class="co">#&gt; 9      10.07  1 1.51e-03   0.012052</span></span>
-<span><span class="co">#&gt; 10      8.87  1 2.90e-03   0.020314</span></span></code></pre></div>
-<p>The largest residual is 0.171, between sports and walking in the
-media-heavy profile, followed by friends and walking (0.140) and music
-and walking (0.133) in the same profile. Physical and social activities
-occur together more often than two profiles allow, which is a limit of a
-two-profile model and one reason BIC rewards larger models: extra
+<span><span class="co">#&gt; 1      16.43  1 5.04e-05    0.00141</span></span>
+<span><span class="co">#&gt; 2      17.73  1 2.55e-05    0.00107</span></span>
+<span><span class="co">#&gt; 3      13.21  1 2.79e-04    0.00585</span></span>
+<span><span class="co">#&gt; 4      11.38  1 7.43e-04    0.01040</span></span>
+<span><span class="co">#&gt; 5       7.75  1 5.38e-03    0.05022</span></span>
+<span><span class="co">#&gt; 6       7.52  1 6.09e-03    0.05118</span></span>
+<span><span class="co">#&gt; 7      18.28  1 1.91e-05    0.00107</span></span>
+<span><span class="co">#&gt; 8       4.77  1 2.90e-02    0.16212</span></span>
+<span><span class="co">#&gt; 9      11.52  1 6.89e-04    0.01040</span></span>
+<span><span class="co">#&gt; 10      9.23  1 2.38e-03    0.02856</span></span></code></pre></div>
+<p>The largest residual, 0.424, links social media and walking in the
+work profile, which holds about 91 prompts, so it rests on few
+observations. Next, in the media-heavy profile, come sports and walking
+(0.166), friends and walking (0.143) and music and walking (0.133).
+Physical and social activities occur together more often than three
+profiles allow, which is one reason BIC rewards larger models: extra
 profiles can absorb this association.</p>
 </div>
 <div class="section level2">
 <h2 id="uncertainty-in-the-response-probabilities">Uncertainty in the response probabilities<a class="anchor" aria-label="anchor" href="#uncertainty-in-the-response-probabilities"></a>
 </h2>
 <p><code><a href="../reference/parameter_inference.html">parameter_inference()</a></code> gives standard errors and 95% Wald
-intervals for every parameter. The intervals of the “yes” probabilities,
-in the rows whose <code>term</code> ends in <code>:yes</code>, show how
-firmly the profiles are distinguished.</p>
+intervals for every parameter. Several response probabilities lie on
+their bound: the work profile reports TV or games, music and sports with
+probability zero and a part-time job with probability one, and the
+low-media profile reports a part-time job with probability zero. Wald
+inference does not apply at a bound, so <code>boundary = "fix"</code>
+holds these probabilities at their values, leaves them out of the table
+and reports the other parameters conditionally on them. The intervals of
+the “yes” probabilities, in the rows whose <code>term</code> ends in
+<code>:yes</code>, show how firmly the profiles are distinguished.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/parameter_inference.html">parameter_inference</a></span><span class="op">(</span><span class="va">lca</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/parameter_inference.html">parameter_inference</a></span><span class="op">(</span><span class="va">lca</span>, boundary <span class="op">=</span> <span class="st">"fix"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;          level       outcome                  term   parameter estimate standard_error statistic</span></span>
-<span><span class="co">#&gt; 1  measurement     profile_1  time_with_friends:no    response  0.89380        0.01497        NA</span></span>
-<span><span class="co">#&gt; 2  measurement     profile_1 time_with_friends:yes    response  0.10620        0.01497        NA</span></span>
-<span><span class="co">#&gt; 3  measurement     profile_2  time_with_friends:no    response  0.84295        0.00926        NA</span></span>
-<span><span class="co">#&gt; 4  measurement     profile_2 time_with_friends:yes    response  0.15705        0.00926        NA</span></span>
-<span><span class="co">#&gt; 5  measurement     profile_1    on_social_media:no    response  0.23535        0.03509        NA</span></span>
-<span><span class="co">#&gt; 6  measurement     profile_1   on_social_media:yes    response  0.76465        0.03509        NA</span></span>
-<span><span class="co">#&gt; 7  measurement     profile_2    on_social_media:no    response  0.88113        0.01905        NA</span></span>
-<span><span class="co">#&gt; 8  measurement     profile_2   on_social_media:yes    response  0.11887        0.01905        NA</span></span>
-<span><span class="co">#&gt; 9  measurement     profile_1     tv_video_games:no    response  0.60423        0.02467        NA</span></span>
-<span><span class="co">#&gt; 10 measurement     profile_1    tv_video_games:yes    response  0.39577        0.02467        NA</span></span>
-<span><span class="co">#&gt; 11 measurement     profile_2     tv_video_games:no    response  0.85264        0.01013        NA</span></span>
-<span><span class="co">#&gt; 12 measurement     profile_2    tv_video_games:yes    response  0.14736        0.01013        NA</span></span>
-<span><span class="co">#&gt; 13 measurement     profile_1     listened_music:no    response  0.63596        0.03058        NA</span></span>
-<span><span class="co">#&gt; 14 measurement     profile_1    listened_music:yes    response  0.36404        0.03058        NA</span></span>
-<span><span class="co">#&gt; 15 measurement     profile_2     listened_music:no    response  0.92538        0.00780        NA</span></span>
-<span><span class="co">#&gt; 16 measurement     profile_2    listened_music:yes    response  0.07462        0.00780        NA</span></span>
-<span><span class="co">#&gt; 17 measurement     profile_1             sports:no    response  0.92898        0.01283        NA</span></span>
-<span><span class="co">#&gt; 18 measurement     profile_1            sports:yes    response  0.07102        0.01283        NA</span></span>
-<span><span class="co">#&gt; 19 measurement     profile_2             sports:no    response  0.92813        0.00661        NA</span></span>
-<span><span class="co">#&gt; 20 measurement     profile_2            sports:yes    response  0.07187        0.00661        NA</span></span>
-<span><span class="co">#&gt; 21 measurement     profile_1            walking:no    response  0.90439        0.01475        NA</span></span>
-<span><span class="co">#&gt; 22 measurement     profile_1           walking:yes    response  0.09561        0.01475        NA</span></span>
-<span><span class="co">#&gt; 23 measurement     profile_2            walking:no    response  0.86177        0.00885        NA</span></span>
-<span><span class="co">#&gt; 24 measurement     profile_2           walking:yes    response  0.13823        0.00885        NA</span></span>
-<span><span class="co">#&gt; 25 measurement     profile_1            reading:no    response  0.84715        0.01848        NA</span></span>
-<span><span class="co">#&gt; 26 measurement     profile_1           reading:yes    response  0.15285        0.01848        NA</span></span>
-<span><span class="co">#&gt; 27 measurement     profile_2            reading:no    response  0.90160        0.00768        NA</span></span>
-<span><span class="co">#&gt; 28 measurement     profile_2           reading:yes    response  0.09840        0.00768        NA</span></span>
-<span><span class="co">#&gt; 29 measurement     profile_1      part_time_job:no    response  0.99024        0.00494        NA</span></span>
-<span><span class="co">#&gt; 30 measurement     profile_1     part_time_job:yes    response  0.00976        0.00494        NA</span></span>
-<span><span class="co">#&gt; 31 measurement     profile_2      part_time_job:no    response  0.94937        0.00532        NA</span></span>
-<span><span class="co">#&gt; 32 measurement     profile_2     part_time_job:yes    response  0.05063        0.00532        NA</span></span>
-<span><span class="co">#&gt; 33     profile     profile_1         group_class_1 probability  0.56543        0.03609        NA</span></span>
-<span><span class="co">#&gt; 34     profile     profile_2         group_class_1 probability  0.43457        0.03609        NA</span></span>
-<span><span class="co">#&gt; 35     profile     profile_1         group_class_2 probability  0.02605        0.01744        NA</span></span>
-<span><span class="co">#&gt; 36     profile     profile_2         group_class_2 probability  0.97395        0.01744        NA</span></span>
-<span><span class="co">#&gt; 37       group group_class_1                  &lt;NA&gt; probability  0.41597        0.06010        NA</span></span>
-<span><span class="co">#&gt; 38       group group_class_2                  &lt;NA&gt; probability  0.58403        0.06010        NA</span></span>
+<span><span class="co">#&gt; 1  measurement     profile_1  time_with_friends:no    response  0.97814        0.01531        NA</span></span>
+<span><span class="co">#&gt; 2  measurement     profile_1 time_with_friends:yes    response  0.02186        0.01531        NA</span></span>
+<span><span class="co">#&gt; 3  measurement     profile_2  time_with_friends:no    response  0.83512        0.00972        NA</span></span>
+<span><span class="co">#&gt; 4  measurement     profile_2 time_with_friends:yes    response  0.16488        0.00972        NA</span></span>
+<span><span class="co">#&gt; 5  measurement     profile_3  time_with_friends:no    response  0.89992        0.01522        NA</span></span>
+<span><span class="co">#&gt; 6  measurement     profile_3 time_with_friends:yes    response  0.10008        0.01522        NA</span></span>
+<span><span class="co">#&gt; 7  measurement     profile_1    on_social_media:no    response  0.98866        0.01353        NA</span></span>
+<span><span class="co">#&gt; 8  measurement     profile_1   on_social_media:yes    response  0.01134        0.01353        NA</span></span>
+<span><span class="co">#&gt; 9  measurement     profile_2    on_social_media:no    response  0.87283        0.01911        NA</span></span>
+<span><span class="co">#&gt; 10 measurement     profile_2   on_social_media:yes    response  0.12717        0.01911        NA</span></span>
+<span><span class="co">#&gt; 11 measurement     profile_3    on_social_media:no    response  0.20802        0.03519        NA</span></span>
+<span><span class="co">#&gt; 12 measurement     profile_3   on_social_media:yes    response  0.79198        0.03519        NA</span></span>
+<span><span class="co">#&gt; 13 measurement     profile_2     tv_video_games:no    response  0.84092        0.01077        NA</span></span>
+<span><span class="co">#&gt; 14 measurement     profile_2    tv_video_games:yes    response  0.15908        0.01077        NA</span></span>
+<span><span class="co">#&gt; 15 measurement     profile_3     tv_video_games:no    response  0.60316        0.02436        NA</span></span>
+<span><span class="co">#&gt; 16 measurement     profile_3    tv_video_games:yes    response  0.39684        0.02436        NA</span></span>
+<span><span class="co">#&gt; 17 measurement     profile_2     listened_music:no    response  0.91695        0.00821        NA</span></span>
+<span><span class="co">#&gt; 18 measurement     profile_2    listened_music:yes    response  0.08305        0.00821        NA</span></span>
+<span><span class="co">#&gt; 19 measurement     profile_3     listened_music:no    response  0.63351        0.03200        NA</span></span>
+<span><span class="co">#&gt; 20 measurement     profile_3    listened_music:yes    response  0.36649        0.03200        NA</span></span>
+<span><span class="co">#&gt; 21 measurement     profile_2             sports:no    response  0.92319        0.00684        NA</span></span>
+<span><span class="co">#&gt; 22 measurement     profile_2            sports:yes    response  0.07681        0.00684        NA</span></span>
+<span><span class="co">#&gt; 23 measurement     profile_3             sports:no    response  0.93301        0.01269        NA</span></span>
+<span><span class="co">#&gt; 24 measurement     profile_3            sports:yes    response  0.06699        0.01269        NA</span></span>
+<span><span class="co">#&gt; 25 measurement     profile_1            walking:no    response  0.95770        0.02162        NA</span></span>
+<span><span class="co">#&gt; 26 measurement     profile_1           walking:yes    response  0.04230        0.02162        NA</span></span>
+<span><span class="co">#&gt; 27 measurement     profile_2            walking:no    response  0.85617        0.00912        NA</span></span>
+<span><span class="co">#&gt; 28 measurement     profile_2           walking:yes    response  0.14383        0.00912        NA</span></span>
+<span><span class="co">#&gt; 29 measurement     profile_3            walking:no    response  0.90921        0.01459        NA</span></span>
+<span><span class="co">#&gt; 30 measurement     profile_3           walking:yes    response  0.09079        0.01459        NA</span></span>
+<span><span class="co">#&gt; 31 measurement     profile_1            reading:no    response  0.98910        0.01088        NA</span></span>
+<span><span class="co">#&gt; 32 measurement     profile_1           reading:yes    response  0.01090        0.01088        NA</span></span>
+<span><span class="co">#&gt; 33 measurement     profile_2            reading:no    response  0.89480        0.00802        NA</span></span>
+<span><span class="co">#&gt; 34 measurement     profile_2           reading:yes    response  0.10520        0.00802        NA</span></span>
+<span><span class="co">#&gt; 35 measurement     profile_3            reading:no    response  0.85126        0.01897        NA</span></span>
+<span><span class="co">#&gt; 36 measurement     profile_3           reading:yes    response  0.14874        0.01897        NA</span></span>
+<span><span class="co">#&gt; 37 measurement     profile_3      part_time_job:no    response  0.98193        0.00568        NA</span></span>
+<span><span class="co">#&gt; 38 measurement     profile_3     part_time_job:yes    response  0.01807        0.00568        NA</span></span>
+<span><span class="co">#&gt; 39     profile     profile_1         group_class_1 probability  0.00778        0.00276        NA</span></span>
+<span><span class="co">#&gt; 40     profile     profile_2         group_class_1 probability  0.46348        0.03355        NA</span></span>
+<span><span class="co">#&gt; 41     profile     profile_3         group_class_1 probability  0.52874        0.03360        NA</span></span>
+<span><span class="co">#&gt; 42     profile     profile_1         group_class_2 probability  0.05862        0.00718        NA</span></span>
+<span><span class="co">#&gt; 43     profile     profile_2         group_class_2 probability  0.92787        0.01670        NA</span></span>
+<span><span class="co">#&gt; 44     profile     profile_3         group_class_2 probability  0.01351        0.01463        NA</span></span>
+<span><span class="co">#&gt; 45       group group_class_1                  &lt;NA&gt; probability  0.43573        0.06201        NA</span></span>
+<span><span class="co">#&gt; 46       group group_class_2                  &lt;NA&gt; probability  0.56427        0.06201        NA</span></span>
 <span><span class="co">#&gt;    p_value p_adjusted conf_low conf_high</span></span>
-<span><span class="co">#&gt; 1       NA         NA  0.86069    0.9198</span></span>
-<span><span class="co">#&gt; 2       NA         NA  0.08023    0.1393</span></span>
-<span><span class="co">#&gt; 3       NA         NA  0.82395    0.8603</span></span>
-<span><span class="co">#&gt; 4       NA         NA  0.13974    0.1760</span></span>
-<span><span class="co">#&gt; 5       NA         NA  0.17358    0.3108</span></span>
-<span><span class="co">#&gt; 6       NA         NA  0.68916    0.8264</span></span>
-<span><span class="co">#&gt; 7       NA         NA  0.83845    0.9137</span></span>
-<span><span class="co">#&gt; 8       NA         NA  0.08630    0.1615</span></span>
-<span><span class="co">#&gt; 9       NA         NA  0.55502    0.6514</span></span>
-<span><span class="co">#&gt; 10      NA         NA  0.34858    0.4450</span></span>
-<span><span class="co">#&gt; 11      NA         NA  0.83167    0.8714</span></span>
-<span><span class="co">#&gt; 12      NA         NA  0.12859    0.1683</span></span>
-<span><span class="co">#&gt; 13      NA         NA  0.57420    0.6935</span></span>
-<span><span class="co">#&gt; 14      NA         NA  0.30646    0.4258</span></span>
-<span><span class="co">#&gt; 15      NA         NA  0.90857    0.9393</span></span>
-<span><span class="co">#&gt; 16      NA         NA  0.06069    0.0914</span></span>
-<span><span class="co">#&gt; 17      NA         NA  0.89936    0.9504</span></span>
-<span><span class="co">#&gt; 18      NA         NA  0.04963    0.1006</span></span>
-<span><span class="co">#&gt; 19      NA         NA  0.91405    0.9400</span></span>
-<span><span class="co">#&gt; 20      NA         NA  0.05995    0.0859</span></span>
-<span><span class="co">#&gt; 21      NA         NA  0.87131    0.9297</span></span>
-<span><span class="co">#&gt; 22      NA         NA  0.07034    0.1287</span></span>
-<span><span class="co">#&gt; 23      NA         NA  0.84348    0.8782</span></span>
-<span><span class="co">#&gt; 24      NA         NA  0.12177    0.1565</span></span>
-<span><span class="co">#&gt; 25      NA         NA  0.80733    0.8800</span></span>
-<span><span class="co">#&gt; 26      NA         NA  0.12004    0.1927</span></span>
-<span><span class="co">#&gt; 27      NA         NA  0.88550    0.9157</span></span>
-<span><span class="co">#&gt; 28      NA         NA  0.08434    0.1145</span></span>
-<span><span class="co">#&gt; 29      NA         NA  0.97385    0.9964</span></span>
-<span><span class="co">#&gt; 30      NA         NA  0.00361    0.0261</span></span>
-<span><span class="co">#&gt; 31      NA         NA  0.93787    0.9588</span></span>
-<span><span class="co">#&gt; 32      NA         NA  0.04116    0.0621</span></span>
-<span><span class="co">#&gt; 33      NA         NA  0.49384    0.6344</span></span>
-<span><span class="co">#&gt; 34      NA         NA  0.36562    0.5062</span></span>
-<span><span class="co">#&gt; 35      NA         NA  0.00690    0.0933</span></span>
-<span><span class="co">#&gt; 36      NA         NA  0.90668    0.9931</span></span>
-<span><span class="co">#&gt; 37      NA         NA  0.30487    0.5363</span></span>
-<span><span class="co">#&gt; 38      NA         NA  0.46367    0.6951</span></span></code></pre></div>
+<span><span class="co">#&gt; 1       NA         NA  0.91667    0.9945</span></span>
+<span><span class="co">#&gt; 2       NA         NA  0.00546    0.0833</span></span>
+<span><span class="co">#&gt; 3       NA         NA  0.81518    0.8533</span></span>
+<span><span class="co">#&gt; 4       NA         NA  0.14670    0.1848</span></span>
+<span><span class="co">#&gt; 5       NA         NA  0.86588    0.9261</span></span>
+<span><span class="co">#&gt; 6       NA         NA  0.07395    0.1341</span></span>
+<span><span class="co">#&gt; 7       NA         NA  0.89126    0.9989</span></span>
+<span><span class="co">#&gt; 8       NA         NA  0.00108    0.1087</span></span>
+<span><span class="co">#&gt; 9       NA         NA  0.83043    0.9058</span></span>
+<span><span class="co">#&gt; 10      NA         NA  0.09417    0.1696</span></span>
+<span><span class="co">#&gt; 11      NA         NA  0.14735    0.2853</span></span>
+<span><span class="co">#&gt; 12      NA         NA  0.71469    0.8526</span></span>
+<span><span class="co">#&gt; 13      NA         NA  0.81865    0.8609</span></span>
+<span><span class="co">#&gt; 14      NA         NA  0.13908    0.1813</span></span>
+<span><span class="co">#&gt; 15      NA         NA  0.55458    0.6498</span></span>
+<span><span class="co">#&gt; 16      NA         NA  0.35021    0.4454</span></span>
+<span><span class="co">#&gt; 17      NA         NA  0.89937    0.9317</span></span>
+<span><span class="co">#&gt; 18      NA         NA  0.06831    0.1006</span></span>
+<span><span class="co">#&gt; 19      NA         NA  0.56886    0.6937</span></span>
+<span><span class="co">#&gt; 20      NA         NA  0.30630    0.4311</span></span>
+<span><span class="co">#&gt; 21      NA         NA  0.90865    0.9356</span></span>
+<span><span class="co">#&gt; 22      NA         NA  0.06443    0.0913</span></span>
+<span><span class="co">#&gt; 23      NA         NA  0.90343    0.9540</span></span>
+<span><span class="co">#&gt; 24      NA         NA  0.04601    0.0966</span></span>
+<span><span class="co">#&gt; 25      NA         NA  0.88832    0.9847</span></span>
+<span><span class="co">#&gt; 26      NA         NA  0.01528    0.1117</span></span>
+<span><span class="co">#&gt; 27      NA         NA  0.83737    0.8731</span></span>
+<span><span class="co">#&gt; 28      NA         NA  0.12687    0.1626</span></span>
+<span><span class="co">#&gt; 29      NA         NA  0.87627    0.9340</span></span>
+<span><span class="co">#&gt; 30      NA         NA  0.06595    0.1237</span></span>
+<span><span class="co">#&gt; 31      NA         NA  0.92620    0.9985</span></span>
+<span><span class="co">#&gt; 32      NA         NA  0.00152    0.0738</span></span>
+<span><span class="co">#&gt; 33      NA         NA  0.87801    0.9095</span></span>
+<span><span class="co">#&gt; 34      NA         NA  0.09049    0.1220</span></span>
+<span><span class="co">#&gt; 35      NA         NA  0.81013    0.8847</span></span>
+<span><span class="co">#&gt; 36      NA         NA  0.11525    0.1899</span></span>
+<span><span class="co">#&gt; 37      NA         NA  0.96668    0.9903</span></span>
+<span><span class="co">#&gt; 38      NA         NA  0.00973    0.0333</span></span>
+<span><span class="co">#&gt; 39      NA         NA  0.00387    0.0156</span></span>
+<span><span class="co">#&gt; 40      NA         NA  0.39873    0.5295</span></span>
+<span><span class="co">#&gt; 41      NA         NA  0.46277    0.5937</span></span>
+<span><span class="co">#&gt; 42      NA         NA  0.04604    0.0744</span></span>
+<span><span class="co">#&gt; 43      NA         NA  0.88748    0.9545</span></span>
+<span><span class="co">#&gt; 44      NA         NA  0.00159    0.1054</span></span>
+<span><span class="co">#&gt; 45      NA         NA  0.32020    0.5587</span></span>
+<span><span class="co">#&gt; 46      NA         NA  0.44131    0.6798</span></span></code></pre></div>
 <p>The profiles are clearly separated on the media items: the interval
-for social media is 0.689 to 0.826 in the media-heavy profile and 0.086
-to 0.162 in the low-media profile. On sports the two intervals overlap
-almost entirely. The part-time-job probability in the media-heavy
-profile has an interval starting at 0.004, close to zero, because very
+for social media is 0.715 to 0.853 in the media-heavy profile and 0.094
+to 0.170 in the low-media profile. On sports the two intervals overlap
+almost entirely. The part-time job probability in the media-heavy
+profile has an interval of 0.010 to 0.033, close to zero, because very
 few of its prompts report a job.</p>
 </div>
 <div class="section level2">
@@ -587,7 +643,10 @@ few of its prompts report a job.</p>
 <p>A mixed model adds three affect ratings (happy, relaxed, exhausted,
 each from 1 to 7) as continuous indicators. <code>worried</code> is left
 out because about half of its ratings are 1, which can push a profile’s
-variance to its lower bound.</p>
+variance to its lower bound. The same happens to <code>exhausted</code>
+with three profiles: one profile collects the prompts rated 1 and its
+variance reaches the bound, so the mixed model is fitted with two
+profiles and two classes.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mixed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">student_esm</span>,</span>
 <span>                  vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"happy"</span>, <span class="st">"relaxed"</span>, <span class="st">"exhausted"</span>, <span class="va">activities</span><span class="op">)</span>,</span>
@@ -655,25 +714,29 @@ given, so the choice of indicators is part of the question.</p>
 <div class="section level2">
 <h2 id="interpretation">Interpretation<a class="anchor" aria-label="anchor" href="#interpretation"></a>
 </h2>
-<p>Students’ leisure at non-study prompts falls into two patterns, one
-defined by social media, TV and music and one with little media use. The
-distinction that matters most is between students: a majority almost
-never reports the media-heavy pattern, and a minority reports it at more
-than half of their prompts. That student-level result is well supported
-by the classification diagnostics, while the assignment of any single
-prompt is uncertain.</p>
+<p>Students’ leisure at non-study prompts falls into three patterns: one
+defined by social media, TV and music, one with little media use, and a
+small one of part-time work with little else. The distinction that
+matters most is between students: a majority almost never reports the
+media-heavy pattern, and a minority reports it at more than half of
+their prompts. Part-time work appears mainly among the majority. That
+student-level result is well supported by the classification
+diagnostics, while the assignment of any single prompt is less
+certain.</p>
 </div>
 <div class="section level2">
 <h2 id="limitations">Limitations<a class="anchor" aria-label="anchor" href="#limitations"></a>
 </h2>
 <p>The data contain only prompts at which the student had not studied,
 so the patterns describe leisure time, not the whole day. The
-two-profile model leaves association between physical and social
+three-profile model leaves association between physical and social
 activities within its profiles, and larger models fit better by BIC but
-are not stable across starts on these data. Prompts are treated as
-independent given the student’s class, so the model ignores the order of
-prompts within a day. The associations are observational and say nothing
-about causes.</p>
+are not stable across starts on these data. The choice of three profiles
+itself depends on enough starts: with few, the model stops at a lower
+maximum and two profiles are chosen. Prompts are treated as independent
+given the student’s class, so the model ignores the order of prompts
+within a day. The associations are observational and say nothing about
+causes.</p>
 </div>
 <div class="section level2">
 <h2 id="reference">Reference<a class="anchor" aria-label="anchor" href="#reference"></a>

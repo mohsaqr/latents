@@ -93,56 +93,58 @@ the same maximum.
 
 [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
 fits every combination of two to four profiles and one to three student
-classes, each from five random starts, and reports the information
-criteria and the diagnostics of each fit. It does not choose a model.
+classes, each from twenty random starts with a tight convergence
+tolerance, and reports the information criteria and the diagnostics of
+each fit. It does not choose a model.
 
 ``` r
 
 candidates <- enumerate_classes(student_esm, vars = activities,
                                 categorical = activities, id = "student",
                                 n_profiles = 2:4, n_group_classes = 1:3,
-                                n_starts = 5, seed = 1)
+                                n_starts = 20, tol = 1e-10, seed = 1)
+#> 2 of 9 candidates reached their best log likelihood from one start only (classes3_groups3, classes4_groups3); refit those you consider with more starts.
 as.data.frame(candidates)
 #>          candidate n_profiles n_group_classes model log_likelihood n_parameters   aic   kic
 #> 1 classes2_groups1          2               1  <NA>          -7892           17 15819 15839
 #> 2 classes3_groups1          3               1  <NA>          -7848           26 15749 15778
-#> 3 classes4_groups1          4               1  <NA>          -7811           35 15692 15730
+#> 3 classes4_groups1          4               1  <NA>          -7807           35 15683 15721
 #> 4 classes2_groups2          2               2  <NA>          -7740           19 15518 15540
-#> 5 classes3_groups2          3               2  <NA>          -7695           29 15448 15480
-#> 6 classes4_groups2          4               2  <NA>          -7653           39 15383 15425
+#> 5 classes3_groups2          3               2  <NA>          -7678           29 15414 15446
+#> 6 classes4_groups2          4               2  <NA>          -7634           39 15346 15388
 #> 7 classes2_groups3          2               3  <NA>          -7710           21 15462 15486
-#> 8 classes3_groups3          3               3  <NA>          -7594           32 15253 15288
-#> 9 classes4_groups3          4               3  <NA>          -7536           43 15158 15204
+#> 8 classes3_groups3          3               3  <NA>          -7582           32 15228 15263
+#> 9 classes4_groups3          4               3  <NA>          -7520           43 15126 15172
 #>   bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups
-#> 1      15863          15918        15809            15864       15880           15935      17822
+#> 1      15863          15918        15809            15864       15880           15935      17836
 #> 2      15817          15901        15735            15819       15843           15927      17933
-#> 3      15783          15897        15672            15786       15818           15932      18265
-#> 4      15567          15629        15507            15569       15586           15648      16846
-#> 5      15524          15618        15432            15526       15553           15647      18330
-#> 6      15485          15612        15362            15488       15524           15651      18182
+#> 3      15774          15888        15664            15777       15809           15923      18078
+#> 4      15567          15629        15507            15569       15586           15648      16845
+#> 5      15490          15584        15398            15492       15519           15613      16767
+#> 6      15447          15574        15324            15450       15486           15613      18159
 #> 7      15517          15585        15450            15518       15538           15606      17027
-#> 8      15336          15440        15235            15338       15368           15472      17335
-#> 9      15270          15410        15134            15273       15313           15453      17502
+#> 8      15312          15416        15211            15314       15344           15448      17340
+#> 9      15238          15377        15102            15241       15281           15420      17238
 #>   awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy
-#> 1          17933      17693          17748      17615          17615           0.489            NA
-#> 2          18102      17735          17820      17615          17615           0.662            NA
-#> 3          18492      17998          18112      17837          17837           0.691            NA
-#> 4          16969      16701          16763      16614          16614           0.668         0.877
-#> 5          18518      18109          18204      17976          17976           0.529         0.910
-#> 6          18435      17885          18012      17706          17706           0.651         0.900
-#> 7          17164      16867          16936      16771          16771           0.609         0.814
-#> 8          17543      17091          17195      16944          16944           0.667         0.919
-#> 9          17781      17175          17314      16977          16977           0.714         0.894
+#> 1          17946      17706          17762      17628          17628           0.485            NA
+#> 2          18102      17735          17820      17616          17616           0.662            NA
+#> 3          18305      17812          17925      17650          17650           0.715            NA
+#> 4          16969      16701          16763      16613          16613           0.668         0.877
+#> 5          16956      16546          16641      16413          16413           0.804         0.878
+#> 6          18413      17863          17989      17683          17683           0.652         0.914
+#> 7          17163      16867          16935      16770          16770           0.609         0.814
+#> 8          17548      17097          17201      16950          16950           0.660         0.914
+#> 9          17517      16911          17050      16713          16713           0.745         0.908
 #>   avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean
-#> 1     0.704     0.941      0.822           1              NA              NA               NA
-#> 2     0.704     0.952      0.863           1              NA              NA               NA
-#> 3     0.723     0.997      0.814           3              NA              NA               NA
+#> 1     0.705     0.939      0.822           1              NA              NA               NA
+#> 2     0.705     0.952      0.863           1              NA              NA               NA
+#> 3     0.713     0.955      0.830           2              NA              NA               NA
 #> 4     0.859     0.926      0.892           0           0.960           0.980            0.970
-#> 5     0.647     0.846      0.778           1           0.974           0.984            0.979
-#> 6     0.635     0.883      0.793           1           0.966           0.976            0.971
+#> 5     0.858     0.991      0.927           0           0.952           0.971            0.962
+#> 6     0.630     0.992      0.819           1           0.974           0.986            0.980
 #> 7     0.878     0.888      0.883           0           0.885           0.931            0.912
-#> 8     0.795     0.912      0.855           1           0.959           0.976            0.969
-#> 9     0.839     0.989      0.881           0           0.951           0.961            0.955
+#> 8     0.828     0.888      0.853           0           0.941           0.980            0.967
+#> 9     0.813     0.991      0.887           0           0.948           0.970            0.957
 #>   group_avepp_below converged boundary min_standardized_eigenvalue min_gaussian_mass
 #> 1                NA      TRUE    FALSE                          NA                NA
 #> 2                NA      TRUE     TRUE                          NA                NA
@@ -154,43 +156,49 @@ as.data.frame(candidates)
 #> 8                 0      TRUE     TRUE                          NA                NA
 #> 9                 0      TRUE     TRUE                          NA                NA
 #>   n_best_replicated warnings error
-#> 1                 5           <NA>
-#> 2                 2           <NA>
-#> 3                 1           <NA>
-#> 4                 4           <NA>
-#> 5                 1           <NA>
-#> 6                 1           <NA>
-#> 7                 5           <NA>
+#> 1                18           <NA>
+#> 2                 5           <NA>
+#> 3                 3           <NA>
+#> 4                13           <NA>
+#> 5                 2           <NA>
+#> 6                 2           <NA>
+#> 7                20           <NA>
 #> 8                 1           <NA>
 #> 9                 1           <NA>
 get_results(candidates, "best")
 #>    criterion  convention        candidate n_profiles n_group_classes model value
-#> 1        aic        <NA> classes4_groups3          4               3  <NA> 15158
-#> 2        kic        <NA> classes4_groups3          4               3  <NA> 15204
-#> 3        bic      groups classes4_groups3          4               3  <NA> 15270
-#> 4        bic individuals classes4_groups3          4               3  <NA> 15410
-#> 5      sabic      groups classes4_groups3          4               3  <NA> 15134
-#> 6      sabic individuals classes4_groups3          4               3  <NA> 15273
-#> 7       caic      groups classes4_groups3          4               3  <NA> 15313
-#> 8       caic individuals classes4_groups3          4               3  <NA> 15453
-#> 9        awe      groups classes2_groups2          2               2  <NA> 16846
-#> 10       awe individuals classes2_groups2          2               2  <NA> 16969
-#> 11       icl      groups classes2_groups2          2               2  <NA> 16701
-#> 12       icl individuals classes2_groups2          2               2  <NA> 16763
-#> 13       clc      groups classes2_groups2          2               2  <NA> 16614
-#> 14       clc individuals classes2_groups2          2               2  <NA> 16614
+#> 1        aic        <NA> classes4_groups3          4               3  <NA> 15126
+#> 2        kic        <NA> classes4_groups3          4               3  <NA> 15172
+#> 3        bic      groups classes4_groups3          4               3  <NA> 15238
+#> 4        bic individuals classes4_groups3          4               3  <NA> 15377
+#> 5      sabic      groups classes4_groups3          4               3  <NA> 15102
+#> 6      sabic individuals classes4_groups3          4               3  <NA> 15241
+#> 7       caic      groups classes4_groups3          4               3  <NA> 15281
+#> 8       caic individuals classes4_groups3          4               3  <NA> 15420
+#> 9        awe      groups classes3_groups2          3               2  <NA> 16767
+#> 10       awe individuals classes3_groups2          3               2  <NA> 16956
+#> 11       icl      groups classes3_groups2          3               2  <NA> 16546
+#> 12       icl individuals classes3_groups2          3               2  <NA> 16641
+#> 13       clc      groups classes3_groups2          3               2  <NA> 16413
+#> 14       clc individuals classes3_groups2          3               2  <NA> 16413
 ```
 
 The criteria disagree, and the diagnostics explain why. BIC with the
 number of students keeps falling up to the largest model in the grid,
-four profiles and three classes. Most of the larger models reach their
-best solution from only one of the five starts (`n_best_replicated`), so
-their low BIC rests on solutions that the starts do not replicate. The
-criteria that also penalize classification uncertainty (ICL, AWE and CLC
-counted over prompts) choose two profiles and two classes, a model whose
-best solution recurs in four of the five starts.
+four profiles and three classes. That model and the one with three
+profiles and three classes reach their best solution from a single start
+(`n_best_replicated`), so their low BIC rests on solutions that the
+starts do not replicate. The criteria that also penalize classification
+uncertainty (ICL, AWE and CLC counted over prompts) choose three
+profiles and two classes, a model whose best solution recurs in 2 of the
+twenty starts.
 
-The ICL plot shows the same choice across the grid.
+The number of starts is part of the analysis on these data. With five
+starts and the default tolerance, the three-profile, two-class model
+stops at a lower maximum of the likelihood, and the same criteria then
+choose two profiles and two classes.
+
+The ICL plot shows the choice across the grid.
 
 ``` r
 
@@ -199,33 +207,33 @@ plot_enumeration(candidates, what = "icl_individual")
 
 ![](case-esm-lca_files/figure-html/icl-plot-1.png)
 
-The plot marks the minimum at two profiles and two classes, and the
+The plot marks the minimum at three profiles and two classes, and the
 analysis continues with that model.
 
 ## The chosen model
 
 [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
-fits it, treating every item as categorical, with ten random starts and
-a tight convergence tolerance, which the standard errors below need.
+fits it, treating every item as categorical, with twenty random starts
+and a tight convergence tolerance, which the standard errors below need.
 
 ``` r
 
 lca <- multilca(student_esm, vars = activities, id = "student",
-                n_profiles = 2, n_group_classes = 2, n_starts = 10,
+                n_profiles = 3, n_group_classes = 2, n_starts = 20,
                 tol = 1e-10, seed = 1)
 get_results(lca, "model")
 #>   n_observations n_informative n_groups n_profiles n_group_classes centering scaling
-#> 1           2582          2582      100          2               2      none    none
+#> 1           2582          2582      100          3               2      none    none
 #>   covariance_structure n_parameters n_parameters_with_measurement log_likelihood   aic bic_groups
-#> 1                  VVI           19                            19          -7740 15518      15567
+#> 1                  VVI           29                            29          -7678 15414      15490
 #>   bic_individual converged iterations boundary small_classes best_start n_best_replicated weights
-#> 1          15629      TRUE         63    FALSE         FALSE          1                 6    <NA>
+#> 1          15584      TRUE         81    FALSE         FALSE         16                 2    <NA>
 ```
 
-The fit converges, and six of the ten starts reach the best log
-likelihood of -7740.
+The fit converges, and 2 of the twenty starts reach the best log
+likelihood of -7678.
 
-## Two activity profiles
+## Three activity profiles
 
 The `"responses"` table gives the probability of each answer in each
 profile, with a “no” and a “yes” row for every item. The “yes” rows
@@ -236,50 +244,67 @@ one.
 
 get_results(lca, "responses")
 #>    profile         indicator category probability threshold probability_standard_error
-#> 1        1 time_with_friends       no     0.89380     2.130                    0.01497
-#> 2        2 time_with_friends       no     0.84295     1.680                    0.00926
-#> 3        1 time_with_friends      yes     0.10620        NA                    0.01497
-#> 4        2 time_with_friends      yes     0.15705        NA                    0.00926
-#> 5        1   on_social_media       no     0.23535    -1.178                    0.03509
-#> 6        2   on_social_media       no     0.88113     2.003                    0.01905
-#> 7        1   on_social_media      yes     0.76465        NA                    0.03509
-#> 8        2   on_social_media      yes     0.11887        NA                    0.01905
-#> 9        1    tv_video_games       no     0.60423     0.423                    0.02467
-#> 10       2    tv_video_games       no     0.85264     1.755                    0.01013
-#> 11       1    tv_video_games      yes     0.39577        NA                    0.02467
-#> 12       2    tv_video_games      yes     0.14736        NA                    0.01013
-#> 13       1    listened_music       no     0.63596     0.558                    0.03058
-#> 14       2    listened_music       no     0.92538     2.518                    0.00780
-#> 15       1    listened_music      yes     0.36404        NA                    0.03058
-#> 16       2    listened_music      yes     0.07462        NA                    0.00780
-#> 17       1            sports       no     0.92898     2.571                    0.01283
-#> 18       2            sports       no     0.92813     2.558                    0.00661
-#> 19       1            sports      yes     0.07102        NA                    0.01283
-#> 20       2            sports      yes     0.07187        NA                    0.00661
-#> 21       1           walking       no     0.90439     2.247                    0.01475
-#> 22       2           walking       no     0.86177     1.830                    0.00885
-#> 23       1           walking      yes     0.09561        NA                    0.01475
-#> 24       2           walking      yes     0.13823        NA                    0.00885
-#> 25       1           reading       no     0.84715     1.712                    0.01848
-#> 26       2           reading       no     0.90160     2.215                    0.00768
-#> 27       1           reading      yes     0.15285        NA                    0.01848
-#> 28       2           reading      yes     0.09840        NA                    0.00768
-#> 29       1     part_time_job       no     0.99024     4.619                    0.00494
-#> 30       2     part_time_job       no     0.94937     2.931                    0.00532
-#> 31       1     part_time_job      yes     0.00976        NA                    0.00494
-#> 32       2     part_time_job      yes     0.05063        NA                    0.00532
+#> 1        1 time_with_friends       no    9.78e-01     3.801                    0.01531
+#> 2        2 time_with_friends       no    8.35e-01     1.622                    0.00972
+#> 3        3 time_with_friends       no    9.00e-01     2.196                    0.01522
+#> 4        1 time_with_friends      yes    2.19e-02        NA                    0.01531
+#> 5        2 time_with_friends      yes    1.65e-01        NA                    0.00972
+#> 6        3 time_with_friends      yes    1.00e-01        NA                    0.01522
+#> 7        1   on_social_media       no    9.89e-01     4.468                    0.01353
+#> 8        2   on_social_media       no    8.73e-01     1.926                    0.01911
+#> 9        3   on_social_media       no    2.08e-01    -1.337                    0.03519
+#> 10       1   on_social_media      yes    1.13e-02        NA                    0.01353
+#> 11       2   on_social_media      yes    1.27e-01        NA                    0.01911
+#> 12       3   on_social_media      yes    7.92e-01        NA                    0.03519
+#> 13       1    tv_video_games       no    1.00e+00    23.026                         NA
+#> 14       2    tv_video_games       no    8.41e-01     1.665                    0.01077
+#> 15       3    tv_video_games       no    6.03e-01     0.419                    0.02436
+#> 16       1    tv_video_games      yes    1.00e-10        NA                         NA
+#> 17       2    tv_video_games      yes    1.59e-01        NA                    0.01077
+#> 18       3    tv_video_games      yes    3.97e-01        NA                    0.02436
+#> 19       1    listened_music       no    1.00e+00    23.026                         NA
+#> 20       2    listened_music       no    9.17e-01     2.402                    0.00821
+#> 21       3    listened_music       no    6.34e-01     0.547                    0.03200
+#> 22       1    listened_music      yes    1.00e-10        NA                         NA
+#> 23       2    listened_music      yes    8.31e-02        NA                    0.00821
+#> 24       3    listened_music      yes    3.66e-01        NA                    0.03200
+#> 25       1            sports       no    1.00e+00    23.026                         NA
+#> 26       2            sports       no    9.23e-01     2.486                    0.00684
+#> 27       3            sports       no    9.33e-01     2.634                    0.01269
+#> 28       1            sports      yes    1.00e-10        NA                         NA
+#> 29       2            sports      yes    7.68e-02        NA                    0.00684
+#> 30       3            sports      yes    6.70e-02        NA                    0.01269
+#> 31       1           walking       no    9.58e-01     3.120                    0.02162
+#> 32       2           walking       no    8.56e-01     1.784                    0.00912
+#> 33       3           walking       no    9.09e-01     2.304                    0.01459
+#> 34       1           walking      yes    4.23e-02        NA                    0.02162
+#> 35       2           walking      yes    1.44e-01        NA                    0.00912
+#> 36       3           walking      yes    9.08e-02        NA                    0.01459
+#> 37       1           reading       no    9.89e-01     4.508                    0.01088
+#> 38       2           reading       no    8.95e-01     2.141                    0.00802
+#> 39       3           reading       no    8.51e-01     1.744                    0.01897
+#> 40       1           reading      yes    1.09e-02        NA                    0.01088
+#> 41       2           reading      yes    1.05e-01        NA                    0.00802
+#> 42       3           reading      yes    1.49e-01        NA                    0.01897
+#> 43       1     part_time_job       no    5.66e-09   -18.989                         NA
+#> 44       2     part_time_job       no    1.00e+00    23.026                         NA
+#> 45       3     part_time_job       no    9.82e-01     3.995                    0.00568
+#> 46       1     part_time_job      yes    1.00e+00        NA                         NA
+#> 47       2     part_time_job      yes    1.00e-10        NA                         NA
+#> 48       3     part_time_job      yes    1.81e-02        NA                    0.00568
 ```
 
-The two profiles differ mainly in media use. At prompts in profile 1,
-students used social media with probability 0.765, watched TV or played
-video games with probability 0.396, and listened to music with
-probability 0.364. In profile 2 the same probabilities are 0.119, 0.147
-and 0.075. Profile 2 is slightly more likely to include time with
-friends (0.157 against 0.106), walking (0.138 against 0.096) and a
-part-time job (0.051 against 0.010), and both profiles report sports at
-0.07. Profile 1 is therefore a media-heavy pattern, and profile 2 a
-pattern of little media use with the remaining activities at their usual
-low rates.
+The three profiles differ in media use and in work. At prompts in
+profile 3, students used social media with probability 0.792, watched TV
+or played video games with probability 0.397, and listened to music with
+probability 0.366. In profile 2 the same probabilities are 0.127, 0.159
+and 0.083, and time with friends (0.165 against 0.100) and walking
+(0.144 against 0.091) are somewhat more likely. Both report sports at
+about 0.07. At prompts in profile 1 students worked at a part-time job
+with probability 1.000 and reported every other activity with
+probability below 0.05. Profile 3 is therefore a media-heavy pattern,
+profile 2 a pattern of little media use with the remaining activities at
+their usual low rates, and profile 1 a pattern of work with little else.
 
 The response plot draws the same probabilities, one line per profile
 across the items.
@@ -291,9 +316,9 @@ plot_responses(lca)
 
 ![](case-esm-lca_files/figure-html/responses-plot-1.png)
 
-The lines separate on the three media items and nearly coincide on
-sports, so the media items carry almost all of the difference between
-the profiles.
+The media-heavy and low-media lines separate on the three media items
+and nearly coincide on sports, while the work profile stands apart on
+the part-time job item.
 
 ## Two student classes
 
@@ -304,25 +329,31 @@ The `"counts"` table gives the size of each profile and class, and the
 
 get_results(lca, "counts")
 #>         level class effective_count effective_proportion
-#> 1 individuals     1           678.4                0.263
-#> 2 individuals     2          1903.6                0.737
-#> 3      groups     1            41.6                0.416
-#> 4      groups     2            58.4                0.584
+#> 1 individuals     1            91.4               0.0354
+#> 2 individuals     2          1848.0               0.7157
+#> 3 individuals     3           642.6               0.2489
+#> 4      groups     1            43.6               0.4357
+#> 5      groups     2            56.4               0.5643
 get_results(lca, "profile_probabilities")
 #>   group_class profile probability group_class_probability
-#> 1           1       1      0.5654                   0.416
-#> 2           1       2      0.4346                   0.416
-#> 3           2       1      0.0261                   0.584
-#> 4           2       2      0.9739                   0.584
+#> 1           1       1     0.00778                   0.436
+#> 2           1       2     0.46348                   0.436
+#> 3           1       3     0.52874                   0.436
+#> 4           2       1     0.05862                   0.564
+#> 5           2       2     0.92787                   0.564
+#> 6           2       3     0.01351                   0.564
 ```
 
-The low-media profile holds 73.7% of prompts and the media-heavy profile
-26.3%. The student classes differ sharply in their mix. In class 2,
-which holds 58.4% of students, 0.974 of prompts fall in the low-media
-profile. In class 1, with 41.6% of students, the media-heavy profile is
-the more common, at 0.565. Media-heavy leisure is therefore concentrated
+The low-media profile holds 71.6% of prompts, the media-heavy profile
+24.9% and the work profile 3.5%. The student classes differ sharply in
+their mix. In class 2, which holds 56.4% of students, 0.928 of prompts
+fall in the low-media profile, 0.059 in the work profile and only 0.014
+in the media-heavy one. In class 1, with 43.6% of students, the
+media-heavy profile is the more common, at 0.529, and the work profile
+almost absent, at 0.008. Media-heavy leisure is therefore concentrated
 in a minority of students, and for them it is the usual pattern, while
-most students almost never report it.
+most students almost never report it. Part-time work appears mainly
+among the students of the low-media class.
 
 The probability plot compares the two mixes.
 
@@ -334,8 +365,8 @@ plot_prevalence(lca)
 ![](case-esm-lca_files/figure-html/probabilities-plot-1.png)
 
 Class 2 runs close to one on the low-media profile and close to zero on
-the media-heavy one; class 1 divides its prompts more evenly, with the
-larger share on the media-heavy profile.
+the media-heavy one; class 1 divides its prompts between those two
+profiles, with the larger share on the media-heavy profile.
 
 ## Classification certainty
 
@@ -348,29 +379,32 @@ table reports the average posterior probability of each assigned class.
 
 get_results(lca, "entropy")
 #>         level n_classes n_units entropy_sum relative_entropy
-#> 1 individuals         2    2582       594.8            0.668
-#> 2      groups         2     100         8.5            0.877
+#> 1 individuals         3    2582      556.82            0.804
+#> 2      groups         2     100        8.48            0.878
 get_results(lca, "classification")
 #>         level class n_modal proportion_modal estimated_n estimated_proportion average_posterior
-#> 1 individuals     1     621            0.241       678.4                0.263             0.859
-#> 2 individuals     2    1961            0.759      1903.6                0.737             0.926
-#> 3      groups     1      40            0.400        41.6                0.416             0.980
-#> 4      groups     2      60            0.600        58.4                0.584             0.960
+#> 1 individuals     1      92           0.0356        91.4               0.0354             0.991
+#> 2 individuals     2    1896           0.7343      1848.0               0.7157             0.930
+#> 3 individuals     3     594           0.2301       642.6               0.2489             0.858
+#> 4      groups     1      42           0.4200        43.6               0.4357             0.971
+#> 5      groups     2      58           0.5800        56.4               0.5643             0.952
 #>   odds_correct_classification
-#> 1                       17.07
-#> 2                        4.46
-#> 3                       68.32
-#> 4                       17.07
+#> 1                      3110.0
+#> 2                         5.3
+#> 3                        18.2
+#> 4                        43.6
+#> 5                        15.3
 ```
 
-Relative entropy is 0.668 for prompts and 0.877 for students. A single
-prompt answers eight yes/no questions, which leaves its profile
-uncertain; a student contributes many prompts, which pins down the
-class. The average posterior probability is 0.926 for prompts assigned
-to the low-media profile and 0.859 for the media-heavy one, and 0.980
-and 0.960 for the two student classes. Conclusions about students are
-therefore well supported, while an analysis of individual prompts should
-carry the posterior probabilities forward.
+Relative entropy is 0.804 for prompts and 0.878 for students. A single
+prompt answers eight yes/no questions, which leaves its profile less
+certain; a student contributes many prompts, which pins down the class.
+The average posterior probability is 0.991 for prompts assigned to the
+work profile, 0.930 for the low-media profile and 0.858 for the
+media-heavy one, and 0.952 and 0.971 for the two student classes.
+Conclusions about students are therefore well supported, while an
+analysis of individual prompts should carry the posterior probabilities
+forward.
 
 ## Local independence
 
@@ -382,132 +416,156 @@ largest are shown.
 ``` r
 
 get_results(lca, "residuals") |> head(10)
-#>      profile       indicator_1   indicator_2        kind observed expected residual effective_n
-#> 1  profile_1            sports       walking categorical   0.1706 4.74e-17   0.1706         678
-#> 2  profile_1 time_with_friends       walking categorical   0.1404 6.76e-17   0.1404         678
-#> 3  profile_1    listened_music       walking categorical   0.1334 1.42e-16   0.1334         678
-#> 4  profile_1    listened_music       reading categorical   0.1063 0.00e+00   0.1063         678
-#> 5  profile_1    listened_music        sports categorical   0.1045 2.46e-17   0.1045         678
-#> 6  profile_2    tv_video_games       walking categorical   0.0940 4.19e-17   0.0940        1904
-#> 7  profile_2    tv_video_games part_time_job categorical   0.0925 3.75e-17   0.0925        1904
-#> 8  profile_2 time_with_friends part_time_job categorical   0.0865 0.00e+00   0.0865        1904
-#> 9  profile_2 time_with_friends       reading categorical   0.0727 1.47e-16   0.0727        1904
-#> 10 profile_2           reading part_time_job categorical   0.0683 3.49e-17   0.0683        1904
+#>      profile       indicator_1    indicator_2        kind observed expected residual effective_n
+#> 1  profile_1   on_social_media        walking categorical   0.4240 1.60e-16   0.4240        91.4
+#> 2  profile_3            sports        walking categorical   0.1661 3.80e-17   0.1661       642.6
+#> 3  profile_3 time_with_friends        walking categorical   0.1434 1.45e-17   0.1434       642.6
+#> 4  profile_3    listened_music        walking categorical   0.1331 7.66e-17   0.1331       642.6
+#> 5  profile_3    listened_music        reading categorical   0.1098 8.70e-17   0.1098       642.6
+#> 6  profile_3    listened_music         sports categorical   0.1082 1.42e-16   0.1082       642.6
+#> 7  profile_2    tv_video_games        walking categorical   0.0995 4.88e-17   0.0995      1848.0
+#> 8  profile_3    tv_video_games  part_time_job categorical   0.0862 1.42e-16   0.0862       642.6
+#> 9  profile_2 time_with_friends        reading categorical   0.0790 8.52e-17   0.0790      1848.0
+#> 10 profile_2 time_with_friends tv_video_games categorical   0.0707 6.35e-17   0.0707      1848.0
 #>    statistic df  p_value p_adjusted
-#> 1      19.75  1 8.82e-06   0.000494
-#> 2      13.37  1 2.55e-04   0.002860
-#> 3      12.07  1 5.12e-04   0.004776
-#> 4       7.67  1 5.61e-03   0.028551
-#> 5       7.41  1 6.49e-03   0.030292
-#> 6      16.83  1 4.08e-05   0.001023
-#> 7      16.27  1 5.48e-05   0.001023
-#> 8      14.25  1 1.60e-04   0.002244
-#> 9      10.07  1 1.51e-03   0.012052
-#> 10      8.87  1 2.90e-03   0.020314
+#> 1      16.43  1 5.04e-05    0.00141
+#> 2      17.73  1 2.55e-05    0.00107
+#> 3      13.21  1 2.79e-04    0.00585
+#> 4      11.38  1 7.43e-04    0.01040
+#> 5       7.75  1 5.38e-03    0.05022
+#> 6       7.52  1 6.09e-03    0.05118
+#> 7      18.28  1 1.91e-05    0.00107
+#> 8       4.77  1 2.90e-02    0.16212
+#> 9      11.52  1 6.89e-04    0.01040
+#> 10      9.23  1 2.38e-03    0.02856
 ```
 
-The largest residual is 0.171, between sports and walking in the
-media-heavy profile, followed by friends and walking (0.140) and music
-and walking (0.133) in the same profile. Physical and social activities
-occur together more often than two profiles allow, which is a limit of a
-two-profile model and one reason BIC rewards larger models: extra
-profiles can absorb this association.
+The largest residual, 0.424, links social media and walking in the work
+profile, which holds about 91 prompts, so it rests on few observations.
+Next, in the media-heavy profile, come sports and walking (0.166),
+friends and walking (0.143) and music and walking (0.133). Physical and
+social activities occur together more often than three profiles allow,
+which is one reason BIC rewards larger models: extra profiles can absorb
+this association.
 
 ## Uncertainty in the response probabilities
 
 [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
-gives standard errors and 95% Wald intervals for every parameter. The
-intervals of the “yes” probabilities, in the rows whose `term` ends in
-`:yes`, show how firmly the profiles are distinguished.
+gives standard errors and 95% Wald intervals for every parameter.
+Several response probabilities lie on their bound: the work profile
+reports TV or games, music and sports with probability zero and a
+part-time job with probability one, and the low-media profile reports a
+part-time job with probability zero. Wald inference does not apply at a
+bound, so `boundary = "fix"` holds these probabilities at their values,
+leaves them out of the table and reports the other parameters
+conditionally on them. The intervals of the “yes” probabilities, in the
+rows whose `term` ends in `:yes`, show how firmly the profiles are
+distinguished.
 
 ``` r
 
-parameter_inference(lca)
+parameter_inference(lca, boundary = "fix")
 #>          level       outcome                  term   parameter estimate standard_error statistic
-#> 1  measurement     profile_1  time_with_friends:no    response  0.89380        0.01497        NA
-#> 2  measurement     profile_1 time_with_friends:yes    response  0.10620        0.01497        NA
-#> 3  measurement     profile_2  time_with_friends:no    response  0.84295        0.00926        NA
-#> 4  measurement     profile_2 time_with_friends:yes    response  0.15705        0.00926        NA
-#> 5  measurement     profile_1    on_social_media:no    response  0.23535        0.03509        NA
-#> 6  measurement     profile_1   on_social_media:yes    response  0.76465        0.03509        NA
-#> 7  measurement     profile_2    on_social_media:no    response  0.88113        0.01905        NA
-#> 8  measurement     profile_2   on_social_media:yes    response  0.11887        0.01905        NA
-#> 9  measurement     profile_1     tv_video_games:no    response  0.60423        0.02467        NA
-#> 10 measurement     profile_1    tv_video_games:yes    response  0.39577        0.02467        NA
-#> 11 measurement     profile_2     tv_video_games:no    response  0.85264        0.01013        NA
-#> 12 measurement     profile_2    tv_video_games:yes    response  0.14736        0.01013        NA
-#> 13 measurement     profile_1     listened_music:no    response  0.63596        0.03058        NA
-#> 14 measurement     profile_1    listened_music:yes    response  0.36404        0.03058        NA
-#> 15 measurement     profile_2     listened_music:no    response  0.92538        0.00780        NA
-#> 16 measurement     profile_2    listened_music:yes    response  0.07462        0.00780        NA
-#> 17 measurement     profile_1             sports:no    response  0.92898        0.01283        NA
-#> 18 measurement     profile_1            sports:yes    response  0.07102        0.01283        NA
-#> 19 measurement     profile_2             sports:no    response  0.92813        0.00661        NA
-#> 20 measurement     profile_2            sports:yes    response  0.07187        0.00661        NA
-#> 21 measurement     profile_1            walking:no    response  0.90439        0.01475        NA
-#> 22 measurement     profile_1           walking:yes    response  0.09561        0.01475        NA
-#> 23 measurement     profile_2            walking:no    response  0.86177        0.00885        NA
-#> 24 measurement     profile_2           walking:yes    response  0.13823        0.00885        NA
-#> 25 measurement     profile_1            reading:no    response  0.84715        0.01848        NA
-#> 26 measurement     profile_1           reading:yes    response  0.15285        0.01848        NA
-#> 27 measurement     profile_2            reading:no    response  0.90160        0.00768        NA
-#> 28 measurement     profile_2           reading:yes    response  0.09840        0.00768        NA
-#> 29 measurement     profile_1      part_time_job:no    response  0.99024        0.00494        NA
-#> 30 measurement     profile_1     part_time_job:yes    response  0.00976        0.00494        NA
-#> 31 measurement     profile_2      part_time_job:no    response  0.94937        0.00532        NA
-#> 32 measurement     profile_2     part_time_job:yes    response  0.05063        0.00532        NA
-#> 33     profile     profile_1         group_class_1 probability  0.56543        0.03609        NA
-#> 34     profile     profile_2         group_class_1 probability  0.43457        0.03609        NA
-#> 35     profile     profile_1         group_class_2 probability  0.02605        0.01744        NA
-#> 36     profile     profile_2         group_class_2 probability  0.97395        0.01744        NA
-#> 37       group group_class_1                  <NA> probability  0.41597        0.06010        NA
-#> 38       group group_class_2                  <NA> probability  0.58403        0.06010        NA
+#> 1  measurement     profile_1  time_with_friends:no    response  0.97814        0.01531        NA
+#> 2  measurement     profile_1 time_with_friends:yes    response  0.02186        0.01531        NA
+#> 3  measurement     profile_2  time_with_friends:no    response  0.83512        0.00972        NA
+#> 4  measurement     profile_2 time_with_friends:yes    response  0.16488        0.00972        NA
+#> 5  measurement     profile_3  time_with_friends:no    response  0.89992        0.01522        NA
+#> 6  measurement     profile_3 time_with_friends:yes    response  0.10008        0.01522        NA
+#> 7  measurement     profile_1    on_social_media:no    response  0.98866        0.01353        NA
+#> 8  measurement     profile_1   on_social_media:yes    response  0.01134        0.01353        NA
+#> 9  measurement     profile_2    on_social_media:no    response  0.87283        0.01911        NA
+#> 10 measurement     profile_2   on_social_media:yes    response  0.12717        0.01911        NA
+#> 11 measurement     profile_3    on_social_media:no    response  0.20802        0.03519        NA
+#> 12 measurement     profile_3   on_social_media:yes    response  0.79198        0.03519        NA
+#> 13 measurement     profile_2     tv_video_games:no    response  0.84092        0.01077        NA
+#> 14 measurement     profile_2    tv_video_games:yes    response  0.15908        0.01077        NA
+#> 15 measurement     profile_3     tv_video_games:no    response  0.60316        0.02436        NA
+#> 16 measurement     profile_3    tv_video_games:yes    response  0.39684        0.02436        NA
+#> 17 measurement     profile_2     listened_music:no    response  0.91695        0.00821        NA
+#> 18 measurement     profile_2    listened_music:yes    response  0.08305        0.00821        NA
+#> 19 measurement     profile_3     listened_music:no    response  0.63351        0.03200        NA
+#> 20 measurement     profile_3    listened_music:yes    response  0.36649        0.03200        NA
+#> 21 measurement     profile_2             sports:no    response  0.92319        0.00684        NA
+#> 22 measurement     profile_2            sports:yes    response  0.07681        0.00684        NA
+#> 23 measurement     profile_3             sports:no    response  0.93301        0.01269        NA
+#> 24 measurement     profile_3            sports:yes    response  0.06699        0.01269        NA
+#> 25 measurement     profile_1            walking:no    response  0.95770        0.02162        NA
+#> 26 measurement     profile_1           walking:yes    response  0.04230        0.02162        NA
+#> 27 measurement     profile_2            walking:no    response  0.85617        0.00912        NA
+#> 28 measurement     profile_2           walking:yes    response  0.14383        0.00912        NA
+#> 29 measurement     profile_3            walking:no    response  0.90921        0.01459        NA
+#> 30 measurement     profile_3           walking:yes    response  0.09079        0.01459        NA
+#> 31 measurement     profile_1            reading:no    response  0.98910        0.01088        NA
+#> 32 measurement     profile_1           reading:yes    response  0.01090        0.01088        NA
+#> 33 measurement     profile_2            reading:no    response  0.89480        0.00802        NA
+#> 34 measurement     profile_2           reading:yes    response  0.10520        0.00802        NA
+#> 35 measurement     profile_3            reading:no    response  0.85126        0.01897        NA
+#> 36 measurement     profile_3           reading:yes    response  0.14874        0.01897        NA
+#> 37 measurement     profile_3      part_time_job:no    response  0.98193        0.00568        NA
+#> 38 measurement     profile_3     part_time_job:yes    response  0.01807        0.00568        NA
+#> 39     profile     profile_1         group_class_1 probability  0.00778        0.00276        NA
+#> 40     profile     profile_2         group_class_1 probability  0.46348        0.03355        NA
+#> 41     profile     profile_3         group_class_1 probability  0.52874        0.03360        NA
+#> 42     profile     profile_1         group_class_2 probability  0.05862        0.00718        NA
+#> 43     profile     profile_2         group_class_2 probability  0.92787        0.01670        NA
+#> 44     profile     profile_3         group_class_2 probability  0.01351        0.01463        NA
+#> 45       group group_class_1                  <NA> probability  0.43573        0.06201        NA
+#> 46       group group_class_2                  <NA> probability  0.56427        0.06201        NA
 #>    p_value p_adjusted conf_low conf_high
-#> 1       NA         NA  0.86069    0.9198
-#> 2       NA         NA  0.08023    0.1393
-#> 3       NA         NA  0.82395    0.8603
-#> 4       NA         NA  0.13974    0.1760
-#> 5       NA         NA  0.17358    0.3108
-#> 6       NA         NA  0.68916    0.8264
-#> 7       NA         NA  0.83845    0.9137
-#> 8       NA         NA  0.08630    0.1615
-#> 9       NA         NA  0.55502    0.6514
-#> 10      NA         NA  0.34858    0.4450
-#> 11      NA         NA  0.83167    0.8714
-#> 12      NA         NA  0.12859    0.1683
-#> 13      NA         NA  0.57420    0.6935
-#> 14      NA         NA  0.30646    0.4258
-#> 15      NA         NA  0.90857    0.9393
-#> 16      NA         NA  0.06069    0.0914
-#> 17      NA         NA  0.89936    0.9504
-#> 18      NA         NA  0.04963    0.1006
-#> 19      NA         NA  0.91405    0.9400
-#> 20      NA         NA  0.05995    0.0859
-#> 21      NA         NA  0.87131    0.9297
-#> 22      NA         NA  0.07034    0.1287
-#> 23      NA         NA  0.84348    0.8782
-#> 24      NA         NA  0.12177    0.1565
-#> 25      NA         NA  0.80733    0.8800
-#> 26      NA         NA  0.12004    0.1927
-#> 27      NA         NA  0.88550    0.9157
-#> 28      NA         NA  0.08434    0.1145
-#> 29      NA         NA  0.97385    0.9964
-#> 30      NA         NA  0.00361    0.0261
-#> 31      NA         NA  0.93787    0.9588
-#> 32      NA         NA  0.04116    0.0621
-#> 33      NA         NA  0.49384    0.6344
-#> 34      NA         NA  0.36562    0.5062
-#> 35      NA         NA  0.00690    0.0933
-#> 36      NA         NA  0.90668    0.9931
-#> 37      NA         NA  0.30487    0.5363
-#> 38      NA         NA  0.46367    0.6951
+#> 1       NA         NA  0.91667    0.9945
+#> 2       NA         NA  0.00546    0.0833
+#> 3       NA         NA  0.81518    0.8533
+#> 4       NA         NA  0.14670    0.1848
+#> 5       NA         NA  0.86588    0.9261
+#> 6       NA         NA  0.07395    0.1341
+#> 7       NA         NA  0.89126    0.9989
+#> 8       NA         NA  0.00108    0.1087
+#> 9       NA         NA  0.83043    0.9058
+#> 10      NA         NA  0.09417    0.1696
+#> 11      NA         NA  0.14735    0.2853
+#> 12      NA         NA  0.71469    0.8526
+#> 13      NA         NA  0.81865    0.8609
+#> 14      NA         NA  0.13908    0.1813
+#> 15      NA         NA  0.55458    0.6498
+#> 16      NA         NA  0.35021    0.4454
+#> 17      NA         NA  0.89937    0.9317
+#> 18      NA         NA  0.06831    0.1006
+#> 19      NA         NA  0.56886    0.6937
+#> 20      NA         NA  0.30630    0.4311
+#> 21      NA         NA  0.90865    0.9356
+#> 22      NA         NA  0.06443    0.0913
+#> 23      NA         NA  0.90343    0.9540
+#> 24      NA         NA  0.04601    0.0966
+#> 25      NA         NA  0.88832    0.9847
+#> 26      NA         NA  0.01528    0.1117
+#> 27      NA         NA  0.83737    0.8731
+#> 28      NA         NA  0.12687    0.1626
+#> 29      NA         NA  0.87627    0.9340
+#> 30      NA         NA  0.06595    0.1237
+#> 31      NA         NA  0.92620    0.9985
+#> 32      NA         NA  0.00152    0.0738
+#> 33      NA         NA  0.87801    0.9095
+#> 34      NA         NA  0.09049    0.1220
+#> 35      NA         NA  0.81013    0.8847
+#> 36      NA         NA  0.11525    0.1899
+#> 37      NA         NA  0.96668    0.9903
+#> 38      NA         NA  0.00973    0.0333
+#> 39      NA         NA  0.00387    0.0156
+#> 40      NA         NA  0.39873    0.5295
+#> 41      NA         NA  0.46277    0.5937
+#> 42      NA         NA  0.04604    0.0744
+#> 43      NA         NA  0.88748    0.9545
+#> 44      NA         NA  0.00159    0.1054
+#> 45      NA         NA  0.32020    0.5587
+#> 46      NA         NA  0.44131    0.6798
 ```
 
 The profiles are clearly separated on the media items: the interval for
-social media is 0.689 to 0.826 in the media-heavy profile and 0.086 to
-0.162 in the low-media profile. On sports the two intervals overlap
-almost entirely. The part-time-job probability in the media-heavy
-profile has an interval starting at 0.004, close to zero, because very
+social media is 0.715 to 0.853 in the media-heavy profile and 0.094 to
+0.170 in the low-media profile. On sports the two intervals overlap
+almost entirely. The part-time job probability in the media-heavy
+profile has an interval of 0.010 to 0.033, close to zero, because very
 few of its prompts report a job.
 
 ## Adding affect
@@ -515,7 +573,9 @@ few of its prompts report a job.
 A mixed model adds three affect ratings (happy, relaxed, exhausted, each
 from 1 to 7) as continuous indicators. `worried` is left out because
 about half of its ratings are 1, which can push a profile’s variance to
-its lower bound.
+its lower bound. The same happens to `exhausted` with three profiles:
+one profile collects the prompts rated 1 and its variance reaches the
+bound, so the mixed model is fitted with two profiles and two classes.
 
 ``` r
 
@@ -586,23 +646,26 @@ given, so the choice of indicators is part of the question.
 
 ## Interpretation
 
-Students’ leisure at non-study prompts falls into two patterns, one
-defined by social media, TV and music and one with little media use. The
-distinction that matters most is between students: a majority almost
-never reports the media-heavy pattern, and a minority reports it at more
-than half of their prompts. That student-level result is well supported
-by the classification diagnostics, while the assignment of any single
-prompt is uncertain.
+Students’ leisure at non-study prompts falls into three patterns: one
+defined by social media, TV and music, one with little media use, and a
+small one of part-time work with little else. The distinction that
+matters most is between students: a majority almost never reports the
+media-heavy pattern, and a minority reports it at more than half of
+their prompts. Part-time work appears mainly among the majority. That
+student-level result is well supported by the classification
+diagnostics, while the assignment of any single prompt is less certain.
 
 ## Limitations
 
 The data contain only prompts at which the student had not studied, so
-the patterns describe leisure time, not the whole day. The two-profile
+the patterns describe leisure time, not the whole day. The three-profile
 model leaves association between physical and social activities within
 its profiles, and larger models fit better by BIC but are not stable
-across starts on these data. Prompts are treated as independent given
-the student’s class, so the model ignores the order of prompts within a
-day. The associations are observational and say nothing about causes.
+across starts on these data. The choice of three profiles itself depends
+on enough starts: with few, the model stops at a lower maximum and two
+profiles are chosen. Prompts are treated as independent given the
+student’s class, so the model ignores the order of prompts within a day.
+The associations are observational and say nothing about causes.
 
 ## Reference
 

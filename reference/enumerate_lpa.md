@@ -84,6 +84,7 @@ models <- enumerate_lpa(srl, c("cognitive_strategies", "intrinsic_value",
                                "self_efficacy", "self_regulation",
                                "test_anxiety"),
                         n_profiles = 1:3, n_starts = 2, seed = 1)
+#> 1 of 12 candidates reached their best log likelihood from one start only (profiles3_EEE); refit those you consider with more starts.
 summary(models)
 #> Class enumeration: 12 candidates, 12 converged, 0 failed to fit
 #> 2 distinct candidate(s) are minimal under some criterion.

@@ -48,8 +48,11 @@ whose classes need not coincide.
 students (Neubauer and Schmiedek, 2024). At each prompt when they had
 not studied since the previous one, the students reported which of eight
 leisure activities they had done. The prompts are the observations and
-the students the groups. The candidates combine one to six classes of
-prompts with one to four group classes of students.
+the students the groups. The candidates combine one to four classes of
+prompts with one to three group classes of students. Each candidate is
+fitted from twenty random starts with a tight convergence tolerance,
+because a latent class model of eight binary items has many local
+maxima.
 
 ``` r
 
@@ -58,17 +61,22 @@ activities <- c("time_with_friends", "on_social_media", "tv_video_games",
                 "listened_music", "sports", "walking", "reading",
                 "part_time_job")
 models <- enumerate_classes(student_esm, activities, "student",
-                            n_profiles = 1:6, n_group_classes = 1:4,
-                            categorical = activities, n_starts = 3, seed = 1)
+                            n_profiles = 1:4, n_group_classes = 1:3,
+                            categorical = activities, n_starts = 20,
+                            tol = 1e-10, seed = 1)
 ```
 
-The grid holds 24 candidates. Their classes of prompts are counted by
+The grid holds 12 candidates. Their classes of prompts are counted by
 `n_profiles`, the name the package uses at both levels of a two-level
-model. The 3 candidates with one class and several group classes could
+model. The 2 candidates with one class and several group classes could
 not be estimated. A group class is defined by its distribution over the
 classes, and with a single class every group has the same distribution.
 Every tree with two or more group classes therefore begins at two
-classes.
+classes. The best solution of each candidate with one group class recurs
+in at least 3 of its starts (`n_best_replicated`), but 2 candidates with
+group classes reach theirs from a single start. The trees that involve
+group classes show how the plot reads, and their solutions would need
+more starts before they are interpreted.
 
 ## The tree at one number of group classes
 
@@ -112,7 +120,7 @@ the plots are shown one at a time.
 plot_tree(models)
 ```
 
-![](tree-plot_files/figure-html/trees-1.png)![](tree-plot_files/figure-html/trees-2.png)![](tree-plot_files/figure-html/trees-3.png)![](tree-plot_files/figure-html/trees-4.png)
+![](tree-plot_files/figure-html/trees-1.png)![](tree-plot_files/figure-html/trees-2.png)![](tree-plot_files/figure-html/trees-3.png)
 
 A later tree matches its classes to those of the first tree using a
 one-to-one assignment of posterior overlap at the same number of
@@ -144,45 +152,45 @@ with the same arguments, one row per pair of classes.
 
 get_results(models, "tree", n_profiles = 4, n_group_classes = c(1, 3))
 #>        tree       level   from_candidate from_class from_share     to_candidate to_class to_share
-#> 1  classes4 individuals classes4_groups1          1     0.4006 classes4_groups3        1   0.0353
-#> 2  classes4 individuals classes4_groups1          2     0.0801 classes4_groups3        1   0.0353
-#> 3  classes4 individuals classes4_groups1          3     0.4239 classes4_groups3        1   0.0353
-#> 4  classes4 individuals classes4_groups1          4     0.0954 classes4_groups3        1   0.0353
-#> 5  classes4 individuals classes4_groups1          1     0.4006 classes4_groups3        2   0.2702
-#> 6  classes4 individuals classes4_groups1          2     0.0801 classes4_groups3        2   0.2702
-#> 7  classes4 individuals classes4_groups1          3     0.4239 classes4_groups3        2   0.2702
-#> 8  classes4 individuals classes4_groups1          4     0.0954 classes4_groups3        2   0.2702
-#> 9  classes4 individuals classes4_groups1          1     0.4006 classes4_groups3        3   0.2430
-#> 10 classes4 individuals classes4_groups1          2     0.0801 classes4_groups3        3   0.2430
-#> 11 classes4 individuals classes4_groups1          3     0.4239 classes4_groups3        3   0.2430
-#> 12 classes4 individuals classes4_groups1          4     0.0954 classes4_groups3        3   0.2430
-#> 13 classes4 individuals classes4_groups1          1     0.4006 classes4_groups3        4   0.4514
-#> 14 classes4 individuals classes4_groups1          2     0.0801 classes4_groups3        4   0.4514
-#> 15 classes4 individuals classes4_groups1          3     0.4239 classes4_groups3        4   0.4514
-#> 16 classes4 individuals classes4_groups1          4     0.0954 classes4_groups3        4   0.4514
+#> 1  classes4 individuals classes4_groups1          1     0.0364 classes4_groups3        1   0.4581
+#> 2  classes4 individuals classes4_groups1          2     0.5691 classes4_groups3        1   0.4581
+#> 3  classes4 individuals classes4_groups1          3     0.0125 classes4_groups3        1   0.4581
+#> 4  classes4 individuals classes4_groups1          4     0.3820 classes4_groups3        1   0.4581
+#> 5  classes4 individuals classes4_groups1          1     0.0364 classes4_groups3        2   0.3392
+#> 6  classes4 individuals classes4_groups1          2     0.5691 classes4_groups3        2   0.3392
+#> 7  classes4 individuals classes4_groups1          3     0.0125 classes4_groups3        2   0.3392
+#> 8  classes4 individuals classes4_groups1          4     0.3820 classes4_groups3        2   0.3392
+#> 9  classes4 individuals classes4_groups1          1     0.0364 classes4_groups3        3   0.1701
+#> 10 classes4 individuals classes4_groups1          2     0.5691 classes4_groups3        3   0.1701
+#> 11 classes4 individuals classes4_groups1          3     0.0125 classes4_groups3        3   0.1701
+#> 12 classes4 individuals classes4_groups1          4     0.3820 classes4_groups3        3   0.1701
+#> 13 classes4 individuals classes4_groups1          1     0.0364 classes4_groups3        4   0.0326
+#> 14 classes4 individuals classes4_groups1          2     0.5691 classes4_groups3        4   0.0326
+#> 15 classes4 individuals classes4_groups1          3     0.0125 classes4_groups3        4   0.0326
+#> 16 classes4 individuals classes4_groups1          4     0.3820 classes4_groups3        4   0.0326
 #>        mass share_of_from share_of_to
-#> 1  4.63e-04      1.16e-03    1.31e-02
-#> 2  4.20e-14      5.25e-13    1.19e-12
-#> 3  3.41e-02      8.05e-02    9.66e-01
-#> 4  7.24e-04      7.59e-03    2.05e-02
-#> 5  1.11e-01      2.77e-01    4.11e-01
-#> 6  5.57e-02      6.96e-01    2.06e-01
-#> 7  9.81e-02      2.31e-01    3.63e-01
-#> 8  5.35e-03      5.61e-02    1.98e-02
-#> 9  1.79e-01      4.48e-01    7.38e-01
-#> 10 1.71e-02      2.14e-01    7.05e-02
-#> 11 4.15e-02      9.79e-02    1.71e-01
-#> 12 4.98e-03      5.22e-02    2.05e-02
-#> 13 1.10e-01      2.74e-01    2.43e-01
-#> 14 7.23e-03      9.04e-02    1.60e-02
-#> 15 2.50e-01      5.90e-01    5.54e-01
-#> 16 8.44e-02      8.84e-01    1.87e-01
+#> 1  3.18e-11      8.73e-10    6.94e-11
+#> 2  1.88e-01      3.30e-01    4.10e-01
+#> 3  2.62e-03      2.09e-01    5.72e-03
+#> 4  2.68e-01      7.01e-01    5.85e-01
+#> 5  4.66e-03      1.28e-01    1.37e-02
+#> 6  2.35e-01      4.13e-01    6.93e-01
+#> 7  4.30e-04      3.43e-02    1.27e-03
+#> 8  9.91e-02      2.59e-01    2.92e-01
+#> 9  1.27e-12      3.49e-11    7.47e-12
+#> 10 1.46e-01      2.56e-01    8.56e-01
+#> 11 9.48e-03      7.56e-01    5.57e-02
+#> 12 1.51e-02      3.94e-02    8.86e-02
+#> 13 3.17e-02      8.72e-01    9.73e-01
+#> 14 8.85e-04      1.56e-03    2.71e-02
+#> 15 1.26e-23      1.00e-21    3.85e-22
+#> 16 2.82e-11      7.39e-11    8.66e-10
 ```
 
-Each class of the four-class solution with one group class places
-between 45% and 88% of its posterior mass in a single class of the
-solution with three group classes. The two solutions describe similar
-classes, and the group classes shift a part of the prompts between them.
+Three classes of the four-class solution with one group class place
+between 70% and 87% of their posterior mass in a single class of the
+solution with three group classes. The largest class, 57% of prompts,
+divides among 3 classes, none of which receives more than 41% of it.
 Omitting `n_group_classes` compares the same level across every number
 of group classes.
 
@@ -221,13 +229,14 @@ plot_tree(models, level = "groups", n_profiles = 4)
 
 ![](tree-plot_files/figure-html/groups-1.png)
 
-From two to three group classes, one group class of the
-three-group-class solution receives 98% of its students from a single
-group class of the two-group-class solution. The other group classes
-draw their students from both. The tree of group classes is read in the
-same way as the tree of classes. With `level = "groups"`, a single value
-of `n_group_classes` compares one level of group classes across numbers
-of classes, as `n_profiles` does for the classes.
+From two to three group classes, two group classes of the
+three-group-class solution each receive at least 96% of their students
+from a single group class of the two-group-class solution. The third
+draws its students from both, no more than 54% from either. The tree of
+group classes is read in the same way as the tree of classes. With
+`level = "groups"`, a single value of `n_group_classes` compares one
+level of group classes across numbers of classes, as `n_profiles` does
+for the classes.
 
 ## Summary of calls
 

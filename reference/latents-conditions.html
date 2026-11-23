@@ -15,7 +15,7 @@ result. Messages provide progress updates or supplementary information."><meta p
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -661,6 +661,14 @@ passed, so the fit has one observation per unit and no second level.
 Raised by <code><a href="multilpa.html">multilpa()</a></code> on every such fit and once by an
 <code><a href="enumerate_classes.html">enumerate_classes()</a></code> grid; <code><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages()</a></code> or a
 <code>latents_single_level</code> handler silences it.</p></dd>
+
+<dt><code>latents_single_start</code></dt>
+<dd><p>A message, not a warning: one or more
+converged candidates of an <code><a href="enumerate_classes.html">enumerate_classes()</a></code>, <code><a href="enumerate_lpa.html">enumerate_lpa()</a></code>
+or <code><a href="enumerate_lca.html">enumerate_lca()</a></code> grid, fitted from two or more starts, reached
+their best log likelihood from one start only, so a higher maximum may exist that no start found.
+The message names them; refit those you consider with
+more <code>n_starts</code>. Raised once per grid.</p></dd>
 
 <dt><code>latents_bootstrap_dropped</code></dt>
 <dd><p>Some resamples did not produce a

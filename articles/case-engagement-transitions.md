@@ -83,39 +83,38 @@ plot_profiles(moves)
 ``` r
 
 get_results(moves)
-#> No standard errors in this table: Wald inference is unavailable for a bound-active fit.
 #>    profile  indicator    mean variance standard_deviation mean_standard_error
-#> 1        1     browse  0.3959   0.6100             0.7810                  NA
-#> 2        1   lectures  0.1893   0.7592             0.8713                  NA
-#> 3        1 forum_read  0.4542   0.4578             0.6766                  NA
-#> 4        1 forum_post  0.3446   0.7146             0.8453                  NA
-#> 5        1 attendance  0.2539   0.2044             0.4521                  NA
-#> 6        2     browse -0.7760   0.5149             0.7175                  NA
-#> 7        2   lectures -0.6117   0.5417             0.7360                  NA
-#> 8        2 forum_read -0.8881   0.3540             0.5950                  NA
-#> 9        2 forum_post -0.7607   0.4149             0.6441                  NA
-#> 10       2 attendance -0.9293   0.3727             0.6105                  NA
-#> 11       3     browse  0.7058   0.5291             0.7274                  NA
-#> 12       3   lectures  0.7116   0.7967             0.8926                  NA
-#> 13       3 forum_read  0.8070   0.4653             0.6821                  NA
-#> 14       3 forum_post  0.7470   0.5766             0.7594                  NA
-#> 15       3 attendance  1.1241   0.2066             0.4546                  NA
+#> 1        1     browse  0.3959   0.6100             0.7810             0.04451
+#> 2        1   lectures  0.1893   0.7592             0.8713             0.05530
+#> 3        1 forum_read  0.4542   0.4578             0.6766             0.04182
+#> 4        1 forum_post  0.3446   0.7146             0.8453             0.05125
+#> 5        1 attendance  0.2539   0.2044             0.4521             0.04686
+#> 6        2     browse -0.7760   0.5149             0.7175             0.03067
+#> 7        2   lectures -0.6117   0.5417             0.7360             0.03107
+#> 8        2 forum_read -0.8881   0.3540             0.5950             0.02546
+#> 9        2 forum_post -0.7607   0.4149             0.6441             0.02749
+#> 10       2 attendance -0.9293   0.3727             0.6105             0.02632
+#> 11       3     browse  0.7058   0.5291             0.7274             0.05025
+#> 12       3   lectures  0.7116   0.7967             0.8926             0.06055
+#> 13       3 forum_read  0.8070   0.4653             0.6821             0.04543
+#> 14       3 forum_post  0.7470   0.5766             0.7594             0.05167
+#> 15       3 attendance  1.1241   0.2066             0.4546             0.05551
 #>    variance_standard_error
-#> 1                       NA
-#> 2                       NA
-#> 3                       NA
-#> 4                       NA
-#> 5                       NA
-#> 6                       NA
-#> 7                       NA
-#> 8                       NA
-#> 9                       NA
-#> 10                      NA
-#> 11                      NA
-#> 12                      NA
-#> 13                      NA
-#> 14                      NA
-#> 15                      NA
+#> 1                  0.04495
+#> 2                  0.06044
+#> 3                  0.03604
+#> 4                  0.05661
+#> 5                  0.02189
+#> 6                  0.03139
+#> 7                  0.03251
+#> 8                  0.02148
+#> 9                  0.02558
+#> 10                 0.02267
+#> 11                 0.04793
+#> 12                 0.06922
+#> 13                 0.03958
+#> 14                 0.05569
+#> 15                 0.02431
 ```
 
 The profiles describe lower, intermediate and higher activity. Their

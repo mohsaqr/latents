@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -157,6 +157,7 @@ requested.</p>
 <span><span class="co">#&gt; Warning: Profile 2: 12.4 Gaussian membership mass for 20 free means and variances. This</span></span>
 <span><span class="co">#&gt; is a conservative diagnostic, not an identification test; inspect the Gaussian covariance</span></span>
 <span><span class="co">#&gt; diagnostics.</span></span>
+<span><span class="co">#&gt; 3 of 24 candidates reached their best log likelihood from one start only (profiles5_VVI, profiles4_VVV, profiles6_VVV); refit those you consider with more starts.</span></span>
 <span><span class="fu"><a href="../reference/plot_enumeration.html">plot_enumeration</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span></code></pre></div>
 <p><img src="workflow-lpa_files/figure-html/enumerate-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>The choice of structure matters here because four of the five
@@ -178,6 +179,7 @@ and reach far lower BIC values with one or two profiles. The
 are:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="../reference/enumerate_lpa.html">enumerate_lpa</a></span><span class="op">(</span><span class="va">srl</span>, <span class="va">indicators</span>, n_profiles <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, model <span class="op">=</span> <span class="st">"EEE"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 1 of 6 candidates reached their best log likelihood from one start only (profiles4); refit those you consider with more starts.</span></span>
 <span><span class="co">#&gt; Class enumeration: 6 candidates, 6 converged, 0 failed to fit</span></span>
 <span><span class="co">#&gt; 2 distinct candidate(s) are minimal under some criterion.</span></span>
 <span><span class="co">#&gt; No candidate is selected automatically. Choose one convention and keep it.</span></span>

@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -135,7 +135,7 @@ López-Pernas 2026), follows the same discipline: its engines are
 verified against R, Python, SPSS, Mplus, NIST reference datasets and
 published results, and each comparison records the reference value, the
 computed value and its tolerance. This article states how the contract
-is met for latents 1.3.4 and what evidence supports it.</p>
+is met for latents 1.3.9 and what evidence supports it.</p>
 <p>At this build, 40,172 current checks compare latents with 4
 commercial programs, 19 R packages and 18 published analyses on 672
 distinct datasets, and 0 disagree without a documented cause. Known
@@ -468,9 +468,9 @@ and differentiated numerically (1,395 checks).</p>
 <h3 id="layer-7--refusal-of-invalid-input">Layer 7. Refusal of invalid input<a class="anchor" aria-label="anchor" href="#layer-7--refusal-of-invalid-input"></a>
 </h3>
 <p>A wrong answer returned without warning is the most damaging failure
-of statistical software. latents defines 102 classes of condition, each
-documented with the input that raises it. Of the 1,519 assertions in its
-test suites that an input is refused, 1,317 require a specific class, so
+of statistical software. latents defines 103 classes of condition, each
+documented with the input that raises it. Of the 1,524 assertions in its
+test suites that an input is refused, 1,322 require a specific class, so
 a refusal for the wrong reason fails. A refusal-parity suite passes each
 degenerate input through every function that accepts it and requires the
 same class from each (58 checks).</p>
@@ -657,7 +657,7 @@ and refusal are reported separately and do not count as sources.</p>
 <p>The verification covers every exported function that estimates a
 model or computes a statistic from one. Plots, printed summaries and
 argument handling are covered by the unit tests in
-<code>tests/testthat/</code> (260 files), which check their structure
+<code>tests/testthat/</code> (262 files), which check their structure
 and their refusals. The comparisons with Mplus, Latent GOLD, Stata and
 SAS run from listings kept in the source repository, outside the checks
 of the package on CRAN, so the package depends on none of these
@@ -760,10 +760,12 @@ estimate</td>
 <tr class="even">
 <td>latents</td>
 <td>
-<code>parameter_inference(boundary = "fix")</code> is not applied to
-transition fits, which are refused when a probability lies on its
+<code>parameter_inference(boundary = "fix")</code> held nothing in
+transition fits, which were refused when a probability lay on its
 bound</td>
-<td>recorded as an open defect</td>
+<td>homogeneous transition fits now hold it; their conditional standard
+errors agree with a numerical Hessian of the likelihood over the free
+coordinates; general transition fits still refuse</td>
 </tr>
 </tbody>
 </table>

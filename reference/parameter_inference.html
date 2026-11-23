@@ -31,7 +31,7 @@ among candidates."><meta property="og:image" content="https://pak.dynasite.org/l
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -209,7 +209,11 @@ where the information is singular.
 reports every other parameter conditional on them, as Mplus does. The
 held probabilities are left out of the table and named in the
 <code>fixed_at_bound</code> attribute; a covariate fit keeps their rows with <code>NA</code>
-standard errors.</p></dd>
+standard errors. A homogeneous transition fit (<code><a href="lta.html">lta()</a></code>) holds its
+response, initial and transition probabilities on the bound the same
+way; a general one (covariates, occasion-specific measurement, second
+order, stayers) holds nothing, and <code>method = "bootstrap"</code> is the
+alternative there.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -299,8 +303,11 @@ estimate columns, <code>estimated</code> and, for a second-order fit, <code>prev
 <code>estimated</code> is <code>FALSE</code> for a logit the likelihood does not identify (see
 <em>Occasions without data</em> under <code><a href="lta.html">lta()</a></code>); such a row has <code>NA</code> standard
 error and test. The bootstrap rebases the initial logits when the
-reference profile moves. A transition fit of either kind with a parameter
-at a bound is refused under either <code>boundary</code>.</p>
+reference profile moves. Under <code>boundary = "fix"</code> a homogeneous transition
+fit holds the probabilities on their bound and leaves their rows out (named
+in <code>fixed_at_bound</code>); a general one, a variance on its bound and an empty
+group class are refused under either value. The bootstrap refits each
+resample and reports percentile intervals for a fit on its bound.</p>
     </div>
     <div class="section level2">
     <h2 id="growth-mixtures">Growth mixtures<a class="anchor" aria-label="anchor" href="#growth-mixtures"></a></h2>

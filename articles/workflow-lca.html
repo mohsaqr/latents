@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -147,6 +147,7 @@ in the final section.</p>
 and returns the results in one table.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_lca.html">enumerate_lca</a></span><span class="op">(</span><span class="va">student_esm</span>, <span class="va">activities</span>, n_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 2 of 6 candidates reached their best log likelihood from one start only (classes4, classes5); refit those you consider with more starts.</span></span>
 <span><span class="fu"><a href="../reference/plot_enumeration.html">plot_enumeration</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span></code></pre></div>
 <p><img src="workflow-lca_files/figure-html/enumerate-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">

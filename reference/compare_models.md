@@ -172,6 +172,7 @@ grid <- enumerate_classes(subset(course_engagement, student <= 30),
                           c("browse", "lectures"), "student",
                           n_profiles = 2:3, n_group_classes = 1:2,
                           model = "VVI", n_starts = 2, seed = 1)
+#> 1 of 4 candidates reached their best log likelihood from one start only (profiles3_groups1); refit those you consider with more starts.
 compare_models(grid, "profiles2_groups2", "profiles3_groups2")
 #> Model comparison
 #> 

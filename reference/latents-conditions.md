@@ -699,6 +699,18 @@ explicitly.
   grid; [`suppressMessages()`](https://rdrr.io/r/base/message.html) or a
   `latents_single_level` handler silences it.
 
+- `latents_single_start`:
+
+  A message, not a warning: one or more converged candidates of an
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md),
+  [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md)
+  or
+  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md)
+  grid, fitted from two or more starts, reached their best log
+  likelihood from one start only, so a higher maximum may exist that no
+  start found. The message names them; refit those you consider with
+  more `n_starts`. Raised once per grid.
+
 - `latents_bootstrap_dropped`:
 
   Some resamples did not produce a usable fit and were excluded from the

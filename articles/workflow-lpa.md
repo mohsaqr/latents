@@ -65,6 +65,7 @@ models <- enumerate_lpa(srl, indicators, n_profiles = 1:6)
 #> Warning: Profile 2: 12.4 Gaussian membership mass for 20 free means and variances. This
 #> is a conservative diagnostic, not an identification test; inspect the Gaussian covariance
 #> diagnostics.
+#> 3 of 24 candidates reached their best log likelihood from one start only (profiles5_VVI, profiles4_VVV, profiles6_VVV); refit those you consider with more starts.
 plot_enumeration(models)
 ```
 
@@ -88,6 +89,7 @@ structure attains the lowest values; its candidates are:
 ``` r
 
 summary(enumerate_lpa(srl, indicators, n_profiles = 1:6, model = "EEE"))
+#> 1 of 6 candidates reached their best log likelihood from one start only (profiles4); refit those you consider with more starts.
 #> Class enumeration: 6 candidates, 6 converged, 0 failed to fit
 #> 2 distinct candidate(s) are minimal under some criterion.
 #> No candidate is selected automatically. Choose one convention and keep it.

@@ -59,6 +59,7 @@ table.
 ``` r
 
 models <- enumerate_lca(student_esm, activities, n_classes = 1:6)
+#> 2 of 6 candidates reached their best log likelihood from one start only (classes4, classes5); refit those you consider with more starts.
 plot_enumeration(models)
 ```
 

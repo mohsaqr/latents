@@ -127,6 +127,7 @@ models <- enumerate_classes(course_engagement, activity, "student",
 #> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
 #> Warning: Profile 6: 9.1 Gaussian membership mass for 10 free means and variances. This is a
 #> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+#> 7 of 21 candidates reached their best log likelihood from one start only (profiles5_groups1, profiles6_groups1, profiles5_groups2, profiles6_groups2, profiles5_groups3, profiles6_groups3, ...); refit those you consider with more starts.
 models
 #> Class enumeration: 24 candidate models (LPA)
 #>          candidate n_profiles n_group_classes model log_likelihood n_parameters   aic bic_groups
