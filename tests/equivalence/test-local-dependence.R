@@ -35,7 +35,7 @@ correlated_pair <- function(seed = 9, n = 1200) {
              y3 = stats::rnorm(n, c(0, 1.5)[class]), y4 = stats::rnorm(n, c(0, 1)[class]))
 }
 
-lg_note <- "Latent GOLD 6.1 output typed into the test (the comment above); no listing or syntax file is stored with it."
+lg_note <- "Latent GOLD 6.1 output typed into the test (the comment above), from the listings kept in the private equivalence repository: latents/local/equivalence/latentgold-extra/local-dependence/ld_joint.lst (categorical pair, syntax ld_joint.lgs) and local-dependence-continuous/cov_pair.lst (continuous pair, syntax cov_pair.lgs)."
 by_size <- c("larger class", "smaller class")
 
 test_that("a jointly modelled pair agrees with Latent GOLD's class-specific association", {

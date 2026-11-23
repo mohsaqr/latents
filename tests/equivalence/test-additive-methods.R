@@ -48,13 +48,13 @@ test_that("analytic scores equal numerical derivatives away from the optimum", {
   # numDeriv's error is absolute near zero; a relative measure would judge
   # the rounding noise of a near-zero score. The original tolerance, 1e-7.
   expect_reference(do.call(rbind, lapply(sides, `[[`, "actual")),
-                   do.call(rbind, lapply(sides, `[[`, "expected")), reference = "numDeriv",
+                   do.call(rbind, lapply(sides, `[[`, "expected")), reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
                    covers = "multilpa()", quantity = "score off the optimum, additive family",
                    tolerance = 1e-7, measure = "scaled", key = c("between_variance", "parameter"),
                    note = "Package side: the internal analytic group scores (.additive_group_scores) behind the standard errors of multilpa(family = 'additive'); reference: numDeriv::grad() of the package's likelihood.")
 })
 
-test_that("observed information matches an independent numerical Hessian", {
+test_that("observed information matches a numerical Hessian of the package likelihood", {
   skip_without_reference("numDeriv")
   fit <- additive_methods_fit
   stats <- fit$sufficient_statistics
@@ -70,7 +70,7 @@ test_that("observed information matches an independent numerical Hessian", {
   note <- "Package side: the internal observed information (.additive_information, central differences of the analytic scores, step 1e-4) behind vcov() of multilpa(family = 'additive')."
   # Information entries run down to zero, where numDeriv's error is absolute:
   # scaled. The original tolerance, 1e-6.
-  expect_reference(information, reference, reference = "numDeriv",
+  expect_reference(information, reference, reference = "independent: numDeriv derivative of the package's own function (self-consistency)",
                    covers = c("multilpa()", "coef.multilpa_additive()", "vcov.multilpa_additive()"),
                    quantity = "observed information, Jacobian of the analytic scores",
                    tolerance = 1e-6, measure = "scaled",
@@ -81,7 +81,7 @@ test_that("observed information matches an independent numerical Hessian", {
   # 1e-3, the original tolerance: the package differentiates the scores with a
   # step of 1e-4, numDeriv differentiates the likelihood twice; both carry
   # truncation error. Scaled, because entries run down to zero.
-  expect_reference(information, -hessian, reference = "numDeriv",
+  expect_reference(information, -hessian, reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
                    covers = c("multilpa()", "coef.multilpa_additive()", "vcov.multilpa_additive()"),
                    quantity = "observed information, Hessian of the likelihood",
                    tolerance = 1e-3, measure = "scaled",

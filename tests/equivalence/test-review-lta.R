@@ -79,7 +79,7 @@ review_lta_exact <- function(theta, fit) {
             d <- d * softmax(logits)[o]
           }
           k <- fit$extra_data$count[row, 1L]
-          if (!is.na(k)) d <- d * if (latents:::.latents_negative_binomial(fit$extra_data))
+          if (!is.na(k)) d <- d * if (identical(fit$extra_data$count_model, "negative_binomial"))
             dnbinom(k, size = 1 / b$count_dispersion[state, 1L], mu = b$count_means[state, 1L]) else
               dpois(k, b$count_means[state, 1L])
           d
@@ -144,7 +144,7 @@ test_that("all general LTA extensions match independent path likelihoods and sco
   }, variants, settings)
   stack <- function(part) do.call(rbind, unname(lapply(results, `[[`, part)))
   expect_reference(stack("likelihood"), stack("exact"),
-                   reference = "independent: exact sum over every profile path, base R",
+                   reference = "independent: exact sum over every profile path, base R (coefficients split by the package's .lta_unpack)",
                    covers = "lta()", quantity = "group log likelihood away from the optimum",
                    tolerance = 1e-11, measure = "relative", key = c("setting", "group", "parameter"),
                    note = "Package side: the internal forward-backward likelihood (.lta_expectation) of lta().")
@@ -153,7 +153,7 @@ test_that("all general LTA extensions match independent path likelihoods and sco
   # near zero, where the differences' absolute error, not a relative one,
   # is what can be judged.
   expect_reference(stack("scores"), stack("numeric_scores"),
-                   reference = "independent: central differences of the exact path likelihood, base R",
+                   reference = "independent: central differences of the exact path likelihood, base R (coefficients split by .lta_unpack)",
                    covers = "lta()", quantity = "group scores away from the optimum",
                    tolerance = 2e-7, measure = "scaled", key = c("setting", "group", "parameter"),
                    note = "Package side: the internal analytic scores (.lta_group_scores) behind vcov() of lta().")

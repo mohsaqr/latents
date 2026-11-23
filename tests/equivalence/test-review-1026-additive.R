@@ -97,12 +97,12 @@ test_that("analytic scores and information match numerical derivatives in every 
   # numDeriv's error is absolute near zero; a relative measure would judge
   # the rounding noise of a near-zero score or information entry. The
   # original tolerance, 1e-6, for both.
-  expect_reference(stack("score", "actual"), stack("score", "expected"), reference = "numDeriv",
+  expect_reference(stack("score", "actual"), stack("score", "expected"), reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
                    covers = "multilpa()", quantity = "score off the optimum, every additive family",
                    tolerance = 1e-6, measure = "scaled", key = c("family", "parameter"),
                    note = "Package side: the internal analytic group scores (.additive_group_scores) behind the standard errors of multilpa(family = 'additive' / 'dispersion' / 'additive_dispersion'); reference: numDeriv::grad() of the package's likelihood.")
   expect_reference(stack("information", "actual"), stack("information", "expected"),
-                   reference = "numDeriv", covers = c("multilpa()", "vcov.multilpa_additive()"),
+                   reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)", covers = c("multilpa()", "vcov.multilpa_additive()"),
                    quantity = "observed information off the optimum, every additive family",
                    tolerance = 1e-6, measure = "scaled", key = c("family", "row", "column"),
                    note = "Package side: the internal observed information (.additive_information) behind vcov() of the additive families; reference: minus numDeriv::hessian() of the package's likelihood.")
@@ -142,7 +142,7 @@ test_that("standard errors are translation invariant and scale equivariant", {
   # original tolerance 1e-6 (the package's information is a central
   # difference of the analytic scores with step 1e-4).
   expect_reference(setNames(sqrt(diag(observed)), names(theta)),
-                   setNames(sqrt(diag(reference)), names(theta)), reference = "numDeriv",
+                   setNames(sqrt(diag(reference)), names(theta)), reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
                    covers = c("multilpa()", "coef.multilpa_additive()", "vcov.multilpa_additive()"),
                    quantity = "observed standard errors, unconstrained scale, additive dispersion",
                    tolerance = 1e-6, measure = "relative",
@@ -165,7 +165,7 @@ test_that("fitted maxima cannot be improved and integer weights equal duplicated
                            control = list(fnscale = -1, reltol = 1e-14, maxit = 500L))
   # BFGS started at the fit only climbs, so the original one-sided bound
   # (polished - fitted < 1e-8) is this absolute difference.
-  expect_reference(as.numeric(logLik(fit)), polished$value, reference = "stats",
+  expect_reference(as.numeric(logLik(fit)), polished$value, reference = "independent: stats optimiser on the package's own objective (self-consistency)",
                    covers = c("multilpa()", "logLik.multilpa_additive()", "coef.multilpa_additive()"),
                    quantity = "maximum of the log likelihood, dispersion family",
                    tolerance = 1e-8, measure = "absolute",
@@ -306,7 +306,7 @@ test_that("covariance-structure charts have analytic Jacobians and positive defi
   # Jacobian entries are often exactly zero, where numDeriv's error is
   # absolute: scaled. The original tolerance, 1e-7.
   expect_reference(do.call(rbind, lapply(sides, `[[`, "actual")),
-                   do.call(rbind, lapply(sides, `[[`, "expected")), reference = "numDeriv",
+                   do.call(rbind, lapply(sides, `[[`, "expected")), reference = "independent: numDeriv derivative of the package's own function (self-consistency)",
                    covers = c("multilpa()", "parameter_inference.multilpa()"),
                    quantity = "Jacobian of the covariance chart, by structure",
                    tolerance = 1e-7, measure = "scaled", key = c("structure", "entry", "coordinate"),

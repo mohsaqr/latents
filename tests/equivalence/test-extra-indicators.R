@@ -67,12 +67,21 @@ test_that("fits agree with Latent GOLD 6.1", {
 })
 
 
+# Adjacent-category ordinal log probabilities from the definition
+# log P(k) / P(k - 1) = a_k - a_(k-1) + eta_c (a_0 = 0), one row per class:
+# written here so the optimiser's objective shares no code with the package.
+hand_ordinal_log_probabilities <- function(intercepts, locations) {
+  scores <- outer(locations, seq_len(length(intercepts) + 1L) - 1L) +
+    matrix(c(0, intercepts), length(locations), length(intercepts) + 1L, byrow = TRUE)
+  scores - log(rowSums(exp(scores)))
+}
+
 test_that("the ordinal M-step maximizes its concave objective", {
   set.seed(2)
   counts <- matrix(runif(15, 1, 40), 3L, 5L)
   solved <- latents:::.latents_ordinal_maximize(counts, numeric(4), numeric(3))
   objective <- function(theta) {
-    -sum(counts * latents:::.latents_ordinal_log_probabilities(theta[1:4], c(theta[5:6], 0)))
+    -sum(counts * hand_ordinal_log_probabilities(theta[1:4], c(theta[5:6], 0)))
   }
   reference <- optim(numeric(6), objective, method = "BFGS",
                      control = list(reltol = 1e-15, maxit = 10000))
@@ -86,6 +95,6 @@ test_that("the ordinal M-step maximizes its concave objective", {
                    quantity = "adjacent-category ordinal M-step: intercepts and two class locations",
                    tolerance = 1e-5, measure = "relative",
                    key = c(sprintf("intercept %d", 1:4), sprintf("location %d", 1:2)),
-                   note = "Package side: the internal ordinal M-step (.latents_ordinal_maximize) of lpa()/multilpa(ordinal =); reference: stats::optim() BFGS maximising the package's ordinal log probabilities (.latents_ordinal_log_probabilities).")
+                   note = "Package side: the internal ordinal M-step (.latents_ordinal_maximize) of lpa()/multilpa(ordinal =); reference: stats::optim() BFGS maximising the adjacent-category likelihood written in this file (hand_ordinal_log_probabilities()).")
   expect_identical(solved$locations[3L], 0)
 })

@@ -84,7 +84,7 @@ test_that("analytic growth scores equal numerical derivatives", {
     # The original bound, kept: an absolute 1e-4 on the scale of the largest
     # gradient entry, since numDeriv's error at a point off the optimum grows
     # with the size of the gradient, not with each entry.
-    expect_reference(unname(analytic), numerical, reference = "numDeriv",
+    expect_reference(unname(analytic), numerical, reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
                      covers = "mixture_regression()",
                      quantity = sprintf("score at a perturbed point, covariance %s, variance %s, diagonal %s",
                                         cfg$covariance, cfg$variance, cfg$diagonal),
@@ -107,7 +107,7 @@ test_that("observed standard errors equal the inverse numerical Hessian", {
   }
   numerical <- solve(-numDeriv::hessian(log_likelihood, theta))
   # 1e-4, the original tolerance: second differences of a sum over persons.
-  expect_reference(sqrt(diag(vcov(fit))), sqrt(diag(numerical)), reference = "numDeriv",
+  expect_reference(sqrt(diag(vcov(fit))), sqrt(diag(numerical)), reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
                    covers = c("mixture_regression()", "vcov.latents_growth_mixture()"),
                    quantity = "standard errors, random intercept, equal covariance", tolerance = 1e-4,
                    measure = "relative",

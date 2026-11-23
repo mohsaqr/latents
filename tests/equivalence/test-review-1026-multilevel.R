@@ -150,8 +150,12 @@ test_that("the membership Newton step reaches an independent optimizer's minimum
   newton <- review_newton_counts()
   solved <- latents:::.multilpa_weighted_logits(newton$design, newton$counts, matrix(0, 3, 2))
   expect_true(solved$converged)
+  # The weighted multinomial log likelihood written here: last category the
+  # reference, its logit 0.
   objective <- function(b) {
-    -sum(newton$counts * latents:::.multilpa_log_softmax(newton$design, matrix(b, 3, 2)))
+    scores <- cbind(newton$design %*% matrix(b, 3, 2), 0)
+    scores <- scores - apply(scores, 1L, max)
+    -sum(newton$counts * (scores - log(rowSums(exp(scores)))))
   }
   reference <- stats::optim(rep(0, 6), objective, method = "BFGS",
                             control = list(reltol = 1e-16, maxit = 5000))
@@ -165,7 +169,7 @@ test_that("the membership Newton step reaches an independent optimizer's minimum
                    quantity = "membership logit coefficients, three categories",
                    tolerance = 1e-2, measure = "scaled",
                    key = paste(rep(c("(Intercept)", "x1", "x2"), 2L), rep(c("class 1", "class 2"), each = 3L)),
-                   note = "Package side: the internal weighted multinomial-logit Newton step (.multilpa_weighted_logits) of the covariate M-steps of multilpa() and lta(); reference: stats::optim(method = 'BFGS') on the weighted multinomial log likelihood.")
+                   note = "Package side: the internal weighted multinomial-logit Newton step (.multilpa_weighted_logits) of the covariate M-steps of multilpa() and lta(); reference: stats::optim(method = 'BFGS') on the weighted multinomial log likelihood written in this test.")
 })
 
 test_that("the membership Newton step with two categories is glm's weighted logit", {
@@ -270,7 +274,7 @@ test_that("covariate scores and observed information match numerical derivatives
   note <- "Package side: the internal analytic group scores and covariance (.multilpa_cov_group_scores, .multilpa_cov_covariance) behind vcov() and parameter_inference() of multilpa() with covariates."
   # numDeriv's error is absolute near zero; a relative measure would judge
   # the rounding noise of a near-zero score. The original tolerance, 1e-6.
-  expect_reference(stack("score", "actual"), stack("score", "expected"), reference = "numDeriv",
+  expect_reference(stack("score", "actual"), stack("score", "expected"), reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
                    covers = "multilpa()", quantity = "covariate-model score off the optimum",
                    tolerance = 1e-6, measure = "scaled", key = c("model", "parameter"),
                    note = paste(note, "Reference: numDeriv::grad() of the package's likelihood."))
@@ -280,7 +284,7 @@ test_that("covariate scores and observed information match numerical derivatives
   # the covariances are of order 1e-5 to 1, so a scaled measure would judge
   # most of them on an absolute 1e-5, looser than the original test.
   expect_reference(stack("covariance", "actual"), stack("covariance", "expected"),
-                   reference = "numDeriv",
+                   reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
                    covers = c("multilpa()", "vcov.multilpa_covariates()", "parameter_inference.multilpa_covariates()"),
                    quantity = "covariate-model covariance of the estimates",
                    tolerance = 1e-5, measure = "relative", key = c("model", "row", "column"),

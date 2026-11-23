@@ -73,7 +73,8 @@ test_that("slopes by group class reproduce the likelihood written from its defin
 test_that("scores and standard errors with slopes by group class match numerical ones", {
   data <- .slopes_fixture()
   fit <- .slopes_fit(data)
-  skip_if_not(fit$converged, "no start converged on this fixture")
+  # A fit that did not converge fails here rather than turning the case into a skip.
+  expect_true(isTRUE(fit$converged))
   x <- sweep(as.matrix(data[c("y1", "y2")]), 2L, fit$center, "-")
   theta <- latents:::.multilpa_cov_encode(fit)
   negative <- function(value) {
@@ -94,14 +95,14 @@ test_that("scores and standard errors with slopes by group class match numerical
   # 1e-5 absolute, the original bound: a central difference with step 1e-5
   # carries a truncation and rounding error of that order.
   expect_reference(unname(analytic), numerical,
-                   reference = "independent: central differences (step 1e-5) of the covariate likelihood",
+                   reference = "independent: central differences (step 1e-5) of the package's own covariate likelihood (self-consistency)",
                    covers = "multilpa()", quantity = "score off the maximum, slopes by group class",
                    tolerance = 1e-5, measure = "absolute", key = coordinates,
                    note = "Package side: the internal analytic group scores (.multilpa_cov_group_scores) behind vcov(); reference: central differences of the package's internal likelihood (.multilpa_cov_expectation).")
   reference <- sqrt(diag(solve(stats::optimHess(theta, negative))))
   # 1e-4 relative, the original bound: optimHess() without a gradient takes
   # second finite differences of the likelihood.
-  expect_reference(reported, unname(reference), reference = "stats",
+  expect_reference(reported, unname(reference), reference = "independent: stats::optimHess of the package's own likelihood (self-consistency)",
                    covers = c("multilpa()", "vcov.multilpa_covariates()"),
                    quantity = "standard errors, slopes by group class, unconstrained scale",
                    tolerance = 1e-4, measure = "relative",

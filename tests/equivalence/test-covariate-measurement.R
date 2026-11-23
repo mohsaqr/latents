@@ -90,7 +90,7 @@ test_that("every measurement model reproduces the likelihood written from its de
                    measure = "relative")
 })
 
-test_that("full-covariance standard errors match an independent information matrix", {
+test_that("full-covariance standard errors match a numerical information matrix of the package likelihood", {
   data <- .cov_measurement_fixture(n_groups = 24L)
   fit <- quietly(multilpa(data, c("y1", "y2"), "g", 2L, 1L,
     profile_covariates = "z", n_starts = 1, seed = 1, covariance_model = "full",
@@ -110,7 +110,7 @@ test_that("full-covariance standard errors match an independent information matr
   package <- vcov(fit, data, scale = "unconstrained")
   # 1e-5 relative, the original tolerance: optimHess() without a gradient
   # takes second finite differences of the likelihood.
-  expect_reference(sqrt(diag(package)), unname(sqrt(diag(independent))), reference = "stats",
+  expect_reference(sqrt(diag(package)), unname(sqrt(diag(independent))), reference = "independent: stats::optimHess of the package's own likelihood (self-consistency)",
                    covers = c("multilpa()", "vcov.multilpa_covariates()"),
                    quantity = "standard errors, full covariance, unconstrained scale",
                    tolerance = 1e-5, measure = "relative",

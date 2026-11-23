@@ -143,7 +143,7 @@ test_that("observed-information errors equal a numerical Hessian of the likeliho
     expect_length(theta, fit$n_parameters)
     # 1e-5, the original tolerance: Richardson extrapolation of second differences.
     expect_reference(.review_mixreg_se(fit), sqrt(diag(solve(-hessian))),
-                     reference = "numDeriv",
+                     reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
                      covers = c("mixture_regression()", "vcov.latents_mixture_regression()"),
                      quantity = sprintf("standard errors, %s", setting), tolerance = 1e-5,
                      measure = "relative",
@@ -261,7 +261,7 @@ test_that("the negative-binomial dispersion step never falls back to a lower Poi
   # 1e-6, the original tolerance (optimize's own default tolerance).
   interior <- stats::optimize(objective, c(1, 1000), maximum = TRUE)
   expect_reference(objective(updated$sigma2), interior$objective,
-                   reference = "stats", covers = "mixture_regression()",
+                   reference = "independent: stats optimiser on the package's own objective (self-consistency)", covers = "mixture_regression()",
                    quantity = "weighted profile at the dispersion step's alpha", tolerance = 1e-6,
                    measure = "relative",
                    note = "Package side: the internal dispersion M step (.mixture_update_dispersion) of mixture_regression(family = 'negative_binomial'); reference: stats::optimize() of the package's weighted objective over alpha in [1, 1000].")

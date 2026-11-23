@@ -61,7 +61,7 @@ test_that("scores equal numerical derivatives for every family structure", {
   # numDeriv's error is absolute near zero; a relative measure would judge
   # the rounding noise of a near-zero score. The original tolerance, 1e-7.
   expect_reference(do.call(rbind, lapply(sides, `[[`, "actual")),
-                   do.call(rbind, lapply(sides, `[[`, "expected")), reference = "numDeriv",
+                   do.call(rbind, lapply(sides, `[[`, "expected")), reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
                    covers = "multilpa()", quantity = "score off the optimum, dispersion families",
                    tolerance = 1e-7, measure = "scaled", key = c("structure", "parameter"),
                    note = "Package side: the internal analytic group scores (.additive_group_scores) behind the standard errors of multilpa(family = 'dispersion' / 'additive_dispersion'); reference: numDeriv::grad() of the package's likelihood.")
@@ -94,7 +94,7 @@ test_that("fitted points are stationary and EM is monotone in the new families",
   # max |gradient| < 1e-3, absolute: the fit stops at tol = 1e-10 on the
   # likelihood, not on the gradient.
   expect_reference(do.call(rbind, lapply(gradients, `[[`, "actual")),
-                   do.call(rbind, lapply(gradients, `[[`, "expected")), reference = "numDeriv",
+                   do.call(rbind, lapply(gradients, `[[`, "expected")), reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
                    covers = c("multilpa()", "coef.multilpa_additive()"),
                    quantity = "gradient at the fitted maximum, dispersion families",
                    tolerance = 1e-3, measure = "absolute", key = c("family", "parameter"),
@@ -134,7 +134,7 @@ test_that("shared means are pooled by precision when classes are unequal", {
   # A fixed point of EM has a zero gradient. The original bound,
   # max |gradient| < 1e-4, absolute.
   expect_reference(setNames(rep(0, length(theta)), names(theta)), setNames(gradient, names(theta)),
-                   reference = "numDeriv", covers = "multilpa()",
+                   reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)", covers = "multilpa()",
                    quantity = "gradient at the EM fixed point, dispersion family, unequal classes",
                    tolerance = 1e-4, measure = "absolute",
                    note = "Package side: the zero gradient of the internal EM's (.additive_em) fixed point, the M-step of multilpa(family = 'dispersion'); reference: numDeriv::grad() of the package's likelihood there.")

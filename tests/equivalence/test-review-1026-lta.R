@@ -298,7 +298,7 @@ test_that("the step-three chain matches its brute-force likelihood and numerical
   }, theta)
   # Scaled: numDeriv's error is absolute near zero, and many per-person scores
   # are near zero (the wholly missing person's are exactly zero).
-  expect_reference(unname(evaluated$scores), numerical, reference = "numDeriv",
+  expect_reference(unname(evaluated$scores), numerical, reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
                    covers = "r3step()", quantity = "per-person step-three scores at a fixed point",
                    tolerance = 1e-6, measure = "scaled", note = step_note)
 })

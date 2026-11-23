@@ -107,7 +107,7 @@ test_that("the analytic scores are the gradient of the log likelihood", {
     # Scaled: numDeriv's error is absolute near zero, so a relative measure
     # would judge the rounding noise of a near-zero entry. 1e-6, the original.
     expect_reference(unname(colSums(scores)), numDeriv::grad(value, theta),
-                     reference = "numDeriv", covers = "mixture_regression()",
+                     reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)", covers = "mixture_regression()",
                      quantity = sprintf("score at a point off the optimum, %s", setting),
                      tolerance = 1e-6, measure = "scaled",
                      note = "Package side: the internal analytic scores (.mixture_unit_scores) behind vcov(); reference: numDeriv::grad() of the package's likelihood.")

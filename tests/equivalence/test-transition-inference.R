@@ -76,7 +76,7 @@ skip_on_cran()
   # with roundoff at a finer one.
   reference <- sqrt(diag(solve(numDeriv::hessian(pieces$negative, pieces$theta))))
   reported <- sqrt(diag(vcov(fit, scale = "unconstrained")))
-  expect_reference(reported, reference, reference = "numDeriv",
+  expect_reference(reported, reference, reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
                    covers = c("lta()", "vcov.multilpa_transitions()"),
                    quantity = sprintf("standard errors, unconstrained scale, %s", setting),
                    tolerance = 1e-4, measure = "relative",

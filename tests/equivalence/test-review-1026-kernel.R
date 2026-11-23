@@ -202,12 +202,12 @@ test_that("the analytic FIML score is the numerical gradient of the likelihood",
   # Scaled: score entries can sit near zero, where numDeriv's error is
   # absolute; a relative measure would judge its rounding noise. 1e-6, the
   # original test's tolerance.
-  expect_reference(scores[c(keys, "score")], numerical, reference = "numDeriv",
+  expect_reference(scores[c(keys, "score")], numerical, reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
                    covers = c("multilpa()", "vcov.multilpa()"),
                    quantity = "FIML score at a point off the optimum", tolerance = 1e-6,
                    measure = "scaled", key = keys,
                    note = "Package side: the internal analytic score (.multilpa_score) behind the standard errors of multilpa(); reference: numDeriv::grad() of the package's FIML log likelihood.")
-  expect_reference(data.frame(scores[keys], score = scores$group_score), numerical, reference = "numDeriv",
+  expect_reference(data.frame(scores[keys], score = scores$group_score), numerical, reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
                    covers = c("multilpa()", "vcov.multilpa()"),
                    quantity = "sum of the group FIML scores at a point off the optimum", tolerance = 1e-6,
                    measure = "scaled", key = keys,

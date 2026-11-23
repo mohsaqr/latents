@@ -113,7 +113,7 @@ test_that("VLMR and adjusted LMR agree with Latent GOLD", {
                    covers = c("enumerate_lpa()", "get_results.multilpa_enumeration()"),
                    quantity = "VLMR and adjusted LMR, two against three classes, EEI",
                    tolerance = 5e-5, measure = "absolute",
-                   note = "Latent GOLD 6.1 output typed into the test (the comment above); no listing or syntax file is stored with it.")
+                   note = "Latent GOLD 6.1 output typed into the test (the comment above), from the listing kept in the private equivalence repository: latents/local/equivalence/latentgold-extra/vlmr/null2_equal.lst (syntax null2_equal.lgs, data null2.dat).")
   # The adjustment is LR / (1 + 1 / (d log n)), d the added parameters.
   expect_equal(test$adjusted_lr, test$lr / (1 + 1 / (5 * log(500))), tolerance = 1e-12)
 })

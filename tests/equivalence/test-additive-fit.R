@@ -113,13 +113,13 @@ test_that("the between-variance score equals a numerical derivative", {
   }, as.vector(point$between)), 2L)
   # numDeriv's error is absolute near zero; a relative measure would judge
   # the rounding noise of a near-zero score. The original tolerance, 1e-7.
-  expect_reference(unname(analytic), numeric_score, reference = "numDeriv",
+  expect_reference(unname(analytic), numeric_score, reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
                    covers = "multilpa()", quantity = "between-variance score, class by indicator",
                    tolerance = 1e-7, measure = "scaled",
                    note = "Package side: the internal between-variance score (.additive_between_score) of the M-step of multilpa(family = 'additive'); reference: numDeriv::grad() of the package's likelihood.")
   expect_reference(unname(latents:::.additive_between_score(
     stats, point, latents:::.additive_expectation(stats, point)$posterior, "equal")),
-    colSums(numeric_score), reference = "numDeriv",
+    colSums(numeric_score), reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
     covers = "multilpa()", quantity = "between-variance score, equal across classes, by indicator",
     tolerance = 1e-7, measure = "scaled",
     note = "Package side: the internal between-variance score (.additive_between_score, 'equal') of multilpa(family = 'additive', between_variance = 'equal').")

@@ -127,8 +127,8 @@ test_that("scores and standard errors with missing indicators match numerical on
   data <- .cov_missing_fixture()
   models <- c(diagonal = "diagonal", full = "full")
   fits <- lapply(models, \(covariance_model) .cov_missing_fit(data, covariance_model))
-  skip_if_not(all(vapply(fits, \(fit) isTRUE(fit$converged), logical(1))),
-              "no start converged on this fixture")
+  # A fit that did not converge fails here rather than turning the case into a skip.
+  expect_true(all(vapply(fits, \(fit) isTRUE(fit$converged), logical(1))))
   derivatives <- do.call(rbind, lapply(models, \(model) {
     cbind(covariance_model = model, .cov_missing_derivatives(fits[[model]], data))
   }))
@@ -138,7 +138,7 @@ test_that("scores and standard errors with missing indicators match numerical on
                               score = derivatives$analytic_score),
                    data.frame(derivatives[c("covariance_model", "coordinate")],
                               score = derivatives$numerical_score),
-                   reference = "independent: central differences (step 1e-5) of the covariate likelihood",
+                   reference = "independent: central differences (step 1e-5) of the package's own covariate likelihood (self-consistency)",
                    covers = "multilpa()", quantity = "score off the maximum, missing indicators",
                    tolerance = 1e-5, measure = "absolute", key = c("covariance_model", "coordinate"),
                    note = "Package side: the internal analytic group scores (.multilpa_cov_group_scores) behind vcov(); reference: central differences of the package's internal likelihood (.multilpa_cov_expectation).")
@@ -148,7 +148,7 @@ test_that("scores and standard errors with missing indicators match numerical on
                               standard_error = derivatives$reported_error),
                    data.frame(derivatives[c("covariance_model", "coordinate")],
                               standard_error = derivatives$reference_error),
-                   reference = "stats", covers = c("multilpa()", "vcov.multilpa_covariates()"),
+                   reference = "independent: stats::optimHess of the package's own likelihood (self-consistency)", covers = c("multilpa()", "vcov.multilpa_covariates()"),
                    quantity = "standard errors, missing indicators, unconstrained scale",
                    tolerance = 1e-4, measure = "relative", key = c("covariance_model", "coordinate"),
                    note = "Reference: the inverse of stats::optimHess() of the package's internal covariate likelihood (.multilpa_cov_expectation) at the estimate.")

@@ -7,14 +7,37 @@ testthat::local_edition(3)
 # second order, covariance structures. References: an exact sum over every
 # profile path (independent of the forward-backward code), numerical
 # derivatives, external fits (depmixS4, LMest, Mplus) bundled as fixtures.
-# The path sums build each group's initial and transition probabilities from
-# the fitted coefficients with the package's internal link functions
-# (.lta_log_initial, .lta_log_transition); the sum over paths, the densities
-# and the mixing are written here.
+# The path sums read the fitted coefficients, designs and measurement blocks
+# from the fit object; the softmax links, the sum over paths, the densities
+# and the mixing are written here (hand_softmax(), hand_transition()), with no
+# package code on the reference side.
 
 lta_references <- readRDS(reference_data("fixtures/lta-references.rds"))
 
 lta_path_reference <- "independent: exact sum over every profile path, base R"
+
+# Multinomial-logit link from its definition: the last category is the
+# reference, its logit 0. One row of probabilities per design row.
+hand_softmax <- function(design, coefficients) {
+  scores <- cbind(design %*% coefficients, 0)
+  scores <- scores - apply(scores, 1L, max)
+  exp(scores - log(rowSums(exp(scores))))
+}
+
+# Transition matrix (origin by destination) of one group at one occasion: for
+# origin k, the logits of the other destinations, in profile order, against
+# staying, the reference. `coefficients` is p x (K - 1) x K for one class.
+hand_transition <- function(design, coefficients) {
+  n_states <- dim(coefficients)[3L]
+  t(vapply(seq_len(n_states), function(k) {
+    others <- setdiff(seq_len(n_states), k)
+    probability <- hand_softmax(design, matrix(coefficients[, , k], ncol(design)))[1L, ]
+    row <- numeric(n_states)
+    row[others] <- probability[seq_along(others)]
+    row[k] <- probability[length(probability)]
+    row
+  }, numeric(n_states)))
+}
 
 # Small two-profile panel with a time-varying covariate and a group-level one.
 lta_small <- local({
@@ -44,17 +67,17 @@ lta_brute_force <- function(fit, data) {
   n_states <- fit$n_profiles
   occasions <- max(data$time)
   paths <- as.matrix(expand.grid(rep(list(seq_len(n_states)), occasions)))
-  parameters <- latents:::.lta_parameters(fit)
+  initial_coefficients <- unname(fit$initial_coefficients)
+  transition_coefficients <- fit$transition_coefficients
   sum(vapply(split(data, data$id), function(rows) {
     rows <- rows[order(rows$time), ]
     j <- match(rows$id[1L], fit$group_ids)
-    initial <- exp(latents:::.lta_log_initial(fit$designs$initial[j, , drop = FALSE],
-                                              matrix(parameters$initial[, , 1L],
-                                                     ncol(fit$designs$initial))))
+    initial <- hand_softmax(fit$designs$initial[j, , drop = FALSE],
+                            matrix(initial_coefficients[, , 1L], ncol(fit$designs$initial)))
     move <- lapply(seq_len(occasions)[-1L], function(t) {
-      exp(latents:::.lta_log_transition(fit$designs$transition[[t - 1L]][j, , drop = FALSE],
-                              array(parameters$transition[, , , 1L],
-                                    dim(parameters$transition)[1:3])))[1L, , ]
+      hand_transition(fit$designs$transition[[t - 1L]][j, , drop = FALSE],
+                      array(transition_coefficients[, , , 1L],
+                            dim(transition_coefficients)[1:3]))
     })
     block <- function(t) fit$measurement[[if (length(fit$measurement) == 1L) 1L else t]]
     log(sum(apply(paths, 1L, function(s) {
@@ -80,7 +103,7 @@ lta_check_scores <- function(fit, theta, setting) {
   numeric_gradient <- numDeriv::grad(\(v) latents:::.lta_expectation(
     fit$x, fit$codes, fit$layout, fit$designs, latents:::.lta_unpack(v, fit),
     fit$occasion_of_row)$log_likelihood, theta)
-  expect_reference(analytic, numeric_gradient, reference = "numDeriv", covers = "lta()",
+  expect_reference(analytic, numeric_gradient, reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)", covers = "lta()",
                    quantity = sprintf("score at a perturbed point, %s", setting),
                    tolerance = 1e-5 * (1 + max(abs(numeric_gradient))), measure = "absolute",
                    note = "Package side: the internal analytic scores (.lta_group_scores) behind vcov() of lta(); reference: numDeriv::grad() of the package's likelihood (.lta_expectation).")
@@ -127,11 +150,12 @@ test_that("occasion-specific measurement agrees with Mplus (bundled fixture)", {
              seed = 1, tol = 1e-10)
   mplus_note <- paste("Read from tests/equivalence/fixtures/lta-references.rds,",
                       "element mplus_measurement:", ref$source)
-  # Mplus prints the likelihood to three decimals.
+  # Mplus prints the likelihood to three decimals: half a unit of the last
+  # printed digit, 5e-4 absolute (tightened from 5e-3, audit 2026-11-23 F12).
   expect_reference(as.numeric(logLik(fit)), ref$log_likelihood, reference = "Mplus",
                    covers = c("lta()", "logLik.multilpa_lta()"),
                    quantity = "log likelihood, occasion-specific binary measurement",
-                   tolerance = 5e-3, measure = "absolute", note = mplus_note)
+                   tolerance = 5e-4, measure = "absolute", note = mplus_note)
   # A count of free parameters: equal or not.
   expect_reference(attr(logLik(fit), "df"), ref$n_parameters, reference = "Mplus",
                    covers = c("lta()", "logLik.multilpa_lta()"),
@@ -149,17 +173,17 @@ test_that("missing indicators (FIML) in the extended model match the exact path 
   fit <- lta(data, "y", "id", n_profiles = 2, time = "time",
              transition_covariates = "z", initial_covariates = "w", missing = "fiml",
              n_starts = 3, seed = 1, tol = 1e-10)
-  p <- latents:::.lta_parameters(fit)
+  p <- list(initial = unname(fit$initial_coefficients), transition = fit$transition_coefficients)
   m <- fit$measurement[[1L]]
   paths <- as.matrix(expand.grid(rep(list(1:2), 4L)))
   exact <- sum(vapply(split(data, data$id), \(rows) {
     rows <- rows[order(rows$time), ]
     j <- match(rows$id[1L], fit$group_ids)
-    initial <- exp(latents:::.lta_log_initial(fit$designs$initial[j, , drop = FALSE],
-                                              matrix(p$initial[, , 1L], ncol(fit$designs$initial))))
-    moves <- lapply(2:4, \(t) exp(latents:::.lta_log_transition(
+    initial <- hand_softmax(fit$designs$initial[j, , drop = FALSE],
+                            matrix(p$initial[, , 1L], ncol(fit$designs$initial)))
+    moves <- lapply(2:4, \(t) hand_transition(
       fit$designs$transition[[t - 1L]][j, , drop = FALSE],
-      array(p$transition[, , , 1L], dim(p$transition)[1:3])))[1L, , ])
+      array(p$transition[, , , 1L], dim(p$transition)[1:3])))
     observed <- !is.na(rows$y)
     log(sum(apply(paths, 1L, \(s) {
       initial[s[1L]] * prod(vapply(2:4, \(t) moves[[t - 1L]][s[t - 1L], s[t]], numeric(1))) *
@@ -225,7 +249,9 @@ test_that("second-order transitions match the exact path sum and nest first orde
   expect_equal(second$n_parameters, first$n_parameters + 4)
   n_states <- 2L
   paths <- as.matrix(expand.grid(rep(list(1:2), 4L)))
-  p <- latents:::.lta_parameters(second)
+  p <- list(initial = unname(second$initial_coefficients),
+            transition = second$transition_coefficients,
+            transition2 = unname(second$second_order_coefficients))
   pi0 <- exp(c(p$initial[1, 1, 1], 0))
   pi0 <- pi0 / sum(pi0)
   move1 <- function(a, b) {
@@ -276,14 +302,36 @@ test_that("covariate transitions agree with depmixS4 (bundled fixture)", {
                    covers = c("lta()", "logLik.multilpa_lta()"),
                    quantity = "number of parameters, covariate transitions",
                    tolerance = 0, measure = "absolute", note = depmix_note)
-  # The covariate slope of each move. The two programs label the profiles
-  # independently, so the absolute slopes are compared in increasing order.
-  # 1e-3 relative, the original tolerance: depmixS4 stops at its own
-  # convergence criterion, and slopes converge more slowly than the likelihood.
-  expect_reference(sort(abs(unname(fit$transition_coefficients["x", 1L, , 1L]))),
-                   sort(abs(unname(ref$slopes))), reference = "depmixS4", covers = "lta()",
-                   quantity = "absolute covariate slopes of the two moves, in increasing order",
-                   tolerance = 1e-3, measure = "relative", key = c("smaller", "larger"),
+  # The transition probabilities at the fixture's covariate values, which do
+  # not depend on how either program parameterises the logits (depmixS4's
+  # slopes carry the opposite sign for one move; comparing sorted absolute
+  # slopes, as before, discarded sign and pairing: audit 2026-11-23 F11).
+  # latents' side: its exported coefficient table through the logit link.
+  coefficients <- get_results(fit, "transition_coefficients")
+  move <- function(origin) {
+    rows <- coefficients[coefficients$from == origin, ]
+    stats::plogis(rows$estimate[rows$term == "(Intercept)"] +
+                    rows$estimate[rows$term == "x"] * ref$x_grid)
+  }
+  p12 <- move("profile_1")
+  p21 <- move("profile_2")
+  # Dimensions: covariate value, origin, destination (the fixture's layout).
+  conditional <- array(c(1 - p12, p21, p12, 1 - p21), c(length(ref$x_grid), 2L, 2L))
+  # The programs label the two profiles independently: the labelling of
+  # latents closest to depmixS4's (identity or swap) is used, the convention
+  # of the other label-switching comparisons in this suite.
+  swapped <- conditional[, 2:1, 2:1, drop = FALSE]
+  if (sum(abs(swapped - ref$conditional)) < sum(abs(conditional - ref$conditional))) {
+    conditional <- swapped
+  }
+  cells <- expand.grid(x = ref$x_grid, from = 1:2, to = 1:2)
+  # 1e-3 absolute, fixed before the run: depmixS4 stops at its own convergence
+  # criterion (the slopes agreed to 1e-3 relative); probabilities lie in [0, 1].
+  expect_reference(data.frame(cells, probability = as.vector(conditional)),
+                   data.frame(cells, probability = as.vector(ref$conditional)),
+                   reference = "depmixS4", covers = "lta()",
+                   quantity = "transition probabilities at x = -1.5, 0, 1.5",
+                   tolerance = 1e-3, measure = "absolute", key = c("x", "from", "to"),
                    note = depmix_note)
 })
 
@@ -340,7 +388,7 @@ test_that("mover-stayer: the stayer class never moves and matches the exact path
   expect_equal(stayers$probability, as.numeric(stayers$from == stayers$to))
   # 4 measurement + 1 class weight + 2 initial (one per class) + 2 mover moves.
   expect_identical(fit$n_parameters, 9L)
-  p <- latents:::.lta_parameters(fit)
+  p <- list(initial = unname(fit$initial_coefficients), transition = fit$transition_coefficients)
   m <- fit$measurement[[1L]]
   paths <- as.matrix(expand.grid(rep(list(1:2), occasions)))
   shares <- lapply(1:2, \(h) {

@@ -19,6 +19,15 @@ categorical_ordinal_reference <- function(intercepts, locations) {
 ordinal_note <- "Package side: the internal adjacent-category routines (.latents_ordinal_log_probabilities, .latents_ordinal_maximize) of lpa()/multilpa(ordinal =)."
 count_note <- "Package side: the internal negative-binomial routines (.latents_negative_binomial_hessian, .latents_negative_binomial_maximize) of lpa()/multilpa(count_model = \"negative_binomial\")."
 
+# Adjacent-category ordinal log probabilities from the definition
+# log P(k) / P(k - 1) = a_k - a_(k-1) + eta_c (a_0 = 0), one row per class:
+# written here so the optimiser's objective shares no code with the package.
+hand_ordinal_log_probabilities <- function(intercepts, locations) {
+  scores <- outer(locations, seq_len(length(intercepts) + 1L) - 1L) +
+    matrix(c(0, intercepts), length(locations), length(intercepts) + 1L, byrow = TRUE)
+  scores - log(rowSums(exp(scores)))
+}
+
 test_that("adjacent-category ordinal probabilities and their Newton M-step", {
   skip_without_reference("numDeriv")
   log_probability <- latents:::.latents_ordinal_log_probabilities(c(.5, -.2, 1), c(.3, -.4, 0))
@@ -33,7 +42,7 @@ test_that("adjacent-category ordinal probabilities and their Newton M-step", {
   withr::local_seed(2)
   counts <- matrix(stats::rexp(12) * 10, 3, 4)
   objective <- function(theta) {
-    sum(counts * latents:::.latents_ordinal_log_probabilities(theta[1:3], c(theta[4:5], 0)))
+    sum(counts * hand_ordinal_log_probabilities(theta[1:3], c(theta[4:5], 0)))
   }
   solution <- latents:::.latents_ordinal_maximize(counts, numeric(3), numeric(3))
   theta <- c(solution$intercepts, solution$locations[1:2])
@@ -53,7 +62,7 @@ test_that("adjacent-category ordinal probabilities and their Newton M-step", {
   expect_reference(theta, reference$par, reference = "stats", covers = c("lpa()", "multilpa()"),
                    quantity = "ordinal M-step solution against optim() BFGS",
                    tolerance = 1e-5, measure = "relative", key = labels,
-                   note = paste(ordinal_note, "Reference: stats::optim() maximising the same objective."))
+                   note = paste(ordinal_note, "Reference: stats::optim() maximising the adjacent-category likelihood written in this file (hand_ordinal_log_probabilities())."))
 })
 
 test_that("negative-binomial Hessian and M-step match numDeriv and optim", {
@@ -123,7 +132,7 @@ test_that("ordinal and count scores are the gradient of the observed log likelih
   # absolute. 1e-7, the original test's tolerance.
   expect_reference(data.frame(model = scores$model, coordinate = scores$coordinate, score = scores$analytic),
                    data.frame(model = scores$model, coordinate = scores$coordinate, score = scores$numerical),
-                   reference = "numDeriv", covers = c("lpa()", "multilpa()"),
+                   reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)", covers = c("lpa()", "multilpa()"),
                    quantity = "ordinal and count scores of the observed log likelihood",
                    tolerance = 1e-7, measure = "scaled", key = c("model", "coordinate"),
                    note = "Package side: the internal analytic scores (.latents_extra_scores) behind the standard errors of lpa()/multilpa(ordinal =, count =); reference: numDeriv::grad() of the package's observed log likelihood.")

@@ -88,7 +88,7 @@ test_that("the likelihood is the dense NB mixture and the scores its gradient", 
   scores <- latents:::.mixture_unit_scores(spec, params, latents:::.mixture_expectation(spec, params))
   # numDeriv's Richardson extrapolation is accurate to about 1e-8 relative on
   # a smooth sum of 1000 terms; 1e-6 relative, the original test's tolerance.
-  expect_reference(unname(colSums(scores)), numDeriv::grad(value, theta), reference = "numDeriv",
+  expect_reference(unname(colSums(scores)), numDeriv::grad(value, theta), reference = "independent: numDeriv derivative of the package's own likelihood (self-consistency)",
                    covers = "mixture_regression()", quantity = "score at a point off the optimum",
                    tolerance = 1e-6, measure = "scaled",
                    note = "Package side: the internal analytic scores (.mixture_unit_scores) behind vcov(); reference: numDeriv::grad() of the package's likelihood.")
