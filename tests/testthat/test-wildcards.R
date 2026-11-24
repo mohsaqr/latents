@@ -150,9 +150,12 @@ test_that("a view or table an object lacks is refused by class", {
     expect_error(plot_trajectories(wild_lpa), class = "latents_nothing_to_plot")
     expect_error(plot_posteriors(wild_grid), class = "latents_nothing_to_plot")
     transitions <- quietly(lta(subset(course_engagement, student <= 30),
-                               c("browse", "lectures"), "student", n_profiles = 2,
-                               time = "sequence", n_starts = 1, seed = 1))
-    # The transition plot() has no raincloud; refused by class, not match.arg().
+                               c("engagement", "student_type"), "student",
+                               n_profiles = 2, time = "sequence",
+                               categorical = c("engagement", "student_type"),
+                               n_starts = 1, seed = 1))
+    # An all-categorical transition fit has no case to draw; refused by
+    # class, not by match.arg().
     expect_error(plot_raincloud(transitions), class = "latents_nothing_to_plot")
     expect_error(plot_avepp(data.frame(a = 1)), class = "latents_not_a_fit")
     expect_error(plot_all(list()), class = "latents_not_a_fit")
@@ -245,8 +248,10 @@ test_that("plot_all() keeps an object's own refusal (finding 5)", {
 
 test_that("a refusal recommends only what this object can draw (finding 6)", {
   transitions <- quietly(lta(subset(course_engagement, student <= 10),
-                             c("browse", "lectures"), "student", n_profiles = 2,
-                             time = "sequence", n_starts = 1, seed = 1))
+                             c("engagement", "student_type"), "student",
+                             n_profiles = 2, time = "sequence",
+                             categorical = c("engagement", "student_type"),
+                             n_starts = 1, seed = 1))
   refusal <- tryCatch(plot_raincloud(transitions), error = identity)
   expect_s3_class(refusal, "latents_nothing_to_plot")
   advice <- sub(".*For this object: ", "", conditionMessage(refusal))

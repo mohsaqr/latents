@@ -1,4 +1,4 @@
-# latents 1.3.10
+# latents 1.4.0
 
 * `descriptives()` with `id` also reports `sd_within`, the pooled
   within-group standard deviation, and `sd_between`, the standard deviation
@@ -24,6 +24,10 @@
   fit no longer fails.
 * `plot_sequences()` keeps an occasion that no group answered as an empty
   column; before, it failed when the data held such an occasion.
+* `plot_raincloud()`, `plot_parallel()` and `plot_pairs()` (and the same
+  views of `plot_profiles()` and `plot()`) draw a transition fit from `lta()`
+  with homogeneous transitions: each answered occasion is a case, counted
+  for its most likely state. Before, they refused it.
 * `plot_sequences()` sorts the rows within each class by the unit's most
   frequent profile and the share of its sequence it holds; with one class
   the rows are blocked by that profile (noise counts as a state of its own,

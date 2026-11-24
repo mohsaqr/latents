@@ -1481,7 +1481,8 @@ coef.multilpa_transitions <-function(object, ...) {
 #' @noRd
 #' @export
 plot.multilpa_transitions <-function(x, what = c("transitions", "profiles",
-                                                  "bars", "heatmap", "responses",
+                                                  "bars", "heatmap", "raincloud",
+                                                  "parallel", "pairs", "responses",
                                                   "sequences", "sizes", "entropy",
                                                   "posteriors", "avepp", "all"),
                                       data = NULL,

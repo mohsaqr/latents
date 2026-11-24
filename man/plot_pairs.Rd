@@ -13,6 +13,8 @@ plot_pairs(x, main = NULL, subtitle = NULL)
 \item a profile fit from \code{\link[=lpa]{lpa()}} or \code{\link[=multilpa]{multilpa()}}, with or without
 covariates, that has two or more continuous indicators and was fitted
 without centering or scaling;
+\item a transition fit from \code{\link[=lta]{lta()}} with homogeneous transitions (class
+\code{multilpa_transitions}) that has two or more continuous indicators;
 \item a \code{\link[=diagnostics]{diagnostics()}} result, which is drawn from the fit it checked.
 }}
 
@@ -26,10 +28,10 @@ Errors:
 \itemize{
 \item \code{latents_nothing_to_plot} when the package returned \code{x} but this
 function has no plot of it: a fit with fewer than two continuous
-indicators, a centred or scaled fit, a transition fit, an additive or
-cross-level fit, a mixture regression, a growth mixture or an
-enumeration grid. For an object of the wrong kind, the message names the
-plot functions that apply to it;
+indicators, a centred or scaled fit, a general transition fit (class
+\code{multilpa_lta}), an additive or cross-level fit, a mixture regression,
+a growth mixture or an enumeration grid. For an object of the wrong
+kind, the message names the plot functions that apply to it;
 \item \code{latents_not_a_fit} when \code{x} is not a fit, grid or other result of the
 package, for example a data frame;
 \item \code{latents_missing_package} when ggplot2 is not installed.
@@ -52,7 +54,8 @@ the size of the profile.
 The view needs two or more continuous indicators and draws the stored
 data of the fit. A fit with person or grand centering or scaling is
 refused, because its stored data are not on the scale of the model.
-Transition fits are refused as well.
+For a transition fit, a case is one answered occasion of a unit, counted
+for its most likely state.
 }
 \examples{
 \dontshow{if (requireNamespace("ggplot2", quietly = TRUE)) withAutoprint(\{ # examplesIf}
