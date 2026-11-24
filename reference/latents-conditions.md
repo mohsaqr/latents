@@ -29,7 +29,18 @@ without depending on message wording, which may change between versions.
   too few rows, a duplicated or absent column name, an indicator that is
   not a numeric vector, an indicator that is constant or entirely
   unobserved, missing or non-finite values under `missing = "error"`, or
-  a missing group identifier.
+  a missing group identifier. Also raised when an outcome, covariate or
+  variable named in an argument is not a column of the data given to
+  [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md),
+  [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md) or
+  [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md);
+  when `newdata` given to
+  [`predict()`](https://rdrr.io/r/stats/predict.html) cannot be used
+  ([latents-predict](https://pak.dynasite.org/latents/reference/latents-predict.md));
+  and when `imputed` given to
+  [`pool_imputations()`](https://pak.dynasite.org/latents/reference/pool_imputations.md)
+  is not a list of at least two data frames with the same columns and
+  rows.
 
 - `latents_unweightable_level`:
 
@@ -271,9 +282,10 @@ without depending on message wording, which may change between versions.
 
   A distal outcome given to
   [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
-  is of a type the requested method cannot handle, varies within a group
-  when a group-level outcome is requested, or is a measurement
-  indicator.
+  is a measurement indicator, varies within a group when a group-level
+  outcome is requested (within a person, for a trajectory model), or
+  takes a single category or value among the units analysed, so it has
+  no distribution to compare across classes.
 
 - `latents_bad_covariate`:
 
@@ -403,9 +415,9 @@ analysis.
 - `latents_unsupported_sensitivity`:
 
   [`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md)
-  cannot refit the requested model or align its class labels. This
-  includes directly fitted fixed-measurement models whose original free
-  starting values were not retained.
+  cannot refit the requested model or align its class labels: a
+  membership-covariate fit, or a directly fitted fixed-measurement model
+  whose original free starting values were not retained.
 
 - `latents_unsupported_three_step`:
 
@@ -420,10 +432,14 @@ analysis.
   occasion-specific measurement, a stayer class, or ordinal or count
   indicators), except that
   [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
-  takes `initial_covariates` and `transition_covariates` for a
-  covariate-free one; an additive, dispersion or cross-level
+  takes `initial_covariates` and `transition_covariates` for one with
+  invariant measurement, one group class, no covariates and no stayer
+  class; an additive, dispersion or cross-level
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  fit; or a mixture regression with observation classes.
+  fit; or a mixture regression with observation classes. Also raised by
+  `three_step(step_one = "estimated")` for a transition fit, a
+  trajectory model, a staged fit or a fit holding a measurement block
+  fixed.
 
 - `latents_unsupported_bootstrap`:
 
@@ -457,19 +473,21 @@ analysis.
 - `latents_unsupported_prediction`:
 
   [`predict()`](https://rdrr.io/r/stats/predict.html) was called on a
-  growth mixture, a membership-covariate fit or a latent transition fit,
-  for which prediction on new rows is not implemented; results for the
-  fitted rows are available from
-  [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md).
+  membership-covariate fit or a latent transition fit, for which
+  prediction is not implemented; the posterior probabilities of the
+  fitted rows are `get_results(x, "posteriors")`.
 
 - `latents_missing_package`:
 
-  A required package from `Suggests` is not installed. Raised by
+  A required package from `Suggests` is not installed. Raised by the
+  plot functions when `ggplot2` is absent, by
   [`get_tna()`](https://pak.dynasite.org/latents/reference/get_tna.md)
   and
   [`get_group_tna()`](https://pak.dynasite.org/latents/reference/get_group_tna.md)
-  when `tna` is absent; the message names the package and how to install
-  it.
+  when `tna` is absent, and by
+  [`pool_imputations()`](https://pak.dynasite.org/latents/reference/pool_imputations.md)
+  for a `mids` object when `mice` is absent; the message names the
+  package and how to install it.
 
 ## Plotting
 
@@ -617,9 +635,14 @@ explicitly.
 
 - `latents_boundary`:
 
-  A variance, or a covariance eigenvalue, is at `min_variance`, so the
-  fit is bound-active and its standard errors are not valid at that
-  parameter.
+  A variance, or a covariance eigenvalue, is at `min_variance`, or an
+  initial, transition or group-class probability of a transition fit is
+  at its bound, so the fit is bound-active and its standard errors are
+  not valid at that parameter. Also a warning from
+  `three_step(method = "ml")` when a class probability of a categorical
+  outcome is estimated at 0 or 1 (the estimates are reported without
+  standard errors, intervals or tests), or when a class variance of a
+  numeric outcome reached its lower bound.
 
 - `latents_atomic_groups`:
 
@@ -824,18 +847,16 @@ explicitly.
 ## Examples
 
 ``` r
-set.seed(1)
-example_data <- data.frame(
-  school = rep(seq_len(8), each = 6),
-  score_a = stats::rnorm(48), score_b = stats::rnorm(48)
-)
-fit <- multilpa(example_data, c("score_a", "score_b"), "school",
-                n_profiles = 2, n_group_classes = 1, n_starts = 2, seed = 1)
-#> Warning: Profile 1: 2.0 Gaussian membership mass for 4 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
-# Handle a missing-time condition by its class.
+fit <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
+           n_starts = 2, seed = 1)
+# A fit made without `time` has no sequences; handle that by its class.
 tryCatch(get_results(fit, "sequences"),
          latents_no_time = function(condition) {
   "No occasion ordering was specified for this fit."
 })
 #> [1] "No occasion ordering was specified for this fit."
+# Every condition of the package can be caught and inspected the same way.
+tryCatch(three_step(fit, faithful, "eruptions"),
+         latents_bad_outcome = function(condition) conditionMessage(condition))
+#> [1] "`eruptions` helped define the fitted classes, so it is not a distal outcome."
 ```

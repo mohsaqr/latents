@@ -1,19 +1,13 @@
-# Display model estimates and diagnostic summaries
+# Print the estimates, descriptive statistics and diagnostic checks of a fitted model, and draw its plots
 
-`report()` provides a combined overview of a fitted profile, class, or
-supported transition model. It brings together parameter estimates,
-descriptive statistics, and diagnostic checks to support examination of
-the estimated class structure, numerical convergence, classification
-uncertainty, and residual associations.
+`report()` prints a first look at a fitted profile, class or transition
+model in one call: its estimates, the descriptive statistics of its
+variables and its diagnostic checks, followed by its plots. It computes
+nothing of its own; each part is the output of another function, named
+under *Report contents*, which returns the same numbers as tables.
 
-Output is displayed in the R session, with optional plots appropriate to
-the fitted model. The function returns the original fitted model
-invisibly. Individual tables remain available through
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md),
-[`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md),
-and
-[`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-for further analysis or reporting.
+The output goes to the R console and the graphics device. The function
+returns the fitted model invisibly, so it can end a pipeline.
 
 ## Usage
 
@@ -38,11 +32,15 @@ report(
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
   or
   [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
-  (with or without membership covariates), or from
-  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) with
-  time-homogeneous transitions. A fit of another family (a mixture
-  regression, growth mixture, general transition, additive or
-  cross-level model) raises `latents_not_a_fit`; its own
+  (with or without membership covariates), or an
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit of
+  class `multilpa_transitions` (the basic transition model: continuous
+  or categorical indicators and one first-order transition matrix for
+  all occasions, without covariates, weights or a stayer class). Any
+  other model (an
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit of
+  class `multilpa_lta`, a mixture regression, a growth mixture, an
+  additive or cross-level fit) raises `latents_not_a_fit`; its own
   [`summary()`](https://rdrr.io/r/base/summary.html),
   [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
   and [`plot()`](https://rdrr.io/r/graphics/plot.default.html) report
@@ -50,24 +48,36 @@ report(
 
 - data:
 
-  Optional data frame used to fit the model. The required columns are
-  stored in the fitted object.
+  The data frame the model was fitted to. `NULL` (default) uses the
+  columns stored in the fit.
 
 - plots:
 
-  `TRUE` (the default) draws the plots. `FALSE` prints only.
+  Whether to draw the plots:
+
+  - `TRUE` (default): after the printed output, draws every plot view
+    the fit has the ingredients for, one after another (see
+    [`plot_views()`](https://pak.dynasite.org/latents/reference/plot_views.md)),
+    and then names the views that could not be drawn. Without the
+    ggplot2 package a message says so and nothing is drawn;
+
+  - `FALSE`: prints only.
 
 - by:
 
-  Passed to
+  How
   [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-  for the bivariate residuals: `"profile"` (the default) assesses each
-  profile separately, `"overall"` pools them.
+  assesses the bivariate residuals:
+
+  - `"profile"` (default): within each profile separately;
+
+  - `"overall"`: pooled over the profiles.
 
 - rows:
 
-  Number of rows of each summary table to print, passed to
-  `print(summary(x))`. Default 10.
+  How many rows of each table of `summary(x)` to print: one whole number
+  of 0 or more (default 10). A longer table ends with the number of rows
+  left out and the call that returns it whole.
 
 - ...:
 
@@ -76,19 +86,35 @@ report(
 
 ## Value
 
-The fitted model, invisibly. Called for its printed and plotted output.
+The fitted model `x`, invisibly. The function is called for its printed
+and plotted output. Conditions raised:
+
+- `latents_not_a_fit`: `x` is not a profile, class or
+  `multilpa_transitions` fit;
+
+- `latents_bad_argument`: an argument `report()` does not take, or a
+  `plots` or `by` with a value it does not take.
 
 ## Report contents
 
-Output is presented in the following order:
-[`summary()`](https://rdrr.io/r/base/summary.html),
-[`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md),
-the checks from
-[`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md),
-and the supported plot views. Any omitted views are listed after the
-plots. The underlying tables can be accessed separately using
+The parts are printed in this order:
+
+1.  `summary(x)`: every table of the fit, each cut to `rows` rows;
+
+2.  [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md)
+    of the fit: the number of observations, missing values, mean,
+    standard deviation and range of each variable, and for grouped data
+    its intraclass correlation;
+
+3.  the checks of
+    [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md):
+    estimation, class sizes, classification, bivariate residuals, and
+    the log likelihood with its BIC, each with its status;
+
+4.  with `plots = TRUE`, the plot views of the fit.
+
+The tables behind each part are returned by
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md),
-[`summary()`](https://rdrr.io/r/base/summary.html),
 [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md)
 and
 [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md).
@@ -98,7 +124,9 @@ and
 [`summary()`](https://rdrr.io/r/base/summary.html),
 [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md),
 [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md),
-[`plot_views()`](https://pak.dynasite.org/latents/reference/plot_views.md).
+[`plot_views()`](https://pak.dynasite.org/latents/reference/plot_views.md);
+[`plot_all()`](https://pak.dynasite.org/latents/reference/plot_all.md)
+for the plots alone.
 
 ## Examples
 
@@ -370,12 +398,12 @@ report(fit, plots = FALSE)
 #> 3 forum_read 1422         0  7.032349e-05 0.9890236 -2.73 2.81        400
 #> 4 forum_post 1422         0 -2.109705e-05 0.9890038 -2.61 3.10        397
 #> 5 attendance 1422         0  7.735584e-05 0.9889426 -2.45 2.41        401
-#>   n_groups        icc
-#> 1      106 0.19229259
-#> 2      106 0.08779169
-#> 3      106 0.22403384
-#> 4      106 0.15034618
-#> 5      106 0.22145308
+#>   n_groups sd_within sd_between        icc
+#> 1      106 0.8896664  0.5017669 0.19229259
+#> 2      106 0.9448773  0.3916068 0.08779169
+#> 3      106 0.8720825  0.5242171 0.22403384
+#> 4      106 0.9122357  0.4582008 0.15034618
+#> 5      106 0.8734499  0.5249713 0.22145308
 #> 
 #> Diagnostics: Two-level latent profile analysis, 2 profiles, 2 group classes
 #> 1 check needs attention: pairs dependent within a class

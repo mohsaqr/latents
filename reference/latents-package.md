@@ -48,6 +48,9 @@ function's help page.
 [`fit_staged`](https://pak.dynasite.org/latents/reference/fit_staged.md)
 estimates a two-level model with measurement parameters fixed at their
 first-stage estimates.
+[`descriptives`](https://pak.dynasite.org/latents/reference/descriptives.md)
+describes the indicators, with their intraclass correlations, before a
+model is fitted.
 
 ## Model evaluation and inference
 
@@ -78,6 +81,9 @@ relate external variables to latent membership with correction for
 classification error.
 [`pool_imputations`](https://pak.dynasite.org/latents/reference/pool_imputations.md)
 combines compatible analyses across imputed datasets.
+[`align_labels`](https://pak.dynasite.org/latents/reference/align_labels.md)
+renumbers the profiles of one fit to match another's, so that fits to
+different samples or occasions can be read side by side.
 
 ## Interpretation and assumptions
 

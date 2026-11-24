@@ -1,7 +1,10 @@
-# Where each criterion line bends
+# Get the candidate after which adding classes improves each information criterion much less
 
-The knee of each line of the criterion over the number of classes, and
-whether it holds when the largest candidate is left out.
+`get_knees()` returns the knee of every line of a profile or class grid:
+the candidate after which adding classes lowers the criterion much less
+than before, and whether the knee stays the same when the largest
+candidate is left out. The criterion is `bic_groups`, BIC with the
+number of groups as the sample size.
 
 ## Usage
 
@@ -13,24 +16,63 @@ get_knees(x)
 
 - x:
 
-  An enumeration grid from
-  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md),
-  [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md)
+  A profile or class grid from
+  [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md),
+  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md)
   or
-  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md).
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md).
+  Transition grids, grids of group-class families and regression grids
+  have no such table and are refused.
 
 ## Value
 
-A data frame, one row per line and direction:
-`direction, line, criterion, from, to, n_points, knee_candidate, distance, knee_without_largest, stable, note`.
-A regression, transition or family grid has no knees and raises
-`latents_bad_argument`, naming the tables it has. Any other object
-raises `latents_not_a_fit`.
+A data frame with one row per line and the columns:
+
+- `direction`: `"profiles"` (along the number of profiles, at a fixed
+  number of group classes), `"group_classes"` (along the number of group
+  classes, at a fixed number of profiles) or `"parameters"` (every
+  candidate, ordered by its number of parameters);
+
+- `line`: what is held fixed along the line;
+
+- `criterion`: the name of the criterion, `bic_groups`;
+
+- `from`, `to`: the first and the last candidate of the line;
+
+- `n_points`: the number of candidates on the line;
+
+- `knee_candidate`: the candidate at the knee; `NA` when the line has
+  none;
+
+- `distance`: how far the knee lies below the straight line, in the
+  rescaled units;
+
+- `knee_without_largest`: the knee when the largest candidate is left
+  out;
+
+- `stable`: `TRUE` when the two knees are the same candidate; `NA` when
+  the line has fewer than four candidates;
+
+- `note`: why a knee or its stability is missing.
+
+Errors: `latents_bad_argument` for a transition, family or regression
+grid, naming the tables it has; `latents_not_a_fit` when `x` is not an
+enumeration grid.
+
+## Details
+
+Both axes of a line are rescaled to run from 0 to 1. The knee is the
+candidate that lies furthest below the straight line from the first
+candidate to the last. A line needs three candidates to have a knee and
+four for its stability to be assessed, and a line whose criterion does
+not fall from its first to its last candidate has none.
 
 ## See also
 
-[`get_deltas()`](https://pak.dynasite.org/latents/reference/get_deltas.md),
-[`get_best()`](https://pak.dynasite.org/latents/reference/get_best.md).
+[`get_deltas()`](https://pak.dynasite.org/latents/reference/get_deltas.md)
+for the changes behind the lines;
+[`get_best()`](https://pak.dynasite.org/latents/reference/get_best.md);
+[`plot_deltas()`](https://pak.dynasite.org/latents/reference/plot_deltas.md).
 
 ## Examples
 

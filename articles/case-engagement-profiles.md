@@ -155,12 +155,18 @@ missingness.
 descriptives(course_engagement, vars = vars, id = "student")
 ```
 
-    #>     variable    n n_missing       mean     sd   min  max n_distinct n_groups     icc
-    #> 1     browse 1422         0 -2.813e-05 0.9891 -3.14 2.49        398      106 0.19229
-    #> 2   lectures 1422         0 -4.219e-05 0.9889 -2.91 3.22        399      106 0.08779
-    #> 3 forum_read 1422         0  7.032e-05 0.9890 -2.73 2.81        400      106 0.22403
-    #> 4 forum_post 1422         0 -2.110e-05 0.9890 -2.61 3.10        397      106 0.15035
-    #> 5 attendance 1422         0  7.736e-05 0.9889 -2.45 2.41        401      106 0.22145
+    #>     variable    n n_missing       mean     sd   min  max n_distinct n_groups sd_within
+    #> 1     browse 1422         0 -2.813e-05 0.9891 -3.14 2.49        398      106    0.8897
+    #> 2   lectures 1422         0 -4.219e-05 0.9889 -2.91 3.22        399      106    0.9449
+    #> 3 forum_read 1422         0  7.032e-05 0.9890 -2.73 2.81        400      106    0.8721
+    #> 4 forum_post 1422         0 -2.110e-05 0.9890 -2.61 3.10        397      106    0.9122
+    #> 5 attendance 1422         0  7.736e-05 0.9889 -2.45 2.41        401      106    0.8734
+    #>   sd_between     icc
+    #> 1     0.5018 0.19229
+    #> 2     0.3916 0.08779
+    #> 3     0.5242 0.22403
+    #> 4     0.4582 0.15035
+    #> 5     0.5250 0.22145
 
 The data comprise 1,422 enrolments from 106 students, with complete
 observations on all activity indicators. Because the indicators were

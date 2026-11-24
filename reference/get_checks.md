@@ -1,14 +1,14 @@
-# Every diagnostic check of a fit
+# Get every diagnostic check of a fitted model, with its value, rule and status
 
-Each check
+`get_checks()` returns the checks that
 [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-runs, with its status, criterion and reference: estimation, class sizes,
-classification, local independence and information. For a fit, the table
-is the one
-[`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-computes with its defaults; for a grid, the tables of every candidate
-are stacked with a first column `candidate` (a candidate whose
-estimation failed has no row); for a diagnostics result, its own table.
+runs on a fitted model, as one table: each check with its value, the
+rule it is judged by and its status. The checks cover the estimation
+(convergence, replication of the best log likelihood, failed starts,
+estimates at a bound), the class sizes, the quality of the
+classification (relative entropy, average posterior probability, odds of
+correct classification), local independence (the bivariate residuals)
+and the information criteria.
 
 ## Usage
 
@@ -20,23 +20,74 @@ get_checks(x)
 
 - x:
 
-  A fitted model of any family, an enumeration grid, or the result of
-  [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md).
+  One of:
+
+  - a fitted model of any family: from
+    [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
+    [`lca()`](https://pak.dynasite.org/latents/reference/lca.md),
+    [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+    [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md),
+    [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) or
+    [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md).
+    The table is the one
+    [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
+    computes with its defaults;
+
+  - an enumeration grid of any kind, from
+    [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md),
+    [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md),
+    [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+    or
+    [`enumerate_regressions()`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md).
+    The tables of the fitted candidates are stacked, with a first column
+    `candidate` that names the candidate of each row. A candidate whose
+    estimation failed has no rows;
+
+  - the result of
+    [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md).
+    The table is the one the result holds.
 
 ## Value
 
-A data frame, one row per check (and candidate):
-`domain, check, level, value, display, criterion, status, detail, reference`.
-Any other object raises `latents_not_a_fit`.
+A data frame with one row per check (per candidate and check for a grid)
+and the columns:
+
+- `domain`: the group of the check, one of `"Estimation"`,
+  `"Class size"`, `"Classification"`, `"Local independence"` and
+  `"Information"`;
+
+- `check`: what is checked;
+
+- `level`: `"model"` for a check of the whole fit, `"individuals"` or
+  `"groups"` for a check of one classification level;
+
+- `value`: the result as a number;
+
+- `display`: the result as formatted text;
+
+- `criterion`: the rule the status follows; empty when there is none;
+
+- `status`: `"ok"` (passed), `"info"` (reported, not judged), `"check"`
+  (look at it), `"fail"` (failed) or `"n/a"` (not available for this
+  fit);
+
+- `detail`: a note, for example the pair of indicators with the smallest
+  adjusted p-value;
+
+- `reference`: the source of the check.
+
+Errors: `latents_not_a_fit` when `x` is none of these, for example a
+comparison, pooled imputations or a data frame.
 
 ## See also
 
 [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-for the checks and their criteria;
+for the checks and their rules;
 [`get_entropy()`](https://pak.dynasite.org/latents/reference/get_entropy.md),
 [`get_classification()`](https://pak.dynasite.org/latents/reference/get_classification.md),
 [`get_avepp()`](https://pak.dynasite.org/latents/reference/get_avepp.md),
-[`get_replication()`](https://pak.dynasite.org/latents/reference/get_replication.md),
+[`get_replication()`](https://pak.dynasite.org/latents/reference/get_replication.md)
+and
 [`get_residuals()`](https://pak.dynasite.org/latents/reference/get_residuals.md)
 for the tables behind them;
 [`overview()`](https://pak.dynasite.org/latents/reference/overview.md).

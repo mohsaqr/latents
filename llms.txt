@@ -1457,81 +1457,113 @@ comparison studies. The package citation is available through
 Two-level latent profile, latent class and latent transition models.
 
 - [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md) : Fit a
-  latent profile model
+  latent profile model that groups observations by their pattern on
+  continuous indicators
 - [`lca()`](https://pak.dynasite.org/latents/reference/lca.md) : Fit a
-  latent class model
+  latent class model that groups observations by their pattern of
+  categorical responses
 - [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  : Fit a two-level latent profile model
+  : Fit a two-level latent profile model: profiles of observations and
+  classes of the groups they are nested in
 - [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
-  : Fit a two-level latent class model
+  : Fit a two-level latent class model: classes of categorical responses
+  and classes of the groups they are nested in
 - [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) : Fit a
-  latent transition model
+  latent transition model of how units move between latent states over
+  repeated occasions
 - [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
-  : Estimate group classes with fixed individual profile definitions
+  : Fit a two-level profile model in two stages, holding the profiles
+  fixed while the group classes are estimated
 - [`starting_values()`](https://pak.dynasite.org/latents/reference/starting_values.md)
-  : Extract starting values for a subsequent fit
+  : Get the estimates of a fitted profile or class model as starting
+  values for another fit
 - [`prior_control()`](https://pak.dynasite.org/latents/reference/prior_control.md)
-  : Specify prior settings for Gaussian profile estimation
+  : Set a prior that regularises the means and covariances of Gaussian
+  profile models
 
 ## Results
 
 Every table of a fitted model, retrieved by name.
 
 - [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-  : Extract model estimates and analysis results
+  : Get any table of a fitted model, grid, comparison, test or
+  diagnostics result as a data frame
 - [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md)
-  : Descriptive statistics and intraclass correlations of model
-  variables
+  : Describe each variable of a data frame or a fitted model, with its
+  variation within and between groups
 - [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-  : Diagnostics of a fitted model
+  : Diagnose a fitted model: convergence, replication, class sizes,
+  separation and local independence
 - [`report()`](https://pak.dynasite.org/latents/reference/report.md) :
-  Display model estimates and diagnostic summaries
+  Print the estimates, descriptive statistics and diagnostic checks of a
+  fitted model, and draw its plots
 - [`overview()`](https://pak.dynasite.org/latents/reference/overview.md)
-  : Everything about any object, printed and drawn
+  : Print and plot everything about any object of the package: its
+  summary, its checks and every plot
 - [`get_checks()`](https://pak.dynasite.org/latents/reference/get_checks.md)
-  : Every diagnostic check of a fit
+  : Get every diagnostic check of a fitted model, with its value, rule
+  and status
 - [`get_entropy()`](https://pak.dynasite.org/latents/reference/get_entropy.md)
-  : Relative entropy of the classification
+  : Get the relative entropy, from 0 to 1, of how sharply a model
+  separates its classes
 - [`get_classification()`](https://pak.dynasite.org/latents/reference/get_classification.md)
-  : Class sizes and classification certainty
+  : Get how many units each class holds and how certain their assignment
+  is
 - [`get_avepp()`](https://pak.dynasite.org/latents/reference/get_avepp.md)
-  : Average posterior probability matrix
+  : Get the average posterior probability of every class among the units
+  assigned to each class
 - [`get_residuals()`](https://pak.dynasite.org/latents/reference/get_residuals.md)
-  : Bivariate residuals of the indicators
+  : Get the bivariate residuals: the association between pairs of
+  indicators that each class leaves unexplained
 - [`get_replication()`](https://pak.dynasite.org/latents/reference/get_replication.md)
-  : How many starts reached the best log likelihood
+  : Get how many random starts converged, failed and reached the best
+  log likelihood
 
 ## Evaluating a model
 
 - [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md)
-  : Compare latent profile models
+  : Fit latent profile models with different numbers of profiles and
+  covariance structures, and compare them
 - [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md)
-  : Compare latent class models
+  : Fit latent class models with different numbers of classes, and
+  compare them
 - [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
-  : Class enumeration and comparison of mixture models
+  : Fit models with different numbers of classes and collect their
+  criteria and diagnostics for comparison
 - [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
   [`candidate_fit()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
-  : Retrieve a fitted model from an enumeration or comparison
+  : Get one fitted model out of an enumeration grid or a model
+  comparison
 - [`get_candidates()`](https://pak.dynasite.org/latents/reference/get_candidates.md)
-  : Every candidate of a grid
+  : Get the table of every candidate model in an enumeration grid, with
+  its criteria and diagnostics
 - [`get_best()`](https://pak.dynasite.org/latents/reference/get_best.md)
-  : The best candidate under each criterion
+  : Get the converged candidate with the lowest value of each
+  information criterion
 - [`get_deltas()`](https://pak.dynasite.org/latents/reference/get_deltas.md)
-  : Change in the criterion with each added class
+  : Get how much each information criterion improves as a class or a
+  group class is added
 - [`get_knees()`](https://pak.dynasite.org/latents/reference/get_knees.md)
-  : Where each criterion line bends
+  : Get the candidate after which adding classes improves each
+  information criterion much less
 - [`get_tree()`](https://pak.dynasite.org/latents/reference/get_tree.md)
-  : How the classes of each candidate split into the next
+  : Get how the classes of each candidate split into the classes of the
+  next, as a table
 - [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
-  : Parametric bootstrap likelihood-ratio test for nested mixture models
+  : Test whether a model with one more class improves on a nested model,
+  with a parametric bootstrap likelihood ratio
 - [`sensitivity()`](https://pak.dynasite.org/latents/reference/sensitivity.md)
-  : Assess sensitivity of a fitted mixture model to initialisation
+  : Refit a model from several random seeds and check whether it reaches
+  the same solution
 - [`align_labels()`](https://pak.dynasite.org/latents/reference/align_labels.md)
-  : Number one fit's profiles like another's
+  : Renumber one fit's profiles and group classes to match the most
+  similar ones of another fit
 - [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
-  : Standard errors, confidence intervals and tests for model parameters
+  : Compute standard errors, confidence intervals and tests for the
+  estimates of a fitted model
 - [`pool_imputations()`](https://pak.dynasite.org/latents/reference/pool_imputations.md)
-  : Fit and pool mixture models across multiple imputations
+  : Fit a profile or class model to each imputed data set and pool the
+  results across the imputations
 
 ## Mixture regression and growth models
 
@@ -1541,100 +1573,133 @@ trajectories, with random effects within classes (growth mixture
 models).
 
 - [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
-  : Estimate regression relationships that vary across latent classes
+  : Fit a mixture regression model in which the relationship between an
+  outcome and its predictors differs across latent classes
 - [`enumerate_regressions()`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
-  : Assess the number of classes in mixture regression models
+  : Fit mixture regression models with different numbers of classes, and
+  compare them
 - [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
-  : Compare the fit and classification of mixture models
+  : Compare the fit, classification and convergence of several fitted
+  models in one table
 - [`predict(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
   [`simulate(`*`<latents_mixture_regression>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
   [`predict(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-predict.md)
-  : Predict from and simulate a fitted model
+  : Predict class membership or outcomes from a fitted model, and
+  simulate data from it
 
 ## External variables
 
 Three-step analysis with a correction for classification error.
 
 - [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
-  : Compare latent classes on an external outcome
+  : Compare latent classes on an outcome not used to define them,
+  correcting for classification error
 - [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md) :
-  Relate latent class membership to external covariates
+  Regress latent class membership on covariates not used to define the
+  classes, correcting for classification error
 
 ## Plots of a fit
 
 One function per picture; each takes any fit that has the view.
 
 - [`plot_profiles()`](https://pak.dynasite.org/latents/reference/plot_profiles.md)
-  : Profile means across the indicators
+  : Plot how the profiles differ on the indicators: each profile's mean,
+  or another summary, on every indicator
 - [`plot_bars()`](https://pak.dynasite.org/latents/reference/plot_bars.md)
-  : Profile means as bars
+  : Plot the mean of each continuous indicator in each profile as bars
 - [`plot_heatmap()`](https://pak.dynasite.org/latents/reference/plot_heatmap.md)
-  : Profile means, or a criterion, as a heat map
+  : Plot profile means as tiles of profiles by indicators, or a grid's
+  criterion as tiles of candidates
 - [`plot_raincloud()`](https://pak.dynasite.org/latents/reference/plot_raincloud.md)
-  : Distribution of each indicator by profile
+  : Plot the distribution of each continuous indicator in each profile
+  as a density, its quartiles and the points
 - [`plot_parallel()`](https://pak.dynasite.org/latents/reference/plot_parallel.md)
-  : Every case as a line across the indicators
+  : Plot every case as a line across the continuous indicators, one
+  panel per profile
 - [`plot_pairs()`](https://pak.dynasite.org/latents/reference/plot_pairs.md)
-  : Scatter-plot matrix of the indicators by profile
+  : Plot every pair of continuous indicators against each other, with
+  the cases and an ellipse for each profile
 - [`plot_responses()`](https://pak.dynasite.org/latents/reference/plot_responses.md)
-  : Response probabilities of the categorical indicators
+  : Plot each profile's probability of one response category on every
+  categorical or ordinal indicator
 - [`plot_prevalence()`](https://pak.dynasite.org/latents/reference/plot_prevalence.md)
-  : Profile prevalence within each group class
+  : Plot how common each profile is within each group class of a
+  two-level model
 - [`plot_sequences()`](https://pak.dynasite.org/latents/reference/plot_sequences.md)
-  : Assigned profiles over the occasions
+  : Plot each unit's sequence of assigned profiles across the occasions
+  as a row of coloured cells
 - [`plot_transitions()`](https://pak.dynasite.org/latents/reference/plot_transitions.md)
-  : Transition probabilities between profiles
+  : Plot the estimated probability of moving from each profile to each
+  profile between occasions
 - [`plot_trajectories()`](https://pak.dynasite.org/latents/reference/plot_trajectories.md)
-  : Class trajectories of the outcome
+  : Plot the curve of the outcome in each class of a mixture regression
+  model
 - [`plot_individuals()`](https://pak.dynasite.org/latents/reference/plot_individuals.md)
-  : Trajectories of individual persons
+  : Plot individual persons' observations and predicted curves beside
+  the trajectory of their class
 - [`plot_coefficients()`](https://pak.dynasite.org/latents/reference/plot_coefficients.md)
-  : Class coefficients with intervals
+  : Plot the regression coefficients of each class of a mixture
+  regression, with 95% confidence intervals
 - [`plot_classification()`](https://pak.dynasite.org/latents/reference/plot_classification.md)
-  : Class probabilities of every person
+  : Plot each person's posterior probability of every class in a growth
+  model as a stacked bar
 - [`plot_all()`](https://pak.dynasite.org/latents/reference/plot_all.md)
-  : Every plot of an object
+  : Plot every view an object has and return the plots as one list
 
 ## Classification plots
 
 The four classification views, for a fit of any family or a grid.
 
 - [`plot_sizes()`](https://pak.dynasite.org/latents/reference/plot_sizes.md)
-  : Class sizes
+  : Plot how many units each class holds, or the size of the smallest
+  class of every candidate in a grid
 - [`plot_posteriors()`](https://pak.dynasite.org/latents/reference/plot_posteriors.md)
-  : Certainty of each unit's classification
+  : Plot the posterior probability of each unit's assigned class, by
+  class
 - [`plot_entropy()`](https://pak.dynasite.org/latents/reference/plot_entropy.md)
-  : Entropy of the classification
+  : Plot how uncertain the classification is, by unit for a fitted model
+  or by candidate for a grid
 - [`plot_avepp()`](https://pak.dynasite.org/latents/reference/plot_avepp.md)
-  : Average posterior probabilities
+  : Plot the average posterior probability matrix of a fit, or the
+  lowest average posterior probability of every candidate
 - [`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/plot_diagnostics.md)
-  : Classification summaries of a fit
+  : Plot how well a fitted model separates its classes: sizes,
+  posteriors, entropy and average posterior probabilities
 
 ## Plots of a candidate grid
 
 - [`plot_criteria()`](https://pak.dynasite.org/latents/reference/plot_criteria.md)
-  : Every information criterion
+  : Plot every information criterion of a grid, or of a model
+  comparison, against the number of classes
 - [`plot_enumeration()`](https://pak.dynasite.org/latents/reference/plot_enumeration.md)
-  : Information criteria across a candidate grid
+  : Plot the information criteria of an enumeration grid against the
+  number of classes
 - [`plot_selection()`](https://pak.dynasite.org/latents/reference/plot_selection.md)
-  : Model-selection evidence across a candidate grid
+  : Plot the evidence for choosing the number of classes from an
+  enumeration grid
 - [`plot_deltas()`](https://pak.dynasite.org/latents/reference/plot_deltas.md)
-  : Change in the criterion with each added class
+  : Plot how much the information criterion falls each time a class or a
+  group class is added
 - [`plot_trust()`](https://pak.dynasite.org/latents/reference/plot_trust.md)
-  : Convergence, boundary and replication of every candidate
+  : Plot whether each candidate of a grid converged, lies on a boundary
+  and replicated its best log likelihood
 - [`plot_tree()`](https://pak.dynasite.org/latents/reference/plot_tree.md)
-  : How classes split as more are added
+  : Plot how the classes of each solution split or rearrange as one more
+  class is added
 - [`plot_views()`](https://pak.dynasite.org/latents/reference/plot_views.md)
-  : The plot views of a fitted model, or of one grid
+  : List the views a plot call can draw for a fitted model or a grid,
+  with what each one shows
 
 ## Transition networks
 
 Latent transitions handed to the tna package.
 
 - [`get_tna()`](https://pak.dynasite.org/latents/reference/get_tna.md) :
-  Represent transitions between latent states as a network
+  Get the transitions between a fitted model's profiles as one
+  transition network for the whole sample
 - [`get_group_tna()`](https://pak.dynasite.org/latents/reference/get_group_tna.md)
-  : Construct transition networks for latent group classes
+  : Get one transition network per latent group class, to compare how
+  their members move between profiles
 
 ## Data
 
@@ -1659,8 +1724,8 @@ Coefficients, covariance, intervals and likelihood of a fit.
   [`coef(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
   [`vcov(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
   [`confint(`*`<multilpa>`*`)`](https://pak.dynasite.org/latents/reference/latents-model-methods.md)
-  : Extract model coefficients, covariance matrices and likelihood
-  summaries
+  : Extract the coefficients, their covariance matrix and the log
+  likelihood of a fitted model
 
 ## Conditions
 

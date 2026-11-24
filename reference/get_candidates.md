@@ -1,10 +1,9 @@
-# Every candidate of a grid
+# Get the table of every candidate model in an enumeration grid, with its criteria and diagnostics
 
-One row per candidate with its class counts, log likelihood, every
-information criterion and quality measure, and its convergence, boundary
-and replication status. Columns empty in every row are left out (for a
-class grid, the covariance `model` and the Gaussian checks; `error` when
-every candidate fitted); `get_results(x, "candidates")` keeps them.
+`get_candidates()` returns the main table of an enumeration grid: one
+row per candidate model, with its numbers of classes, its log
+likelihood, its information criteria, its classification quality and
+whether its estimation can be relied on.
 
 ## Usage
 
@@ -16,33 +15,69 @@ get_candidates(x)
 
 - x:
 
-  An enumeration grid from
-  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md),
+  An enumeration grid of any kind, from
   [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md),
-  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md)
+  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md),
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
   or
   [`enumerate_regressions()`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md).
 
 ## Value
 
-A data frame, one row per candidate. On a profile or class grid:
-candidate, n_profiles, n_group_classes, model, log_likelihood,
-n_parameters, the criteria (`aic`, `bic_groups`, ...),
-`profile_entropy`, the AvePP summaries, `converged`, `boundary`,
-`n_best_replicated`, and the Gaussian checks where they apply. A
-transition or family grid has one `entropy`, `bic` and `bic_individual`,
-and no AvePP summaries; a regression grid has `n_classes`, `bic`,
-`bic_rows`, `sabic`, `icl`, `entropy`, `smallest_share` and `best_bic`,
-without `candidate` or `boundary`. Any other object raises
-`latents_not_a_fit`.
+A data frame with one row per candidate. The columns depend on the kind
+of grid:
+
+- a profile or class grid: `candidate` (its name), `n_profiles`,
+  `n_group_classes`, `model` (the covariance structure),
+  `log_likelihood`, `n_parameters`, the criteria (`aic`, `kic`, and
+  `bic`, `sabic`, `caic`, `awe`, `icl` and `clc` with the suffix
+  `_groups` or `_individual` for the sample size they use),
+  `profile_entropy` and `group_entropy` (relative entropy at each
+  level), `avepp_min`, `avepp_max`, `avepp_mean` and `avepp_below` (the
+  average posterior probabilities of the classes and how many fall below
+  the cutoff 0.8; with the prefix `group_` for the group classes),
+  `converged`, `boundary`, `min_standardized_eigenvalue` and
+  `min_gaussian_mass` (checks of Gaussian indicators) and
+  `n_best_replicated` (the number of starts that reached the best log
+  likelihood);
+
+- a transition grid: `candidate`, `n_profiles`, `n_group_classes`,
+  `log_likelihood`, `n_parameters`, `aic`, `bic`, `bic_individual`,
+  `entropy`, `converged`, `boundary` and `n_best_replicated`;
+
+- a grid of group-class families: `candidate`, `model`, `family`,
+  `between_variance`, `n_group_classes`, `log_likelihood`,
+  `n_parameters`, `aic`, `bic`, `bic_individual`, `entropy`,
+  `smallest_class`, `min_effective_groups`, `converged`, `boundary` and
+  `n_best_replicated`;
+
+- a regression grid: `n_classes`, `n_group_classes`, `log_likelihood`,
+  `n_parameters`, `aic`, `bic`, `bic_rows`, `sabic`, `icl`, `entropy`,
+  `smallest_share`, `converged`, `n_best_replicated` and `best_bic`
+  (`TRUE` for the candidate with the lowest BIC). It has no `candidate`
+  or `boundary` column.
+
+Errors: `latents_not_a_fit` when `x` is not an enumeration grid.
+
+## Details
+
+The table is `get_results(x, "candidates")` without the columns that are
+empty in every row. On a class grid, for example, the covariance
+structure `model` and the checks of Gaussian indicators are left out,
+and the columns `warnings` and `error` appear only when a candidate has
+a warning or failed.
 
 ## See also
 
 [`get_best()`](https://pak.dynasite.org/latents/reference/get_best.md),
-[`get_deltas()`](https://pak.dynasite.org/latents/reference/get_deltas.md),
-[`plot_criteria()`](https://pak.dynasite.org/latents/reference/plot_criteria.md);
+[`get_deltas()`](https://pak.dynasite.org/latents/reference/get_deltas.md)
+and
+[`get_knees()`](https://pak.dynasite.org/latents/reference/get_knees.md)
+for what the criteria say;
+[`plot_criteria()`](https://pak.dynasite.org/latents/reference/plot_criteria.md)
+draws them;
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-for the columns.
+for the full table.
 
 ## Examples
 

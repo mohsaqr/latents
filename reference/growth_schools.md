@@ -22,7 +22,9 @@ growth_schools
 
 ## Format
 
-A data frame with 2780 rows (600 students, 40 schools) and 7 columns:
+A data frame with 2780 rows (600 students in 40 schools, one row per
+student and observed occasion, 2 to 5 occasions each, no missing values)
+and 7 columns:
 
 - school:
 
@@ -38,11 +40,12 @@ A data frame with 2780 rows (600 students, 40 schools) and 7 columns:
 
 - score:
 
-  Reading score.
+  Numeric reading score, 35.9 to 70.5.
 
 - programme:
 
-  Standardized school support programme, constant within school.
+  Numeric, standardized school support programme, constant within
+  school.
 
 - school_type:
 

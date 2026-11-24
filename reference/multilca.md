@@ -1,4 +1,4 @@
-# Fit a two-level latent class model
+# Fit a two-level latent class model: classes of categorical responses and classes of the groups they are nested in
 
 `multilca()` fits a latent class model for categorical data with
 observations nested within groups. It describes response patterns
@@ -27,13 +27,15 @@ multilca(data, vars, id, n_profiles, n_group_classes = 2L, ...)
 - vars:
 
   Names of the indicator columns. Numeric, integer, logical, character
-  and factor columns are accepted; factor levels retain their declared
-  order and other types are sorted.
+  and factor columns are accepted, and every distinct value of a column
+  is one category; factor levels retain their declared order and other
+  types are sorted.
 
 - id:
 
   Name of the group identifier column, or `NULL` for a single-level
-  model.
+  model ([`lca()`](https://pak.dynasite.org/latents/reference/lca.md)
+  fits that directly).
 
 - n_profiles:
 
@@ -42,24 +44,64 @@ multilca(data, vars, id, n_profiles, n_group_classes = 2L, ...)
 - n_group_classes:
 
   Number of group-level latent classes. Defaults to 2, or to 1 when
-  `id = NULL`.
+  `id = NULL`. With 1, the groups do not differ in their class
+  proportions.
 
 - ...:
 
-  Further arguments to
+  Further arguments, passed to
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
-  such as `n_starts`, `seed`, `missing`, `tol` or `profile_covariates`.
-  `ordinal` and `count` name ordinal and count indicators; the remaining
-  indicators are categorical. `categorical` is accepted but has no
-  further effect; its names must be in `vars`.
+  which documents all of them. The ones used most often:
+
+  - `missing`: `"error"` (default) stops when an indicator has a missing
+    value; `"fiml"` keeps every row and uses the responses it has.
+
+  - `ordinal`, `count`: indicators in `vars` modelled as ordered
+    categories or as counts; the remaining indicators are categorical.
+
+  - `n_starts` (default 10), `seed`, `max_iter` and `tol`: the number of
+    starts, the seed that makes them reproducible, and the limits of
+    each start.
+
+  - `min_probability`: the lower bound on a response probability
+    (default `1e-10`).
+
+  - `profile_covariates`, `group_covariates`: covariates that predict
+    class and group-class membership.
+
+  - `time`: the occasion column, used to order each group's rows in the
+    sequence tables and
+    [`plot_sequences()`](https://pak.dynasite.org/latents/reference/plot_sequences.md).
+
+  `categorical` is accepted but has no further effect; its names must be
+  in `vars`.
 
 ## Value
 
-A fitted `multilpa` object (`multilpa_covariates` when membership
-covariates are specified), as returned by
+A fitted model of class `multilpa`, or `multilpa_covariates` when
+membership covariates are specified, as returned by
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
-Categorical response probabilities are in
-`get_results(fit, "responses")`, one row per profile, item and category.
+The classes are numbered 1, 2, and so on in the `profile` column of its
+tables, and the group classes in `group_class`.
+[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
+returns the tables by name, among them:
+
+- `"responses"` (also `as.data.frame(fit)`): one row per class, item and
+  category, with the response probability;
+
+- `"profile_probabilities"`: the proportion of each class within each
+  group class, and the proportion of each group class;
+
+- `"assignments"`: the data with each row's most likely class, its
+  group's most likely group class and the posterior probabilities;
+
+- `"group_posteriors"`: the posterior probability of each group class
+  for each group;
+
+- `"classification"` and `"entropy"`: how clearly rows and groups are
+  classified;
+
+- `"information_criteria"` and `"starts"`.
 
 ## Details
 
@@ -75,9 +117,18 @@ with `categorical`.
 
 ## Conditions
 
-`latents_bad_categorical` when `categorical` names a column not in
-`vars`; otherwise the conditions of
-[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
+Errors: `latents_bad_argument` when `id` is left out or an argument has
+a value that is not accepted; `latents_bad_categorical` when
+`categorical` names a column not in `vars`; `latents_bad_data` when a
+column is missing from `data` or an indicator has missing values under
+`missing = "error"`; `latents_unidentified` when more than one group
+class is requested with one class or with one row per group. Warnings:
+`latents_unconverged` when the reported start did not converge and
+`latents_small_classes` when a class or group class is nearly empty.
+Otherwise the conditions of
+[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md);
+[latents-conditions](https://pak.dynasite.org/latents/reference/latents-conditions.md)
+lists them all.
 
 ## See also
 
@@ -91,39 +142,38 @@ for continuous and mixed indicators, and
 activities <- c("time_with_friends", "on_social_media", "tv_video_games")
 fit <- multilca(subset(student_esm, day <= 1), vars = activities,
                 id = "student", n_profiles = 2, n_group_classes = 2,
-                n_starts = 1, seed = 1)
+                n_starts = 2, seed = 1)
 get_results(fit, "responses")
-#> Warning: The fitted likelihood still carries a score worth 1.6% of a standard error; refit with a tighter `tol` before using Wald inference.
 #>    profile         indicator category probability  threshold
-#> 1        1 time_with_friends       no 0.829949372  1.5852685
-#> 2        2 time_with_friends       no 0.975758476  3.6951481
-#> 3        1 time_with_friends      yes 0.170050628         NA
-#> 4        2 time_with_friends      yes 0.024241524         NA
-#> 5        1   on_social_media       no 0.992389457  4.8705811
-#> 6        2   on_social_media       no 0.372739579 -0.5204818
-#> 7        1   on_social_media      yes 0.007610543         NA
-#> 8        2   on_social_media      yes 0.627260421         NA
-#> 9        1    tv_video_games       no 0.866790096  1.8728707
-#> 10       2    tv_video_games       no 0.736932548  1.0300859
-#> 11       1    tv_video_games      yes 0.133209904         NA
-#> 12       2    tv_video_games      yes 0.263067452         NA
+#> 1        1 time_with_friends       no 0.975634724  3.6899293
+#> 2        2 time_with_friends       no 0.829730459  1.5837182
+#> 3        1 time_with_friends      yes 0.024365276         NA
+#> 4        2 time_with_friends      yes 0.170269541         NA
+#> 5        1   on_social_media       no 0.372974753 -0.5194761
+#> 6        2   on_social_media       no 0.993730395  5.0657527
+#> 7        1   on_social_media      yes 0.627025247         NA
+#> 8        2   on_social_media      yes 0.006269605         NA
+#> 9        1    tv_video_games       no 0.737018500  1.0305293
+#> 10       2    tv_video_games       no 0.867019325  1.8748575
+#> 11       1    tv_video_games      yes 0.262981500         NA
+#> 12       2    tv_video_games      yes 0.132980675         NA
 #>    probability_standard_error
-#> 1                  0.04305267
-#> 2                  0.01675757
-#> 3                  0.04305267
-#> 4                  0.01675757
-#> 5                  0.12189263
-#> 6                  0.06817299
-#> 7                  0.12189263
-#> 8                  0.06817299
-#> 9                  0.04410404
-#> 10                 0.03726423
-#> 11                 0.04410404
-#> 12                 0.03726423
+#> 1                  0.01717744
+#> 2                  0.04359206
+#> 3                  0.01717744
+#> 4                  0.04359206
+#> 5                  0.06856696
+#> 6                  0.12850275
+#> 7                  0.06856696
+#> 8                  0.12850275
+#> 9                  0.03725565
+#> 10                 0.04461679
+#> 11                 0.03725565
+#> 12                 0.04461679
 get_results(fit, "profile_probabilities")
 #>   group_class profile  probability group_class_probability
-#> 1           1       1 7.775664e-01               0.5460114
-#> 2           1       2 2.224336e-01               0.5460114
-#> 3           2       1 2.380180e-07               0.4539886
-#> 4           2       2 9.999998e-01               0.4539886
+#> 1           1       1 2.240147e-01                 0.54559
+#> 2           1       2 7.759853e-01                 0.54559
+#> 3           2       1 1.000000e+00                 0.45441
+#> 4           2       2 1.688941e-09                 0.45441
 ```

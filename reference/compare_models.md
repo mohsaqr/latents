@@ -1,13 +1,15 @@
-# Compare the fit and classification of mixture models
+# Compare the fit, classification and convergence of several fitted models in one table
 
-`compare_models()` puts the fit, complexity, classification and
-convergence of several models fitted to the same data in one table:
-separately fitted models, or candidates of an enumeration grid. BIC
-differences give each model's distance from the smallest BIC among those
-compared, and the Schwarz weights `exp(-delta_bic / 2)`, normalised over
-them, give relative support. The function does not select a model: a
-lower criterion favours a model among those compared and says nothing
-about absolute fit.
+`compare_models()` returns one table of the fit, complexity,
+classification and convergence of several models fitted to the same
+data: separately fitted models, or candidates of an enumeration grid.
+Each row holds one model's number of parameters, log likelihood,
+information criteria, entropy, average posterior probabilities and
+smallest class share. BIC differences give each model's distance from
+the smallest BIC among those compared, and the Schwarz weights
+`exp(-delta_bic / 2)`, normalised over them, give relative support. The
+function does not select a model: a lower criterion favours a model
+among those compared and says nothing about absolute fit.
 
 ## Usage
 
@@ -25,67 +27,105 @@ compare_models(
 
 - ...:
 
-  An enumeration grid from
-  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
-  followed by the candidates to compare (none for all); or two or more
-  fits from
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
-  [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
-  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md),
-  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) or
-  [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md);
-  or two or more fits from
-  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md).
-  Named fits are labelled by their names, unnamed ones by their
-  expression, candidates by their candidate name; labels must be
-  distinct. See *Choosing candidates*.
+  The models to compare, in one of three forms:
+
+  - an enumeration grid from
+    [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md),
+    [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md)
+    or
+    [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md),
+    followed by the candidates to compare (none for all); see *Choosing
+    candidates*;
+
+  - two or more fits from
+    [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
+    [`lca()`](https://pak.dynasite.org/latents/reference/lca.md),
+    [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+    [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
+    (with or without membership covariates),
+    [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) or
+    [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md);
+
+  - two or more fits from
+    [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md),
+    with or without `random`.
+
+  The two kinds of fit cannot be mixed in one call. Named fits are
+  labelled by their names, unnamed ones by their expression, candidates
+  by their candidate name; labels must be distinct. Additive, dispersion
+  and cross-level fits of
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  are refused (`latents_bad_argument`).
 
 - n_profiles, n_group_classes:
 
   With a grid, the class counts of the candidates to compare; `NULL`
   (default) takes every count. Candidates whose fit failed are left out,
-  with a message.
+  with a message. Without a grid they raise `latents_bad_argument`.
 
 - cutoff:
 
   For profile and class models, the average posterior probability below
   which a class is counted in `avepp_below` and `group_avepp_below`
-  (default 0.8). Not used for mixture regressions.
+  (default 0.8; a number above 0 and at most 1). Not used for mixture
+  regressions.
 
 - test:
 
-  `"none"` (default) for the table alone; `"lrt"` adds a
-  likelihood-ratio test of each model against the one before it. See
-  *Likelihood-ratio tests*.
+  Whether the models are also tested against each other:
+
+  - `"none"` (default): the comparison table alone;
+
+  - `"lrt"`: adds a likelihood-ratio test of each model against the one
+    in the row before it (`lr_statistic`, `lr_df`, `lr_p_value`), for
+    nested profile, class and transition models. See *Likelihood-ratio
+    tests*.
 
 ## Value
 
-A data frame of class `latents_comparison`, one row per model.
+A data frame of class `latents_comparison` (also a `latents_table`,
+which prints as a formatted table), one row per model, in the order
+given. [`plot()`](https://rdrr.io/r/graphics/plot.default.html) draws
+its information criteria, and `get_candidate(comparison, "<model>")`
+returns the fitted model of a row.
 
-For profile and class models: `model`, `n_profiles` (classes, for a
-class model), `n_group_classes`, `structure` (the covariance structure,
-`NA` without continuous indicators), `n_parameters` (see *Held
-measurement*), `log_likelihood`, every information criterion of
-[`get_candidates()`](https://pak.dynasite.org/latents/reference/get_candidates.md),
-`profile_entropy`, `group_entropy`, `avepp_min`, `avepp_max`,
-`avepp_mean`, `avepp_below` and the same four prefixed `group_`,
-`smallest_share` (the smallest estimated profile share), `converged`,
-`n_best_replicated`, `delta_bic` and `bic_weight` (on `bic_groups`, the
-BIC that counts groups as the independent units; the ordinary BIC for
+For profile, class and transition models the columns are `model` (the
+label), `n_profiles` (classes, for a class model), `n_group_classes`,
+`structure` (the covariance structure, `NA` without continuous
+indicators), `n_parameters` (see *Held measurement*), `log_likelihood`;
+the information criteria `aic`, `kic`, and `bic`, `sabic`, `caic`,
+`awe`, `icl` and `clc`, each of these six in two columns, `_groups` (the
+number of groups as the sample size) and `_individual` (the number of
+rows); `profile_entropy`, `group_entropy`; `avepp_min`, `avepp_max`,
+`avepp_mean` (the smallest, largest and mean average posterior
+probability of the profiles) and `avepp_below` (the number of profiles
+below `cutoff`), and the same four prefixed `group_` for the group
+classes; `smallest_share` (the smallest estimated profile share),
+`converged`, `n_best_replicated` (the starts that reached the best log
+likelihood), `delta_bic` and `bic_weight` (on `bic_groups`, the BIC that
+counts groups as the independent units; the ordinary BIC for
 single-level models).
 
-For mixture regressions: `model`, `n_classes`, `random`, `n_parameters`,
+For mixture regressions: `model`, `n_classes`, `random` (the
+random-effects specification, `"none"` without one), `n_parameters`,
 `log_likelihood`, `aic`, `bic`, `sabic`, `icl`, `entropy`,
 `smallest_share`, `delta_bic`, `bic_weight` and `converged`.
 
 With `test = "lrt"`, also `lr_statistic`, `lr_df` and `lr_p_value`, `NA`
-in the first row. Fits to different data, fewer than two models, a
-group-class family fit or grid, and a mixture-regression grid are
-refused with classed conditions
-([latents-conditions](https://pak.dynasite.org/latents/reference/latents-conditions.md));
-the family and regression grids have their own tables. The criteria
-compare the models with each other; a final choice also needs the
-estimation to be stable and the classes to mean something.
+in the first row.
+
+Errors: `latents_bad_argument` for fewer than two models, models of
+mixed or unsupported kinds, duplicated labels, a group-class family fit
+or grid, a mixture-regression grid, or `test = "lrt"` on mixture
+regressions (the family and regression grids have their own tables,
+`as.data.frame(grid)`); `latents_incomparable_models` for fits to
+different data; and, under `test = "lrt"`, `latents_bad_nesting` for
+models that are not nested and `latents_singular_restriction` for a
+singular restriction.
+[latents-conditions](https://pak.dynasite.org/latents/reference/latents-conditions.md)
+describes each class. The criteria compare the models with each other; a
+final choice also needs the estimation to be stable and the classes to
+mean something.
 
 ## Held measurement
 

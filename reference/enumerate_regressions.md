@@ -1,10 +1,10 @@
-# Assess the number of classes in mixture regression models
+# Fit mixture regression models with different numbers of classes, and compare them
 
-`enumerate_regressions()` compares mixture regression models with
-different numbers of latent classes. It fits the same outcome model
-across the requested class counts, allowing researchers to assess
+`enumerate_regressions()` fits mixture regression models with different
+numbers of latent classes and compares them. The same outcome model is
+fitted across the requested class counts, so that researchers can assess
 whether additional classes provide a useful representation of variation
-in outcome–predictor relationships. The outcome distribution,
+in outcome-predictor relationships. The outcome distribution,
 predictors, and other supplied model settings remain common across
 candidates.
 
@@ -52,13 +52,16 @@ enumerate_regressions(
 
 - n_group_classes:
 
-  Positive integer group-class counts (two-level model; needs `id`),
-  crossed with `n_classes`. Default 1.
+  Positive integer group-class counts (two-level model; needs `id` in
+  `...`), crossed with `n_classes`. Default 1, no group classes.
 
 - bootstrap:
 
-  Number of bootstrap replicates for the likelihood-ratio test; `0` (the
-  default) skips it. Not available with sampling weights.
+  Number of bootstrap replicates for the likelihood-ratio test of
+  `k - 1` against `k` classes. `0` (the default) skips the test. A
+  positive number adds the `blrt_` columns to the table; each replicate
+  refits two models, so the run time grows with it. Not available with
+  sampling weights.
 
 - bootstrap_starts:
 
@@ -66,44 +69,75 @@ enumerate_regressions(
 
 - seed:
 
-  Optional integer seed; when given, the caller's random-number state is
-  restored on exit.
+  Optional integer seed for the starts and the bootstrap; when given,
+  the caller's random-number state is restored on exit.
 
 - ...:
 
   Further arguments to
   [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md),
-  such as `family`, `id`, `class_level`, `common`, `membership` or
-  `variance`. `n_classes`, `n_group_classes` and `vcov_type` are not
-  accepted here.
+  used for every model:
+
+  - `family`: `"gaussian"` (default), `"binomial"`, `"poisson"`,
+    `"negative_binomial"` or `"ordinal"`;
+
+  - `id` and `class_level`: `"observation"` (default, a class per row)
+    or `"group"` (a class per unit of `id`);
+
+  - `variance`: `"varying"` (default) or `"equal"`;
+
+  - `common`, `membership`, `random` and the other model arguments;
+
+  - `n_starts`, `max_iter`, `tol` and `missing` (`"error"` or `"omit"`).
+
+  `n_classes`, `n_group_classes` and `vcov_type` are not accepted here:
+  the class counts are this function's own arguments, and the models are
+  fitted without a stored covariance matrix. A name that is not an
+  argument of
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  is refused.
 
 ## Value
 
 An object of class `latents_regression_enumeration`. Its table (from
-[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) or
-`get_results(x, "fit")`) has one row per model, with columns
-`n_classes`, `n_group_classes`, `log_likelihood`, `n_parameters`, `aic`,
-`bic`, `bic_rows`, `sabic`, `icl`, `entropy`, `smallest_share`,
-`converged`, `n_best_replicated`, `note` (why a model could not be
-fitted), `best_bic` (`TRUE` for rows attaining the smallest reported
-BIC, without filtering on convergence), and, with `bootstrap > 0`,
-`blrt_statistic`, `blrt_p_value`, `blrt_replicates` (the valid
-replicates), `blrt_n_invalid` (the failed, unconverged, separated or
-reversed-likelihood replicates) and `blrt_flagged` (a compatibility
-alias for `blrt_n_invalid`). The test columns are `NA` where the `k - 1`
-or `k` class model is missing or failed, and the p-value is `NA` when
-the observed fits fail validation or fewer than half of the requested
-replicates are valid.
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html),
+[`summary()`](https://rdrr.io/r/base/summary.html) or
+`get_results(x, "fit")`) has one row per model, with these columns:
+
+- `n_classes`, `n_group_classes`, `log_likelihood`, `n_parameters`;
+
+- `aic`, `bic`, `bic_rows` (BIC with the number of rows as the sample
+  size), `sabic` and `icl`: lower is better;
+
+- `entropy`: between 0 and 1, higher meaning clearer classification;
+
+- `smallest_share`: the proportion of the smallest class;
+
+- `converged` and `n_best_replicated` (the number of starts that reached
+  the best log likelihood);
+
+- `note`: why a model could not be fitted; its other columns are `NA`;
+
+- `best_bic`: `TRUE` for the rows with the smallest reported BIC,
+  without filtering on convergence;
+
+- with `bootstrap > 0`: `blrt_statistic`, `blrt_p_value`,
+  `blrt_replicates` (the valid replicates), `blrt_n_invalid` (the
+  failed, unconverged, separated or reversed-likelihood replicates) and
+  `blrt_flagged` (a compatibility alias for `blrt_n_invalid`). The test
+  of a row compares it with the row that has one class fewer. These
+  columns are `NA` where the `k - 1` or `k` class model is missing or
+  failed, and the p-value is `NA` when the observed fits fail validation
+  or fewer than half of the requested replicates are valid.
+
 `get_results(x, "model", n_classes = , n_group_classes = )` returns one
-fitted model, `get_results(x, "tree")` the class tree and
+fitted model (a `latents_mixture_regression` or `latents_growth_mixture`
+fit), `get_results(x, "tree")` the class tree and
 `get_results(x, "all")` the named list of the `fit` and `tree` tables;
 any other `what` raises `latents_bad_argument`.
 [`print()`](https://rdrr.io/r/base/print.html) shows the main columns of
-the table. [`summary()`](https://rdrr.io/r/base/summary.html) returns
-the same table as
-[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html).
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) draws AIC, BIC,
-SABIC and ICL across the classes (see
+the table. [`plot()`](https://rdrr.io/r/graphics/plot.default.html)
+draws AIC, BIC, SABIC and ICL across the classes (see
 [`plot_enumeration()`](https://pak.dynasite.org/latents/reference/plot_enumeration.md)
 for its other views, and `plot_views(x)` for the views a regression grid
 offers).
@@ -178,24 +212,48 @@ classes
 #>         0.07512      TRUE    FALSE
 #> 
 #> One model: get_results(x, "model", n_classes = ).
+get_results(classes, "model", n_classes = 2)
+#> Mixture of gaussian regressions: 2 classes (one class per row)
+#> score ~ hours
+#> 900 rows | log likelihood -3144.0073 | BIC 6335.63 | entropy 0.443
+#> Converged: TRUE | iterations: 49 | best likelihood reached by 2 of 2 completed starts (4 run)
+#> 
+#> Classes
+#> 
+#> Class    Share  Expected  Rows assigned  Avg. posterior  Residual SD
+#> -------  -----  --------  -------------  --------------  -----------
+#> Class 1  0.564    507.72            573           0.789         5.24
+#> Class 2  0.436    392.28            327           0.829         6.89
+#> 
+#> Regression coefficients (95% CI)
+#> 
+#> Class    Term       Estimate          95% CI      p
+#> -------  ---------  --------  --------------  -----
+#> Class 1  Intercept     34.36  [32.95, 35.77]  <.001
+#> Class 1  hours          4.57  [ 4.36,  4.77]  <.001
+#> Class 2  Intercept     54.90  [52.76, 57.04]  <.001
+#> Class 2  hours          0.81  [ 0.48,  1.14]  <.001
+#> 
+#> Every table: get_results(x, what = ), e.g. "classes", "membership", "fit", "assignments".
 # \donttest{
-# A small bootstrap count is used only to limit example execution time.
+# With the bootstrap likelihood-ratio test of one against two classes.
+# `bootstrap` is small so the example runs quickly; use many more
+# replicates for inference.
 with_test <- enumerate_regressions(score ~ hours, data = study_hours,
-                                   n_classes = 1:2, n_starts = 3, seed = 1,
-                                   bootstrap = 4)
-#> Warning: 3 of 4 bootstrap replicates were invalid (a refit failed, did not converge or separated); fewer than half are valid, so blrt_p_value is NA.
+                                   n_classes = 1:2, variance = "equal",
+                                   n_starts = 3, seed = 1, bootstrap = 4)
 as.data.frame(with_test)
 #>   n_classes n_group_classes log_likelihood n_parameters      aic      bic
 #> 1         1               1      -3244.958            3 6495.916 6510.323
-#> 2         2               1      -3144.007            7 6302.015 6335.631
+#> 2         2               1      -3149.398            6 6310.797 6339.611
 #>   bic_rows    sabic      icl   entropy smallest_share converged
-#> 1 6510.323 6500.795 6510.323        NA      1.0000000      TRUE
-#> 2 6335.631 6313.401 7030.539 0.4430333      0.4358709      TRUE
+#> 1 6510.323 6500.795 6510.323        NA        1.00000      TRUE
+#> 2 6339.611 6320.556 7010.972 0.4619063        0.37308      TRUE
 #>   n_best_replicated note best_bic blrt_statistic blrt_p_value blrt_replicates
 #> 1                 4 <NA>    FALSE             NA           NA              NA
-#> 2                 2 <NA>     TRUE        201.901           NA               1
+#> 2                 4 <NA>     TRUE        191.119          0.2               4
 #>   blrt_n_invalid blrt_flagged
 #> 1             NA           NA
-#> 2              3            3
+#> 2              0            0
 # }
 ```

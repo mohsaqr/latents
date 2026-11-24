@@ -1,24 +1,43 @@
-# Everything about any object, printed and drawn
+# Print and plot everything about any object of the package: its summary, its checks and every plot
 
-`overview()` takes any object the package returns and shows all of it:
-the summary, the diagnostic checks and every plot the object can draw.
+`overview()` prints and plots everything about any object the package
+returns: the summary, the diagnostic checks where the object has them,
+and every plot the object can draw. What is shown depends on the object:
 
-- A profile, class or transition fit:
-  [`report()`](https://pak.dynasite.org/latents/reference/report.md)
-  (summary, descriptives, checks, every plot view).
+- a profile, class or transition fit of
+  [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
+  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md),
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
+  or [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) (class
+  `multilpa_transitions`): the output of
+  [`report()`](https://pak.dynasite.org/latents/reference/report.md),
+  that is, the summary, the descriptives, the checks and every plot
+  view;
 
-- Any other fit (mixture regression, growth mixture, general transition,
-  additive, cross-level, pooled): its summary, its
-  [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
-  checks where defined, and
-  [`plot_all()`](https://pak.dynasite.org/latents/reference/plot_all.md).
+- a fit of another family (a mixture regression, a growth mixture, a
+  general transition fit, an additive or a cross-level fit): its
+  summary, the checks of
+  [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md),
+  and the plots of
+  [`plot_all()`](https://pak.dynasite.org/latents/reference/plot_all.md);
 
-- An enumeration grid: its summary and
+- pooled imputations: the summary and the plots of
+  [`plot_all()`](https://pak.dynasite.org/latents/reference/plot_all.md);
+
+- an enumeration grid: its summary and the plots of
   [`plot_all()`](https://pak.dynasite.org/latents/reference/plot_all.md)
-  (criteria, entropy, AvePP, smallest class, BIC changes, trust, tree).
+  (criteria, entropy, AvePP, criterion changes, heat map, smallest
+  class, trust and tree);
 
-- A comparison, bootstrap test, sensitivity analysis or diagnostics
-  result: the object printed and its plot.
+- a comparison, a bootstrap test, a bootstrap table of
+  [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+  or a sensitivity analysis: the object or its summary printed, and its
+  plot;
+
+- a
+  [`diagnostics()`](https://pak.dynasite.org/latents/reference/diagnostics.md)
+  result: the result printed, and the plots of the fit it checked.
 
 ## Usage
 
@@ -30,23 +49,35 @@ overview(x, plots = TRUE)
 
 - x:
 
-  Any object returned by the package.
+  Any object returned by the package: a fitted model, pooled
+  imputations, an enumeration grid, a comparison, a bootstrap result, a
+  sensitivity analysis or a diagnostics result.
 
 - plots:
 
-  `TRUE` (the default) draws the plots; `FALSE` prints only.
+  Whether to draw the plots:
+
+  - `TRUE` (default): prints, then draws every plot. The plots need the
+    ggplot2 package; without it only the printed part is shown;
+
+  - `FALSE`: prints only.
 
 ## Value
 
-`x`, invisibly. Called for its printed and drawn output.
+`x`, invisibly. The function is called for what it prints and draws.
 
-An object the package did not return raises `latents_not_a_fit`.
+Errors: `latents_not_a_fit` when `x` is not a fit, grid or other result
+of the package, for example a data frame; `latents_bad_argument` when
+`plots` is not `TRUE` or `FALSE`.
 
 ## See also
 
-[`report()`](https://pak.dynasite.org/latents/reference/report.md),
-[`plot_all()`](https://pak.dynasite.org/latents/reference/plot_all.md),
-[`get_checks()`](https://pak.dynasite.org/latents/reference/get_checks.md).
+[`report()`](https://pak.dynasite.org/latents/reference/report.md) for
+the fits it covers;
+[`plot_all()`](https://pak.dynasite.org/latents/reference/plot_all.md)
+for the plots alone;
+[`get_checks()`](https://pak.dynasite.org/latents/reference/get_checks.md)
+for the checks as a table.
 
 ## Examples
 

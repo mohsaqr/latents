@@ -1,4 +1,4 @@
-# Class enumeration and comparison of mixture models
+# Fit models with different numbers of classes and collect their criteria and diagnostics for comparison
 
 `enumerate_classes()` fits every candidate in a grid of class counts
 (and, for continuous indicators, covariance structures) and collects
@@ -63,26 +63,50 @@ enumerate_classes(
 - n_profiles:
 
   Profile (class) counts to try (default `1:4`; `2:4` for transition
-  models).
+  models, which need at least two profiles).
 
 - n_group_classes:
 
   Group-class counts to try (default `1:3`; default `1` with `time`, and
-  only `1` with `id = NULL`).
+  only `1` with `id = NULL`). Every count is crossed with every value of
+  `n_profiles`. A candidate with one profile and more than one group
+  class is not identified: it is recorded as failed, with the reason in
+  the `error` column.
 
 - model:
 
-  Covariance structures to cross with the class counts. `"basic"` (the
-  default for profile grids) fits EEI (equal variances, no covariances),
-  VVI (varying variances), EEE (one covariance matrix shared by all
-  profiles) and VVV (a covariance matrix per profile). `"all"` fits all
-  fourteen structures. Otherwise mclust's three-letter codes (volume,
-  shape and orientation, each equal `E` or varying `V`, `I` for no
-  covariances), or `NULL` for none, which is the default for a
-  transition grid. With one continuous indicator, codes that coincide
-  are fitted once; with only categorical indicators no structure is
-  crossed. Giving `variance_model`, `covariance_model`, `volume`,
-  `shape` or `orientation` in `...` sets one structure instead.
+  The covariance structures of the continuous indicators to fit at every
+  combination of class counts:
+
+  - `"basic"` (default for profile models): four structures. `"EEI"`:
+    the profiles share their variances and the indicators are
+    uncorrelated within a profile. `"VVI"`: each profile has its own
+    variances, still uncorrelated. `"EEE"`: the profiles share one
+    covariance matrix. `"VVV"`: each profile has its own covariance
+    matrix.
+
+  - `"all"`: all fourteen structures of mclust.
+
+  - One or more of the codes `"EII"`, `"VII"`, `"EEI"`, `"VEI"`,
+    `"EVI"`, `"VVI"`, `"EEE"`, `"VEE"`, `"EVE"`, `"VVE"`, `"EEV"`,
+    `"VEV"`, `"EVV"`, `"VVV"`: those structures only. The three letters
+    are the volume, shape and orientation, each equal (`E`) or varying
+    (`V`) across profiles, with `I` for a spherical shape or no
+    covariances;
+    [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+    explains them.
+
+  - `NULL`: no structure is crossed, and every candidate has the
+    structure
+    [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+    fits by default (`"VVI"`). This is the default with `time`.
+
+  With `time`, only codes and `NULL` are accepted (`"basic"` and `"all"`
+  are not). With one continuous indicator, codes that coincide are
+  fitted once. With no continuous indicator there is no structure to
+  cross, and an explicit `model` is an error. Giving `variance_model`,
+  `covariance_model`, `volume`, `shape` or `orientation` in `...` sets
+  one structure for every candidate; `model` must then be left out.
 
 - seed:
 
@@ -91,18 +115,34 @@ enumerate_classes(
 
 - family:
 
-  `"profiles"` (default) enumerates the profile model over `n_profiles`,
-  `n_group_classes` and `model`. One or more of `"additive"`,
-  `"dispersion"` and `"additive_dispersion"` enumerates those
-  group-class families over `family`, `n_group_classes` and
-  `between_variance` instead; they need `id`, refuse `n_profiles` and
-  `model`, and return a `latents_family_enumeration`.
+  Which model family to enumerate:
+
+  - `"profiles"` (default): the profile model, over `n_profiles`,
+    `n_group_classes` and `model`;
+
+  - one or more of `"additive"`, `"dispersion"` and
+    `"additive_dispersion"`: those group-class families of
+    [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+    over `family`, `n_group_classes` and `between_variance`. They need
+    `id`, refuse `n_profiles`, `model` and `time`, and return a
+    `latents_family_enumeration`.
+
+  The cross-level families of
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  are not enumerated.
 
 - between_variance:
 
-  For the group-class families, the restrictions to cross: `"varying"`,
-  `"equal"` or both (default). The dispersion family is fitted with
-  `"equal"` only.
+  For the group-class families only, the restrictions on the
+  between-group variances to cross:
+
+  - `"varying"`: each group class has its own between-group variances;
+
+  - `"equal"`: all group classes share them.
+
+  The default, `c("varying", "equal")`, fits both. The dispersion family
+  is fitted with `"equal"` only. Giving the argument with
+  `family = "profiles"` is an error.
 
 - time:
 
@@ -111,7 +151,8 @@ enumerate_classes(
   `n_profiles` and `n_group_classes`, every other
   [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) argument
   in `...` held fixed; `model`, when given, crosses structures. Profile
-  family only; returns a `latents_transition_enumeration`.
+  family only; returns a `latents_transition_enumeration`. `NULL`
+  (default) enumerates profile or class models.
 
 - ...:
 
@@ -119,9 +160,11 @@ enumerate_classes(
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
   or of [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
   with `time`, used for every candidate: typically `n_starts`,
-  `max_iter`, `missing`, `categorical`, `centering`, `scaling`,
-  `drop_empty` and `boundary`. The group-class families take only
-  `n_starts`, `max_iter`, `tol` and `min_variance`.
+  `max_iter`, `missing` (`"error"` or `"fiml"`), `categorical`,
+  `centering`, `scaling`, `drop_empty` and `boundary` (`"allow"` or
+  `"exclude"`). The group-class families take only `n_starts`,
+  `max_iter`, `tol` and `min_variance`. A name that is not an argument
+  of the fitting function is refused.
 
 - cores:
 
@@ -132,36 +175,92 @@ enumerate_classes(
 
 - type:
 
-  `"lca"`, `"lpa"` or `"lta"`; `NULL` (default) reads the type from the
-  other arguments. `"lca"` treats every indicator as categorical,
-  numeric codes included, as
-  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
-  does (indicators in `ordinal` or `count` keep those distributions, and
-  `categorical` adds to the set). `"lpa"` needs continuous indicators
-  and no `categorical`, `ordinal` or `count`. Both need `time = NULL`.
-  `"lta"` needs `time` and reads the measurement from `categorical`, as
-  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) does,
-  without making numeric indicators categorical. An explicit type needs
+  The kind of model, stated explicitly:
+
+  - `NULL` (default): read from the other arguments. `time` gives
+    transition models; otherwise the indicators named in `categorical`,
+    `ordinal` and `count` decide between profile, class and mixed
+    models;
+
+  - `"lpa"`: latent profile models. Every indicator is continuous;
+    `categorical`, `ordinal` and `count` are refused;
+
+  - `"lca"`: latent class models. Every indicator is categorical,
+    numeric codes included, as
+    [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
+    does (indicators in `ordinal` or `count` keep those distributions,
+    and `categorical` adds to the set);
+
+  - `"lta"`: latent transition models. Needs `time`, and reads the
+    measurement from `categorical`, as
+    [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) does,
+    without making numeric indicators categorical.
+
+  `"lpa"` and `"lca"` need `time = NULL`, and an explicit type needs
   `family = "profiles"`.
 
 - verbose:
 
-  Whether to report progress: one message each when the candidates are
+  `TRUE` reports progress with one message each when the candidates are
   prepared, when starts are screened, when they are fitted and when the
-  grid is done. Default on when `cores > 1`. Not reported for the
-  group-class families.
+  grid is done; `FALSE` is silent. The default is `TRUE` when
+  `cores > 1` and `FALSE` otherwise. Not reported for the group-class
+  families.
 
 ## Value
 
-A `multilpa_enumeration` object, or the transition or family enumeration
-named under `time` and `family`; the print header names the resolved
-type (LPA, LCA, LTA, mixed or family). On every grid:
+An enumeration grid that keeps every fitted candidate. Its class depends
+on what was enumerated:
+
+- `multilpa_enumeration`: profile, class or mixed models (the default);
+
+- `latents_transition_enumeration`: transition models (with `time`);
+
+- `latents_family_enumeration`: group-class families (with `family`).
+
+The print header names the resolved type (LPA, LCA, LTA, mixed or
+family).
+
+On every grid,
 [`get_candidates()`](https://pak.dynasite.org/latents/reference/get_candidates.md)
-gives one row per candidate (named like `"profiles3_groups2"`) with its
-class counts, log likelihood, criteria, entropy, convergence, boundary
-and replication, leaving out columns empty in every row;
+(also [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html))
+gives one row per candidate, named like `"profiles3_groups2"`: with the
+structure appended, as in `"profiles3_groups2_VVI"`, when several are
+crossed; with `classes` for `profiles` when every indicator is
+categorical; without the `groups` part on a single-level grid
+(`"profiles3"`); and by family on a family grid (`"additive_groups2"`).
+Its columns:
+
+- `n_profiles`, `n_group_classes`, `model`, `log_likelihood` and
+  `n_parameters`;
+
+- the information criteria `aic`, `kic`, `bic`, `sabic`, `caic`, `awe`,
+  `icl` and `clc`. On a profile or class grid each except `aic` and
+  `kic` has two columns: `_groups` uses the number of groups as the
+  sample size and `_individual` the number of rows. Lower is better. A
+  transition or family grid has `aic`, `bic` (groups) and
+  `bic_individual`;
+
+- `profile_entropy` and `group_entropy` (`entropy` on a transition or
+  family grid): relative entropy between 0 and 1, higher meaning clearer
+  classification;
+
+- on a profile or class grid, the average posterior probability of the
+  assigned class (`avepp_min`, `avepp_max`, `avepp_mean`, and
+  `avepp_below`, the number of classes under 0.8), with the same for
+  group classes as `group_avepp_*`;
+
+- `converged`, `boundary` (an estimate at its bound) and
+  `n_best_replicated` (the number of starts that reached the best log
+  likelihood);
+
+- `error`: why a candidate could not be fitted. Such a candidate keeps
+  its row, with `NA` values. A transition or family grid also has
+  `warnings`, the warnings of each candidate.
+
+Columns empty in every row are left out. The other accessors:
 [`get_best()`](https://pak.dynasite.org/latents/reference/get_best.md)
-the best candidate per criterion;
+gives the best candidate per criterion;
 [`get_tree()`](https://pak.dynasite.org/latents/reference/get_tree.md)
 and
 [`plot_tree()`](https://pak.dynasite.org/latents/reference/plot_tree.md)
@@ -177,20 +276,36 @@ the criteria;
 one fitted candidate;
 [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)
 candidates by name (a family grid is compared in its own candidates
-table). A profile or class grid also has the AvePP summaries at each
-level in its candidates table,
+table). A profile or class grid also has
 [`get_deltas()`](https://pak.dynasite.org/latents/reference/get_deltas.md)
 and
 [`get_knees()`](https://pak.dynasite.org/latents/reference/get_knees.md),
 and a [`summary()`](https://rdrr.io/r/base/summary.html) that prints one
 screen of the evidence; a transition or family grid's
 [`summary()`](https://rdrr.io/r/base/summary.html) is its candidates
-table. Invalid arguments are refused with the classed conditions listed
-on
-[latents-conditions](https://pak.dynasite.org/latents/reference/latents-conditions.md).
-When a converged candidate fitted from two or more starts reached its
-best log likelihood from one of them only, a `latents_single_start`
-message names it once per grid.
+table. No candidate is selected automatically.
+
+## Conditions
+
+`latents_bad_argument` for an argument value or combination that is not
+accepted: a `type` that conflicts with `time`, `family` or the
+measurement arguments; `model` given with another structure argument,
+with no continuous indicator, or naming an unknown structure;
+`n_profiles` or `model` with a group-class family; `between_variance`
+with the profile family; more than one group class with `id = NULL`; a
+name in `...` that the fitting function does not have.
+`latents_bad_transition` for a transition grid with fewer than two
+profiles. A candidate that fails for a reason of its own stays in the
+grid with its `error`. When every candidate fails for the same reason in
+the data or the arguments (a column that does not exist, for example),
+that error is raised instead: `latents_bad_data`,
+`latents_bad_categorical`, `latents_missing_data`, `latents_bad_weights`
+or `latents_bad_argument`. The candidates' warnings are raised once the
+grid is fitted. When a converged candidate fitted from two or more
+starts reached its best log likelihood from one of them only, a
+`latents_single_start` message names it once per grid.
+[latents-conditions](https://pak.dynasite.org/latents/reference/latents-conditions.md)
+lists every condition.
 
 ## See also
 
@@ -203,132 +318,122 @@ for mixture regressions.
 ## Examples
 
 ``` r
-set.seed(1)
-d <- data.frame(g = rep(1:10, each = 10), y = rnorm(100))
-candidates <- enumerate_classes(d, "y", "g", n_profiles = 1:2,
-                              n_group_classes = 1, n_starts = 2, seed = 1)
-as.data.frame(candidates)
-#>               candidate n_profiles n_group_classes model log_likelihood
-#> 1 profiles1_groups1_EEI          1               1   EEI      -130.6550
-#> 2 profiles2_groups1_EEI          2               1   EEI      -130.5791
-#> 3 profiles1_groups1_VVI          1               1   VVI      -130.6550
-#> 4 profiles2_groups1_VVI          2               1   VVI      -130.5920
-#>   n_parameters      aic      kic bic_groups bic_individual sabic_groups
-#> 1            2 265.3100 270.3100   265.9152       270.5204     259.9237
-#> 2            4 269.1581 276.1581   270.3684       279.5788     258.3855
-#> 3            2 265.3100 270.3100   265.9152       270.5204     259.9237
-#> 4            5 271.1839 279.1839   272.6968       284.2098     257.7182
-#>   sabic_individual caic_groups caic_individual awe_groups awe_individual
-#> 1         264.2039    267.9152        272.5204   276.5204       285.7307
-#> 2         266.9458    274.3684        283.5788   367.5789       385.9996
-#> 3         264.2039    267.9152        272.5204   276.5204       285.7307
-#> 4         268.4185    277.6968        289.2098   426.5893       449.6151
-#>   icl_groups icl_individual clc_groups clc_individual profile_entropy
-#> 1   265.9152       270.5204   261.3100       261.3100              NA
-#> 2   346.3686       355.5789   337.1583       337.1583      0.45177478
-#> 3   265.9152       270.5204   261.3100       261.3100              NA
-#> 4   400.0763       411.5893   388.5634       388.5634      0.08115115
-#>   group_entropy avepp_min avepp_max avepp_mean avepp_below group_avepp_min
-#> 1            NA        NA        NA         NA          NA              NA
-#> 2            NA 0.6411851 0.8529074  0.7470462           1              NA
-#> 3            NA        NA        NA         NA          NA              NA
-#> 4            NA 0.6380736 0.6405599  0.6393168           2              NA
-#>   group_avepp_max group_avepp_mean group_avepp_below converged boundary
-#> 1              NA               NA                NA      TRUE    FALSE
-#> 2              NA               NA                NA      TRUE    FALSE
-#> 3              NA               NA                NA      TRUE    FALSE
-#> 4              NA               NA                NA      TRUE    FALSE
-#>   min_standardized_eigenvalue min_gaussian_mass n_best_replicated warnings
-#> 1                   1.0000000         100.00000                 2         
-#> 2                   0.8400023          17.67382                 2         
-#> 3                   1.0000000         100.00000                 2         
-#> 4                   0.8201279          44.58165                 2         
-#>   error
-#> 1  <NA>
-#> 2  <NA>
-#> 3  <NA>
-#> 4  <NA>
-summary(candidates)
-#> Class enumeration: 4 candidates, 4 converged, 0 failed to fit
-#> 2 distinct candidate(s) are minimal under some criterion.
-#> No candidate is selected automatically. Choose one convention and keep it.
+# Course sessions nested in students: numbers of session profiles and of
+# student classes.
+activity <- c("browse", "lectures")
+candidates <- enumerate_classes(course_engagement, activity, id = "student",
+                                n_profiles = 2:3, n_group_classes = 1:2,
+                                model = "VVI", n_starts = 2, seed = 1)
+#> 2 of 4 candidates reached their best log likelihood from one start only (profiles3_groups1, profiles3_groups2); refit those you consider with more starts.
+candidates
+#> Class enumeration: 4 candidate models (LPA)
+#>          candidate n_profiles n_group_classes model log_likelihood n_parameters
+#>  profiles2_groups1          2               1   VVI       -3894.21            9
+#>  profiles3_groups1          3               1   VVI       -3889.10           14
+#>  profiles2_groups2          2               2   VVI       -3799.97           11
+#>  profiles3_groups2          3               2   VVI       -3795.95           17
+#>      aic bic_groups bic_individual icl_individual profile_entropy group_entropy
+#>  7806.43    7830.40        7853.77        8701.82           0.570            NA
+#>  7806.20    7843.49        7879.84        8846.75           0.691            NA
+#>  7621.94    7651.24        7679.80        8374.77           0.642         0.860
+#>  7625.89    7671.17        7715.31        8759.53           0.663         0.863
+#>  avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max
+#>      0.848     0.886      0.867           0              NA              NA
+#>      0.507     0.895      0.737           1              NA              NA
+#>      0.882     0.905      0.893           0           0.942           0.968
+#>      0.624     0.904      0.779           1           0.949           0.965
+#>  group_avepp_mean group_avepp_below converged boundary n_best_replicated
+#>                NA                NA      TRUE    FALSE                 2
+#>                NA                NA      TRUE    FALSE                 1
+#>             0.955                 0      TRUE    FALSE                 2
+#>             0.957                 0      TRUE    FALSE                 1
+#> Every column, unrounded: as.data.frame(x).
+#> No candidate is selected automatically. Compare one convention consistently.
+get_best(candidates)
+#>    criterion  convention         candidate n_profiles n_group_classes model
+#> 1        aic        <NA> profiles2_groups2          2               2   VVI
+#> 2        kic        <NA> profiles2_groups2          2               2   VVI
+#> 3        bic      groups profiles2_groups2          2               2   VVI
+#> 4        bic individuals profiles2_groups2          2               2   VVI
+#> 5      sabic      groups profiles2_groups2          2               2   VVI
+#> 6      sabic individuals profiles2_groups2          2               2   VVI
+#> 7       caic      groups profiles2_groups2          2               2   VVI
+#> 8       caic individuals profiles2_groups2          2               2   VVI
+#> 9        awe      groups profiles2_groups2          2               2   VVI
+#> 10       awe individuals profiles2_groups2          2               2   VVI
+#> 11       icl      groups profiles2_groups2          2               2   VVI
+#> 12       icl individuals profiles2_groups2          2               2   VVI
+#> 13       clc      groups profiles2_groups2          2               2   VVI
+#> 14       clc individuals profiles2_groups2          2               2   VVI
+#>       value
+#> 1  7621.938
+#> 2  7635.938
+#> 3  7651.236
+#> 4  7679.796
+#> 5  7616.483
+#> 6  7644.853
+#> 7  7662.236
+#> 8  7690.796
+#> 9  8430.504
+#> 10 8487.624
+#> 11 8346.206
+#> 12 8374.766
+#> 13 8294.908
+#> 14 8294.908
+get_candidate(candidates, "profiles2_groups2")
+#> Two-level latent profile analysis: 2 profiles, 2 group classes
+#> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
+#> Log likelihood: -3799.969233 | AIC: 7621.938 | BIC (groups): 7651.236
+#> Converged: TRUE | iterations: 24 | best log likelihood reached by 2 of 2 starts (2 converged)
+#> Smallest standardized Gaussian eigenvalue: 0.5058 (profiles, profile_2); Gaussian mass: 580.3; weight effective n: 712.4.
 #> 
-#> ! 2 candidates have a class with average posterior below 0.8
-#>     (profiles2_groups1_EEI, profiles2_groups1_VVI).
+#> Class sizes   profile_1 59.2% (842)   profile_2 40.8% (580)
+#> Group classes group_class_1 32.4% (34)   group_class_2 67.6% (72)
 #> 
-#> -- lowest value of each criterion --------------------------------
-#>  criterion  convention             candidate value
-#>        aic        <NA> profiles1_groups1_EEI 265.3
-#>        kic        <NA> profiles1_groups1_EEI 270.3
-#>        bic      groups profiles1_groups1_EEI 265.9
-#>        bic individuals profiles1_groups1_EEI 270.5
-#>      sabic      groups profiles2_groups1_VVI 257.7
-#>      sabic individuals profiles1_groups1_EEI 264.2
-#>       caic      groups profiles1_groups1_EEI 267.9
-#>       caic individuals profiles1_groups1_EEI 272.5
-#>        awe      groups profiles1_groups1_EEI 276.5
-#>        awe individuals profiles1_groups1_EEI 285.7
-#>        icl      groups profiles1_groups1_EEI 265.9
-#>        icl individuals profiles1_groups1_EEI 270.5
-#>        clc      groups profiles1_groups1_EEI 261.3
-#>        clc individuals profiles1_groups1_EEI 261.3
+#> Means
+#>  indicator profile_1 profile_2
+#>     browse     0.549    -0.797
+#>   lectures     0.405    -0.587
 #> 
-#> -- knees of bic_groups ----------------------------------------
-#>   direction                line knee_candidate knee_without_largest stable
-#>    profiles  1 group class, EEI           <NA>                 <NA>     NA
-#>    profiles  1 group class, VVI           <NA>                 <NA>     NA
-#>  parameters all candidates, EEI           <NA>                 <NA>     NA
-#>  parameters all candidates, VVI           <NA>                 <NA>     NA
-#> 
-#> Tables: get_candidates(x), get_best(x), get_deltas(x), get_knees(x),
-#>         get_tree(x), get_classification(x), get_entropy(x), get_checks(x).
-#> Plots:  plot_criteria(x), plot_deltas(x), plot_avepp(x), plot_tree(x), plot_all(x).
+#> Variances and standard errors: get_results(x, "profiles").
+#> Every other table: get_results(x, what = ), or get_results(x, "all").
 
-# Numeric response codes, explicitly categorical:
-codes <- data.frame(g = rep(seq_len(10), each = 10), item = rep(0:1, 50))
-classes <- enumerate_classes(codes, "item", "g", type = "lca",
-                             n_profiles = 1, n_group_classes = 1,
-                             n_starts = 1, seed = 1)
+# Latent transition models over each student's sequence of sessions:
+moves <- enumerate_classes(course_engagement,
+                           c(activity, "forum_read", "forum_post",
+                             "attendance"),
+                           id = "student", time = "sequence",
+                           n_profiles = 2:3, n_starts = 2, seed = 1)
+get_candidates(moves)
+#>           candidate n_profiles n_group_classes log_likelihood n_parameters
+#> 1 profiles2_groups1          2               1      -8335.287           23
+#> 2 profiles3_groups1          3               1      -8261.976           38
+#>        aic      bic bic_individual   entropy converged boundary
+#> 1 16716.57 16777.83       16837.55 0.9611453      TRUE    FALSE
+#> 2 16599.95 16701.16       16799.83 0.8005931      TRUE    FALSE
+#>   n_best_replicated
+#> 1                 2
+#> 2                 2
 
-# Single level, crossing class counts with two named structures:
-single <- enumerate_lpa(iris, c("Sepal.Length", "Sepal.Width",
-                                "Petal.Length", "Petal.Width"),
-                        n_profiles = 1:3, model = c("VVV", "EEE"),
-                        n_starts = 2, seed = 1)
-#> 1 of 6 candidates reached their best log likelihood from one start only (profiles3_VVV); refit those you consider with more starts.
-summary(single)
-#> Class enumeration: 6 candidates, 6 converged, 0 failed to fit
-#> 2 distinct candidate(s) are minimal under some criterion.
-#> No candidate is selected automatically. Choose one convention and keep it.
-#> 
-#> ! 1 of 6 candidates reached their best log likelihood from one start only
-#>     (profiles3_VVV); refit those you consider with more starts.
-#> 
-#> -- lowest value of each criterion --------------------------------
-#>  criterion  convention     candidate value
-#>        aic        <NA> profiles3_VVV 448.4
-#>        kic        <NA> profiles3_VVV 495.4
-#>        bic      groups profiles2_VVV 574.0
-#>        bic individuals profiles2_VVV 574.0
-#>      sabic      groups profiles3_VVV 441.6
-#>      sabic individuals profiles3_VVV 441.6
-#>       caic      groups profiles2_VVV 603.0
-#>       caic individuals profiles2_VVV 603.0
-#>        awe      groups profiles2_VVV 806.3
-#>        awe individuals profiles2_VVV 806.3
-#>        icl      groups profiles2_VVV 574.0
-#>        icl individuals profiles2_VVV 574.0
-#>        clc      groups profiles3_VVV 370.1
-#>        clc individuals profiles3_VVV 370.1
-#> 
-#> -- knees of bic_groups ----------------------------------------
-#>   direction                line knee_candidate knee_without_largest stable
-#>    profiles  1 group class, EEE  profiles2_EEE                 <NA>     NA
-#>    profiles  1 group class, VVV  profiles2_VVV                 <NA>     NA
-#>  parameters all candidates, EEE  profiles2_EEE                 <NA>     NA
-#>  parameters all candidates, VVV  profiles2_VVV                 <NA>     NA
-#> 
-#> Tables: get_candidates(x), get_best(x), get_deltas(x), get_knees(x),
-#>         get_tree(x), get_classification(x), get_entropy(x), get_checks(x).
-#> Plots:  plot_criteria(x), plot_deltas(x), plot_avepp(x), plot_tree(x), plot_all(x).
+# Latent class models, stated explicitly with `type`:
+items <- c("time_with_friends", "on_social_media", "tv_video_games",
+           "sports")
+classes <- enumerate_classes(subset(student_esm, day <= 1), items,
+                             id = "student", type = "lca",
+                             n_profiles = 1:2, n_group_classes = 1,
+                             n_starts = 2, seed = 1)
+#> 1 of 2 candidates reached their best log likelihood from one start only (classes2_groups1); refit those you consider with more starts.
+classes
+#> Class enumeration: 2 candidate models (LCA)
+#>         candidate n_profiles log_likelihood n_parameters     aic bic_groups
+#>  classes1_groups1          1        -555.14            4 1118.28    1128.41
+#>  classes2_groups1          2        -547.83            9 1113.66    1136.45
+#>  bic_individual icl_individual profile_entropy avepp_min avepp_max avepp_mean
+#>         1133.48        1133.48              NA        NA        NA         NA
+#>         1147.85        1154.46           0.986     0.998         1      0.999
+#>  avepp_below converged boundary n_best_replicated
+#>           NA      TRUE    FALSE                 2
+#>            0      TRUE    FALSE                 1
+#> Every column, unrounded: as.data.frame(x).
+#> No candidate is selected automatically. Compare one convention consistently.
 ```

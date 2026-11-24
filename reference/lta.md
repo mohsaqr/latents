@@ -1,11 +1,11 @@
-# Fit a latent transition model
+# Fit a latent transition model of how units move between latent states over repeated occasions
 
-Latent transition analysis describes stability and change in latent
-states across repeated occasions. The states (profiles) are patterns in
-continuous or discrete indicators; transition probabilities give the
-chance of staying in a state or moving to another between successive
-occasions. `lta()` estimates the measurement and transition parameters
-jointly.
+`lta()` fits a latent transition model, which describes stability and
+change in latent states across repeated occasions. The states (profiles)
+are patterns in continuous or discrete indicators; transition
+probabilities give the chance of staying in a state or moving to another
+between successive occasions. The measurement and transition parameters
+are estimated jointly.
 
 By default the chain is first order and time-homogeneous: the state at
 an occasion depends on the state before it, with the same transition
@@ -72,8 +72,9 @@ lta(
 
 - id:
 
-  Name of the group identifier column (character, factor or numeric,
-  without missing values). Required.
+  Name of the column identifying the units (persons) whose occasions are
+  followed (character, factor or numeric, without missing values).
+  Required.
 
 - n_profiles:
 
@@ -88,13 +89,23 @@ lta(
 
 - n_group_classes:
 
-  Number of group classes (default 1). More than one fits a mixture of
-  transition models over the units.
+  Number of group classes (default 1). With 1, every unit follows the
+  same initial and transition probabilities. More than one fits a
+  mixture of transition models: each unit belongs to one group class,
+  and each group class has its own initial and transition probabilities.
 
 - variance_model:
 
-  `"varying"` (default): each profile has its own variances or
-  covariance matrix; `"equal"`: one shared by all profiles.
+  Whether the profiles share the variances of the continuous indicators:
+
+  - `"varying"` (default): each profile has its own variances (its own
+    covariance matrix under `covariance_model = "full"`), so profiles
+    can differ in spread as well as in level;
+
+  - `"equal"`: one set of variances (one covariance matrix) shared by
+    all profiles, so profiles differ only in their means. This uses
+    fewer parameters and is less prone to solutions in which one
+    profile's variance collapses towards zero.
 
 - n_starts:
 
@@ -130,14 +141,32 @@ lta(
 
 - missing:
 
-  `"error"` (default) rejects missing indicator values; `"fiml"`
-  maximizes the observed-data likelihood under MAR. Covariates must be
-  complete either way. See *Occasions without data*.
+  What to do with missing indicator values:
+
+  - `"error"` (default): stop, naming the indicators that have them;
+
+  - `"fiml"`: keep every row and fit each one on the indicators it
+    observes (full-information maximum likelihood), valid when the
+    missingness depends only on observed values. A row with no observed
+    indicator keeps its place in the sequence.
+
+  Covariates must be complete either way. See *Occasions without data*.
 
 - covariance_model:
 
-  `"diagonal"` (default): the indicators are independent within a
-  profile; `"full"`: within-profile covariances are estimated.
+  Whether continuous indicators are correlated within a profile:
+
+  - `"diagonal"` (default): no covariances, so within a profile the
+    indicators are independent and all their association is explained by
+    the profiles;
+
+  - `"full"`: the within-profile covariances are estimated, one matrix
+    per profile under `variance_model = "varying"` and one shared matrix
+    under `"equal"`.
+
+  With `variance_model` this gives four of the structures of `model`:
+  VVI (`"varying"` and `"diagonal"`), EEI (`"equal"` and `"diagonal"`),
+  VVV (`"varying"` and `"full"`) and EEE (`"equal"` and `"full"`).
 
 - categorical:
 
@@ -153,29 +182,48 @@ lta(
 
 - occasions:
 
-  How a group's occasions are placed on the transition grid.
-  `"observed"` (default) numbers each group's own rows consecutively, so
-  a transition always links two adjacent rows. `"grid"` places them on
-  the grid of every position seen in the data, so a group that skips a
-  position still makes a transition across the gap and contributes no
-  measurement at it. The two agree when every group is observed at every
-  position. Under either, a group's first row is its first occasion:
+  How a group's rows are placed on the sequence of occasions:
+
+  - `"observed"` (default): each group's own rows are numbered
+    consecutively, so a transition always links two adjacent rows,
+    whatever the gap between their `time` values;
+
+  - `"grid"`: the rows are placed on the grid of every `time` value seen
+    in the data, so a group that skips a value still makes a transition
+    across the gap and contributes no measurement at it.
+
+  The two agree when every group is observed at every `time` value.
+  Under either, a group's first row is its first occasion:
   occasion-specific transitions and measurement count occasions from
-  each group's own start, not from the first position in the data.
+  each group's own start, not from the first `time` value in the data.
 
 - select_start:
 
-  Which start is reported. `"likelihood"` (default): the highest log
-  likelihood, preferring a converged start among those tied within
-  tolerance. `"converged"`: the best converged start when there is one.
+  Which start is reported:
+
+  - `"likelihood"` (default): the start with the highest log likelihood,
+    whether or not it converged. Among starts tied within the
+    convergence tolerance, a converged one is preferred;
+
+  - `"converged"`: the start with the highest log likelihood among those
+    that converged, or among all starts when none converged.
+
   [`summary()`](https://rdrr.io/r/base/summary.html) and
   `get_results(fit, "starts")` report every start.
 
 - transitions:
 
-  `"homogeneous"` (default): one transition matrix for every occasion.
-  `"occasion"`: a separate matrix for each move (occasion 1 to 2, 2 to
-  3, and so on). See *Occasions without data*.
+  Whether the transition probabilities change over occasions:
+
+  - `"homogeneous"` (default): one transition matrix for every move, so
+    the chance of moving from one profile to another is the same at
+    every occasion;
+
+  - `"occasion"`: a separate matrix for each move (occasion 1 to 2, 2 to
+    3, and so on), with `n_profiles * (n_profiles - 1)` more parameters
+    per group class for each additional move.
+
+  See *Occasions without data*.
 
 - transition_covariates:
 
@@ -187,39 +235,63 @@ lta(
   `occasions = "grid"`, a skipped position has no row to read the
   covariates from and is refused: use `"observed"`, or add the skipped
   rows with their covariate values and missing indicators under FIML.
+  The default, [`character()`](https://rdrr.io/r/base/character.html),
+  is no covariates.
 
 - initial_covariates:
 
   Columns that shift the initial profile distribution (a multinomial
   logit, last profile as reference), read at each group's first
-  occasion. Factors are expanded as for `transition_covariates`.
+  occasion. Factors are expanded as for `transition_covariates`. The
+  default, [`character()`](https://rdrr.io/r/base/character.html), is no
+  covariates.
 
 - measurement:
 
-  `"invariant"` (default) keeps the profiles' means, variances and
-  response probabilities equal across occasions; `"occasion"` estimates
-  them separately at each occasion.
+  Whether the profiles keep their definition over occasions:
+
+  - `"invariant"` (default): the profiles' means, variances and response
+    probabilities are equal at every occasion, so a profile means the
+    same thing throughout and a transition is a change of profile;
+
+  - `"occasion"`: they are estimated separately at each occasion. The
+    profiles may then drift, and the same label need not mean the same
+    thing at two occasions.
 
 - order:
 
-  `1` (default) or `2`. With `2`, the profile at each occasion from the
-  third on depends on the profiles at the two previous occasions; the
-  first transition stays first order.
+  The order of the chain:
+
+  - `1` (default): the profile at an occasion depends on the profile at
+    the previous occasion only;
+
+  - `2`: from the third occasion on it depends on the profiles at the
+    two previous occasions; the first transition stays first order. This
+    needs at least three occasions.
 
 - model:
 
-  A covariance structure as
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  takes it (mclust's codes, such as `"VVI"`). A `multilpa_transitions`
-  fit gives standard errors for EEI, VVI, EEE and VVV only; a
-  `multilpa_lta` fit (see *Value*) gives them for every structure.
+  The covariance structure as one of mclust's fourteen codes (`"EII"`,
+  `"VII"`, `"EEI"`, `"VEI"`, `"EVI"`, `"VVI"`, `"EEE"`, `"VEE"`,
+  `"EVE"`, `"VVE"`, `"EEV"`, `"VEV"`, `"EVV"`, `"VVV"`), explained under
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
+  `NULL` (default) follows `variance_model` and `covariance_model`.
+  Unlike in
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+  a `model` given together with `variance_model` or `covariance_model`
+  is not refused: `model` is used and the other two are ignored. A
+  `multilpa_transitions` fit gives standard errors for EEI, VVI, EEE and
+  VVV only; a `multilpa_lta` fit (see *Value*) gives them for every
+  structure.
 
 - mover_stayer:
 
-  `TRUE` adds a class of stayers: units that never change profile
-  (identity transitions) with their own initial distribution, the
-  mover-stayer model. `n_group_classes` then counts the mover classes;
-  the stayer class is reported as `"stayers"`.
+  `FALSE` (default) fits the model as described. `TRUE` adds a class of
+  stayers: units that never change profile, with their own initial
+  distribution (the mover-stayer model). It separates units that are
+  stable throughout from units that can move. `n_group_classes` then
+  counts the mover classes only, and the stayer class is reported as
+  `"stayers"`.
 
 - weights:
 
@@ -228,15 +300,18 @@ lta(
   errors, as under
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
   The model-implied `"transitions"` and `"initial"` tables then average
-  the units with their weights.
+  the units with their weights. `NULL` (default) weights every unit
+  equally.
 
 - ordinal, count, count_model, count_dispersion:
 
   Ordinal and count indicators, as under
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md);
-  with `measurement = "occasion"` their parameters are estimated per
-  occasion. Read with `get_results(fit, "ordinal")` and
-  `get_results(fit, "count_means")`.
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md):
+  `count_model` is `"poisson"` (default) or `"negative_binomial"`, and
+  `count_dispersion` is `"varying"` (default, one dispersion per
+  profile) or `"equal"`. With `measurement = "occasion"` their
+  parameters are estimated per occasion. Read with
+  `get_results(fit, "ordinal")` and `get_results(fit, "count_means")`.
 
 - drop_empty:
 
@@ -253,8 +328,15 @@ lta(
 
 - search:
 
-  `"kmeans"` (default) or `"emEM"`, as under
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
+  How the starting values are searched:
+
+  - `"kmeans"` (default): every one of the `n_starts` starts is run to
+    convergence;
+
+  - `"emEM"`: a larger pool of `n_screen` starts is screened with a
+    short EM run each, and only the first start and the best of the
+    rest, `n_starts` in all, are run to convergence.
+
   Unlike
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
   `lta()` does not pick the default by covariance structure.
@@ -262,13 +344,17 @@ lta(
 - n_screen:
 
   For `search = "emEM"` only, the size of the screened pool (default
-  five times `n_starts`, at least `n_starts`).
+  five times `n_starts`, at least `n_starts`). It is refused under
+  `search = "kmeans"`, the default.
 
 - acceleration:
 
-  `"squarem"` (default) accelerates EM with SQUAREM, as under
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md);
-  `"none"` runs plain EM.
+  How EM is run:
+
+  - `"squarem"` (default): EM accelerated with SQUAREM, which usually
+    needs fewer iterations and never lowers the likelihood;
+
+  - `"none"`: plain EM.
 
 - cores:
 
@@ -280,30 +366,102 @@ lta(
 
 ## Value
 
-A `multilpa_transitions` object with `means`, `variances` (and
-`covariances` or `response_probabilities`), `initial_probabilities`
-(group classes by profiles), `transition_probabilities` (profiles by
-profiles by group classes, rows indexing the profile moved from),
-`group_probabilities`, the posterior matrices and classifications,
-`log_likelihood`, the information criteria, the starts table and the
-convergence history.
+A fitted model of one of two classes.
+
+**`multilpa_transitions`** is returned for the basic model: continuous
+or categorical indicators, homogeneous first-order transitions,
+invariant measurement, no covariates, no stayer class and no weights.
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-returns its tables,
-[`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
-Wald or bootstrap standard errors and
-[`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
-compares nested fits.
+returns its tables by name, among them:
 
-With `transitions = "occasion"`, `transition_covariates`,
+- `"transitions"`: one row per group class, origin profile (`from`) and
+  destination profile (`to`), with the transition probability, the
+  expected number of moves, and the flags `supported` and `estimated`
+  (see *Occasions without data*);
+
+- `"initial"`: the probability of each profile at the first occasion and
+  its prevalence over all occasions;
+
+- `"profiles"` (also `as.data.frame(fit)`) and `"responses"`: the
+  profile means and variances, and the response probabilities of
+  categorical indicators;
+
+- `"assignments"`: the data with each row's most likely profile, its
+  unit's group class and the posterior probabilities;
+
+- `"sequences"`, `"sequence_summary"` and `"sequence_lengths"`: the
+  profile assigned to each unit at each occasion, and the lengths of the
+  sequences;
+
+- `"classification"`, `"entropy"`, `"information_criteria"` and
+  `"starts"`, as for a
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+  fit.
+
+Profiles and group classes are numbered 1, 2, and so on.
+
+**`multilpa_lta`** is returned when any of these is used:
+`transitions = "occasion"`, `transition_covariates`,
 `initial_covariates`, `measurement = "occasion"`, `order = 2`,
-`mover_stayer = TRUE`, `weights`, `ordinal` or `count`, the result is a
-`multilpa_lta` object: its tables are transition and initial logit
-coefficients with Wald standard errors, model-implied transition
-probabilities per occasion (with an `estimated` column), profiles per
-occasion and the assignments.
+`mover_stayer = TRUE`, `weights`, `ordinal` or `count`. Its tables:
 
-Profile labels are arbitrary and not comparable across fits without
-alignment.
+- `"transitions"` (also `as.data.frame(fit)`): the model-implied
+  transition probabilities, per occasion where they differ, with
+  `supported` and `estimated`;
+
+- `"transition_coefficients"` and `"initial_coefficients"`: the logit
+  coefficients with Wald standard errors, confidence limits and odds
+  ratios;
+
+- `"initial"`: the initial profile probabilities;
+
+- `"profiles"`: the measurement parameters, per occasion under
+  `measurement = "occasion"`;
+
+- `"group_classes"`: the proportion of each group class, the stayers
+  included;
+
+- `"assignments"`, `"posteriors"`, `"entropy"`,
+  `"information_criteria"`, `"fit"` and `"starts"`.
+
+The parameter tables of this class label profiles and group classes
+`"profile_1"`, `"group_class_1"`, and so on; its `"assignments"` table
+numbers them.
+
+For both classes
+[`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+gives Wald or bootstrap standard errors,
+[`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
+compares nested fits,
+[`plot_transitions()`](https://pak.dynasite.org/latents/reference/plot_transitions.md)
+draws the transition probabilities and
+[`plot_sequences()`](https://pak.dynasite.org/latents/reference/plot_sequences.md)
+the sequences. Profile labels are arbitrary and not comparable across
+fits without alignment.
+
+## Conditions
+
+Errors: `latents_bad_argument` when `id` or `time` is left out or an
+argument has a value that is not accepted; `latents_bad_data` for a
+column that `data` does not have or missing indicator values under
+`missing = "error"`; `latents_bad_time` for `time` values that repeat
+within a group or do not sort; `latents_bad_transition` for fewer than
+two profiles, for data in which no group is observed at two occasions or
+no indicator is observed after the first occasion, and for `order = 2`
+with fewer than three occasions; `latents_unidentified` for the
+specifications listed under *Short panels and bootstrap support*, and
+for more profiles than distinct rows or more group classes than groups;
+`latents_bad_covariate` for a constant or collinear covariate.
+
+Warnings: `latents_unconverged` when the reported start stopped at
+`max_iter`; `latents_boundary` when a variance or a probability is at
+its bound; `latents_empty_transition_row`,
+`latents_weak_transition_support` and `latents_unidentified_occasion`
+for the cases under *Occasions without data*; `latents_small_classes`
+when a profile or group class has an effective size below one;
+`latents_failed_starts` when some starts failed.
+[latents-conditions](https://pak.dynasite.org/latents/reference/latents-conditions.md)
+lists every condition.
 
 ## Occasions without data
 

@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -270,12 +270,18 @@ ICCs for the activity indicators, together with sample sizes and
 missingness.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/descriptives.html">descriptives</a></span><span class="op">(</span><span class="va">course_engagement</span>, vars <span class="op">=</span> <span class="va">vars</span>, id <span class="op">=</span> <span class="st">"student"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">#&gt;     variable    n n_missing       mean     sd   min  max n_distinct n_groups     icc</span></span>
-<span><span class="co">#&gt; 1     browse 1422         0 -2.813e-05 0.9891 -3.14 2.49        398      106 0.19229</span></span>
-<span><span class="co">#&gt; 2   lectures 1422         0 -4.219e-05 0.9889 -2.91 3.22        399      106 0.08779</span></span>
-<span><span class="co">#&gt; 3 forum_read 1422         0  7.032e-05 0.9890 -2.73 2.81        400      106 0.22403</span></span>
-<span><span class="co">#&gt; 4 forum_post 1422         0 -2.110e-05 0.9890 -2.61 3.10        397      106 0.15035</span></span>
-<span><span class="co">#&gt; 5 attendance 1422         0  7.736e-05 0.9889 -2.45 2.41        401      106 0.22145</span></span></code></pre>
+<pre><code><span><span class="co">#&gt;     variable    n n_missing       mean     sd   min  max n_distinct n_groups sd_within</span></span>
+<span><span class="co">#&gt; 1     browse 1422         0 -2.813e-05 0.9891 -3.14 2.49        398      106    0.8897</span></span>
+<span><span class="co">#&gt; 2   lectures 1422         0 -4.219e-05 0.9889 -2.91 3.22        399      106    0.9449</span></span>
+<span><span class="co">#&gt; 3 forum_read 1422         0  7.032e-05 0.9890 -2.73 2.81        400      106    0.8721</span></span>
+<span><span class="co">#&gt; 4 forum_post 1422         0 -2.110e-05 0.9890 -2.61 3.10        397      106    0.9122</span></span>
+<span><span class="co">#&gt; 5 attendance 1422         0  7.736e-05 0.9889 -2.45 2.41        401      106    0.8734</span></span>
+<span><span class="co">#&gt;   sd_between     icc</span></span>
+<span><span class="co">#&gt; 1     0.5018 0.19229</span></span>
+<span><span class="co">#&gt; 2     0.3916 0.08779</span></span>
+<span><span class="co">#&gt; 3     0.5242 0.22403</span></span>
+<span><span class="co">#&gt; 4     0.4582 0.15035</span></span>
+<span><span class="co">#&gt; 5     0.5250 0.22145</span></span></code></pre>
 <p>The data comprise 1,422 enrolments from 106 students, with complete
 observations on all activity indicators. Because the indicators were
 standardized within course, their pooled means are approximately zero

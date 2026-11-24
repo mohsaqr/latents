@@ -1,18 +1,9 @@
-# Information criteria across a candidate grid
+# Plot the information criteria of an enumeration grid against the number of classes
 
-Each information criterion against the number of classes, one panel per
-criterion and one line per number of group classes (or covariance
-structure), with each criterion's lowest value circled. `what` also
-names the other views of a grid, which
-[`plot_entropy()`](https://pak.dynasite.org/latents/reference/plot_entropy.md),
-[`plot_avepp()`](https://pak.dynasite.org/latents/reference/plot_avepp.md),
-[`plot_deltas()`](https://pak.dynasite.org/latents/reference/plot_deltas.md),
-[`plot_heatmap()`](https://pak.dynasite.org/latents/reference/plot_heatmap.md),
-[`plot_sizes()`](https://pak.dynasite.org/latents/reference/plot_sizes.md),
-[`plot_trust()`](https://pak.dynasite.org/latents/reference/plot_trust.md)
-and
-[`plot_tree()`](https://pak.dynasite.org/latents/reference/plot_tree.md)
-draw by name.
+`plot_enumeration()` plots the information criteria of an enumeration
+grid against the number of classes: one panel per criterion and one line
+per number of group classes (or structure). Lower is preferred; no model
+is selected.
 
 ## Usage
 
@@ -44,62 +35,110 @@ plot_enumeration(
 
 - what:
 
-  Criterion columns of `as.data.frame(x)`, such as `"bic_groups"`, or
-  `"all"`. The default draws AIC, both BICs and ICL on a profile or
-  class grid; AIC, BIC and BIC over individuals on a transition or
-  family grid; AIC, BIC, SABIC and ICL on a regression grid. Otherwise
-  one of `"entropy"`, `"avepp"`, `"diagnostics"` (both), `"deltas"`,
-  `"heatmap"`, `"smallest"`, `"trust"`, `"selection"` (those four and
-  `"diagnostics"`) or `"tree"`; these cannot be mixed with criteria.
+  One or more criteria (columns of `as.data.frame(x)`), or one or more
+  views; not both in one call. The criteria come first below; of the
+  views, a family grid has only the first three and `"tree"`:
+
+  - criteria of a profile or class grid: `"aic"`, `"kic"`, and `"bic"`,
+    `"sabic"`, `"caic"`, `"awe"`, `"icl"`, `"clc"` with the suffix
+    `_groups` or `_individual` (sample size: the groups, or the rows).
+    Default: `"aic"`, `"bic_groups"`, `"bic_individual"`,
+    `"icl_individual"`;
+
+  - criteria of a transition or family grid
+    ([`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
+    with `time` or `family`): `"aic"`, `"bic"`, `"bic_individual"`, the
+    default;
+
+  - criteria of a regression grid: `"aic"`, `"bic"`, `"sabic"`, `"icl"`
+    (the default) and `"bic_rows"`;
+
+  - `"all"`: every criterion of the grid, equal ones drawn once;
+
+  - `"entropy"`: each candidate's relative entropy
+    ([`plot_entropy()`](https://pak.dynasite.org/latents/reference/plot_entropy.md));
+
+  - `"avepp"`: its lowest average posterior probability
+    ([`plot_avepp()`](https://pak.dynasite.org/latents/reference/plot_avepp.md));
+
+  - `"diagnostics"`: `"entropy"` and `"avepp"` together;
+
+  - `"deltas"`: the drop in `using` with each added class
+    ([`plot_deltas()`](https://pak.dynasite.org/latents/reference/plot_deltas.md));
+
+  - `"heatmap"`: how far `using` is above its lowest
+    ([`plot_heatmap()`](https://pak.dynasite.org/latents/reference/plot_heatmap.md));
+
+  - `"smallest"`: the smallest class's share, 5% dashed
+    ([`plot_sizes()`](https://pak.dynasite.org/latents/reference/plot_sizes.md));
+
+  - `"trust"`: convergence, bounds and replication
+    ([`plot_trust()`](https://pak.dynasite.org/latents/reference/plot_trust.md));
+
+  - `"selection"`: the last four and `"diagnostics"`
+    ([`plot_selection()`](https://pak.dynasite.org/latents/reference/plot_selection.md));
+
+  - `"tree"`: how classes split
+    ([`plot_tree()`](https://pak.dynasite.org/latents/reference/plot_tree.md));
+    not with another view.
 
 - combine:
 
-  `TRUE` (default) draws the criteria as panels of one plot; `FALSE`
-  returns one plot per criterion.
+  `TRUE` (default) draws the criteria, or `"entropy"` and `"avepp"`, as
+  panels of one plot; `FALSE` returns one plot each, as a list. With
+  `"tree"` it goes to
+  [`plot_tree()`](https://pak.dynasite.org/latents/reference/plot_tree.md),
+  whose default is `FALSE`.
 
 - labels:
 
-  `TRUE` (default) labels each line directly; `FALSE` uses a legend.
+  `TRUE` (default) labels each line directly; `FALSE` uses a legend
+  instead.
 
 - mark_minimum:
 
-  `TRUE` (default) circles each criterion's lowest value among converged
-  candidates, without selecting a model.
+  `TRUE` (default) circles each criterion's lowest value among the
+  converged candidates; `FALSE` draws no circle.
 
 - main, subtitle:
 
-  Title and subtitle; `NULL` (default) keeps the view's own.
+  Title and subtitle of the plot, each one string; `NULL` (default)
+  keeps the view's own.
 
 - cutoff:
 
   The AvePP cutoff drawn dashed by `"avepp"`, `"diagnostics"` and
-  `"selection"` (default 0.8).
+  `"selection"`: one number above 0 and at most 1 (default 0.8).
 
 - using:
 
-  The criterion `"deltas"`, `"heatmap"` and `"selection"` use: when not
-  given, `"bic_groups"` on a profile or class grid and `"bic"` on the
-  others.
+  The criterion that `"deltas"`, `"heatmap"` and `"selection"` read; by
+  default `"bic_groups"` on a profile or class grid, else `"bic"`.
 
 - ...:
 
-  With `what = "tree"`, the arguments of
+  With `what = "tree"`, the other arguments of
   [`plot_tree()`](https://pak.dynasite.org/latents/reference/plot_tree.md).
+  Any other argument raises `latents_bad_argument`.
 
 ## Value
 
-A ggplot object; a `latents_plots` list for several criteria with
-`combine = FALSE`, or for a `what` of several views. A criterion not in
-the grid raises `latents_unknown_criterion`; a view the kind of grid
-does not offer raises `latents_unsupported_view`.
+A ggplot object, or a `latents_plots` list of them when there are
+several (`combine = FALSE`, several views, `"selection"`, several
+trees). Errors: `latents_unknown_criterion` (`what` is neither a
+criterion nor a view), `latents_unsupported_view` (a view this kind of
+grid lacks), `latents_nothing_to_plot` (no converged candidate has a
+finite value), `latents_bad_argument` (no grid, criteria mixed with
+views, a bad value).
 
 ## See also
 
 [`plot_criteria()`](https://pak.dynasite.org/latents/reference/plot_criteria.md)
-draws every criterion of any grid or comparison;
+for any grid or comparison;
 [`plot_views()`](https://pak.dynasite.org/latents/reference/plot_views.md)
-lists the views a grid offers;
-[`plot_selection()`](https://pak.dynasite.org/latents/reference/plot_selection.md).
+lists what a grid offers;
+[`get_candidates()`](https://pak.dynasite.org/latents/reference/get_candidates.md)
+for the table.
 
 ## Examples
 
@@ -110,4 +149,6 @@ grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
 plot_enumeration(grid)
 
 plot_enumeration(grid, what = "bic_individual")
+
+plot_enumeration(grid, what = "entropy")
 ```

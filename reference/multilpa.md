@@ -1,12 +1,12 @@
-# Fit a two-level latent profile model
+# Fit a two-level latent profile model: profiles of observations and classes of the groups they are nested in
 
-Multilevel latent profile analysis describes heterogeneity among
-observations and among the groups they are nested in: measurements
-within persons, students within schools. Observation-level profiles are
-patterns in the indicators; group-level classes differ in how prevalent
-each profile is among their members. A profile has the same measurement
-parameters in every group class, so group classes differ only in
-composition.
+`multilpa()` fits a multilevel latent profile model, which describes
+heterogeneity among observations and among the groups they are nested
+in: measurements within persons, students within schools.
+Observation-level profiles are patterns in the indicators; group-level
+classes differ in how prevalent each profile is among their members. A
+profile has the same measurement parameters in every group class, so
+group classes differ only in composition.
 
 `multilpa()` estimates the measurement parameters, the profile
 probabilities within each group class, the group-class proportions and
@@ -91,7 +91,8 @@ multilpa(
 
 - n_group_classes:
 
-  Number of group classes (default 2).
+  Number of group classes (default 2; 1 with `id = NULL`). With 1, every
+  group has the same profile proportions.
 
 - profile_covariates, group_covariates:
 
@@ -102,8 +103,16 @@ multilpa(
 
 - variance_model:
 
-  `"varying"` (default): each profile has its own variances or
-  covariance matrix; `"equal"`: one shared by all profiles.
+  Whether the profiles share the variances of the continuous indicators:
+
+  - `"varying"` (default): each profile has its own variances (its own
+    covariance matrix under `covariance_model = "full"`), so profiles
+    can differ in spread as well as in level;
+
+  - `"equal"`: one set of variances (one covariance matrix) shared by
+    all profiles, so profiles differ only in their means. This uses
+    fewer parameters and is less prone to solutions in which one
+    profile's variance collapses towards zero.
 
 - n_starts:
 
@@ -147,22 +156,42 @@ multilpa(
 
 - missing:
 
-  `"error"` (default) rejects missing indicator values; `"fiml"`
-  maximizes the observed-data likelihood under MAR, integrating the
-  missing values out. Covariates must be complete either way. See
-  *Missing data*.
+  What to do with missing indicator values (covariates must be complete
+  either way; see *Missing data*):
+
+  - `"error"` (default): stop, naming the indicators that have them;
+
+  - `"fiml"`: keep every row and fit each one on the indicators it
+    observes (full-information maximum likelihood). This is valid when
+    the missingness depends only on observed values (missing at random).
 
 - profile_slopes:
 
-  `"shared"` (default): one slope per profile logit, common to all group
-  classes. `"group_class"`: separate slopes in each group class, a
-  cross-level interaction with `n_group_classes` times as many slope
-  parameters.
+  With `profile_covariates` and more than one group class, whether the
+  covariate slopes differ between group classes:
+
+  - `"shared"` (default): one slope per profile logit, common to all
+    group classes;
+
+  - `"group_class"`: separate slopes in each group class, a cross-level
+    interaction with `n_group_classes` times as many slope parameters.
+    It needs `profile_covariates`.
 
 - covariance_model:
 
-  `"diagonal"` (default): the indicators are independent within a
-  profile; `"full"`: within-profile covariances are estimated.
+  Whether continuous indicators are correlated within a profile:
+
+  - `"diagonal"` (default): no covariances, so within a profile the
+    indicators are independent and all their association is explained by
+    the profiles;
+
+  - `"full"`: the within-profile covariances are estimated, one matrix
+    per profile under `variance_model = "varying"` and one shared matrix
+    under `"equal"`.
+
+  With `variance_model` this gives four of the structures of `model`:
+  VVI (`"varying"` and `"diagonal"`), EEI (`"equal"` and `"diagonal"`),
+  VVV (`"varying"` and `"full"`) and EEE (`"equal"` and `"full"`).
 
 - categorical:
 
@@ -188,52 +217,93 @@ multilpa(
 
 - fixed:
 
-  Measurement blocks held at the values in `start` instead of estimated:
-  `"means"`, `"variances"` (EEI, VVI, EEE and VVV only),
-  `"response_probabilities"`, or `"measurement"` for all; the mixing
-  parameters cannot be held. A held block is not counted in
+  Measurement parameters held at the values in `start` instead of
+  estimated. A character vector of one or more of:
+
+  - `"means"`: the profile means of the continuous indicators;
+
+  - `"variances"`: their variances, or covariance matrices under a full
+    covariance (structures EEI, VVI, EEE and VVV only);
+
+  - `"response_probabilities"`: the response probabilities of the
+    categorical indicators;
+
+  - `"measurement"`: all of the above that the model has.
+
+  The default, [`character()`](https://rdrr.io/r/base/character.html),
+  holds nothing. `fixed` needs `start`; the profile and group-class
+  probabilities cannot be held. A held block is not counted in
   `n_parameters`.
   [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
   runs the two-stage workflow in one call.
 
 - centering:
 
-  How to centre the continuous indicators before fitting. `"none"`
-  (default) fits them as supplied. `"person"` subtracts each group's own
-  mean, so the profiles describe within-unit change and the group
-  classes are types of change pattern. `"grand"` subtracts one mean per
-  indicator. See *Scale*.
+  How to centre the continuous indicators before fitting (see *Scale*):
+
+  - `"none"` (default): fit them as supplied;
+
+  - `"person"`: subtract each group's own mean, so the profiles describe
+    deviations from a group's usual level and the group classes are
+    types of change pattern;
+
+  - `"grand"`: subtract one mean per indicator, taken over the sample.
 
 - volume, shape, orientation:
 
-  The covariance structure by its three components: `volume` `"equal"`
-  or `"varying"`; `shape` `"equal"`, `"varying"` or `"spherical"`;
-  `orientation` `"axis"` (no covariances), `"equal"` or `"varying"`.
-  `NULL` (default) follows `variance_model` and `covariance_model`. The
-  combinations are the fourteen mclust models:
+  The covariance structure by its three components, each compared across
+  profiles. `NULL` (default) follows `variance_model` and
+  `covariance_model`.
 
-  |               |               |               |                    |
-  |---------------|---------------|---------------|--------------------|
-  | `volume`      | `shape`       | `orientation` | model              |
-  | equal         | spherical     | \-            | EII                |
-  | varying       | spherical     | \-            | VII                |
-  | equal/varying | equal/varying | axis          | EEI, VEI, EVI, VVI |
-  | equal/varying | equal/varying | equal         | EEE, VEE, EVE, VVE |
-  | equal/varying | equal/varying | varying       | EEV, VEV, EVV, VVV |
+  - `volume`: the overall size of a profile's spread. `"equal"` gives
+    all profiles the same volume, `"varying"` gives each its own.
+
+  - `shape`: how the spread divides over the indicators. `"equal"` gives
+    all profiles the same shape, `"varying"` gives each its own, and
+    `"spherical"` gives every indicator the same variance within a
+    profile.
+
+  - `orientation`: the within-profile covariances. `"axis"` has none (a
+    diagonal covariance), `"equal"` gives all profiles the same
+    orientation, and `"varying"` gives each its own. A spherical shape
+    has no orientation, so `orientation` is then left out.
+
+  The combinations are the fourteen codes of `model`, whose three
+  letters name the volume, the shape and the orientation.
 
 - model:
 
-  The covariance structure as one of those fourteen codes, such as
-  `"VVI"`, instead of the other structure arguments; the codes
-  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
-  takes.
+  The covariance structure as one of mclust's fourteen codes: `"EII"`,
+  `"VII"`, `"EEI"`, `"VEI"`, `"EVI"`, `"VVI"`, `"EEE"`, `"VEE"`,
+  `"EVE"`, `"VVE"`, `"EEV"`, `"VEV"`, `"EVV"` or `"VVV"`. The three
+  letters are the volume, shape and orientation: `E` is equal across
+  profiles, `V` varies between profiles, and `I` is a spherical shape
+  (in second place) or no covariances (in third place). The four in
+  common use:
+
+  - `"EEI"`: equal variances, no covariances;
+
+  - `"VVI"`: profile-specific variances, no covariances (the structure
+    fitted when no structure argument is given);
+
+  - `"EEE"`: one covariance matrix shared by all profiles;
+
+  - `"VVV"`: a covariance matrix per profile.
+
+  `NULL` (default) follows the other structure arguments
+  (`variance_model`, `covariance_model`, `volume`, `shape` and
+  `orientation`); giving `model` with any of them is an error.
 
 - select_start:
 
-  Which start is reported. `"likelihood"` (default): the highest log
-  likelihood, preferring a converged start among those within the
-  convergence tolerance of it. `"converged"`: the best converged start
-  when there is one. See *Starts and convergence*.
+  Which start is reported (see *Starts and convergence*):
+
+  - `"likelihood"` (default): the start with the highest log likelihood,
+    whether or not it converged. Among starts within the convergence
+    tolerance of the highest, a converged one is preferred;
+
+  - `"converged"`: the start with the highest log likelihood among those
+    that converged, or among all starts when none converged.
 
 - prior:
 
@@ -241,40 +311,68 @@ multilpa(
   [`prior_control()`](https://pak.dynasite.org/latents/reference/prior_control.md)
   object for maximum a posteriori estimation of the Gaussian means and
   covariances under mclust's conjugate prior, with its data-dependent
-  defaults. See *Prior and noise*.
+  defaults. A prior is used to avoid solutions with a variance near
+  zero. See *Prior and noise*.
 
 - noise:
 
-  `TRUE` adds a noise component of constant density over the data's
-  hypervolume, which absorbs outliers and scatter no Gaussian profile
-  explains. See *Prior and noise*.
+  `FALSE` (default) fits the profiles only. `TRUE` adds a noise
+  component of constant density over the data's hypervolume, which
+  absorbs outliers and scatter no Gaussian profile explains. See *Prior
+  and noise*.
 
 - acceleration:
 
-  `"squarem"` (default) accelerates EM with SQUAREM, which never lowers
-  the likelihood; `"none"` runs plain EM. Fits with `prior` or
-  membership covariates always use plain EM.
+  How EM is run:
+
+  - `"squarem"` (default): EM accelerated with SQUAREM, which usually
+    needs fewer iterations and never lowers the likelihood;
+
+  - `"none"`: plain EM, which fits with `prior` or membership covariates
+    always use.
 
 - family:
 
-  `"profiles"` (default) is the model described above. The others have
-  group classes without individual profiles (`"additive"`,
-  `"dispersion"`, `"additive_dispersion"`) or estimate profiles and
-  group classes from the same indicators (`"restricted_cross_level"`,
-  `"full_cross_level"`). See *Model families*.
+  The kind of two-level model. The families other than `"profiles"` take
+  few of the other arguments and return a different class (see *Model
+  families*):
+
+  - `"profiles"` (default): the model described above, with profiles of
+    rows and group classes that differ in their profile proportions;
+
+  - `"additive"`: group classes only, which differ in their indicator
+    means;
+
+  - `"dispersion"`: group classes only, which differ in their
+    within-group variances;
+
+  - `"additive_dispersion"`: group classes only, which differ in both;
+
+  - `"restricted_cross_level"`: profiles and group classes estimated
+    from the same indicators, with the profile proportions equal across
+    group classes;
+
+  - `"full_cross_level"`: the same, with profile proportions that differ
+    between group classes.
 
 - between_variance:
 
   For the additive, additive-dispersion and cross-level families only
-  (an error with the others): between-group variances per group class
-  (`"varying"`, default) or one set shared by all classes (`"equal"`).
-  The dispersion family takes `"equal"` only.
+  (an error with the others): whether the variances of the group
+  intercepts differ between group classes.
+
+  - `"varying"` (default): each group class has its own between-group
+    variances;
+
+  - `"equal"`: one set shared by all group classes, the only value the
+    dispersion family takes.
 
 - weights:
 
   Name of a numeric column holding a sampling weight per independent
   unit: per group in a two-level fit (constant within the group), per
-  row in a single-level one. See *Weights*.
+  row in a single-level one. `NULL` (default) weights every unit
+  equally. See *Weights*.
 
 - ordinal:
 
@@ -293,22 +391,36 @@ multilpa(
 
 - count_model:
 
-  `"poisson"` (default) or `"negative_binomial"` (NB2, variance
-  `mu + alpha * mu^2`) for counts more dispersed than a Poisson within a
-  profile. A dispersion estimated at zero is a boundary solution.
+  The distribution of the `count` indicators within a profile; without
+  such indicators it is ignored, with a warning:
+
+  - `"poisson"` (default): the variance equals the mean;
+
+  - `"negative_binomial"`: the variance is `mu + alpha * mu^2` (NB2),
+    for counts more dispersed than a Poisson within a profile. A
+    dispersion `alpha` estimated at zero is a boundary solution.
 
 - count_dispersion:
 
-  One negative-binomial dispersion per profile (`"varying"`, default) or
-  one shared by all (`"equal"`).
+  Under `count_model = "negative_binomial"`, whether the dispersion
+  differs between profiles:
+
+  - `"varying"` (default): one dispersion per profile;
+
+  - `"equal"`: one dispersion shared by all profiles.
 
 - scaling:
 
   How to scale the continuous indicators before fitting, at the same
-  levels as `centering`: `"none"` (default), `"grand"` (each indicator
-  divided by its standard deviation over the sample) or `"person"` (by
-  each group's own standard deviation). With the matching centring these
-  are z-scores. See *Scale*.
+  levels as `centering`; with the matching centring these are z-scores
+  (see *Scale*):
+
+  - `"none"` (default): fit them as supplied;
+
+  - `"grand"`: divide each indicator by its standard deviation over the
+    sample;
+
+  - `"person"`: divide by each group's own standard deviation.
 
 - drop_empty:
 
@@ -348,39 +460,94 @@ multilpa(
 
 - search:
 
-  `"kmeans"` runs `n_starts` starts to convergence; `"emEM"` screens a
-  pool of `n_screen` starts with a short EM run each and runs the first
-  start and the best of the rest, `n_starts` in all, to convergence.
-  `NULL` (default) is `"emEM"` when continuous indicators share one
-  covariance matrix across profiles (EII, EEI or EEE) and `"kmeans"`
-  otherwise.
+  How the starting values are searched:
+
+  - `"kmeans"`: every one of the `n_starts` starts is run to
+    convergence;
+
+  - `"emEM"`: a larger pool of `n_screen` starts is screened with a
+    short EM run each (at most 20 iterations), and only the first start
+    and the best of the rest, `n_starts` in all, are run to convergence;
+
+  - `NULL` (default): `"emEM"` when the continuous indicators share one
+    covariance matrix across profiles (EII, EEI or EEE), `"kmeans"`
+    otherwise, including for models without continuous indicators.
 
 - n_screen:
 
   For `search = "emEM"` only, the size of the screened pool (default
-  five times `n_starts`, at least `n_starts`).
+  five times `n_starts`, at least `n_starts`). It is refused when the
+  search is `"kmeans"`, whether requested or resolved from the default.
 
 - boundary:
 
   Whether a start with a variance at `min_variance` may be reported:
-  `"allow"` (default) does, as Mplus does, with a warning; `"exclude"`
-  chooses among the other starts, and reports the best with a warning
-  when every start is at the bound.
+
+  - `"allow"` (default): it may, as in Mplus, with a `latents_boundary`
+    warning;
+
+  - `"exclude"`: the reported start is chosen among the starts with no
+    variance at the bound. When every start is at the bound the best of
+    them is reported, with a `latents_all_starts_boundary` warning.
 
 ## Value
 
-A `multilpa` object: the measurement parameters, the profile
-probabilities within each group class, the group-class proportions, the
-posteriors and classifications at both levels, `log_likelihood`, the
-information criteria (`bic` and `bic_groups` on the number of groups,
-`bic_individual` on the number of rows with an observed indicator), the
-starts table, `converged` and `boundary`.
+A fitted model. Its class depends on the model:
+
+- `multilpa`: the profile model (`family = "profiles"`) without
+  membership covariates;
+
+- `multilpa_covariates`: the profile model with `profile_covariates` or
+  `group_covariates`;
+
+- `multilpa_additive`: `family = "additive"`, `"dispersion"` or
+  `"additive_dispersion"`;
+
+- `multilpa_cross_level`: `family = "restricted_cross_level"` or
+  `"full_cross_level"`.
+
+Printing a fit shows its log likelihood, convergence, class sizes and
+profile means; [`summary()`](https://rdrr.io/r/base/summary.html) prints
+every table.
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-returns its tables,
+returns the tables by name and describes each one. For a `multilpa` fit
+the main ones are `"profiles"` (also `as.data.frame(fit)`),
+`"responses"`, `"profile_probabilities"`, `"assignments"`,
+`"posteriors"`, `"group_posteriors"`, `"classification"`, `"entropy"`,
+`"information_criteria"`, `"starts"`, `"replication"` and `"model"`. A
+`multilpa_covariates` fit has `"coefficients"` (the membership logits)
+in place of `"profile_probabilities"`; the other two classes have tables
+of their own.
 [`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
-its standard errors and
+gives standard errors and confidence intervals, and
 [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
-tests it against a nested fit.
+tests a fit against a nested one.
+
+## Conditions
+
+The errors a call most often raises: `latents_bad_argument` for an
+argument value or a combination of arguments that is not accepted;
+`latents_bad_data` for a column that `data` does not have, a constant
+indicator, or missing indicator values under `missing = "error"`;
+`latents_bad_start` and `latents_bad_fixed` for a `start` or `fixed` the
+model cannot use; `latents_bad_time` for a `time` column that repeats
+within a group; `latents_unidentified` for more profiles than distinct
+rows, more group classes than groups, or more than one group class with
+one profile or with one row per group; `latents_unsupported_prior` and
+`latents_unsupported_noise` for a `prior` or `noise` the model cannot
+take.
+
+The warnings: `latents_unconverged` when the reported start stopped at
+`max_iter`; `latents_boundary` when a variance is at `min_variance`;
+`latents_small_classes` when a profile or group class has an effective
+size below one; `latents_failed_starts` when some starts failed;
+`latents_unidentified` when a model of categorical and ordinal
+indicators has more free parameters than its table of response patterns
+has free cells; `latents_unused_argument` for an argument the model
+ignores. A single-level fit (`id = NULL`) gives a `latents_single_level`
+message.
+[latents-conditions](https://pak.dynasite.org/latents/reference/latents-conditions.md)
+lists every condition.
 
 ## Starts and convergence
 
@@ -398,10 +565,8 @@ sets such starts aside, and `get_results(fit, "gaussian_diagnostics")`
 describes each profile's support. Wald inference is refused for a fit
 that did not converge or has a parameter at its bound.
 
-More than one group class needs more than one profile and a group with
-more than one row; a model of categorical and ordinal indicators with
-more free parameters than its table has free cells warns. Neither check
-establishes identification. Labels are arbitrary.
+The checks behind `latents_unidentified` (see *Conditions*) do not
+establish identification. Labels are arbitrary.
 
 ## Missing data
 
@@ -423,8 +588,7 @@ only the logits are estimated: the two-step estimator, whose criteria
 and standard errors condition on the held measurement.
 [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
 and [`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
-are the staged alternatives. A covariate model does not take `prior`,
-`noise`, `direct_effects` or a continuous `local_dependence` pair.
+are the staged alternatives.
 
 ## Indicator types
 
@@ -486,12 +650,10 @@ indicators and FIML;
 
 ## Model families
 
-Three group-class-only families: each group has a Gaussian intercept per
-indicator drawn from its class's distribution, and its members vary
-around it. `"additive"`: classes differ in means (and in between-group
-variances under `between_variance = "varying"`), with one within-group
-variance per indicator; `"dispersion"`: in within-group variances;
-`"additive_dispersion"`: in both. They take only `data`, `vars`, `id`,
+In the three group-class-only families each group has a Gaussian
+intercept per indicator drawn from its class's distribution, and its
+members vary around it; the additive family has one within-group
+variance per indicator. They take only `data`, `vars`, `id`,
 `n_group_classes`, `between_variance`, `n_starts`, `max_iter`, `tol`,
 `min_variance`, `seed`, `weights`, `search` and `n_screen`, need
 complete continuous indicators, and return a `multilpa_additive` fit
@@ -504,20 +666,17 @@ by `family` and
 across numbers of group classes. They are experimental: no bootstrap
 inference, FIML, covariates or discrete indicators.
 
-Two cross-level families estimate profiles and group classes from the
-same indicators, each group's indicator means being between-level
-indicators of its class: `"restricted_cross_level"` holds the profile
-prevalences equal across classes and estimates the levels separately;
-`"full_cross_level"` lets them differ. They take `data`, `vars`, `id`,
-`n_profiles`, `n_group_classes`, `variance_model`, `between_variance`,
-`n_starts`, `max_iter`, `tol`, `min_variance`, `seed` and `weights`,
-have no standard errors, and return a `multilpa_cross_level` fit whose
-likelihood is computed on the same scale only between cross-level fits
-of the same data. It counts the ratings twice, once directly and once
-through their group means, so its criteria favour group classes and the
-full form even on data with no group structure: they do not choose the
-number of group classes or the form, and a fit with group classes warns
-with class `latents_cross_level_criteria`.
+In the two cross-level families each group's indicator means are
+between-level indicators of its class, and the restricted family
+estimates the two levels separately. They take the same arguments and
+`n_profiles` and `variance_model`, have no standard errors, and return a
+`multilpa_cross_level` fit whose likelihood is computed on the same
+scale only between cross-level fits of the same data. It counts the
+ratings twice, once directly and once through their group means, so its
+criteria favour group classes and the full form even on data with no
+group structure: they do not choose the number of group classes or the
+form, and a fit with group classes warns with class
+`latents_cross_level_criteria`.
 
 ## Prior and noise
 
@@ -541,10 +700,6 @@ profiles only. Inference, the three-step functions,
 [`starting_values()`](https://pak.dynasite.org/latents/reference/starting_values.md),
 [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md),
 bivariate residuals and the posterior plots refuse a noise fit.
-
-Every refusal above is a classed condition;
-[latents-conditions](https://pak.dynasite.org/latents/reference/latents-conditions.md)
-lists them.
 
 ## See also
 

@@ -1,4 +1,4 @@
-# Parametric bootstrap likelihood-ratio test for nested mixture models
+# Test whether a model with one more class improves on a nested model, with a parametric bootstrap likelihood ratio
 
 `bootstrap_lrt()` tests whether a more flexible model improves on a
 simpler one nested in it, typically one more profile or group class. The
@@ -45,14 +45,15 @@ bootstrap_lrt(
 
   The data frame both models were fitted to. Required for transition
   models, whose simulations keep the observed groups, occasions and
-  covariates; otherwise taken from the fits when omitted, and checked
-  against them when supplied.
+  covariates. For the other models `NULL` (default) uses the data stored
+  in the fits; a supplied data frame is checked against them.
 
 - iter:
 
   Number of simulated data sets (default 199; at least 2). More
   replicates reduce the Monte Carlo error of the p-value but do not cure
-  estimation problems.
+  estimation problems. Both models are refitted to every data set, so
+  the run time grows with `iter` times the cost of the two fits.
 
 - n_starts, max_iter, tol:
 
@@ -67,16 +68,45 @@ bootstrap_lrt(
 
 ## Value
 
-A `multilpa_bootstrap_lrt` object: the observed statistic, the bootstrap
-p-value and its Monte Carlo standard error, `n_valid` and `n_invalid`
-replicates, `fixed` (the measurement blocks held in every refit) and
-per-replicate diagnostics, including how many starts of each refit
-replicated its best likelihood.
-[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) returns
-the one-row test summary, `get_results(result, "replicates")` one row
-per replicate, [`summary()`](https://rdrr.io/r/base/summary.html) both,
-and [`plot()`](https://rdrr.io/r/graphics/plot.default.html) the
-simulated distribution with the observed statistic.
+An object of class `multilpa_bootstrap_lrt`, for every kind of model
+compared. Printing it shows the two models, the observed statistic and
+the p-value. Its tables:
+
+- `as.data.frame(result)`: the one-row test summary, with the class
+  counts of both models, `statistic` (twice the difference in log
+  likelihoods), `p_value`, `monte_carlo_se`, `iter`, `n_valid` and
+  `n_invalid` (the replicates used and left out) and `fixed` (the
+  measurement blocks held in every refit);
+
+- `get_results(result, "replicates")`: one row per simulated data set,
+  with its `statistic`, whether it is `valid`, whether a refit was at a
+  bound, how many starts of each refit replicated its best likelihood,
+  and any warning or error;
+
+- `summary(result)`: both tables.
+
+`plot(result)` draws the simulated distribution with the observed
+statistic.
+
+## Conditions
+
+Errors, raised before anything is simulated: `latents_bad_argument` for
+two models of different kinds, an invalid `iter`, `n_starts`, `max_iter`
+or `tol`, or transition models without `data`; `latents_bad_nesting` for
+profile or class models that do not differ by exactly one profile or one
+group class; `latents_incomparable_models` for models that differ in
+their observations, grouping, covariance structure, centring, scaling,
+missing-data handling or `drop_empty`; `latents_no_converge` for an
+original model that did not converge or has a variance at its bound;
+`latents_reversed_likelihood` when the alternative has the lower log
+likelihood; `latents_bad_inference_data` for `data` that are not the
+rows the models were fitted to; `latents_unsupported_weights`,
+`latents_unsupported_prior`, `latents_unsupported_noise` and
+`latents_unsupported_bootstrap` for fits with sampling weights, a prior,
+a noise component, or person centring or scaling.
+
+A `latents_failed_replicates` warning says how many replicates were
+invalid and left out; see *Calculation*.
 
 ## Supported comparisons
 
@@ -141,21 +171,21 @@ for information-criterion comparisons.
 ## Examples
 
 ``` r
-set.seed(1)
-example_data <- data.frame(
-  school = rep(seq_len(10), each = 10),
-  score = rnorm(100, rep(c(-2, 2), each = 50))
-)
-smaller <- multilpa(example_data, "score", "school", n_profiles = 1,
-                    n_group_classes = 1, n_starts = 2, seed = 1)
-larger <- multilpa(example_data, "score", "school", n_profiles = 2,
-                   n_group_classes = 1, n_starts = 2, seed = 1)
+indicators <- c("eruptions", "waiting")
+smaller <- lpa(faithful, indicators, n_profiles = 1, n_starts = 2, seed = 1)
+larger <- lpa(faithful, indicators, n_profiles = 2, n_starts = 2, seed = 1)
 # `iter` is small so the example runs quickly; use many more for inference.
-comparison <- bootstrap_lrt(smaller, larger, iter = 9, n_starts = 1,
-                            max_iter = 2000, tol = 1e-6, seed = 1)
+comparison <- bootstrap_lrt(smaller, larger, iter = 9, seed = 1)
 comparison
 #> Parametric bootstrap likelihood-ratio comparison
 #> Null: 1 profile; alternative: 2 profiles
-#> Observed statistic: 44.198110
+#> Observed statistic: 737.798948
 #> p-value: 0.1 (Monte Carlo SE 0.0949) from 9 of 9 valid replicates (0 invalid)
+as.data.frame(comparison)
+#>   null_profiles null_group_classes alternative_profiles
+#> 1             1                  1                    2
+#>   alternative_group_classes statistic p_value monte_carlo_se iter n_valid
+#> 1                         1  737.7989     0.1     0.09486833    9       9
+#>   n_invalid fixed null_family alternative_family
+#> 1         0  <NA>    profiles           profiles
 ```

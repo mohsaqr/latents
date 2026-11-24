@@ -417,16 +417,16 @@ largest are shown.
 
 get_results(lca, "residuals") |> head(10)
 #>      profile       indicator_1    indicator_2        kind observed expected residual effective_n
-#> 1  profile_1   on_social_media        walking categorical   0.4240 1.60e-16   0.4240        91.4
-#> 2  profile_3            sports        walking categorical   0.1661 3.80e-17   0.1661       642.6
-#> 3  profile_3 time_with_friends        walking categorical   0.1434 1.45e-17   0.1434       642.6
-#> 4  profile_3    listened_music        walking categorical   0.1331 7.66e-17   0.1331       642.6
-#> 5  profile_3    listened_music        reading categorical   0.1098 8.70e-17   0.1098       642.6
-#> 6  profile_3    listened_music         sports categorical   0.1082 1.42e-16   0.1082       642.6
-#> 7  profile_2    tv_video_games        walking categorical   0.0995 4.88e-17   0.0995      1848.0
+#> 1  profile_1   on_social_media        walking categorical   0.4240 1.22e-17   0.4240        91.4
+#> 2  profile_3            sports        walking categorical   0.1661 4.57e-17   0.1661       642.6
+#> 3  profile_3 time_with_friends        walking categorical   0.1434 2.13e-16   0.1434       642.6
+#> 4  profile_3    listened_music        walking categorical   0.1331 0.00e+00   0.1331       642.6
+#> 5  profile_3    listened_music        reading categorical   0.1098 1.52e-16   0.1098       642.6
+#> 6  profile_3    listened_music         sports categorical   0.1082 1.45e-16   0.1082       642.6
+#> 7  profile_2    tv_video_games        walking categorical   0.0995 1.57e-16   0.0995      1848.0
 #> 8  profile_3    tv_video_games  part_time_job categorical   0.0862 1.42e-16   0.0862       642.6
-#> 9  profile_2 time_with_friends        reading categorical   0.0790 8.52e-17   0.0790      1848.0
-#> 10 profile_2 time_with_friends tv_video_games categorical   0.0707 6.35e-17   0.0707      1848.0
+#> 9  profile_2 time_with_friends        reading categorical   0.0790 5.19e-17   0.0790      1848.0
+#> 10 profile_2 time_with_friends tv_video_games categorical   0.0707 8.60e-17   0.0707      1848.0
 #>    statistic df  p_value p_adjusted
 #> 1      16.43  1 5.04e-05    0.00141
 #> 2      17.73  1 2.55e-05    0.00107

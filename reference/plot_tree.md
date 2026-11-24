@@ -1,12 +1,12 @@
-# How classes split as more are added
+# Plot how the classes of each solution split or rearrange as one more class is added
 
-A clustering tree of an enumeration grid: one row per number of classes,
-one bar per class, and bands between the rows showing where each class's
-units go in the next solution. At the individual level a tree runs down
-the numbers of profiles (classes) at one number of group classes and one
-covariance structure; at the group level, down the numbers of group
-classes at one number of profiles. A family grid's tree compares its
-group classes.
+`plot_tree()` plots a clustering tree of an enumeration grid, which
+shows whether a solution with one more class splits an existing class or
+rearranges them all. A tree has one row per solution and one bar per
+class, as wide as the class's share of the units. A band between two
+rows shows where the units of a class go in the next solution, as wide
+as the share of all units the two classes have in common. Colour follows
+a class from row to row, and a new colour marks a class that split off.
 
 ## Usage
 
@@ -36,10 +36,13 @@ plot_tree(
   [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md)
   or
   [`enumerate_regressions()`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md).
+  A family grid (`enumerate_classes(family = )`) has group classes only,
+  so its trees are of the groups.
 
 - main, subtitle:
 
-  Title and subtitle; `NULL` (default) keeps the view's own.
+  Title and subtitle of the plot, each one string; `NULL` (default)
+  keeps the view's own.
 
 - n_group_classes, n_profiles, model:
 
@@ -47,10 +50,9 @@ plot_tree(
   candidate. At the individual level `n_group_classes` and `model`
   choose the trees and `n_profiles` the rows; at the group level
   `n_profiles` and `model` choose the trees and `n_group_classes` the
-  rows. A single count for the rows compares that level's solutions
-  across the trees instead:
-  `plot_tree(x, n_profiles = 4, n_group_classes = c(2, 5))` draws the
-  four-profile solution at two and at five group classes as two rows.
+  rows. A single count for the rows compares that solution across the
+  trees instead, as the rows of one tree:
+  `plot_tree(x, n_profiles = 4, n_group_classes = c(2, 5))`.
 
 - candidates:
 
@@ -67,8 +69,15 @@ plot_tree(
 
 - level:
 
-  `"individuals"` (default): the cases divided into profiles;
-  `"groups"`: the groups divided into group classes.
+  Which units a tree divides:
+
+  - `"individuals"` (default): the observations, into profiles
+    (classes). A tree runs down the numbers of profiles at one number of
+    group classes and one covariance structure;
+
+  - `"groups"`: the groups, into group classes. A tree runs down the
+    numbers of group classes at one number of profiles, so the grid
+    needs two or more of them. The default for a family grid.
 
 - combine:
 
@@ -77,10 +86,18 @@ plot_tree(
 
 ## Value
 
-One ggplot for a single tree or `combine = TRUE`, otherwise a
-`latents_plots` list named by tree. A tree with fewer than two rows
-raises `latents_no_tree`; a name no converged candidate has raises
-`latents_unknown_candidate`.
+A ggplot object when there is one tree or `combine = TRUE`; otherwise a
+`latents_plots` list of ggplot objects named by tree. Conditions raised:
+
+- `latents_no_tree`: a tree would have fewer than two rows;
+
+- `latents_unknown_candidate`: `candidates`, `from` or `to` names no
+  converged candidate of the grid;
+
+- `latents_unsupported_view`: `level = "individuals"` on a family grid;
+
+- `latents_bad_argument`: `x` is not an enumeration grid, or the
+  arguments are combined in a way the tree does not take.
 
 ## See also
 
@@ -95,4 +112,6 @@ grid <- enumerate_lpa(faithful, c("eruptions", "waiting"),
                       n_profiles = 1:3, model = "EEI",
                       n_starts = 2, seed = 1)
 plot_tree(grid)
+
+plot_tree(grid, from = 2, to = 3)
 ```

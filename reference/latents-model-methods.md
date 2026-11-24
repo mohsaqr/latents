@@ -1,8 +1,10 @@
-# Extract model coefficients, covariance matrices and likelihood summaries
+# Extract the coefficients, their covariance matrix and the log likelihood of a fitted model
 
-These methods extract fitted parameters, measures of parameter
-uncertainty, and likelihood information for reporting and further
-statistical analysis.
+[`coef()`](https://rdrr.io/r/stats/coef.html),
+[`vcov()`](https://rdrr.io/r/stats/vcov.html) and
+[`confint()`](https://rdrr.io/r/stats/confint.html) return the fitted
+parameters of a model, their estimated covariance matrix and their
+confidence intervals, for reporting and further statistical analysis.
 
 [`coef()`](https://rdrr.io/r/stats/coef.html) returns the model's
 parameter values. [`vcov()`](https://rdrr.io/r/stats/vcov.html) returns

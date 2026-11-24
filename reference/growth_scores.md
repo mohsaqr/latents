@@ -23,7 +23,9 @@ growth_scores
 
 ## Format
 
-A data frame with 1844 rows (300 students) and 5 columns:
+A data frame with 1844 rows (300 students, one row per student and
+observed occasion, 3 to 7 occasions each, no missing values) and 5
+columns:
 
 - student:
 
@@ -35,11 +37,11 @@ A data frame with 1844 rows (300 students) and 5 columns:
 
 - score:
 
-  Achievement score.
+  Numeric achievement score, 24.9 to 81.2.
 
 - motivation:
 
-  Standardized motivation, constant within student.
+  Numeric, standardized motivation, constant within student.
 
 - trajectory:
 

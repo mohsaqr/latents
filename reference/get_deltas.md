@@ -1,8 +1,10 @@
-# Change in the criterion with each added class
+# Get how much each information criterion improves as a class or a group class is added
 
-The decrease in the information criterion from the candidate with one
-profile fewer, and from the one with one group class fewer (BIC over
-groups).
+`get_deltas()` returns, for every candidate of a profile or class grid,
+how much lower its information criterion is than that of the candidate
+with one profile fewer, and than that of the candidate with one group
+class fewer. The criterion is `bic_groups`, BIC with the number of
+groups as the sample size.
 
 ## Usage
 
@@ -14,25 +16,47 @@ get_deltas(x)
 
 - x:
 
-  An enumeration grid from
-  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md),
-  [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md)
+  A profile or class grid from
+  [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md),
+  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md)
   or
-  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md).
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md).
+  Transition grids, grids of group-class families and regression grids
+  have no such table and are refused.
 
 ## Value
 
-A data frame, one row per candidate:
-`candidate, n_profiles, n_group_classes, model, criterion, value, delta_profile, from_profile, delta_group_class, from_group_class`.
-A regression, transition or family grid has no deltas and raises
-`latents_bad_argument`, naming the tables it has. Any other object
-raises `latents_not_a_fit`.
+A data frame with one row per candidate and the columns:
+
+- `candidate`, `n_profiles`, `n_group_classes`, `model`: the candidate,
+  its numbers of classes and its covariance structure;
+
+- `criterion`: the name of the criterion, `bic_groups`;
+
+- `value`: the candidate's value of the criterion;
+
+- `delta_profile`: the criterion of the candidate with one profile fewer
+  (and the same group classes and structure) minus `value`. A positive
+  number means that this candidate is lower;
+
+- `from_profile`: the name of that smaller candidate;
+
+- `delta_group_class`, `from_group_class`: the same for the candidate
+  with one group class fewer.
+
+A delta is `NA` where there is no such smaller candidate, or where
+either of the two did not converge.
+
+Errors: `latents_bad_argument` for a transition, family or regression
+grid, naming the tables it has; `latents_not_a_fit` when `x` is not an
+enumeration grid.
 
 ## See also
 
 [`plot_deltas()`](https://pak.dynasite.org/latents/reference/plot_deltas.md)
-draws it;
-[`get_knees()`](https://pak.dynasite.org/latents/reference/get_knees.md).
+draws the changes;
+[`get_knees()`](https://pak.dynasite.org/latents/reference/get_knees.md),
+[`get_best()`](https://pak.dynasite.org/latents/reference/get_best.md).
 
 ## Examples
 

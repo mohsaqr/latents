@@ -23,11 +23,12 @@ study_hours
 
 ## Format
 
-A data frame with 900 rows (150 students by 6 weeks) and 10 columns:
+A data frame with 900 rows (150 students by 6 weeks, one row per student
+and week, no missing values) and 10 columns:
 
 - student:
 
-  Integer student identifier, 1 to 150.
+  Integer student identifier, 1 to 150. Pass it as `id`.
 
 - week:
 
@@ -35,19 +36,19 @@ A data frame with 900 rows (150 students by 6 weeks) and 10 columns:
 
 - hours:
 
-  Hours studied that week, 0 to 12.
+  Numeric, hours studied that week, 0 to 12.
 
 - sleep:
 
-  Hours slept the night before the quiz.
+  Numeric, hours slept the night before the quiz, 4.2 to 9.8.
 
 - motivation:
 
-  Standardized motivation, constant within student.
+  Numeric, standardized motivation, constant within student.
 
 - score:
 
-  Quiz score.
+  Numeric quiz score, 28.1 to 97.6.
 
 - passed:
 
@@ -55,7 +56,7 @@ A data frame with 900 rows (150 students by 6 weeks) and 10 columns:
 
 - questions:
 
-  Count of questions the student asked that week.
+  Integer count of questions the student asked that week, 0 to 12.
 
 - strategy:
 

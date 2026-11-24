@@ -1,10 +1,10 @@
-# Number one fit's profiles like another's
+# Renumber one fit's profiles and group classes to match the most similar ones of another fit
 
-Profiles and latent classes have no natural order, so two fits of the
-same model to different samples, waves or subgroups usually number them
-differently. `align_labels()` renumbers the profiles of `fit`, and its
-group classes in a two-level model, so that each takes the label of the
-most similar profile (group class) of `reference`. Nothing is
+`align_labels()` renumbers the profiles of `fit`, and its group classes
+in a two-level model, so that each takes the label of the most similar
+profile (group class) of `reference`. Profiles and latent classes have
+no natural order, so two fits of the same model to different samples,
+waves or subgroups usually number them differently. Nothing is
 re-estimated: the log likelihood, the estimates and every assignment are
 the same, under new labels.
 
@@ -18,19 +18,25 @@ align_labels(fit, reference)
 
 - fit:
 
-  A fit from
+  The fit to renumber: a profile or class fit from
   [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
   [`lca()`](https://pak.dynasite.org/latents/reference/lca.md),
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
   or
-  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md),
-  with or without membership covariates.
+  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
+  (the default `family = "profiles"`), with or without membership
+  covariates. Fits of the other families (additive, dispersion and
+  cross-level), from
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) and from
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+  are not taken.
 
 - reference:
 
   A fit of the same kind whose labels `fit` takes: the same indicators,
   coded the same way, and the same numbers of profiles and group
-  classes.
+  classes. It may be fitted to other data, and it may lack the
+  membership covariates `fit` has.
 
 ## Value
 

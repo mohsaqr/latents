@@ -27,7 +27,7 @@ levels for assessing recovery."><meta property="og:image" content="https://pak.d
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -105,8 +105,9 @@ levels for assessing recovery.</p>
 
     <div class="section level2">
     <h2 id="format">Format<a class="anchor" aria-label="anchor" href="#format"></a></h2>
-    <p>A data frame with 2780 rows (600 students, 40 schools) and 7
-columns:</p><dl><dt>school</dt>
+    <p>A data frame with 2780 rows (600 students in 40 schools, one row
+per student and observed occasion, 2 to 5 occasions each, no missing
+values) and 7 columns:</p><dl><dt>school</dt>
 <dd><p>Integer school identifier, 1 to 40. Pass it as <code>cluster</code>.</p></dd>
 
 <dt>student</dt>
@@ -116,11 +117,11 @@ columns:</p><dl><dt>school</dt>
 <dd><p>Integer test occasion, 0 to 4. The time variable.</p></dd>
 
 <dt>score</dt>
-<dd><p>Reading score.</p></dd>
+<dd><p>Numeric reading score, 35.9 to 70.5.</p></dd>
 
 <dt>programme</dt>
-<dd><p>Standardized school support programme, constant within
-school.</p></dd>
+<dd><p>Numeric, standardized school support programme,
+constant within school.</p></dd>
 
 <dt>school_type</dt>
 <dd><p>Factor, <code>"supportive"</code> or <code>"struggling"</code>: the school's

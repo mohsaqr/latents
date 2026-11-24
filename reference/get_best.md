@@ -1,8 +1,9 @@
-# The best candidate under each criterion
+# Get the converged candidate with the lowest value of each information criterion
 
-The candidate with the lowest (or, by the criterion's convention,
-highest) value of each information criterion. Several criteria may name
-the same candidate; none selects a model on its own.
+`get_best()` returns, for each information criterion of an enumeration
+grid, the converged candidate with the lowest value. Several criteria
+may name the same candidate, and no criterion chooses a model on its
+own.
 
 ## Usage
 
@@ -15,25 +16,50 @@ get_best(x)
 - x:
 
   An enumeration grid from
-  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md),
-  [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md)
+  [`enumerate_lpa()`](https://pak.dynasite.org/latents/reference/enumerate_lpa.md),
+  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md)
   or
-  [`enumerate_lca()`](https://pak.dynasite.org/latents/reference/enumerate_lca.md).
+  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md).
+  A regression grid from
+  [`enumerate_regressions()`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
+  has no such table and is refused; its
+  [`get_candidates()`](https://pak.dynasite.org/latents/reference/get_candidates.md)
+  table marks the lowest BIC in `best_bic`.
 
 ## Value
 
-A data frame. On a profile or class grid, one row per criterion and
-convention:
-`criterion, convention, candidate, n_profiles, n_group_classes, model, value`.
-On a transition or family grid, the one row of the candidates table with
-the lowest BIC. A regression grid raises `latents_bad_argument`, naming
-the tables it has. Any other object raises `latents_not_a_fit`.
+A data frame.
+
+On a profile or class grid it has one row per criterion and sample size,
+with the columns:
+
+- `criterion`: `aic`, `kic`, `bic`, `sabic`, `caic`, `awe`, `icl` or
+  `clc`;
+
+- `convention`: `"groups"` or `"individuals"`, the sample size the
+  criterion uses; `NA` for AIC and KIC, which use none;
+
+- `candidate`: the name of the converged candidate with the lowest
+  value;
+
+- `n_profiles`, `n_group_classes`, `model`: that candidate's numbers of
+  classes and covariance structure;
+
+- `value`: its value of the criterion.
+
+On a transition grid or a grid of group-class families it is one row:
+the row of `get_results(x, "candidates")` with the lowest BIC.
+
+Errors: `latents_bad_argument` for a regression grid, naming the tables
+it has; `latents_not_a_fit` when `x` is not an enumeration grid.
 
 ## See also
 
-[`get_candidates()`](https://pak.dynasite.org/latents/reference/get_candidates.md),
+[`get_candidates()`](https://pak.dynasite.org/latents/reference/get_candidates.md)
+for every candidate and criterion;
 [`get_deltas()`](https://pak.dynasite.org/latents/reference/get_deltas.md),
-[`get_knees()`](https://pak.dynasite.org/latents/reference/get_knees.md).
+[`get_knees()`](https://pak.dynasite.org/latents/reference/get_knees.md);
+[`plot_criteria()`](https://pak.dynasite.org/latents/reference/plot_criteria.md).
 
 ## Examples
 

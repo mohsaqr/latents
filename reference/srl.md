@@ -20,27 +20,29 @@ srl
 
 ## Format
 
-A data frame with 300 rows and 5 columns:
+A data frame with 300 rows (one per synthetic respondent, no missing
+values) and 5 numeric columns, each the mean of the construct's items on
+the 1 to 7 response scale:
 
-- `cognitive_strategies`:
+- cognitive_strategies:
 
-  cognitive strategy use
+  Numeric, cognitive strategy use; observed 4.15 to 7.
 
-- `intrinsic_value`:
+- intrinsic_value:
 
-  intrinsic value of the course
+  Numeric, intrinsic value of the course; observed 4.22 to 7.
 
-- `self_efficacy`:
+- self_efficacy:
 
-  self-efficacy
+  Numeric, self-efficacy; observed 4 to 7.
 
-- `self_regulation`:
+- self_regulation:
 
-  self-regulation
+  Numeric, self-regulation; observed 3.78 to 6.78.
 
-- `test_anxiety`:
+- test_anxiety:
 
-  test anxiety
+  Numeric, test anxiety; observed 2 to 5.75.
 
 ## Source
 

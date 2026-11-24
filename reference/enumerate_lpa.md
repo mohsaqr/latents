@@ -1,4 +1,4 @@
-# Compare latent profile models
+# Fit latent profile models with different numbers of profiles and covariance structures, and compare them
 
 `enumerate_lpa()` fits latent profile models with different numbers of
 profiles and specified covariance structures. It brings together
@@ -25,34 +25,61 @@ enumerate_lpa(data, vars, n_profiles = 1:4, model = "basic", ...)
 - n_profiles:
 
   Numbers of profiles to compare, specified as positive integers.
+  Default `1:4`.
 
 - model:
 
-  The covariance structures: `"basic"`, the default, for the four that
-  combine equal or varying variances with covariances absent or present
-  (`EEI`, `VVI`, `EEE`, `VVV`); `"all"` for all 14; or their
-  three-letter codes. See
-  [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md).
+  The covariance structures to fit at every number of profiles; each
+  structure with each number of profiles is one candidate.
+
+  - `"basic"` (default): four structures. `"EEI"`: the profiles share
+    their variances and the indicators are uncorrelated within a
+    profile. `"VVI"`: each profile has its own variances, still
+    uncorrelated. `"EEE"`: the profiles share one covariance matrix.
+    `"VVV"`: each profile has its own covariance matrix.
+
+  - `"all"`: all fourteen structures of mclust.
+
+  - One or more of the codes `"EII"`, `"VII"`, `"EEI"`, `"VEI"`,
+    `"EVI"`, `"VVI"`, `"EEE"`, `"VEE"`, `"EVE"`, `"VVE"`, `"EEV"`,
+    `"VEV"`, `"EVV"`, `"VVV"`: those structures only.
+    [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+    explains the three letters.
+
+  - `NULL`: no structures are crossed, and every candidate has the
+    structure
+    [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+    fits by default (`"VVI"`).
+
+  Giving `variance_model`, `covariance_model`, `volume`, `shape` or
+  `orientation` in `...` sets one structure for every candidate; `model`
+  must then be left out.
 
 - ...:
 
   Further arguments for
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
-  such as `missing`, `n_starts`, `seed`, `boundary` and `categorical`,
-  except `id` and `n_group_classes`.
+  used for every candidate, such as `missing` (`"error"` or `"fiml"`),
+  `n_starts`, `seed`, `boundary` (`"allow"` or `"exclude"`) and
+  `categorical`. `id` and `n_group_classes` are not accepted.
 
 ## Value
 
 An object of class `multilpa_enumeration`, as
 [`enumerate_classes()`](https://pak.dynasite.org/latents/reference/enumerate_classes.md)
-returns: [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html)
-gives one row per candidate,
-[`summary()`](https://rdrr.io/r/base/summary.html) the candidate
-minimizing each criterion,
+returns.
+[`get_candidates()`](https://pak.dynasite.org/latents/reference/get_candidates.md)
+(also [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html))
+gives one row per candidate with its log likelihood, information
+criteria, entropy, convergence and replication;
+[`get_best()`](https://pak.dynasite.org/latents/reference/get_best.md)
+and [`summary()`](https://rdrr.io/r/base/summary.html) the candidate
+with the lowest value of each criterion;
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) the criteria
-against the number of profiles, and
+against the number of profiles; and
 [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md)
-one fitted candidate.
+one fitted candidate, a `multilpa` fit. A candidate that could not be
+fitted keeps its row, with `NA` values.
 
 ## Details
 
@@ -65,8 +92,11 @@ classes.
 
 ## Conditions
 
-`latents_bad_argument` when `id` or `n_group_classes` is passed, or when
-`model` names an unknown structure.
+`latents_bad_argument` when `id` or `n_group_classes` is passed, when
+`model` names an unknown structure, and when `model` is given together
+with `variance_model`, `covariance_model`, `volume`, `shape` or
+`orientation`. A `latents_single_start` message names the candidates
+whose best log likelihood was reached from one start only.
 
 ## See also
 

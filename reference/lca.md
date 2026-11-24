@@ -1,10 +1,10 @@
-# Fit a latent class model
+# Fit a latent class model that groups observations by their pattern of categorical responses
 
-Latent class analysis describes heterogeneity in categorical response
-patterns through a specified number of latent classes. Each class is
-characterized by the probabilities of the response categories for each
-indicator. These probabilities describe how response patterns differ
-between classes.
+`lca()` fits a latent class model, which describes heterogeneity in
+categorical response patterns through a specified number of latent
+classes. Each class is characterized by the probabilities of the
+response categories for each indicator, which describe how response
+patterns differ between classes.
 
 `lca()` estimates the class-specific response probabilities and class
 proportions, together with posterior membership probabilities for each
@@ -35,9 +35,10 @@ lca(data, vars, n_classes, ...)
 
 - vars:
 
-  Names of the discrete indicator columns. Categories are taken from the
-  data. Columns named in `ordinal` or `count` (through `...`) are
-  modelled as such; the rest are categorical.
+  Names of the discrete indicator columns. Numeric, integer, logical,
+  character and factor columns are accepted, and every distinct value of
+  a column is one category. Columns named in `ordinal` or `count`
+  (through `...`) are modelled as such; the rest are categorical.
 
 - n_classes:
 
@@ -45,25 +46,74 @@ lca(data, vars, n_classes, ...)
 
 - ...:
 
-  Further arguments for
-  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md),
-  such as `missing`, `n_starts`, `seed`, `min_probability` and
-  `profile_covariates`, except `id` and `n_group_classes`.
+  Further arguments, passed through
+  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
+  to
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+  which documents all of them. The ones used most often:
+
+  - `missing`: `"error"` (default) stops when an indicator has a missing
+    value; `"fiml"` keeps every row and uses the responses it has.
+
+  - `ordinal`, `count`: indicators in `vars` modelled as ordered
+    categories or as counts instead of as unordered categories.
+
+  - `local_dependence`: pairs of indicators, written `"item1:item2"`,
+    that stay associated within a class.
+
+  - `n_starts` (default 10) and `seed`: the number of starts and the
+    seed that makes them reproducible.
+
+  - `min_probability`: the lower bound on a response probability
+    (default `1e-10`).
+
+  - `profile_covariates`: covariates that predict class membership.
+
+  `id` and `n_group_classes` are not accepted (they belong to the
+  two-level model), and neither is `n_profiles`: the number of classes
+  is `n_classes`.
 
 ## Value
 
-A fitted object as returned by
-[`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md),
-usually of class `multilpa`, or `multilpa_covariates` with membership
-covariates. Its `call` records the original `lca()` call. Classes are
-labelled `profile_1`, `profile_2`, and so on in the returned tables.
+A fitted model of class `multilpa`, or `multilpa_covariates` when
+`profile_covariates` is given. The classes are numbered 1, 2, and so on
+in the `profile` column of its tables.
+[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
+returns the tables by name, among them:
+
+- `"responses"` (also `as.data.frame(fit)`): one row per class,
+  indicator and category, with the response probability and its standard
+  error;
+
+- `"profile_probabilities"`: the proportion of each class;
+
+- `"assignments"`: the data with each row's most likely class and its
+  posterior probabilities;
+
+- `"classification"` and `"entropy"`: how clearly the rows are
+  classified;
+
+- `"residuals"`: bivariate residuals, which show pairs of indicators the
+  classes do not explain;
+
+- `"information_criteria"` and `"starts"`.
+
+The fit's `call` records the original `lca()` call.
 
 ## Conditions
 
-`latents_bad_argument` when `id`, `n_group_classes` or `n_profiles` is
-passed; the conditions
-[`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
-raises otherwise.
+Errors: `latents_bad_argument` when `id`, `n_group_classes` or
+`n_profiles` is passed; `latents_bad_data` when a column is missing from
+`data` or an indicator has missing values under `missing = "error"`;
+`latents_bad_categorical` when `categorical` names a column not in
+`vars`. Warnings: `latents_unidentified` when the model has more free
+parameters than the table of response patterns has free cells,
+`latents_unconverged` when the reported start did not converge, and
+`latents_small_classes` when a class is nearly empty.
+[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+raises the others, and
+[latents-conditions](https://pak.dynasite.org/latents/reference/latents-conditions.md)
+lists them all.
 
 ## See also
 
@@ -102,5 +152,9 @@ fit
 #> 
 #> Thresholds and standard errors: get_results(x, "responses").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
+get_results(fit, "profile_probabilities")
+#>   group_class profile probability group_class_probability
+#> 1           1       1   0.3557785                       1
+#> 2           1       2   0.6442215                       1
 plot(fit, what = "heatmap")
 ```

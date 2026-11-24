@@ -38,7 +38,7 @@ López-Pernas 2026), follows the same discipline: its engines are
 verified against R, Python, SPSS, Mplus, NIST reference datasets and
 published results, and each comparison records the reference value, the
 computed value and its tolerance. This article states how the contract
-is met for latents 1.3.9 and what evidence supports it.
+is met for latents 1.4.2 and what evidence supports it.
 
 At this build, 40,172 current checks compare latents with 4 commercial
 programs, 19 R packages and 18 published analyses on 672 distinct
@@ -230,8 +230,8 @@ and differentiated numerically (1,395 checks).
 
 A wrong answer returned without warning is the most damaging failure of
 statistical software. latents defines 103 classes of condition, each
-documented with the input that raises it. Of the 1,524 assertions in its
-test suites that an input is refused, 1,322 require a specific class, so
+documented with the input that raises it. Of the 1,542 assertions in its
+test suites that an input is refused, 1,340 require a specific class, so
 a refusal for the wrong reason fails. A refusal-parity suite passes each
 degenerate input through every function that accepts it and requires the
 same class from each (58 checks).
@@ -296,7 +296,7 @@ refusal are reported separately and do not count as sources.
 
 The verification covers every exported function that estimates a model
 or computes a statistic from one. Plots, printed summaries and argument
-handling are covered by the unit tests in `tests/testthat/` (262 files),
+handling are covered by the unit tests in `tests/testthat/` (269 files),
 which check their structure and their refusals. The comparisons with
 Mplus, Latent GOLD, Stata and SAS run from listings kept in the source
 repository, outside the checks of the package on CRAN, so the package

@@ -1,4 +1,4 @@
-# Diagnostics of a fitted model
+# Diagnose a fitted model: convergence, replication, class sizes, separation and local independence
 
 `diagnostics()` examines the estimation and interpretation of a fitted
 mixture model. It assesses convergence and replication across starting
@@ -31,63 +31,115 @@ diagnostics(x, data = NULL, plots = TRUE, by = c("profile", "overall"), ...)
 
 - x:
 
-  A fitted model of this package.
+  A fitted model: a profile or class fit
+  ([`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
+  [`lca()`](https://pak.dynasite.org/latents/reference/lca.md),
+  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md),
+  [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md),
+  with or without membership covariates), a transition fit
+  ([`lta()`](https://pak.dynasite.org/latents/reference/lta.md)), an
+  additive or cross-level fit, a mixture regression or a growth mixture
+  ([`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)).
+  Anything else, including pooled imputations and enumeration grids,
+  raises `latents_not_a_fit`.
 
 - data:
 
-  Optional data frame used to fit the model. When omitted, the required
-  columns are reconstructed from the fitted object.
+  The data frame the model was fitted to, used for the bivariate
+  residuals. `NULL` (default) uses the columns stored in the fit.
 
 - plots:
 
-  `TRUE` (the default) draws classification plots for model families
-  that support them: effective profile sizes, posterior probabilities of
-  assigned profiles, case entropy, and the average posterior probability
-  matrix. If ggplot2 is unavailable or the model family has no
-  classification plots, a message is issued and the tables are returned
-  without plots. `FALSE` returns only the tables.
+  Whether to draw the classification plots as well:
+
+  - `TRUE` (default): for a profile or class fit and an
+    [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit of
+    class `multilpa_transitions`, draws the views of
+    [`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/plot_diagnostics.md):
+    effective profile sizes, the posterior probability of each
+    observation's assigned profile, each observation's entropy and the
+    average posterior probability matrix, and the same four for the
+    groups of a fit with two or more group classes. For any other model
+    a message says that it has no classification plots here, and the
+    tables are returned without them. Without the ggplot2 package a
+    message says so, and the tables are returned;
+
+  - `FALSE`: returns the tables and draws nothing.
 
 - by:
 
-  `"profile"` (the default) assesses each profile's bivariate residuals
-  separately; `"overall"` pools them. This argument is forwarded to the
-  residual calculations. The classification levels are determined by the
-  fitted model.
+  How the bivariate residuals are assessed:
+
+  - `"profile"` (default): within each profile separately, one row per
+    profile and pair of indicators;
+
+  - `"overall"`: pooled over the profiles, one row per pair of
+    indicators.
 
 - ...:
 
-  Not used. For `diagnostics()` and
-  [`plot()`](https://rdrr.io/r/graphics/plot.default.html), any further
-  argument raises `latents_bad_argument`; style the returned plots with
+  Not used. Any further argument to `diagnostics()`, or to
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) of its
+  result, raises `latents_bad_argument`; style the returned plots with
   ggplot2.
 
 ## Value
 
-An object of class `multilpa_diagnostics`. The checks table, accessed
-with `get_results(result, "checks")`, contains one row per check and
-columns `domain`, `check`, `level`, `value` (numeric), `display`
-(formatted value), `criterion`, `status`, `detail` and `reference`.
-Tables are accessed with
-[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md),
-using `what = "checks"`, `"entropy"`, `"classification"`,
-`"average_posteriors"`, `"residuals"`, `"replication"` or `"all"`. A
-model family without bivariate residuals (a mixture regression, growth
-mixture, additive or cross-level model, or a general transition fit) has
-no such table: it is left out of `"all"`, and asking for it by name
-raises `latents_bad_argument`. A fit with a noise component has none
-either, and asking for it raises `latents_unsupported_noise`.
+An object of class `multilpa_diagnostics`. It prints the checks grouped
+by domain, with those that need review marked. Its tables are data
+frames read with
+[`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md):
 
-[`print()`](https://rdrr.io/r/base/print.html) groups checks by domain,
-highlights those requiring review and returns the object invisibly. For
-supported model families,
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) returns four
-classification plots as a `latents_plots` list of ggplot objects;
-printing the list draws all four plots.
-[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) returns
-the entropy table. [`summary()`](https://rdrr.io/r/base/summary.html)
-returns the diagnostics object.
+- `"entropy"` (the default, also
+  [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html)): one
+  row per level of classification: `level`, `n_classes`, `n_units`,
+  `entropy_sum`, `relative_entropy`;
+
+- `"classification"`: one row per level and class: `level`, `class`,
+  `n_modal`, `proportion_modal`, `estimated_n`, `estimated_proportion`,
+  `average_posterior`, `odds_correct_classification`;
+
+- `"average_posteriors"`: for the units assigned to each class, their
+  mean posterior probability of every class: `level`, `assigned_class`,
+  `class`, `n_assigned`, `average_posterior`;
+
+- `"residuals"`: the bivariate residuals, one row per pair of indicators
+  (and per profile under `by = "profile"`): `profile`, `indicator_1`,
+  `indicator_2`, `kind`, `observed`, `expected`, `residual`,
+  `effective_n`, `statistic`, `df`, `p_value`, `p_adjusted`
+  (Benjamini-Hochberg);
+
+- `"replication"`: one row on the starts: `n_starts`, `n_screened`,
+  `n_converged`, `n_failed`, `n_best_replicated`, `share`, `tolerance`,
+  `best_start`, `log_likelihood`;
+
+- `"checks"`: one row per check: `domain`, `check`, `level`, `value`
+  (numeric), `display` (the value formatted), `criterion`, `status`
+  (`"ok"`, `"check"`, `"fail"`, `"info"` or `"n/a"`), `detail` and
+  `reference`;
+
+- `"all"`: a named list of the tables above.
+
+`"residuals"` exists for profile and class fits and for
+[`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fits of
+class `multilpa_transitions`. Any other model (an
+[`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit of
+class `multilpa_lta`, an additive or cross-level fit, a mixture
+regression, a growth mixture) has no such table: it is left out of
+`"all"`, and asking for it by name raises `latents_bad_argument`. A fit
+with a noise component has none either, and asking for it raises
+`latents_unsupported_noise`.
+
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) of the result
+is
+[`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/plot_diagnostics.md)
+of the fit: a `latents_plots` list of ggplot objects, which draws every
+plot when printed. [`summary()`](https://rdrr.io/r/base/summary.html)
+returns the result itself.
 
 ## Details
+
+The checks are grouped in five domains:
 
 - **Estimation**: convergence of the selected solution; replication of
   the best log likelihood across completed starts; failed or unfinished
@@ -146,6 +198,10 @@ the substantive meaning of the estimated classes.
 
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
 for these and the other tables,
+[`get_checks()`](https://pak.dynasite.org/latents/reference/get_checks.md)
+for the checks alone,
+[`plot_diagnostics()`](https://pak.dynasite.org/latents/reference/plot_diagnostics.md)
+for the plots,
 [`descriptives()`](https://pak.dynasite.org/latents/reference/descriptives.md)
 for the variables before fitting, and
 [`summary()`](https://rdrr.io/r/base/summary.html) for the estimates.
@@ -282,7 +338,8 @@ get_results(quality, what = "classification")
 #> 2         0.9817573                    76.35253
 #> 3         0.9689851                    64.80058
 #> 4         0.9920142                    59.89189
-get_results(diagnostics(fit, by = "overall", plots = FALSE), what = "residuals")
+pooled <- diagnostics(fit, by = "overall", plots = FALSE)
+get_results(pooled, what = "residuals")
 #>    profile indicator_1 indicator_2     kind     observed expected     residual
 #> 1  overall  forum_read  attendance gaussian  0.215876298        0  0.215876298
 #> 2  overall    lectures  attendance gaussian  0.192343530        0  0.192343530

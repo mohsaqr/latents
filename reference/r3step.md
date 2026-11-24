@@ -1,4 +1,4 @@
-# Relate latent class membership to external covariates
+# Regress latent class membership on covariates not used to define the classes, correcting for classification error
 
 `r3step()` regresses membership in the classes of a fitted model on
 covariates that were not used to define them, holding the measurement
@@ -39,26 +39,50 @@ r3step(
 
 - x:
 
-  A covariate-free fit without weights or a noise component: from
+  The fitted model whose class membership is regressed. It must have no
+  membership covariates. Accepted:
+
+  - a profile or class fit from
+    [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md),
+    [`lca()`](https://pak.dynasite.org/latents/reference/lca.md),
+    [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+    or
+    [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md)
+    (the default `family = "profiles"`): takes `covariates`;
+
+  - an [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit
+    with its default homogeneous first-order transitions, invariant
+    measurement and continuous or categorical indicators: takes
+    `covariates`, or `initial_covariates` and `transition_covariates`;
+
+  - an [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit
+    with occasion-specific or second-order transitions, or ordinal or
+    count indicators, and invariant measurement: takes
+    `initial_covariates` and `transition_covariates` only;
+
+  - a trajectory model that classifies persons:
+    [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
+    with `class_level = "group"`, with or without `random`, fitted
+    without `membership` covariates and without `cluster`: takes
+    `covariates`.
+
+  Refused with `latents_unsupported_three_step`: a fit with membership
+  covariates; the other
   [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  (the profile family), from
-  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md), or a
-  trajectory model from
-  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
-  that classifies persons. A default
-  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit takes
-  `covariates` or the Markov covariates; one with occasion-specific or
-  second-order transitions, occasion-specific measurement, or ordinal or
-  count indicators takes the Markov covariates only. Refused: fits with
-  membership covariates, multilevel growth mixtures (`cluster`), the
-  other
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  families, observation-level mixture regressions and stayer-class fits.
+  families (additive, dispersion and cross-level); an
+  [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) fit with
+  initial or transition covariates, a stayer class or, for
+  `initial_covariates` and `transition_covariates`, occasion-specific
+  measurement or more than one group class; a mixture regression that
+  classifies observations; and a multilevel growth mixture (`cluster`).
+  A fit with sampling weights raises `latents_unsupported_weights`, and
+  one with a noise component `latents_unsupported_noise`.
 
 - data:
 
   The data frame carrying the covariates, in the fit's row order;
-  columns shared with the fit are checked row by row.
+  columns shared with the fit are checked row by row, and a frame that
+  does not match raises `latents_bad_inference_data`.
 
 - covariates:
 
@@ -69,10 +93,18 @@ r3step(
 
 - level:
 
-  `"individuals"` (default) predicts profile membership, `"groups"`
-  group-class membership. A trajectory model predicts its person
-  classes, reported as `level = "persons"` with outcomes `class_1`,
-  `class_2` and so on.
+  Which class membership is predicted:
+
+  - `"individuals"` (default): membership of the observations in the
+    profiles (classes);
+
+  - `"groups"`: membership of the groups in the group classes of a
+    two-level fit.
+
+  A trajectory model has person classes only: leave `level` at its
+  default (the result reports `level = "persons"` and the outcomes
+  `class_1`, `class_2` and so on); `"groups"` raises
+  `latents_bad_argument`.
 
 - ci_level:
 
@@ -80,31 +112,50 @@ r3step(
 
 - vcov_type:
 
-  `"robust"` (default): the sandwich clustered on the independent units
-  (the fit's groups; the persons of a trajectory model or a transition
-  chain), which needs more units than the regression has coefficients,
-  `"observed"` remaining available otherwise. `"observed"`: the observed
-  information, treating every observation as independent in the pooled
-  regression; with `by_group_class = TRUE`, the model-based variance of
-  the two-level likelihood.
+  Covariance estimator of the coefficients:
+
+  - `"robust"` (default): the sandwich clustered on the independent
+    units (the fit's groups; the persons of a trajectory model or a
+    transition chain). It needs more units than the regression has
+    coefficients, and raises `latents_too_few_groups` otherwise;
+
+  - `"observed"`: the inverse of the observed information, which treats
+    every observation as independent in the pooled regression; with
+    `by_group_class = TRUE`, the model-based variance of the two-level
+    likelihood.
 
 - adjust:
 
-  Multiplicity correction across the covariate terms of every
-  non-reference class (not the intercepts), a
-  [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html) method;
-  `"BH"` by default.
+  Multiplicity correction of the p-values across the covariate terms of
+  every non-reference class (not the intercepts), giving `p_adjusted`.
+  One of the
+  [`stats::p.adjust()`](https://rdrr.io/r/stats/p.adjust.html) methods:
+
+  - `"BH"` (default): Benjamini-Hochberg, controls the false discovery
+    rate;
+
+  - `"holm"`, `"hochberg"`, `"hommel"`, `"bonferroni"`: control the
+    family-wise error rate;
+
+  - `"BY"`: Benjamini-Yekutieli, controls the false discovery rate under
+    any dependence;
+
+  - `"none"`: no correction (`p_adjusted` equals `p_value`).
 
 - by_group_class:
 
-  `FALSE` (default): one pooled multinomial logit with one intercept per
-  profile. `TRUE`: the two-level form of the one-step model, with
-  profile intercepts per group class, slopes shared across group
-  classes, and the group-class proportions estimated jointly; the group
-  classes then capture between-group differences in membership the
-  covariates do not explain. Only for `level = "individuals"` on a
-  [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-  fit.
+  Whether the profile intercepts differ between group classes:
+
+  - `FALSE` (default): one pooled multinomial logit, with one intercept
+    per non-reference profile;
+
+  - `TRUE`: the two-level form of the one-step model, with profile
+    intercepts per group class, slopes shared across group classes, and
+    the group-class proportions estimated jointly; the group classes
+    then capture between-group differences in membership the covariates
+    do not explain. Only for `level = "individuals"` on a profile or
+    class fit; a transition fit, a trajectory model and
+    `level = "groups"` raise `latents_bad_argument`.
 
 - initial_covariates, transition_covariates:
 
@@ -114,29 +165,52 @@ r3step(
   the destination occasion, so they may vary over occasions). Either one
   fits the three-step latent Markov model (see *Transition fits*)
   instead of the occasion-by-occasion profile regression; `covariates`,
-  `level` and `by_group_class` are refused then.
+  `level` and `by_group_class` are refused then
+  (`latents_bad_argument`).
 
 ## Value
 
-A data frame with one row per non-reference class and term: `level`,
-`outcome`, `term`, `estimate`, `standard_error`, `statistic`, `p_value`,
-`p_adjusted` (`NA` on the intercept rows), `conf_low` and `conf_high`.
-Coefficients are log odds against the last class, named in the
-`reference_class` attribute; `vcov_type` and `adjust` are attributes
-too. With `by_group_class = TRUE` there is one intercept row per group
-class and non-reference profile, then the shared slopes and, at
-`level = "groups"`, the group-class logits, with the attributes
-`by_group_class` and `log_likelihood`.
+A `data.frame`, one row per coefficient.
 
-With `initial_covariates` or `transition_covariates`, one row per
-coefficient of the step-three chain: `block` (`"initial"` or
-`"transition"`), `from` (the origin profile, `NA` for an initial logit),
-`to`, `term` and the estimate columns (`p_adjusted` on the covariate
-terms), with the attributes `log_likelihood`, `classification_errors`
-(the step-two error matrix, rows the true profile), `vcov_type` and
-`adjust`. Initial logits are against the last profile, transition logits
-against staying, as in
+With `covariates`: one row per non-reference class and term (the
+intercept and each covariate), with the columns `level`, `outcome` (the
+class the logit is for: `profile_1`, `group_class_1` or `class_1`),
+`term`, `estimate` (log odds against the last class), `standard_error`,
+`statistic` (the estimate over its standard error), `p_value`,
+`p_adjusted` (`NA` on the intercept rows), `conf_low` and `conf_high`.
+The attribute `reference_class` holds the number of the reference class;
+`vcov_type` and `adjust` are attributes too. With
+`by_group_class = TRUE` each non-reference profile has one intercept row
+per group class (`term` is `group_class_1`, `group_class_2` and so on),
+then the shared slopes; rows with `level = "groups"` hold the
+group-class logits, and the attributes `by_group_class` and
+`log_likelihood` are added.
+
+With `initial_covariates` or `transition_covariates`: one row per
+coefficient of the step-three chain, with the columns `block`
+(`"initial"` or `"transition"`), `from` (the origin profile, `NA` for an
+initial logit), `to`, `term` and the estimate columns above
+(`p_adjusted` on the covariate terms), and the attributes
+`log_likelihood`, `classification_errors` (the step-two error matrix,
+rows the true profile), `vcov_type` and `adjust`. Initial logits are
+against the last profile, transition logits against staying, as in
 `lta(initial_covariates =, transition_covariates =)`.
+
+Errors: `latents_unsupported_three_step`, `latents_unsupported_weights`
+and `latents_unsupported_noise` for a fit the correction does not cover
+(see `x`); `latents_bad_covariate` for a covariate that is an indicator
+of `x` (also of class `multilpa_indicator_reused`), that varies within a
+group or person where one value is needed, or that makes the design rank
+deficient; `latents_bad_data` when `data` lacks a named column;
+`latents_bad_inference_data` when `data` is not the fit's data;
+`latents_bad_argument` for any other invalid argument, including a
+covariate that is not numeric, complete and finite;
+`latents_inseparable_classes` for a fit with a single class at the
+level; `latents_too_few_groups` (see `vcov_type`); `latents_no_converge`
+when the regression does not converge; and `latents_boundary_fit` for a
+separated regression (see *Boundary estimates*).
+[latents-conditions](https://pak.dynasite.org/latents/reference/latents-conditions.md)
+describes each class.
 
 ## Transition fits
 
@@ -166,9 +240,9 @@ can change over occasions.
 A step-three logit with a coefficient exceeding 20 in centred, scaled
 design coordinates, or an average class probability at or below 1e-6
 over the contributing design rows, is treated as separated or on a
-boundary. Wald inference is refused for that regression, under both
-covariance types; changing the covariance estimator does not make the
-boundary regular.
+boundary. Wald inference is refused for that regression
+(`latents_boundary_fit`), under both covariance types; changing the
+covariance estimator does not make the boundary regular.
 
 ## See also
 
@@ -190,6 +264,7 @@ example_data <- data.frame(
 )
 fit <- multilpa(example_data, c("a", "b"), "g", n_profiles = 2,
                 n_group_classes = 1, n_starts = 4, seed = 1)
+# The log odds of profile 1 against profile 2, by the covariate `x`.
 r3step(fit, example_data, "x")
 #>         level   outcome        term   estimate standard_error statistic
 #> 1 individuals profile_1 (Intercept) -0.5703958      0.1191748 -4.786212

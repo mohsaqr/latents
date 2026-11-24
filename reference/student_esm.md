@@ -20,7 +20,8 @@ student_esm
 
 ## Format
 
-A data frame with 2582 rows (100 students) and 15 columns:
+A data frame with 2582 rows (100 students, one row per student and
+non-study prompt, 15 to 51 each, no missing values) and 15 columns:
 
 - student:
 

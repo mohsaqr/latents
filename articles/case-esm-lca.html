@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -492,16 +492,16 @@ the ten largest are shown.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"residuals"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      profile       indicator_1    indicator_2        kind observed expected residual effective_n</span></span>
-<span><span class="co">#&gt; 1  profile_1   on_social_media        walking categorical   0.4240 1.60e-16   0.4240        91.4</span></span>
-<span><span class="co">#&gt; 2  profile_3            sports        walking categorical   0.1661 3.80e-17   0.1661       642.6</span></span>
-<span><span class="co">#&gt; 3  profile_3 time_with_friends        walking categorical   0.1434 1.45e-17   0.1434       642.6</span></span>
-<span><span class="co">#&gt; 4  profile_3    listened_music        walking categorical   0.1331 7.66e-17   0.1331       642.6</span></span>
-<span><span class="co">#&gt; 5  profile_3    listened_music        reading categorical   0.1098 8.70e-17   0.1098       642.6</span></span>
-<span><span class="co">#&gt; 6  profile_3    listened_music         sports categorical   0.1082 1.42e-16   0.1082       642.6</span></span>
-<span><span class="co">#&gt; 7  profile_2    tv_video_games        walking categorical   0.0995 4.88e-17   0.0995      1848.0</span></span>
+<span><span class="co">#&gt; 1  profile_1   on_social_media        walking categorical   0.4240 1.22e-17   0.4240        91.4</span></span>
+<span><span class="co">#&gt; 2  profile_3            sports        walking categorical   0.1661 4.57e-17   0.1661       642.6</span></span>
+<span><span class="co">#&gt; 3  profile_3 time_with_friends        walking categorical   0.1434 2.13e-16   0.1434       642.6</span></span>
+<span><span class="co">#&gt; 4  profile_3    listened_music        walking categorical   0.1331 0.00e+00   0.1331       642.6</span></span>
+<span><span class="co">#&gt; 5  profile_3    listened_music        reading categorical   0.1098 1.52e-16   0.1098       642.6</span></span>
+<span><span class="co">#&gt; 6  profile_3    listened_music         sports categorical   0.1082 1.45e-16   0.1082       642.6</span></span>
+<span><span class="co">#&gt; 7  profile_2    tv_video_games        walking categorical   0.0995 1.57e-16   0.0995      1848.0</span></span>
 <span><span class="co">#&gt; 8  profile_3    tv_video_games  part_time_job categorical   0.0862 1.42e-16   0.0862       642.6</span></span>
-<span><span class="co">#&gt; 9  profile_2 time_with_friends        reading categorical   0.0790 8.52e-17   0.0790      1848.0</span></span>
-<span><span class="co">#&gt; 10 profile_2 time_with_friends tv_video_games categorical   0.0707 6.35e-17   0.0707      1848.0</span></span>
+<span><span class="co">#&gt; 9  profile_2 time_with_friends        reading categorical   0.0790 5.19e-17   0.0790      1848.0</span></span>
+<span><span class="co">#&gt; 10 profile_2 time_with_friends tv_video_games categorical   0.0707 8.60e-17   0.0707      1848.0</span></span>
 <span><span class="co">#&gt;    statistic df  p_value p_adjusted</span></span>
 <span><span class="co">#&gt; 1      16.43  1 5.04e-05    0.00141</span></span>
 <span><span class="co">#&gt; 2      17.73  1 2.55e-05    0.00107</span></span>

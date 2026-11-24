@@ -23,7 +23,7 @@ results."><meta property="og:image" content="https://pak.dynasite.org/latents/lo
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -120,7 +120,9 @@ they do not establish the substantive validity of the classes.</p>
 The <code>family</code> argument of <code>multilpa</code> provides additional model
 families documented on that function's help page.
 <code><a href="fit_staged.html">fit_staged</a></code> estimates a two-level model with measurement
-parameters fixed at their first-stage estimates.</p>
+parameters fixed at their first-stage estimates.
+<code><a href="descriptives.html">descriptives</a></code> describes the indicators, with their intraclass
+correlations, before a model is fitted.</p>
     </div>
     <div class="section level2">
     <h2 id="model-evaluation-and-inference">Model evaluation and inference<a class="anchor" aria-label="anchor" href="#model-evaluation-and-inference"></a></h2>
@@ -136,7 +138,9 @@ provides parameter estimates, standard errors, and intervals for supported
 model families. <code><a href="three_step.html">three_step</a></code> and <code><a href="r3step.html">r3step</a></code>
 relate external variables to latent membership with correction for
 classification error. <code><a href="pool_imputations.html">pool_imputations</a></code> combines compatible
-analyses across imputed datasets.</p>
+analyses across imputed datasets. <code><a href="align_labels.html">align_labels</a></code> renumbers the
+profiles of one fit to match another's, so that fits to different samples
+or occasions can be read side by side.</p>
     </div>
     <div class="section level2">
     <h2 id="interpretation-and-assumptions">Interpretation and assumptions<a class="anchor" aria-label="anchor" href="#interpretation-and-assumptions"></a></h2>

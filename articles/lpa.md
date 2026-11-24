@@ -50,12 +50,18 @@ descriptives(course_engagement,
              vars = c("browse", "lectures", "forum_read", "forum_post",
                       "attendance"),
              id = "student")
-#>     variable    n n_missing      mean    sd   min  max n_distinct n_groups    icc
-#> 1     browse 1422         0 -2.81e-05 0.989 -3.14 2.49        398      106 0.1923
-#> 2   lectures 1422         0 -4.22e-05 0.989 -2.91 3.22        399      106 0.0878
-#> 3 forum_read 1422         0  7.03e-05 0.989 -2.73 2.81        400      106 0.2240
-#> 4 forum_post 1422         0 -2.11e-05 0.989 -2.61 3.10        397      106 0.1503
-#> 5 attendance 1422         0  7.74e-05 0.989 -2.45 2.41        401      106 0.2215
+#>     variable    n n_missing      mean    sd   min  max n_distinct n_groups sd_within sd_between
+#> 1     browse 1422         0 -2.81e-05 0.989 -3.14 2.49        398      106     0.890      0.502
+#> 2   lectures 1422         0 -4.22e-05 0.989 -2.91 3.22        399      106     0.945      0.392
+#> 3 forum_read 1422         0  7.03e-05 0.989 -2.73 2.81        400      106     0.872      0.524
+#> 4 forum_post 1422         0 -2.11e-05 0.989 -2.61 3.10        397      106     0.912      0.458
+#> 5 attendance 1422         0  7.74e-05 0.989 -2.45 2.41        401      106     0.873      0.525
+#>      icc
+#> 1 0.1923
+#> 2 0.0878
+#> 3 0.2240
+#> 4 0.1503
+#> 5 0.2215
 ```
 
 ## Fit
