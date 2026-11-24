@@ -879,8 +879,10 @@ plot_raincloud <- function(x, main = NULL, subtitle = NULL) {
 #' standardized value (z), so that indicators on different scales can share
 #' one axis. Each panel holds the cases whose most likely profile it is,
 #' drawn in the profile's colour; a line is fainter the less certain the
-#' case's assignment. The cases of the other profiles are drawn in grey
-#' behind. The dark line with markers is the mean of the panel's profile.
+#' case's assignment. A case with a missing value has its line broken at
+#' the gap, and a value with no answered neighbour is drawn as a point. The
+#' cases of the other profiles are drawn in grey behind. The dark line with
+#' markers is the mean of the panel's profile.
 #'
 #' The view needs two or more continuous indicators and draws the stored
 #' data of the fit. A fit with person or grand centering or scaling is
@@ -932,9 +934,11 @@ plot_parallel <- function(x, main = NULL, subtitle = NULL) {
 #' indicators. Each case is a point with the colour and the marker of its
 #' most likely profile, drawn larger the less certain its assignment. Each
 #' profile has an ellipse that holds 95% of its fitted distribution, drawn
-#' around the profile's mean, which is marked. A panel on the diagonal shows
-#' the density of that indicator among the cases of each profile, scaled by
-#' the size of the profile.
+#' around the profile's mean, which is marked. A case missing either
+#' indicator of a panel is not in that panel. A panel on the diagonal shows
+#' the density of that indicator among the cases of each profile that
+#' answered it, scaled by the size of the profile and marked at its peak; a
+#' profile with fewer than three answers there, or all alike, has no density.
 #'
 #' The view needs two or more continuous indicators and draws the stored
 #' data of the fit. A fit with person or grand centering or scaling is

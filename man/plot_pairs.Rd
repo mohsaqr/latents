@@ -47,9 +47,11 @@ continuous indicator. A panel off the diagonal is a scatter plot of two
 indicators. Each case is a point with the colour and the marker of its
 most likely profile, drawn larger the less certain its assignment. Each
 profile has an ellipse that holds 95\% of its fitted distribution, drawn
-around the profile's mean, which is marked. A panel on the diagonal shows
-the density of that indicator among the cases of each profile, scaled by
-the size of the profile.
+around the profile's mean, which is marked. A case missing either
+indicator of a panel is not in that panel. A panel on the diagonal shows
+the density of that indicator among the cases of each profile that
+answered it, scaled by the size of the profile and marked at its peak; a
+profile with fewer than three answers there, or all alike, has no density.
 
 The view needs two or more continuous indicators and draws the stored
 data of the fit. A fit with person or grand centering or scaling is

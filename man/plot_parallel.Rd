@@ -47,8 +47,10 @@ The x-axis lists the continuous indicators and the y-axis is the
 standardized value (z), so that indicators on different scales can share
 one axis. Each panel holds the cases whose most likely profile it is,
 drawn in the profile's colour; a line is fainter the less certain the
-case's assignment. The cases of the other profiles are drawn in grey
-behind. The dark line with markers is the mean of the panel's profile.
+case's assignment. A case with a missing value has its line broken at
+the gap, and a value with no answered neighbour is drawn as a point. The
+cases of the other profiles are drawn in grey behind. The dark line with
+markers is the mean of the panel's profile.
 
 The view needs two or more continuous indicators and draws the stored
 data of the fit. A fit with person or grand centering or scaling is

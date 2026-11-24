@@ -88,6 +88,72 @@ test_that("plot_all() of a transition fit includes the case views", {
   fit <- .case_view_fit()
   expect_true(all(c("raincloud", "parallel", "pairs") %in%
                     .multilpa_supported_views(fit)))
+  drawn <- plot_all(fit)
+  expect_true(all(c("raincloud", "parallel", "pairs") %in% names(drawn)))
+})
+
+# The case layers of a parallel plot: those coloured by profile, which carry
+# the certainty of each case.
+.parallel_case_layers <- function(plot) {
+  Filter(\(layer) is.data.frame(layer$data) &&
+           "certainty" %in% names(layer$data), plot$layers)
+}
+
+test_that("parallel draws every answered value, breaking lines at gaps", {
+  skip_if_not_installed("ggplot2")
+  frame <- .case_view_data()
+  drawn <- plot_parallel(.case_view_fit(frame))
+  layers <- .parallel_case_layers(drawn)
+  # an occasion that answered only `a` is a point, not an invisible line
+  geoms <- vapply(layers, \(layer) class(layer$geom)[1L], character(1))
+  expect_setequal(geoms, c("GeomLine", "GeomPoint"))
+  values <- do.call(rbind, lapply(layers, \(layer) layer$data))
+  expect_identical(nrow(values),
+                   sum(is.finite(frame$a)) + sum(is.finite(frame$b)))
+  expect_no_warning(ggplot2::ggplot_build(drawn))
+})
+
+test_that("a missing middle indicator breaks the line instead of bridging it", {
+  skip_if_not_installed("ggplot2")
+  set.seed(3)
+  frame <- data.frame(a = c(stats::rnorm(40, -2), stats::rnorm(40, 2)),
+                      b = c(stats::rnorm(40, -1), stats::rnorm(40, 1)),
+                      c = c(stats::rnorm(40, -1), stats::rnorm(40, 1)))
+  frame$b[c(3L, 50L)] <- NA
+  fit <- lpa(frame, c("a", "b", "c"), n_profiles = 2, missing = "fiml",
+             n_starts = 2, seed = 1)
+  lines <- Filter(\(layer) inherits(layer$geom, "GeomLine"),
+                  .parallel_case_layers(plot_parallel(fit)))[[1L]]$data
+  steps <- tapply(lines$position, lines$run, \(p) all(diff(sort(p)) == 1L))
+  expect_true(all(steps))
+  # the two cases with `b` missing appear as two points each
+  points <- Filter(\(layer) inherits(layer$geom, "GeomPoint"),
+                   .parallel_case_layers(plot_parallel(fit)))[[1L]]$data
+  expect_identical(nrow(points), 4L)
+})
+
+test_that("pairs points sit in the panel of the case's own state", {
+  skip_if_not_installed("ggplot2")
+  frame <- .case_view_data()
+  fit <- .case_view_fit(frame)
+  drawn <- plot_pairs(fit)
+  key <- .gg_profile_key(fit)
+  scatter <- Filter(\(frame) all(c("x", "y", "uncertainty") %in%
+                                   names(frame)),
+                    lapply(drawn$layers, \(layer) layer$data))[[1L]]
+  drawn_counts <- table(key$profile[match(as.character(scatter$profile_label),
+                                          as.character(key$label))])
+  assigned <- get_results(fit, "assignments", data = frame)
+  both <- is.finite(assigned$a) & is.finite(assigned$b) &
+    !is.na(assigned$profile)
+  expect_identical(as.vector(drawn_counts),
+                   as.vector(table(assigned$profile[both])))
+  # the diagonal densities carry the state markers
+  peaks <- Filter(\(layer) inherits(layer$geom, "GeomPoint") &&
+                    is.data.frame(layer$data) &&
+                    "height" %in% names(layer$data), drawn$layers)
+  expect_length(peaks, 1L)
+  expect_true("shape" %in% names(peaks[[1L]]$mapping))
 })
 
 test_that("a general transition fit still refuses the case views", {

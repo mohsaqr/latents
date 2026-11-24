@@ -1,4 +1,4 @@
-# latents 1.4.0
+# latents 1.4.1
 
 * `descriptives()` with `id` also reports `sd_within`, the pooled
   within-group standard deviation, and `sd_between`, the standard deviation
@@ -28,6 +28,13 @@
   views of `plot_profiles()` and `plot()`) draw a transition fit from `lta()`
   with homogeneous transitions: each answered occasion is a case, counted
   for its most likely state. Before, they refused it.
+* `plot_parallel()` breaks a case's line where a value is missing and draws
+  a value with no answered neighbour as a point. Before, the line bridged a
+  missing middle indicator, and a case with one answered value between
+  gaps was not drawn at all.
+* `plot_pairs()` marks each profile's density on the diagonal with the
+  profile's marker at its peak, so the curves are told apart by shape as
+  well as colour.
 * `plot_sequences()` sorts the rows within each class by the unit's most
   frequent profile and the share of its sequence it holds; with one class
   the rows are blocked by that profile (noise counts as a state of its own,

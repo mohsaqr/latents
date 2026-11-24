@@ -176,14 +176,23 @@ test_that("pairs marks each profile by shape and each ellipse by its mean", {
              seed = 1)
   plot <- expect_plot(plot_profiles(fit, what = "pairs"))
   key <- latents:::.gg_profile_key(fit)
+  # Layers found by what they draw, not by their position in the stack.
+  points <- which(vapply(plot$layers, \(layer)
+    inherits(layer$geom, "GeomPoint"), logical(1)))
+  holds <- \(index, column) column %in% names(plot$layers[[index]]$data)
+  case_layer <- Filter(\(index) holds(index, "uncertainty"), points)
+  centre_layer <- Filter(\(index) !holds(index, "uncertainty") &&
+                           !holds(index, "height"), points)
+  expect_length(case_layer, 1L)
+  expect_length(centre_layer, 1L)
   # The cases: one shape per profile, the shape the other views give it.
-  cases <- plot$layers[[4L]]$data
-  built <- ggplot2::layer_data(plot, 4L)
+  cases <- plot$layers[[case_layer]]$data
+  built <- ggplot2::layer_data(plot, case_layer)
   shapes <- tapply(built$shape, as.character(cases$profile_label),
                    \(shape) unique(shape))
   expect_identical(as.vector(shapes[as.character(key$label)]), key$shape)
   # The centre markers sit at the fitted means.
-  centres <- plot$layers[[6L]]$data
+  centres <- plot$layers[[centre_layer]]$data
   profile <- match(as.character(centres$profile_label), as.character(key$label))
   expect_equal(centres$x,
                fit$means[cbind(profile, match(as.character(centres$xvar),

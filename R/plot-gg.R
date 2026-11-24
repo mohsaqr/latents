@@ -19,7 +19,7 @@ utils::globalVariables(c(
   "uncertainty", "xvar", "yvar", "cases", "share", "fill", "y0", "row_label",
   "column_label", "class_label", "time_position", "cell_text", "column",
   "probability", "failed_y", "title", "block", "category_label",
-  "classes_label"))
+  "classes_label", "run"))
 
 .gg_okabe_ito <- c("#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00",
                    "#CC79A7", "#999999", "#000000", "#F0E442")
@@ -1477,22 +1477,43 @@ utils::globalVariables(c(
     value = as.vector(z),
     profile = rep(cases$profile, times = length(vars)),
     certainty = rep(cases$certainty, times = length(vars)))
-  long <- long[is.finite(long$value), , drop = FALSE]
+  # A case with a missing value (FIML, or an occasion of a transition fit
+  # that answered only some indicators) is drawn in runs of consecutive
+  # answered indicators: the line breaks at the gap instead of bridging it,
+  # and a value with no answered neighbour is a point, so every answered
+  # value is drawn.
+  answered <- is.finite(z)
+  run_start <- answered & cbind(TRUE, !answered[, -ncol(z), drop = FALSE])
+  run <- t(apply(run_start, 1L, cumsum))
+  dim(run) <- dim(z)
+  long$run <- paste(long$case, as.vector(run))
+  long <- long[as.vector(answered), , drop = FALSE]
+  run_size <- table(long$run)
+  long$alone <- as.vector(run_size[long$run]) == 1L
   long$panel <- key$label[long$profile]
   context <- do.call(rbind, lapply(levels(key$label), \(panel) {
-    cbind(long[c("case", "position", "value")], panel = panel)
+    cbind(long[c("case", "run", "alone", "position", "value")],
+          panel = panel)
   }))
   context$panel <- factor(context$panel, levels = levels(key$label))
   means <- .gg_mean_frame(x, key, "standardized", NULL)$frame
   means$panel <- means$profile_label
+  alone <- long[long$alone, , drop = FALSE]
   ggplot2::ggplot() +
-    ggplot2::geom_line(data = context,
-                       ggplot2::aes(position, value, group = case),
+    ggplot2::geom_line(data = context[!context$alone, , drop = FALSE],
+                       ggplot2::aes(position, value, group = run),
                        colour = "grey88", linewidth = 0.25) +
-    ggplot2::geom_line(data = long,
-                       ggplot2::aes(position, value, group = case,
+    ggplot2::geom_point(data = context[context$alone, , drop = FALSE],
+                        ggplot2::aes(position, value),
+                        colour = "grey88", size = 0.5) +
+    ggplot2::geom_line(data = long[!long$alone, , drop = FALSE],
+                       ggplot2::aes(position, value, group = run,
                                     colour = panel, alpha = certainty),
                        linewidth = 0.35) +
+    ggplot2::geom_point(data = alone,
+                        ggplot2::aes(position, value, colour = panel,
+                                     alpha = certainty),
+                        size = 0.7, show.legend = FALSE) +
     ggplot2::geom_line(data = means,
                        ggplot2::aes(position, mean, group = panel),
                        colour = "grey10", linewidth = 1.1) +
@@ -1508,8 +1529,9 @@ utils::globalVariables(c(
     .gg_scales(key) +
     .gg_titles(main, subtitle, "Cases across indicators",
                paste0("Each line is a case, faded by the certainty of its ",
-                      "assignment; the dark line is the profile mean; ",
-                      "other cases in grey", .gg_adjusted_note(x))) +
+                      "assignment and broken where a value is missing; the ",
+                      "dark line is the profile mean; other cases in grey",
+                      .gg_adjusted_note(x))) +
     ggplot2::labs(x = NULL, y = "Standardized value (z)") +
     .gg_theme() +
     ggplot2::theme(panel.spacing = ggplot2::unit(1.2, "lines"),
@@ -1611,6 +1633,11 @@ utils::globalVariables(c(
   ellipses <- as_levels(ellipses)
   centres <- as_levels(centres)
   diagonal <- as_levels(diagonal)
+  peaks <- if (is.null(diagonal)) NULL else
+    do.call(rbind, lapply(split(diagonal, list(diagonal$xvar,
+                                               diagonal$profile_label),
+                                drop = TRUE),
+                          \(curve) curve[which.max(curve$y), , drop = FALSE]))
   panels <- as_levels(unique(rbind(
     scatter[c("xvar", "yvar")],
     data.frame(xvar = vars, yvar = vars))))
@@ -1627,7 +1654,13 @@ utils::globalVariables(c(
       ggplot2::geom_line(data = diagonal,
                          ggplot2::aes(x = x, y = y, colour = profile_label,
                                       group = profile_label),
-                         linewidth = 0.5)
+                         linewidth = 0.5) +
+      # Each density carries its profile's marker at its peak, so the
+      # curves are told apart by shape as well as by colour.
+      ggplot2::geom_point(data = peaks,
+                          ggplot2::aes(x = x, y = y, fill = profile_label,
+                                       shape = profile_label),
+                          colour = "grey10", size = 2.2, stroke = 0.5)
   }
   plot +
     ggplot2::geom_point(data = scatter,
@@ -1653,7 +1686,8 @@ utils::globalVariables(c(
                paste0("Cases coloured and shaped by profile, larger when less ",
                       "certain; 95% ellipses of the fitted covariances around ",
                       "each profile's mean\n",
-                      "Diagonal: each profile's density, weighted by its size",
+                      "Diagonal: each profile's density, weighted by its ",
+                      "size, marked at its peak",
                       .gg_adjusted_note(x))) +
     ggplot2::labs(x = NULL, y = NULL) +
     .gg_theme() +

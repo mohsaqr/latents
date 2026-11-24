@@ -331,9 +331,11 @@
 #' @param x A fitted model, or pooled imputations. What each draws:
 #'   * a profile or class fit ([lpa()], [lca()], [multilpa()], [multilca()]):
 #'     every view it has the indicators for;
-#'   * an [lta()] fit: `"lines"`, and `"bars"` and `"heatmap"` when its class
-#'     is `multilpa_transitions`; nothing when it has only count indicators
-#'     or `measurement = "occasion"`;
+#'   * an [lta()] fit: `"lines"`, and, when its class is
+#'     `multilpa_transitions`, `"bars"`, `"heatmap"` and the views of its
+#'     continuous indicators (`"raincloud"`, `"parallel"`, `"pairs"`), with
+#'     each answered occasion a case; nothing when it has only count
+#'     indicators or `measurement = "occasion"`;
 #'   * a growth mixture or mixture regression: `"lines"` only, each class's
 #'     trajectory over time or fitted line over the first numeric predictor;
 #'   * an additive or cross-level fit: `"lines"` only;

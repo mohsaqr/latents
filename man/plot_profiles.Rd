@@ -22,9 +22,11 @@ plot_profiles(
 \itemize{
 \item a profile or class fit (\code{\link[=lpa]{lpa()}}, \code{\link[=lca]{lca()}}, \code{\link[=multilpa]{multilpa()}}, \code{\link[=multilca]{multilca()}}):
 every view it has the indicators for;
-\item an \code{\link[=lta]{lta()}} fit: \code{"lines"}, and \code{"bars"} and \code{"heatmap"} when its class
-is \code{multilpa_transitions}; nothing when it has only count indicators
-or \code{measurement = "occasion"};
+\item an \code{\link[=lta]{lta()}} fit: \code{"lines"}, and, when its class is
+\code{multilpa_transitions}, \code{"bars"}, \code{"heatmap"} and the views of its
+continuous indicators (\code{"raincloud"}, \code{"parallel"}, \code{"pairs"}), with
+each answered occasion a case; nothing when it has only count
+indicators or \code{measurement = "occasion"};
 \item a growth mixture or mixture regression: \code{"lines"} only, each class's
 trajectory over time or fitted line over the first numeric predictor;
 \item an additive or cross-level fit: \code{"lines"} only;
