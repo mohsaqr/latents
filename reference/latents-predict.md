@@ -128,7 +128,8 @@ predict(object, newdata = NULL, type = c("class", "posterior", "density"), ...)
 
   - `"random_effects"`: the predicted random effects, one row per person
     and class with its posterior probability; their posterior-weighted
-    mean is `lcmm::predictRE()`.
+    mean is
+    [`lcmm::predictRE()`](https://cecileproust-lima.github.io/lcmm/reference/predictRE.html).
 
   The last four use the outcomes, which `newdata` must then contain.
 

@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -135,11 +135,11 @@ López-Pernas 2026), follows the same discipline: its engines are
 verified against R, Python, SPSS, Mplus, NIST reference datasets and
 published results, and each comparison records the reference value, the
 computed value and its tolerance. This article states how the contract
-is met for latents 1.4.2 and what evidence supports it.</p>
-<p>At this build, 40,172 current checks compare latents with 4
-commercial programs, 19 R packages and 18 published analyses on 672
+is met for latents 1.4.3 and what evidence supports it.</p>
+<p>At this build, 40,098 current checks compare latents with 4
+commercial programs, 18 R packages and 18 published analyses on 672
 distinct datasets, and 0 disagree without a documented cause. Known
-parameters are recovered from 650 simulated datasets. All 11 function
+parameters are recovered from 650 simulated datasets. All 10 function
 families meet the four required references defined below.</p>
 <div class="section level2">
 <h2 id="the-standard-of-evidence">The standard of evidence<a class="anchor" aria-label="anchor" href="#the-standard-of-evidence"></a>
@@ -200,12 +200,12 @@ it passes all of them.</p>
 <h3 id="layer-1--equivalence-with-independent-implementations">Layer 1. Equivalence with independent implementations<a class="anchor" aria-label="anchor" href="#layer-1--equivalence-with-independent-implementations"></a>
 </h3>
 <p>The first layer compares latents with other implementations of the
-same model on the same data. 19 R packages serve as references, among
+same model on the same data. 18 R packages serve as references, among
 them poLCA, glca, multilevLCA, depmixS4, mclust, LMest, seqHMM, flexmix
 and lcmm. A harness of 24 suites runs latents and each package on shared
-datasets and compares every output column (10,834 current checks).
+datasets and compares every output column (10,837 current checks).
 Equivalence tests compare individual models in detail, one reference per
-test (14,614 checks). Before every comparison the fitted classes are
+test (14,709 checks). Before every comparison the fitted classes are
 matched to the reference’s classes by the permutation that minimises the
 distance between their parameters.</p>
 </div>
@@ -248,13 +248,13 @@ validated.</caption>
 <td align="left">Mplus</td>
 <td align="left">commercial program</td>
 <td align="right">10</td>
-<td align="right">18,147</td>
+<td align="right">18,157</td>
 </tr>
 <tr class="even">
 <td align="left">Latent GOLD</td>
 <td align="left">commercial program</td>
 <td align="right">10</td>
-<td align="right">10,391</td>
+<td align="right">10,370</td>
 </tr>
 <tr class="odd">
 <td align="left">SAS</td>
@@ -272,25 +272,25 @@ validated.</caption>
 <td align="left">mclust</td>
 <td align="left">R package</td>
 <td align="right">4</td>
-<td align="right">2,986</td>
+<td align="right">3,027</td>
 </tr>
 <tr class="even">
 <td align="left">depmixS4</td>
 <td align="left">R package</td>
-<td align="right">4</td>
-<td align="right">2,421</td>
+<td align="right">5</td>
+<td align="right">2,448</td>
 </tr>
 <tr class="odd">
 <td align="left">poLCA</td>
 <td align="left">R package</td>
 <td align="right">2</td>
-<td align="right">1,973</td>
+<td align="right">1,976</td>
 </tr>
 <tr class="even">
 <td align="left">glca</td>
 <td align="left">R package</td>
 <td align="right">3</td>
-<td align="right">609</td>
+<td align="right">611</td>
 </tr>
 <tr class="odd">
 <td align="left">multilevLCA</td>
@@ -299,64 +299,64 @@ validated.</caption>
 <td align="right">574</td>
 </tr>
 <tr class="even">
-<td align="left">lcmm</td>
-<td align="left">R package</td>
-<td align="right">1</td>
-<td align="right">535</td>
-</tr>
-<tr class="odd">
 <td align="left">flexmix</td>
 <td align="left">R package</td>
 <td align="right">2</td>
-<td align="right">511</td>
+<td align="right">532</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">LMest</td>
 <td align="left">R package</td>
 <td align="right">1</td>
 <td align="right">395</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">mitools</td>
 <td align="left">R package</td>
 <td align="right">1</td>
-<td align="right">163</td>
+<td align="right">166</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">MoEClust</td>
 <td align="left">R package</td>
 <td align="right">2</td>
 <td align="right">80</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">Rmixmod</td>
 <td align="left">R package</td>
-<td align="right">1</td>
-<td align="right">75</td>
-</tr>
-<tr class="even">
-<td align="left">mixtools</td>
-<td align="left">R package</td>
-<td align="right">2</td>
-<td align="right">70</td>
+<td align="right">3</td>
+<td align="right">78</td>
 </tr>
 <tr class="odd">
+<td align="left">mixtools</td>
+<td align="left">R package</td>
+<td align="right">3</td>
+<td align="right">74</td>
+</tr>
+<tr class="even">
 <td align="left">mice</td>
 <td align="left">R package</td>
 <td align="right">1</td>
 <td align="right">62</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">sandwich</td>
 <td align="left">R package</td>
 <td align="right">1</td>
 <td align="right">56</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">BayesLCA</td>
 <td align="left">R package</td>
 <td align="right">1</td>
 <td align="right">33</td>
+</tr>
+<tr class="odd">
+<td align="left">randomLCA</td>
+<td align="left">R package</td>
+<td align="right">2</td>
+<td align="right">32</td>
 </tr>
 <tr class="even">
 <td align="left">EMCluster</td>
@@ -365,34 +365,28 @@ validated.</caption>
 <td align="right">30</td>
 </tr>
 <tr class="odd">
-<td align="left">randomLCA</td>
-<td align="left">R package</td>
-<td align="right">1</td>
-<td align="right">30</td>
-</tr>
-<tr class="even">
 <td align="left">mitml</td>
 <td align="left">R package</td>
 <td align="right">1</td>
 <td align="right">20</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">seqHMM</td>
 <td align="left">R package</td>
 <td align="right">1</td>
 <td align="right">8</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">Published analyses</td>
 <td align="left">published</td>
-<td align="right">6</td>
-<td align="right">172</td>
+<td align="right">7</td>
+<td align="right">178</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">simulab (known parameters)</td>
 <td align="left">simulation recovery</td>
 <td align="right">11</td>
-<td align="right">301</td>
+<td align="right">543</td>
 </tr>
 </tbody>
 </table>
@@ -462,7 +456,7 @@ mode; started from its own search, it must reach a maximum at least as
 high. Seed-stability suites refit models under six seeds and report the
 spread of the maximised log likelihood. The likelihood, its gradient and
 its information are rebuilt from the fitted tables by independent code
-and differentiated numerically (1,395 checks).</p>
+and differentiated numerically (1,282 checks).</p>
 </div>
 <div class="section level3">
 <h3 id="layer-7--refusal-of-invalid-input">Layer 7. Refusal of invalid input<a class="anchor" aria-label="anchor" href="#layer-7--refusal-of-invalid-input"></a>
@@ -541,7 +535,7 @@ agrees.</caption>
 <td align="right">213</td>
 <td align="right">100</td>
 <td align="right">9</td>
-<td align="right">15,818</td>
+<td align="right">15,797</td>
 <td align="right">0</td>
 </tr>
 <tr class="even">
@@ -551,7 +545,7 @@ agrees.</caption>
 <td align="right">85</td>
 <td align="right">40</td>
 <td align="right">5</td>
-<td align="right">8,139</td>
+<td align="right">8,020</td>
 <td align="right">0</td>
 </tr>
 <tr class="odd">
@@ -561,7 +555,7 @@ agrees.</caption>
 <td align="right">71</td>
 <td align="right">100</td>
 <td align="right">10</td>
-<td align="right">6,776</td>
+<td align="right">6,779</td>
 <td align="right">0</td>
 </tr>
 <tr class="even">
@@ -581,7 +575,7 @@ agrees.</caption>
 <td align="right">6</td>
 <td align="right">100</td>
 <td align="right">5</td>
-<td align="right">2,853</td>
+<td align="right">2,870</td>
 <td align="right">0</td>
 </tr>
 <tr class="even">
@@ -591,17 +585,17 @@ agrees.</caption>
 <td align="right">7</td>
 <td align="right">100</td>
 <td align="right">6</td>
-<td align="right">1,032</td>
+<td align="right">1,046</td>
 <td align="right">0</td>
 </tr>
 <tr class="odd">
 <td align="left"><code>mixture_regression(random =)</code></td>
-<td align="right">7</td>
+<td align="right">no</td>
 <td align="right">5</td>
 <td align="right">3</td>
 <td align="right">50</td>
-<td align="right">4</td>
-<td align="right">947</td>
+<td align="right">3</td>
+<td align="right">953</td>
 <td align="right">0</td>
 </tr>
 <tr class="even">
@@ -611,7 +605,7 @@ agrees.</caption>
 <td align="right">79</td>
 <td align="right">100</td>
 <td align="right">4</td>
-<td align="right">2,854</td>
+<td align="right">2,849</td>
 <td align="right">0</td>
 </tr>
 <tr class="odd">
@@ -620,8 +614,8 @@ agrees.</caption>
 <td align="right">63</td>
 <td align="right">62</td>
 <td align="right">30</td>
-<td align="right">3</td>
-<td align="right">5,506</td>
+<td align="right">4</td>
+<td align="right">5,492</td>
 <td align="right">0</td>
 </tr>
 <tr class="even">
@@ -630,8 +624,8 @@ agrees.</caption>
 <td align="right">2</td>
 <td align="right">2</td>
 <td align="right">60</td>
-<td align="right">6</td>
-<td align="right">295</td>
+<td align="right">10</td>
+<td align="right">341</td>
 <td align="right">0</td>
 </tr>
 <tr class="odd">
@@ -641,14 +635,14 @@ agrees.</caption>
 <td align="right">via core fits (85)</td>
 <td align="right">30</td>
 <td align="right">3</td>
-<td align="right">805</td>
+<td align="right">766</td>
 <td align="right">0</td>
 </tr>
 </tbody>
 </table>
 <p>Datasets are counted once per function. Across functions there are
 672 distinct datasets and 650 simulated datasets from 12 simulation
-designs and seed sets. The 16,964 checks of independent code, invariance
+designs and seed sets. The 16,781 checks of independent code, invariance
 and refusal are reported separately and do not count as sources.</p>
 </div>
 <div class="section level2">

@@ -38,12 +38,12 @@ López-Pernas 2026), follows the same discipline: its engines are
 verified against R, Python, SPSS, Mplus, NIST reference datasets and
 published results, and each comparison records the reference value, the
 computed value and its tolerance. This article states how the contract
-is met for latents 1.4.2 and what evidence supports it.
+is met for latents 1.4.3 and what evidence supports it.
 
-At this build, 40,172 current checks compare latents with 4 commercial
-programs, 19 R packages and 18 published analyses on 672 distinct
+At this build, 40,098 current checks compare latents with 4 commercial
+programs, 18 R packages and 18 published analyses on 672 distinct
 datasets, and 0 disagree without a documented cause. Known parameters
-are recovered from 650 simulated datasets. All 11 function families meet
+are recovered from 650 simulated datasets. All 10 function families meet
 the four required references defined below.
 
 ## The standard of evidence
@@ -106,12 +106,12 @@ passes all of them.
 ### Layer 1. Equivalence with independent implementations
 
 The first layer compares latents with other implementations of the same
-model on the same data. 19 R packages serve as references, among them
+model on the same data. 18 R packages serve as references, among them
 poLCA, glca, multilevLCA, depmixS4, mclust, LMest, seqHMM, flexmix and
 lcmm. A harness of 24 suites runs latents and each package on shared
-datasets and compares every output column (10,834 current checks).
+datasets and compares every output column (10,837 current checks).
 Equivalence tests compare individual models in detail, one reference per
-test (14,614 checks). Before every comparison the fitted classes are
+test (14,709 checks). Before every comparison the fitted classes are
 matched to the reference’s classes by the permutation that minimises the
 distance between their parameters.
 
@@ -135,31 +135,30 @@ and its 16 registers of explained differences hold 47 entries in all.
 
 | Reference | Kind | Function families | Current checks |
 |:---|:---|---:|---:|
-| Mplus | commercial program | 10 | 18,147 |
-| Latent GOLD | commercial program | 10 | 10,391 |
+| Mplus | commercial program | 10 | 18,157 |
+| Latent GOLD | commercial program | 10 | 10,370 |
 | SAS | commercial program | 5 | 296 |
 | Stata | commercial program | 2 | 96 |
-| mclust | R package | 4 | 2,986 |
-| depmixS4 | R package | 4 | 2,421 |
-| poLCA | R package | 2 | 1,973 |
-| glca | R package | 3 | 609 |
+| mclust | R package | 4 | 3,027 |
+| depmixS4 | R package | 5 | 2,448 |
+| poLCA | R package | 2 | 1,976 |
+| glca | R package | 3 | 611 |
 | multilevLCA | R package | 2 | 574 |
-| lcmm | R package | 1 | 535 |
-| flexmix | R package | 2 | 511 |
+| flexmix | R package | 2 | 532 |
 | LMest | R package | 1 | 395 |
-| mitools | R package | 1 | 163 |
+| mitools | R package | 1 | 166 |
 | MoEClust | R package | 2 | 80 |
-| Rmixmod | R package | 1 | 75 |
-| mixtools | R package | 2 | 70 |
+| Rmixmod | R package | 3 | 78 |
+| mixtools | R package | 3 | 74 |
 | mice | R package | 1 | 62 |
 | sandwich | R package | 1 | 56 |
 | BayesLCA | R package | 1 | 33 |
+| randomLCA | R package | 2 | 32 |
 | EMCluster | R package | 1 | 30 |
-| randomLCA | R package | 1 | 30 |
 | mitml | R package | 1 | 20 |
 | seqHMM | R package | 1 | 8 |
-| Published analyses | published | 6 | 172 |
-| simulab (known parameters) | simulation recovery | 11 | 301 |
+| Published analyses | published | 7 | 178 |
+| simulab (known parameters) | simulation recovery | 11 | 543 |
 
 References against which latents is verified and validated. {.table}
 
@@ -224,7 +223,7 @@ mode; started from its own search, it must reach a maximum at least as
 high. Seed-stability suites refit models under six seeds and report the
 spread of the maximised log likelihood. The likelihood, its gradient and
 its information are rebuilt from the fitted tables by independent code
-and differentiated numerically (1,395 checks).
+and differentiated numerically (1,282 checks).
 
 ### Layer 7. Refusal of invalid input
 
@@ -273,23 +272,23 @@ and Latent GOLD requirements through their core functions.
 
 | Function | R | Mplus | Latent GOLD | simulab recovery | Sources | Checks | Failed |
 |:---|---:|---:|---:|---:|---:|---:|---:|
-| [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md) | 81 | 212 | 213 | 100 | 9 | 15,818 | 0 |
-| [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md) | 3 | 56 | 85 | 40 | 5 | 8,139 | 0 |
-| [`lca()`](https://pak.dynasite.org/latents/reference/lca.md) | 75 | 77 | 71 | 100 | 10 | 6,776 | 0 |
+| [`lpa()`](https://pak.dynasite.org/latents/reference/lpa.md) | 81 | 212 | 213 | 100 | 9 | 15,797 | 0 |
+| [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md) | 3 | 56 | 85 | 40 | 5 | 8,020 | 0 |
+| [`lca()`](https://pak.dynasite.org/latents/reference/lca.md) | 75 | 77 | 71 | 100 | 10 | 6,779 | 0 |
 | [`multilca()`](https://pak.dynasite.org/latents/reference/multilca.md) | 8 | 16 | 18 | 40 | 4 | 5,410 | 0 |
-| [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) | 22 | 4 | 6 | 100 | 5 | 2,853 | 0 |
-| [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md) | 14 | 1 | 7 | 100 | 6 | 1,032 | 0 |
-| `mixture_regression(random =)` | 7 | 5 | 3 | 50 | 4 | 947 | 0 |
-| `three_step() / r3step()` | 3 | 70 | 79 | 100 | 4 | 2,854 | 0 |
-| `bootstrap_lrt() / VLMR` | 1 | 63 | 62 | 30 | 3 | 5,506 | 0 |
-| `enumerate_*() / compare_models()` | 6 | 2 | 2 | 60 | 6 | 295 | 0 |
-| [`pool_imputations()`](https://pak.dynasite.org/latents/reference/pool_imputations.md) | 2 | via core fits (56) | via core fits (85) | 30 | 3 | 805 | 0 |
+| [`lta()`](https://pak.dynasite.org/latents/reference/lta.md) | 22 | 4 | 6 | 100 | 5 | 2,870 | 0 |
+| [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md) | 14 | 1 | 7 | 100 | 6 | 1,046 | 0 |
+| `mixture_regression(random =)` | no | 5 | 3 | 50 | 3 | 953 | 0 |
+| `three_step() / r3step()` | 3 | 70 | 79 | 100 | 4 | 2,849 | 0 |
+| `bootstrap_lrt() / VLMR` | 1 | 63 | 62 | 30 | 4 | 5,492 | 0 |
+| `enumerate_*() / compare_models()` | 6 | 2 | 2 | 60 | 10 | 341 | 0 |
+| [`pool_imputations()`](https://pak.dynasite.org/latents/reference/pool_imputations.md) | 2 | via core fits (56) | via core fits (85) | 30 | 3 | 766 | 0 |
 
 Required references by function: datasets on which each agrees. {.table}
 
 Datasets are counted once per function. Across functions there are 672
 distinct datasets and 650 simulated datasets from 12 simulation designs
-and seed sets. The 16,964 checks of independent code, invariance and
+and seed sets. The 16,781 checks of independent code, invariance and
 refusal are reported separately and do not count as sources.
 
 ## Scope
