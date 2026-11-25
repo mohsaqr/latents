@@ -1,4 +1,4 @@
-# latents 1.4.2
+# latents 1.4.3
 
 Changes since the CRAN release 1.1.9.
 
