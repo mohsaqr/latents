@@ -1,6 +1,12 @@
 ---
 title: "Covariates, outcomes and staged estimation"
-author: "Written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me)"
+author:
+  - name: Mohammed Saqr
+    url: https://saqr.me
+    affiliation: University of Eastern Finland
+  - name: Sonsoles López-Pernas
+    url: https://sonsoles.me
+    affiliation: University of Eastern Finland
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Covariates, outcomes and staged estimation}
@@ -14,12 +20,69 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
 old_options <- options(digits = 3, width = 100)
 ```
 
-Variables outside the measurement model can be related to the latent classes
-in two ways. The three-step approach fits the profiles first and then relates
-them to an external variable, correcting for classification error, so the
-profiles stay fixed. The one-step approach adds the variable to the model, so
-it can also change the profiles. Staged estimation applies the same idea of
-fixed profiles to the group classes.
+The distinction between one-step and three-step approaches concerns whether
+external variables are allowed to influence the estimation and definition of
+latent profiles. External variables are not included among the indicators
+used to identify the profiles but are introduced to examine their
+relationships with profile membership. These variables may function as
+predictors of profile membership, covariates, or distal outcomes.
+
+In the three-step approach, the measurement model is estimated first, using
+only the indicators specified to define the profiles. Once the profiles have
+been identified, individuals are assigned to their most likely profile based
+on their posterior membership probabilities. In the subsequent step, external
+variables are incorporated into the analysis while correcting for the
+classification errors associated with this assignment. This correction is
+important because profile membership is latent and individuals cannot
+necessarily be classified with complete certainty. By accounting for this
+uncertainty, the three-step approach reduces the bias that would arise from
+treating assigned profile membership as if it were directly observed.
+Importantly, the original measurement model remains unchanged: the
+profile-specific means and other measurement parameters are not re-estimated
+in response to the external variables.
+
+In contrast, the one-step approach incorporates external variables directly
+into the latent profile model, estimating the measurement and structural
+components simultaneously. Consequently, the external variables can influence
+the estimation of profile membership and, depending on the model
+specification, alter the profile characteristics and classification of
+individuals. Although this approach allows the relationships between latent
+profiles and external variables to be estimated jointly, it may produce a
+different profile solution from the model estimated using only the original
+measurement indicators (Bolck et al., 2004; Vermunt, 2010).
+
+This distinction is particularly relevant in person-centred research, where
+profiles are interpreted as substantively meaningful subgroups characterized
+by distinct patterns across a set of indicators (Saqr et al., 2024; Scrucca
+et al., 2024). Researchers often seek to investigate the characteristics,
+antecedents, and consequences of these subgroups after establishing their
+measurement structure. In such cases, allowing external variables to
+influence profile estimation may change the very subgroups that the
+subsequent analyses are intended to investigate. The three-step approach
+addresses this concern by preserving the original profile solution while
+accounting for classification uncertainty. Staged estimation extends the same
+principle to group classes in multilevel models, keeping the group
+classification separate from subsequent analyses involving external
+variables. Thus, three-step methods are particularly useful when the
+objective is to investigate relationships with external variables without
+changing the substantive meaning of the previously identified profiles.
+
+This guide demonstrates these approaches in a two-level latent profile model
+of course engagement, in which course enrolments are nested within students.
+The measurement model is first estimated from the engagement indicators
+alone, and its classification-error matrix is examined, since this matrix is
+the basis of every three-step correction. The previous grade of each student
+is then related to the profiles in three ways: as a distal variable whose mean
+is compared across profiles with `three_step()`, using the BCH and maximum
+likelihood corrections and, for comparison, uncorrected modal assignment; as
+a predictor of profile membership with `r3step()`; and as a covariate
+estimated jointly with the profiles in a one-step model through
+`profile_covariates`. The guide then shows how a covariate can affect an
+indicator directly rather than through profile membership, a form of
+differential item functioning that can otherwise be mistaken for a
+difference between profiles, and concludes with staged estimation, in which
+the group classes are estimated with the profiles held fixed through
+`fit_staged()`.
 
 ## Data
 
@@ -36,23 +99,29 @@ library(latents)
 
 ## The measurement model
 
-To fit the profiles without the external variable, we call `multilpa()` with
-`vars` for the indicators, `id` for the group, `n_profiles`,
-`n_group_classes`, `n_starts` and `seed`.
+`multilpa()` fits the profiles without the external variable, with `vars`
+for the indicators, `id` for the group, `n_profiles`, `n_group_classes`,
+`n_starts` and `seed`. The within-profile covariances are estimated
+(`covariance_model = "full"`), because the indicators are correlated within
+profiles (see the
+[multilevel latent profile analysis](https://pak.dynasite.org/latents/articles/lpa.html)
+vignette).
 
 ```{r fit}
 fit <- multilpa(course_engagement,
                 vars = c("browse", "lectures", "forum_read", "forum_post",
                          "attendance"),
                 id = "student", n_profiles = 2, n_group_classes = 2,
+                covariance_model = "full",
                 n_starts = 3, seed = 1)
 fit
 ```
 
 ## Classification error
 
-To obtain the classification-error matrix, we call `get_results()` with
-`"classification_errors"` and `level` for the observations or the groups.
+`get_results()` with `"classification_errors"` returns the
+classification-error matrix, with `level` for the observations or the
+groups.
 Each row gives the probability of each assigned class for cases in a true
 class; the three-step methods use it to correct for misclassification.
 
@@ -60,25 +129,32 @@ class; the three-step methods use it to correct for misclassification.
 get_results(fit, "classification_errors", level = "individuals")
 ```
 
+Enrolments of the first profile are assigned to it with probability 0.982 and
+those of the second with probability 0.968, so the corrections below are
+small but not negligible.
+
 ## Class means of an external variable
 
-To estimate the mean of an external variable in each profile, we call
-`three_step()` with `data` for the data frame and `outcome` for the variable.
-The default method, BCH, corrects for classification error; standard errors
-are clustered on groups.
+`three_step()` estimates the mean of an external variable in each profile,
+with `data` for the data frame and `outcome` for the variable. The default
+method, BCH, corrects for classification error (Bolck et al., 2004; Bakk &
+Vermunt, 2016); standard errors are clustered on groups.
 
 ```{r three-step}
 three_step(fit, data = course_engagement, outcome = "previous_grade")
 ```
 
-To compare the profiles, we call `three_step()` with `contrast = "pairs"`,
-which returns each difference between profile means with a Benjamini-Hochberg
-adjusted p-value.
+Previous grades average 0.23 standard deviations above the mean before
+enrolments of the first profile and 0.33 below it before enrolments of the
+second. `contrast = "pairs"` returns each difference between profile means
+with a Benjamini-Hochberg adjusted p-value (Benjamini & Hochberg, 1995).
 
 ```{r contrasts}
 three_step(fit, data = course_engagement, outcome = "previous_grade",
            contrast = "pairs")
 ```
+
+The difference is -0.57 standard deviations (95% interval -0.67 to -0.47).
 
 Maximum likelihood is the other correction. With `method = "ml"`, the
 assigned profile becomes an indicator of the true profile whose
@@ -93,19 +169,25 @@ three_step(fit, data = course_engagement, outcome = "previous_grade",
            method = "ml")
 ```
 
-To see the effect of ignoring classification error, we call `three_step()`
-with `method = "modal"`, which treats each case's most probable profile as
-known.
+ML gives nearly the same means (0.23 and -0.34), with variances of 0.93 and
+0.91 within the profiles.
+
+`method = "modal"` shows the effect of ignoring classification error: it
+treats each case's most probable profile as known.
 
 ```{r modal}
 three_step(fit, data = course_engagement, outcome = "previous_grade",
            method = "modal")
 ```
 
+The modal means (0.22 and -0.32) are slightly closer together than the
+corrected ones, the attenuation that classification error produces; with
+classification as accurate as here, the difference is small.
+
 ## Predicting class membership
 
-To regress profile membership on a covariate, we call `r3step()` with `data`
-for the data frame and `covariates` for the predictors. It returns
+`r3step()` regresses profile membership on a covariate, with `data` for the
+data frame and `covariates` for the predictors. It returns
 multinomial logit coefficients, corrected for classification error.
 `vcov_type = "robust"`, the default, clusters the standard errors on groups.
 
@@ -114,10 +196,14 @@ r3step(fit, data = course_engagement, covariates = "previous_grade",
        vcov_type = "robust")
 ```
 
+A previous grade one standard deviation higher raises the log odds of the
+first, more active profile against the second by 0.615 (95% interval 0.495
+to 0.735), an odds ratio of about 1.85.
+
 ## One-step estimation
 
-To estimate the covariate together with the profiles, we call `multilpa()`
-with `profile_covariates` for predictors of profile membership.
+`multilpa()` with `profile_covariates` estimates the covariate together with
+the profiles, as a predictor of profile membership.
 `group_covariates` does the same for group-class membership and needs a
 variable that is constant within groups. Covariates must have no missing
 values; missing indicators are integrated out with `missing = "fiml"`.
@@ -127,32 +213,43 @@ one_step <- multilpa(course_engagement,
                      vars = c("browse", "lectures", "forum_read",
                               "forum_post", "attendance"),
                      id = "student", n_profiles = 2, n_group_classes = 2,
+                     covariance_model = "full",
                      profile_covariates = "previous_grade", n_starts = 3,
                      seed = 1)
 one_step
 ```
 
-To obtain the membership coefficients, we call `get_results()` with
-`"coefficients"`, and for their standard errors and intervals,
-`parameter_inference()`.
+`get_results()` with `"coefficients"` returns the membership coefficients,
+and `parameter_inference()` their standard errors and intervals.
 
 ```{r coefficients}
 get_results(one_step, "coefficients")
-parameter_inference(one_step)
+head(parameter_inference(one_step), 10)
 ```
+
+The one-step coefficient of previous grade is 0.447, smaller than the
+three-step coefficient, because it is conditional on the group class and the
+profiles are estimated together with it.
 
 ## Direct effects on indicators
 
 A covariate can also act on an indicator rather than on membership: students
 with better previous grades may attend more within every profile. Left out
 of the model, such an effect is read as a difference between the profiles
-(differential item functioning). To estimate it, we call `multilpa()` with
-`direct_effects`, one `"indicator ~ covariate"` term per effect. The
+(differential item functioning). `multilpa()` with `direct_effects`
+estimates it, one `"indicator ~ covariate"` term per effect. The
 covariate shifts the indicator's mean by the same amount in every profile,
 and the profile means are then the means at a covariate value of zero, here
-the average standardized grade.
+the average standardized grade. Direct effects are estimated in a profile
+model with a diagonal covariance structure (`EEI` or `VVI`), so the comparison
+below uses the diagonal model with and without them.
 
 ```{r direct}
+diagonal <- multilpa(course_engagement,
+                     vars = c("browse", "lectures", "forum_read",
+                              "forum_post", "attendance"),
+                     id = "student", n_profiles = 2, n_group_classes = 2,
+                     n_starts = 3, seed = 1)
 direct <- multilpa(course_engagement,
                    vars = c("browse", "lectures", "forum_read",
                             "forum_post", "attendance"),
@@ -161,14 +258,17 @@ direct <- multilpa(course_engagement,
                                       "forum_post ~ previous_grade"),
                    n_starts = 3, seed = 1)
 get_results(direct, "direct_effects")
-compare_models(without = fit, direct = direct)
+compare_models(without = diagonal, direct = direct)
 ```
 
 ```{r direct-values, include = FALSE}
 effects <- get_results(direct, "direct_effects")
 effect_of <- function(name, column) with(subset(effects, indicator == name), get(column))
-compared <- compare_models(without = fit, direct = direct)
-bic_of <- function(name) sprintf("%.1f", with(subset(compared, model == name), bic_groups))
+compared <- compare_models(without = diagonal, direct = direct)
+bic_value <- function(name) with(subset(compared, model == name), bic_groups)
+bic_of <- function(name) sprintf("%.1f", bic_value(name))
+# The text below says BIC is lower without the effects; stop if that changes.
+stopifnot(bic_value("without") < bic_value("direct"))
 ```
 
 Attendance rises by `r round(effect_of("attendance", "estimate"), 3)` per
@@ -184,8 +284,8 @@ the profiles do not owe their separation to previous grades.
 
 ## Staged estimation
 
-To hold the profiles fixed while the group classes are estimated, we call
-`fit_staged()` with the same arguments as `multilpa()`. It first fits the
+`fit_staged()` holds the profiles fixed while the group classes are
+estimated, with the same arguments as `multilpa()`. It first fits the
 profiles with one group class, then estimates the group classes with the
 profile means and variances held fixed.
 
@@ -194,17 +294,22 @@ staged <- fit_staged(course_engagement,
                      vars = c("browse", "lectures", "forum_read",
                               "forum_post", "attendance"),
                      id = "student", n_profiles = 2, n_group_classes = 2,
+                     covariance_model = "full",
                      n_starts = 3, seed = 1)
 staged
 ```
 
-To see what each stage estimated, we call `get_results()` with `"stages"`.
+`get_results()` with `"stages"` reports what each stage estimated.
 `parameters` counts the parameters estimated at a stage, and
 `parameters_with_measurement` adds those held fixed.
 
 ```{r stages}
 get_results(staged, "stages")
 ```
+
+The first stage estimates the 41 parameters of the profiles with one group
+class; the second estimates 3 membership parameters with the profiles held
+fixed.
 
 ## Reference
 
@@ -226,16 +331,19 @@ measurement <- multilpa(course_engagement,
                         vars = c("browse", "lectures", "forum_read",
                                  "forum_post", "attendance"),
                         id = "student", n_profiles = 2,
-                        n_group_classes = 1, seed = 1)  # a one-class measurement fit
+                        n_group_classes = 1, covariance_model = "full",
+                        seed = 1)  # a one-class measurement fit
 fit_staged(course_engagement,
            vars = c("browse", "lectures", "forum_read", "forum_post",
                     "attendance"),
            id = "student", n_profiles = 2, n_group_classes = 2,
+           covariance_model = "full",
            measurement = measurement)      # stage two from that fit
 multilpa(course_engagement,
          vars = c("browse", "lectures", "forum_read", "forum_post",
                   "attendance"),
          id = "student", n_profiles = 2, n_group_classes = 2,
+         covariance_model = "full",
          start = starting_values(fit, what = "measurement"),
          fixed = "variances")              # hold chosen parameters fixed
 parameter_inference(staged)                # standard errors of the estimated stage
@@ -252,6 +360,34 @@ parameter_inference(staged)                # standard errors of the estimated st
 - Staged estimation does not carry first-stage uncertainty into the second
   stage, and its likelihood is not the joint maximum.
 - All associations are observational.
+
+## References
+
+Bakk, Z., & Vermunt, J. K. (2016). Robustness of stepwise latent class
+modeling with continuous distal outcomes. *Structural Equation Modeling*, 23,
+20--31.
+
+Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery rate:
+A practical and powerful approach to multiple testing. *Journal of the Royal
+Statistical Society: Series B*, 57(1), 289--300.
+
+Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent structure
+models with categorical variables: One-step versus three-step estimators.
+*Political Analysis*, 12(1), 3--27.
+
+Saqr, M., Vogelsmeier, L. V. D. E., & López-Pernas, S. (2024). Capturing
+where the learning process takes place: A person-specific and
+person-centered primer. *Learning and Individual Differences*, 113, 102492.
+<https://doi.org/10.1016/j.lindif.2024.102492>
+
+Scrucca, L., Saqr, M., López-Pernas, S., & Murphy, K. (2024). An
+introduction and R tutorial to model-based clustering in education via
+latent profile analysis. In M. Saqr & S. López-Pernas (Eds.), *Learning
+analytics methods and tutorials: A practical guide using R* (pp. 285--317).
+Springer. <https://doi.org/10.1007/978-3-031-54464-4_9>
+
+Vermunt, J. K. (2010). Latent class modeling with covariates: Two improved
+three-step approaches. *Political Analysis*, 18, 450--469.
 
 ```{r restore-options, include = FALSE}
 options(old_options)

@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(7)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(7)
 caught <- function(e) { w <- character(); v <- withCallingHandlers(e, warning=function(c){w<<-c(w,class(c)[1]);invokeRestart("muffleWarning")}); attr(v,"w") <- unique(w); v }
 J <- 80; sizes <- c(rep(1L,12), sample(5:9, J-12, TRUE)); gid <- rep(seq_len(J), sizes); n <- length(gid)
 z <- rbinom(n,1,.5)+1L; off <- rep(rnorm(J,0,1.5),sizes)

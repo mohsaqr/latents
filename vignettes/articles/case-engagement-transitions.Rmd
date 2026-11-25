@@ -1,6 +1,12 @@
 ---
 title: "Case study: Latent transition analysis of course engagement"
-author: "Written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me)"
+author:
+  - name: Mohammed Saqr
+    url: https://saqr.me
+    affiliation: University of Eastern Finland
+  - name: Sonsoles López-Pernas
+    url: https://sonsoles.me
+    affiliation: University of Eastern Finland
 output:
   rmarkdown::html_document:
     toc: true
@@ -21,17 +27,22 @@ engagement changes from students who differ only in where it starts.
 
 ## Data and model
 
-`course_engagement` holds 1,422 course enrolments of 106 students, ordered
+`engagement_momentum` holds 1,310 course enrolments of 106 students, ordered
 within each student by `sequence`. The five indicators are simulated as
-continuous values representing a log-count scale and standardized within
-course; no raw counts or `log1p()` transformation are generated. The data are
-synthetic and revisit the design of Saqr and López-Pernas (2021), who asked how
-students' online engagement develops across a program. That study
-identified course-level engagement states and longer-term trajectories with
-latent class analysis and hidden Markov models. Here, three profiles and two
-student classes are working choices for illustrating the transition model;
-they do not establish the number of profiles or reproduce the published
-estimates.
+continuous values on a log-activity scale and standardized within course. The
+data are synthetic and follow the design of the engagement studies of Saqr and
+López-Pernas (2021) and López-Pernas and Saqr (2024), which identified
+course-level engagement states with latent class analysis and followed
+students' sequences of states across a program. In the simulation, each
+student follows one of three trajectories (engaged, fluctuating or mostly
+disengaged), each a first-order Markov chain over three engagement states
+(active, average and disengaged). Engaged students show momentum, in that an
+active course tends to be followed by another active course; mostly disengaged
+students show inertia, in that a disengaged course tends to be followed by
+another disengaged course. Three profiles and three student classes therefore
+match the structure from which the data were generated, and the
+[evaluation vignette](case-engagement-evaluation.html) shows that the
+information criteria select the same numbers for the multilevel profile model.
 
 For student $i$ at course position $t$, $C_{it}$ is the latent profile and
 $G_i$ the student's class. The model estimates
@@ -53,15 +64,17 @@ of each transition shows how much.
 
 ```{r fit}
 library(latents)
-vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+vars <- c("browse", "lectures", "forum_read", "forum_post", "active_days")
 
-moves <- lta(course_engagement, vars, "student", n_profiles = 3,
-             n_group_classes = 2, time = "sequence", n_starts = 10, seed = 1)
+moves <- lta(engagement_momentum, vars, "student", n_profiles = 3,
+             n_group_classes = 3, time = "sequence", n_starts = 10, seed = 1)
 get_results(moves, "starts")
 ```
 
 All ten starts converge to the same log likelihood, so the solution is
-replicated within this seed's starts.
+replicated within this seed's starts. The warning reports that one estimated
+probability lies at its numerical boundary; the section on sparse and boundary
+estimates below identifies it.
 
 ## The profiles
 
@@ -76,10 +89,10 @@ plot_profiles(moves)
 get_results(moves)
 ```
 
-The profiles describe lower, intermediate and higher activity. Their attendance
-means are approximately -0.929, 0.254 and 1.124 in that order; the table above
-gives the corresponding profile labels for this fitted solution. The heatmap
-shows the same means as standard deviations from each indicator's grand mean.
+Profile 1 is the disengaged state, Profile 2 the average state and Profile 3
+the active state, with means of days active of -0.960, 0.005 and 0.790
+standard deviations from the course mean. The heatmap shows the same means as
+standard deviations from each indicator's grand mean.
 
 ```{r heatmap}
 plot_profiles(moves, what = "heatmap")
@@ -99,15 +112,17 @@ class's enrolments in that profile, across the whole history, and
 get_results(moves, "initial")
 ```
 
-Student class 1, with 30.0% of students, starts in the lower-activity profile
-with probability 0.762 and in the higher-activity profile with probability
-0.238; its probability of starting in the intermediate profile is effectively
-zero. Class 2, with 70.0% of students, starts across all three profiles, with
-probabilities 0.204, 0.444 and 0.353. Starting and overall shares differ: class
-1 starts in the lower profile with probability 0.762, but 0.819 of its
-enrolments are expected there over the whole history, while class 2 starts in
-the higher profile with probability 0.444 and spends 0.333 of its enrolments
-there.
+Student class 1, with 21.8% of students, starts in the disengaged profile
+with probability 0.746, and 0.821 of its enrolments are expected there over
+the whole history. Class 3, with 44.1% of students, starts in the active
+profile with probability 0.613, and 0.688 of its enrolments are expected
+there. Class 2, with 34.1% of students, starts across all three profiles, with
+probabilities 0.383, 0.367 and 0.250, and spends its enrolments in similar
+proportions. Class 1 is therefore the mostly disengaged class, class 2 the
+fluctuating class and class 3 the engaged class. In classes 1 and 3, the
+expected share of enrolments in the dominant profile exceeds the probability
+of starting there: over the program, students drift towards the state that
+their class favours.
 
 ## How engagement changes
 
@@ -130,25 +145,32 @@ profile in rows and the destination in columns.
 plot_transitions(moves)
 ```
 
-In class 1, lower activity persists with probability 0.939, estimated from 303
-expected transitions. Each of its other transitions rests on fewer than 20
-expected transitions, because class-1 students rarely leave the lower profile.
-Class 2 moves between profiles. Its students remain in the lower profile with
-probability 0.615, move from higher to intermediate activity with probability
-0.495, and from intermediate to higher with probability 0.360. Class 1 is
-therefore a persistently low-engagement class, and class 2 a class whose
-engagement changes from course to course.
+In class 1, a disengaged course is followed by another disengaged course with
+probability 0.904, estimated from 196 expected transitions, and an average
+course is followed by a disengaged one with probability 0.617: disengagement
+has inertia, and the average state leads back into it. In class 3, an active
+course is followed by another active course with probability 0.808, estimated
+from 297 expected transitions, and an average course is followed by an active
+one with probability 0.473: engagement has momentum. Class 2 has no dominant
+transition; its largest probability, 0.566, takes an active course to an
+average one, and its other probabilities lie between 0.20 and 0.44. These are
+the patterns of the generating model, in which disengagement and activity
+persist with probability 0.85 in the corresponding trajectories, and the
+fluctuating trajectory moves between states with probabilities between 0.25
+and 0.40.
 
 ## Sparse and boundary estimates
 
-Some estimates rest on very little information. Class 1's probability of
-starting in the intermediate profile is at its lower bound, because no class-1
-student is expected to start there. Class 1's transitions out of the higher
-and intermediate profiles rest on between 4.7 and 18.9 expected transitions
-each, because its students rarely leave the lower profile. A probability near
-zero shows that the data carry little information about that movement, not
-that the movement is impossible. Estimates like these can also mean that the
-chosen number of classes divides the available transitions too finely.
+Some estimates rest on little information. Students in class 1 rarely occupy
+the active profile, so its transitions out of the active profile rest on 16.0
+expected transitions and those out of the average profile on 34.7. Its
+probability of moving from the average to the active profile is at its lower
+bound, which is why Wald inference is withheld for this fit. A probability
+near zero shows that the data carry little information about that movement,
+not that the movement is impossible: in the generating model, mostly
+disengaged students move from the average to the active state with
+probability 0.10. Estimates like these can also mean that the chosen number of
+classes divides the available transitions too finely.
 
 ## Assigned sequences
 
@@ -163,9 +185,12 @@ plot_sequences(moves)
 get_results(moves, "sequence_summary")
 ```
 
-The summary gives the number of students and courses in each assigned class.
-Sequence lengths differ between students, so the rows of the plot end at
-different positions.
+The summary gives the number of students and courses in each assigned class:
+22 students with 278 courses in class 1, 39 with 473 in class 2 and 45 with
+559 in class 3. Sequence lengths range from 10 to 15 courses, so the rows of
+the plot end at different positions. The long runs of the disengaged profile
+in class 1 and of the active profile in class 3 are the inertia and momentum
+of the transition table, seen in the individual histories.
 
 ## Classification uncertainty
 
@@ -173,7 +198,7 @@ different positions.
 get_results(moves, "entropy")
 ```
 
-Relative entropy is 0.802 for enrolments and 0.778 for students. The entropy
+Relative entropy is 0.825 for enrolments and 0.774 for students. The entropy
 plot shows, within each profile, how the per-case entropy contributions are
 distributed, and the posterior plot shows the posterior probability of each
 case's assigned profile.
@@ -208,32 +233,52 @@ per_class <- get_group_tna(moves)
 plot(per_class)
 ```
 
-The class networks show the two patterns of the transition table: a dominant
-self-loop on the lower profile in class 1, and movement among all three
-profiles in class 2.
+The class networks show the patterns of the transition table: a dominant
+self-loop on the disengaged profile in class 1, movement among all three
+profiles in class 2, and a dominant self-loop on the active profile in
+class 3.
+
+## Recovery of the generating structure
+
+The same check against the generating states and trajectories as in the
+[introductory vignette](case-engagement-profiles.html) applies to the
+transition model.
+
+```{r recovery}
+get_results(moves, "assignments", data = engagement_momentum,
+            truth = c("state", "trajectory"))
+```
+
+The transition model recovers the states as well as the multilevel profile
+model does: 93.3%, 79.9% and 95.4% of the active, average and disengaged
+enrolments, against 92.9%, 79.9% and 94.7%. It recovers the engaged and mostly
+disengaged trajectories about as well (88.4% and 90.9%, against 86.0% and
+90.9%), but the fluctuating trajectory less well (80.5%, against 95.1%).
 
 ## Limitations
 
 The model assumes constant transition probabilities across course positions,
-so change specific to one stage of the program is averaged over positions.
+so change specific to one stage of the program is averaged over positions; the
+simulated data satisfy this assumption, but applied data need not.
 Transitions are between successive observed courses, which can differ in
 duration, content and assessment. Class differences describe patterns in
-engagement histories and do not identify their causes.
-Wald standard errors are withheld for this fit, because class 1's probability
-of starting in the intermediate profile sits at its lower bound (the note
-above the profile table), and the numbers of profiles and classes were not
-compared here; `enumerate_classes()` with `time` compares transition models
-over a grid of profile and class counts. The number of profiles and classes
-here is therefore a working choice. The diagonal covariance ignores the association between `attendance`
-and the click measures, which the evaluation vignette shows is present in
-these data; unmodelled dependence can be absorbed by extra profiles and change
-the apparent transitions. Transitions supported by few expected counts, such as those out of
-the higher and intermediate profiles in class 1, should not be interpreted.
+engagement histories and do not identify their causes. Wald standard errors
+are withheld for this fit because class 1's probability of moving from the
+average to the active profile sits at its lower bound, and the numbers of
+profiles and classes were not compared for the transition model here;
+`enumerate_classes()` with `time` compares transition models over a grid of
+profile and class counts. Transitions supported by few expected counts, such
+as those out of the active profile in class 1, should not be interpreted.
 
 ## References
 
 Collins, L. M., & Lanza, S. T. (2010). *Latent class and latent transition
 analysis*. Wiley.
+
+López-Pernas, S., & Saqr, M. (2024). How the dynamics of engagement explain
+the momentum of achievement and the inertia of disengagement: A complex
+systems theory approach. *Computers in Human Behavior, 153*, 108126.
+<https://doi.org/10.1016/j.chb.2023.108126>
 
 Saqr, M., & López-Pernas, S. (2021). The longitudinal trajectories of online
 engagement over a full program. *Computers & Education, 175*, 104325.

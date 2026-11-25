@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 set.seed(5); K <- 3L; n <- 150; TT <- 4; sep <- 1
 s <- matrix(0L,n,TT); s[,1] <- sample.int(K,n,TRUE)
 z <- matrix(rnorm(n*TT),n,TT)

@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 # Synthetic: 2 profiles, 4 occasions, covariates on initial and transition
 n <- 250; TT <- 4
 z0 <- rnorm(n); zt <- matrix(rnorm(n*TT, 0, 1), n, TT)

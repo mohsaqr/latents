@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 w <- function(expr) { warns <- character(); v <- withCallingHandlers(tryCatch(expr,error=function(e) { warns <<- c(warns,paste0("ERROR:",class(e)[1])); NULL }),warning=function(w){ warns <<- c(warns,class(w)[1]); invokeRestart("muffleWarning") }); list(v=v,w=warns) }
 # Realistic strong covariate on a small number of groups / persons, no constructed link to the assignment.
 one <- function(seed, G=40, m=10, slope=4) {

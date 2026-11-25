@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 gen <- function(n, slope, seed, z_fun = rnorm) {
   set.seed(seed); T <- 3
   pid <- rep(seq_len(n), each = T); occ <- rep(seq_len(T), n)

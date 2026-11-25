@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 w <- function(expr) { warns <- character(); v <- withCallingHandlers(tryCatch(expr,error=function(e) { warns <<- c(warns,paste0("ERROR:",class(e)[1])); NULL }),warning=function(w){ warns <<- c(warns,class(w)[1]); invokeRestart("muffleWarning") }); list(v=v,w=warns) }
 n <- 400; tr <- 1L+(runif(n)<.5)
 d <- data.frame(a=rnorm(n,c(-2.5,2.5)[tr]),b=rnorm(n,c(-2.5,2.5)[tr]))

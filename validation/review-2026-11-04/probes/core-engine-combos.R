@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(4)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(4)
 quiet <- function(e) withCallingHandlers(e, warning=function(w) {invokeRestart("muffleWarning")})
 n <- 200; z <- rbinom(n,1,.45)+1L
 d0 <- data.frame(row=seq_len(n), y1=rnorm(n,c(0,2)[z],1), y2=NA_real_, y3=rnorm(n,c(1,-1)[z],c(.7,1.1)[z]), cv=rnorm(n)+z/2)

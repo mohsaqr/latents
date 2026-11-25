@@ -1,4 +1,4 @@
-# latents 1.4.3
+# latents 1.4.4
 
 Changes since the CRAN release 1.1.9.
 
@@ -39,6 +39,9 @@ Changes since the CRAN release 1.1.9.
 
 ## New features
 
+* New dataset `engagement_momentum`: simulated engagement states and
+  trajectories over a study programme, with three states, three student
+  trajectories and course grades, for the engagement case studies.
 * One function per plot or table, taking any object the package returns:
   `plot_sizes()`, `plot_entropy()`, `plot_posteriors()`, `plot_avepp()`,
   `plot_heatmap()`, `plot_bars()`, `plot_raincloud()`, `plot_parallel()`,
@@ -88,6 +91,8 @@ Changes since the CRAN release 1.1.9.
 * Every function has its own help page with a verb-led title; each page
   lists every argument's values and default, the fits it accepts and
   refuses, and the columns it returns.
+* Every vignette and article except the verification report has a PDF
+  version; the Resources page on the website lists them all.
 
 ## Bug fixes
 

@@ -158,8 +158,8 @@ utils::globalVariables(c("model", "criterion", "value"))
 #' compare_models(grid, c(2, 2), c(3, 2))
 #' compare_models(grid, n_group_classes = 2)
 #'
-#' # Is a covariance structure that varies by profile needed? A
-#' # likelihood-ratio test of each structure against the one before it.
+#' # A likelihood-ratio test of a covariance structure that varies by
+#' # profile against a shared one.
 #' shared <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
 #'               model = "EEI", n_starts = 2, seed = 1)
 #' varying <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,

@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 options(digits = 5, width = 140)
 vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 candidates <- enumerate_classes(course_engagement, vars, id = "student",

@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(8)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(8)
 warn <- function(expr) withCallingHandlers(expr, warning = function(w) { cat("  [warning ", class(w)[1], "] ", substr(conditionMessage(w), 1, 110), "\n", sep = ""); invokeRestart("muffleWarning") })
 # A. Exact likelihood ridge of a random intercept + slope with two occasions
 pp <- do.call(rbind, lapply(1:150, function(i) { b <- rnorm(1, 0, 1); data.frame(id = i, t = 0:1, y = b + .5 * (0:1) + rnorm(2, sd = .7)) }))

@@ -1,6 +1,6 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 library(testthat)
-ns<-asNamespace("latents"); root<-"/Users/mohammedsaqr/Documents/Github/latents/tests/testthat"
+ns<-asNamespace("latents"); root<-"/Users/mohammedsaqr/Github/latents/tests/testthat"
 patch<-function(name,from,to){ f<-get(name,ns); src<-paste(deparse(f,width.cutoff=500L),collapse="\n"); stopifnot(grepl(from,src,fixed=TRUE)); g<-eval(parse(text=sub(from,to,src,fixed=TRUE)),envir=ns); environment(g)<-ns
   unlockBinding(name,ns); assign(name,g,ns); f}
 restore<-function(name,f){assign(name,f,ns)}

@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(6)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(6)
 caught <- function(e) { w <- character(); v <- withCallingHandlers(e, warning=function(c){w<<-c(w,class(c)[1]);invokeRestart("muffleWarning")}); attr(v,"w") <- unique(w); v }
 n <- 300; z <- rep(1:2, c(150,150))
 # (1) Poisson: one class has only zero counts. Mean at its floor

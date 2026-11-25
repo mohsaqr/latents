@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(21)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(21)
 gen <- function() { nid <- 100; nt <- 3; st <- matrix(0L,nid,nt); st[,1] <- 1+rbinom(nid,1,.5); for (t in 2:nt) st[,t] <- ifelse(runif(nid)<.85,st[,t-1],3-st[,t-1])
   dl <- data.frame(id=rep(seq_len(nid),each=nt), time=rep(seq_len(nt),nid)); s <- as.vector(t(st)); dl$s <- s
   dl$y1 <- rnorm(nid*nt, c(-2,2)[s]); dl$y2 <- rnorm(nid*nt, c(0,3)[s]); dl }

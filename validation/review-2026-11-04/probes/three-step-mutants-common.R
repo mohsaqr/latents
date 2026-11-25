@@ -1,5 +1,5 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
-root <- "/Users/mohammedsaqr/Documents/Github/latents/tests/testthat"
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+root <- "/Users/mohammedsaqr/Github/latents/tests/testthat"
 ns <- asNamespace("latents")
 run_files <- function(files) {
   vapply(files, function(f) {

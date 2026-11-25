@@ -1,6 +1,6 @@
-source("/Users/mohammedsaqr/Documents/Github/latents/validation/review-2026-11-04/probes/three-step-mutants-common.R")
-setwd("/Users/mohammedsaqr/Documents/Github/latents")
-assign("root", "/Users/mohammedsaqr/Documents/Github/latents/equivalence", envir=globalenv())
+source("/Users/mohammedsaqr/Github/latents/validation/review-2026-11-04/probes/three-step-mutants-common.R")
+setwd("/Users/mohammedsaqr/Github/latents")
+assign("root", "/Users/mohammedsaqr/Github/latents/equivalence", envir=globalenv())
 f <- "test-latentgold-step3-markov.R"
 print(run_files(f))
 mutate("lta: D transposed in emissions", ".lta_three_step_inputs",

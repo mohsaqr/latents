@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(4)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(4)
 lse <- function(v) { m <- max(v); m + log(sum(exp(v - m))) }
 softmax <- function(s) exp(s) / sum(exp(s))
 dmvn <- function(y, m, V) { U <- chol(V); r <- backsolve(U, y - m, transpose = TRUE); -0.5 * (length(y) * log(2 * pi) + 2 * sum(log(diag(U))) + sum(r^2)) }

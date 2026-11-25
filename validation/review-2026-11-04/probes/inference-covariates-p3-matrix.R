@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 sim <- function(G=50,n=6,seed=1){ set.seed(seed)
   do.call(rbind,lapply(seq_len(G),function(g){ w<-rnorm(1); h<-rbinom(1,1,plogis(.5*w)); z<-rnorm(n); k<-rbinom(n,1,plogis(-.5+1.5*h+.8*z))+1L
     data.frame(g=g,w=w,z=z,wt=rep(runif(1,.5,2),n),

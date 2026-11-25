@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 # Small chains: when a transition cell is empty, what does the table report?
 one <- function(seed, n=80, K=3L, TT=4, sep=1.2) {
   set.seed(seed)

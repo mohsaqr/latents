@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 try_lrt <- function(label, ...) {
   r <- tryCatch(withCallingHandlers({
     t <- as.data.frame(compare_models(..., test = "lrt"))

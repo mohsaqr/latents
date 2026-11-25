@@ -126,6 +126,7 @@ reference:
 - title: Data
   contents:
   - course_engagement
+  - engagement_momentum
   - student_esm
   - study_hours
   - growth_scores
@@ -155,7 +156,6 @@ articles:
   contents:
   - articles/workflow-lpa
   - articles/workflow-lca
-  - articles/class-enumeration
   - articles/model-selection
   - articles/tree-plot
   - articles/evaluation
@@ -177,4 +177,9 @@ articles:
   - articles/case-engagement-evaluation
   - articles/case-engagement-covariates
   - articles/case-engagement-transitions
-  - articles/case-esm-lca
+
+- title: Resources
+  navbar: Resources
+  desc: Every article with its reference and PDF
+  contents:
+  - articles/cite-articles

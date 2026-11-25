@@ -1,5 +1,5 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
-ns <- asNamespace("latents"); tests <- "/Users/mohammedsaqr/Documents/Github/latents/tests/testthat"
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+ns <- asNamespace("latents"); tests <- "/Users/mohammedsaqr/Github/latents/tests/testthat"
 mutate <- function(name, from, to) { f <- get(name, ns); txt <- deparse(f, width.cutoff = 500L); hit <- grepl(from, txt, fixed = TRUE)
   stopifnot("mutation target not found" = any(hit)); txt <- gsub(from, to, txt, fixed = TRUE); g <- eval(parse(text = txt)); environment(g) <- ns
   unlockBinding(name, ns); assign(name, g, ns); lockBinding(name, ns); f }

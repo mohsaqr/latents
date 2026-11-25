@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 sim <- function(n, T, seed, K2 = TRUE) {
   set.seed(seed)
   P <- matrix(c(.8,.2,.3,.7), 2, byrow = TRUE)

@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(11)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(11)
 # (a) LCA with a probability on its bound: fit$boundary, diagnostics, grid, LRT, BLRT, LMR
 n <- 400; kk <- rbinom(n,1,.5)+1
 dp <- data.frame(id = seq_len(n), a = ifelse(kk==1, "x", ifelse(runif(n)<.4,"x","y")), b = ifelse(runif(n)<c(.9,.2)[kk],"u","v"), c = ifelse(runif(n)<c(.85,.2)[kk],"r","s"), d = ifelse(runif(n)<c(.9,.3)[kk],"p","q"), e = ifelse(runif(n)<c(.15,.7)[kk],"m","n"))

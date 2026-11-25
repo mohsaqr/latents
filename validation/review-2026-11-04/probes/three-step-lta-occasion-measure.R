@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 # Occasion-specific measurement: separation falls over occasions; a single pooled D is applied to all.
 n <- 500; TT <- 4; z <- matrix(rnorm(n*TT),n,TT)
 s <- matrix(0L,n,TT); s[,1] <- 1L+(runif(n)<.5)

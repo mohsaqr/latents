@@ -1,5 +1,5 @@
 # Parent's independent reproduction of the MAJOR findings, on new seeds.
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL)
 q <- function(e) { w <- character(); v <- withCallingHandlers(tryCatch(e, error = function(x) structure(list(msg = conditionMessage(x), cls = class(x)[1]), class = "failed")),
   warning = function(c) { w <<- c(w, class(c)[1]); invokeRestart("muffleWarning") }); attr(v, "w") <- unique(w); v }
 sec <- function(s) cat("\n=====", s, "\n")

@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 # Null: iid profile membership, independent of group. What do cross-level criteria select?
 draw <- function(seed, J, n, d) { set.seed(seed)
   k <- sample(1:2, J * n, TRUE); pm <- rbind(c(-1.5, -1), c(1.5, 1))[, seq_len(d), drop = FALSE]

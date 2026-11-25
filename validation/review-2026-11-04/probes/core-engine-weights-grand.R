@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(8)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(8)
 quiet <- function(e) withCallingHandlers(e, warning=function(w) invokeRestart("muffleWarning"))
 # Single-level, oversampled minority profile: weights undo the oversampling.
 n <- 400; z <- rbinom(n,1,.5)

@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 cat("pkgs:", vapply(c("numDeriv","mice","nnet","sandwich","poLCA","flexmix","mclust"), requireNamespace, TRUE, quietly=TRUE), "\n")
 # ---- independent base-R one-step covariate model: 2 group classes, 3 profiles, 2 Gaussians
 sim <- function(G=60, n=8, seed=1){ set.seed(seed)

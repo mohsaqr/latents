@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(3)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(3)
 ng <- 50; nper <- 6
 g <- sample(1:2, ng, TRUE); id <- rep(seq_len(ng), each = nper)
 k <- 1 + rbinom(length(id), 1, ifelse(g[id] == 1, .8, .2))

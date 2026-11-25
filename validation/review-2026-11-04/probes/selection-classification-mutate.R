@@ -3,7 +3,7 @@
 # that name that formula. Usage: Rscript this.R <first> <last>.
 args <- as.numeric(commandArgs(TRUE)[1:2])
 extra_files <- commandArgs(TRUE)[-(1:2)]
-repo <- "/Users/mohammedsaqr/Documents/Github/latents"
+repo <- "/Users/mohammedsaqr/Github/latents"
 base <- "/private/tmp/claude-503/-Users-mohammedsaqr-Documents-Github-latents/2f29606d-312f-4450-b6bf-33795875bed9/scratchpad/mut"
 M <- list(
  list("KIC 3(q+1) -> 3q", "diagnostics.R", "penalty = c(0, 2 * q, 3 * (q + 1))", "penalty = c(0, 2 * q, 3 * q)", c("test-diagnostics.R")),

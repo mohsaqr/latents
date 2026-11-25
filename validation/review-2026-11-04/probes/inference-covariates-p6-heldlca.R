@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 ## two-step LCA with a covariate: weak separation, one-level
 n <- 500; z <- rnorm(n); k <- rbinom(n,1,plogis(.2+.8*z))+1L
 q <- c(.75,.3)

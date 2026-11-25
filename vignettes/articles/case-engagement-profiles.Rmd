@@ -1,6 +1,12 @@
 ---
 title: "Case study: Multilevel latent profile analysis of course engagement"
-author: "Written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me)"
+author:
+  - name: Mohammed Saqr
+    url: https://saqr.me
+    affiliation: University of Eastern Finland
+  - name: Sonsoles López-Pernas
+    url: https://sonsoles.me
+    affiliation: University of Eastern Finland
 output:
   rmarkdown::html_vignette:
     toc: true
@@ -24,7 +30,7 @@ Consider a repeated-measures application. A person may occupy different profiles
 
 This distinction is also central to VaSSTra (López-Pernas & Saqr, 2023), which separates **state diversity** from **person heterogeneity** using a sequential estimation strategy. VaSSTra first establishes a common state space across all observations and then summarizes each person's repeated observations within that space. MLPA takes a different approach: the observation-level profiles and person-level classes are estimated jointly within a single model. Both approaches allow the same person to occupy several states across repeated observations, but they differ in how the states and the person-level representation are constructed.
 
-The `latents` package fits MLPA models using maximum likelihood with multiple expectation-maximization starting values. In this vignette, we work through a three-profile, three-student-class example using longitudinal data on course engagement. The focus is on specifying, estimating, and interpreting the model. The companion guides cover [model evaluation](case-engagement-evaluation.html), [covariates and staged estimation](case-engagement-covariates.html), and [latent transitions](case-engagement-transitions.html).
+The `latents` package fits MLPA models using maximum likelihood with multiple expectation-maximization starting values. This vignette works through a three-profile, three-student-class example using longitudinal data on course engagement. The focus is on specifying, estimating, and interpreting the model. The companion guides cover [model evaluation](case-engagement-evaluation.html), [covariates and staged estimation](case-engagement-covariates.html), and [latent transitions](case-engagement-transitions.html).
 
 ```{r setup}
 library(latents)
@@ -32,15 +38,18 @@ library(latents)
 
 ## Longitudinal course engagement
 
-The engagement example revisits the setting studied by
-[Saqr and López-Pernas (2021)](https://doi.org/10.1016/j.compedu.2021.104325),
-*The longitudinal trajectories of online engagement over a full program*. The
-study distinguished three engagement states within courses and three
-longer-term student trajectories. Here, we use the bundled synthetic
-`course_engagement` data to reproduce the same type of nested longitudinal
-design. The purpose of the example is to illustrate the analytical questions
-and workflow; the estimates reported below apply only to the synthetic package
-data.
+The engagement example revisits the setting studied by Saqr and López-Pernas
+(2021) and López-Pernas and Saqr (2024): the online engagement of students
+followed across the courses of a complete study programme. These studies
+distinguished three engagement states within courses (active, average and
+disengaged) and three longer-term student trajectories (engaged, fluctuating
+and mostly disengaged), and described the momentum of engaged students, who
+tend to remain active, and the inertia of disengaged students, who tend to
+remain disengaged. The bundled synthetic `engagement_momentum` data reproduce
+this nested longitudinal design: the states and trajectories that generated
+the data are known, so the analysis can be checked against them. The purpose
+of the example is to illustrate the analytical questions and workflow; the
+estimates reported below apply only to the synthetic package data.
 
 Each row represents one student's enrolment in one course. Enrolments are
 therefore the Level-1 observations, while students are the Level-2 units within
@@ -75,15 +84,18 @@ within courses**.
 | `lectures` | Lecture videos viewed. |
 | `forum_read` | Forum posts read. |
 | `forum_post` | Forum posts written. |
-| `attendance` | Days active in the course. |
+| `active_days` | Days active in the course. |
+| `grade` | Standardized grade of the course. |
 | `previous_grade` | Standardized grade from the preceding course, with an entry grade at the first course. |
+| `state`, `trajectory` | The generating engagement state and student trajectory, used only to check recovery. |
 
 The indicator vector `vars` selects the five measures used to define engagement
-profiles. Identifiers and `previous_grade` stay outside the measurement model.
+profiles. Identifiers, grades and the generating labels stay outside the
+measurement model.
 The package accepts a character vector of column names.
 
 ```{r variables}
-vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+vars <- c("browse", "lectures", "forum_read", "forum_post", "active_days")
 ```
 
 ## Descriptive statistics and clustering within students
@@ -118,15 +130,16 @@ The descriptive table reports means, standard deviations, ranges, and ICCs for
 the activity indicators, together with sample sizes and missingness.
 
 ```{r descriptives}
-descriptives(course_engagement, vars = vars, id = "student")
+descriptives(engagement_momentum, vars = vars, id = "student")
 ```
 
-The data comprise 1,422 enrolments from 106 students, with complete observations
-on all activity indicators. Because the indicators were standardized within
-course, their pooled means are approximately zero and their standard deviations
-are close to one. The estimated ICCs range from 0.088 for `lectures` to 0.224
-for `forum_read`: about 9% to 22% of the variance in the individual
-indicators is attributable to differences between students. Most
+The data comprise 1,310 enrolments from 106 students, with complete
+observations on all activity indicators. Because the indicators were
+standardized within course, their pooled means are approximately zero and
+their standard deviations are close to one. The estimated ICCs range from
+0.200 for `lectures` to 0.265 for `forum_read`: about 20% to 27% of the
+variance in the individual indicators is attributable to differences between
+students. Most
 variation therefore occurs across enrolments within students, while a meaningful
 share reflects between-student differences. This combination of within- and
 between-student variation is the structure that the multilevel model is designed
@@ -192,7 +205,7 @@ across a student's enrolments. Transitions between successive profiles are
 addressed by the separate longitudinal model.
 
 ```{r fit}
-fit <- multilpa(course_engagement, vars, id = "student", time = "sequence",
+fit <- multilpa(engagement_momentum, vars, id = "student", time = "sequence",
                 n_profiles = 3, n_group_classes = 3, n_starts = 10,
                 max_iter = 2000, tol = 1e-10, seed = 1)
 ```
@@ -209,18 +222,16 @@ fit
 ```
 
 Profile 3 has the highest estimated mean on all five activity indicators,
-profile 1 has intermediate means, and profile 2 has the lowest means. For
-`attendance`, the means of profiles 3, 1, and 2 are 1.133, 0.256, and -0.940
-standard deviations from the corresponding course mean. For `browse`, they are
-0.709, 0.387, and -0.777. The profiles therefore primarily distinguish different
-levels of recorded activity, although the separation varies across indicators.
-For example, the difference between profiles 3 and 1 is substantially larger
-for `attendance` than for `browse`.
+between 0.724 (`lectures`) and 0.837 (`forum_read`) standard deviations above
+the course mean. Profile 2 lies close to the course mean on every indicator
+(between -0.142 and -0.012), and profile 1 lies well below it (between -0.980
+and -0.794). The profiles therefore distinguish three levels of recorded
+activity, with similar separations on every indicator.
 
 Profile numbers are arbitrary labels assigned during estimation and have no
-inherent substantive meaning. In this fitted model, we refer to profiles 3, 1,
-and 2 as **higher activity**, **intermediate activity**, and **lower activity**,
-respectively. The numbering may change when the model is fitted again or when a
+inherent substantive meaning. In this fitted model, profiles 3, 2 and 1 are
+referred to as the **active**, **average** and **disengaged** profiles,
+respectively, following the states of the original studies. The numbering may change when the model is fitted again or when a
 different specification is estimated. Profile labels should therefore be based
 on the estimated indicator means rather than on the profile numbers themselves.
 
@@ -242,12 +253,12 @@ always be integers.
 get_results(fit, "counts")
 ```
 
-The **lower-activity** profile has the largest effective membership, accounting
-for 575.0 enrolments, or 40.4% of the total. The **higher-activity** profile
-accounts for 369.0 enrolments, or 25.9%. At Level 2, student class 3 is the
-largest, with an effective membership of 47.3 students, corresponding to 44.6%
-of the sample. Classes 1 and 2 have effective memberships of 31.0 and 27.7
-students, respectively.
+The **active** profile has the largest effective membership, accounting for
+548.0 enrolments, or 41.8% of the total. The **disengaged** profile accounts
+for 442.5 enrolments (33.8%) and the **average** profile for 319.5 (24.4%).
+At Level 2, student class 2 is the largest, with an effective membership of
+47.3 students, corresponding to 44.6% of the sample. Classes 3 and 1 have
+effective memberships of 37.9 and 20.8 students, respectively.
 
 ### How students differ in their profile composition
 
@@ -262,16 +273,17 @@ and how common is the class in the student population?**
 get_results(fit, "profile_probabilities")
 ```
 
-Student class 2 is characterized mainly by the **higher-activity** and
-**intermediate-activity** profiles. Conditional on membership in class 2, the
-probabilities of an enrolment occupying the higher-, intermediate-, and
-lower-activity profiles are 0.398, 0.547, and 0.055, respectively. Student
-class 3 has a more balanced profile composition, with corresponding
-probabilities of 0.295, 0.388, and 0.317. Student class 1 is strongly
-characterized by the **lower-activity** profile: an enrolment from a student in
-this class has a probability of 0.847 of occupying profile 2. The estimated
-prevalences of student classes 1, 2, and 3 are 0.293, 0.261, and 0.446,
-respectively.
+Student class 3 is characterized mainly by the **active** profile:
+conditional on membership in class 3, the probabilities of an enrolment
+occupying the active, average and disengaged profiles are 0.751, 0.183 and
+0.066. These are the **engaged** students. Student class 2 has a balanced
+profile composition, with corresponding probabilities of 0.327, 0.350 and
+0.323; these are the **fluctuating** students. Student class 1 is strongly
+characterized by the **disengaged** profile: an enrolment from a student in
+this class has a probability of 0.860 of occupying it, and only 0.018 of
+occupying the active profile; these are the **mostly disengaged** students.
+The estimated prevalences of student classes 1, 2 and 3 are 0.197, 0.446 and
+0.357, respectively.
 
 The probability plot provides a visual comparison of these class-specific
 profile compositions on a common scale from zero to one. Each line represents
@@ -284,10 +296,10 @@ varies across student classes.
 plot_prevalence(fit)
 ```
 
-Class 3 has an almost level profile because its probabilities are similar across
-the three engagement profiles. In contrast, class 1 rises sharply to 0.847 for
-the **lower-activity** profile, whereas class 2 falls to 0.055 for that same
-profile. These differences illustrate how student classes can have distinct
+Class 2 has an almost level line because its probabilities are similar across
+the three engagement profiles. In contrast, class 1 rises sharply to 0.860 for
+the **disengaged** profile, whereas class 3 rises to 0.751 for the **active**
+profile and falls to 0.066 for the disengaged one. These differences illustrate how student classes can have distinct
 profile compositions even though students within each class may still occupy
 more than one engagement profile across their enrolments.
 
@@ -302,8 +314,8 @@ it does not establish that this solution is the global maximum.
 get_results(fit, "starts")
 ```
 
-All ten starts converge to a log likelihood of approximately -8348.4, and none
-has an active variance bound. The identical likelihoods across starts indicate
+All ten starts converge to a log likelihood of approximately -7488.0, and
+none has an active variance bound. The identical likelihoods across starts indicate
 that the fitted solution is stable with respect to the starting values used in
 this analysis.
 
@@ -319,12 +331,11 @@ plot_profiles(fit, subtitle = "Profile means, standard deviations from each cour
 ```
 
 The three profiles retain the same ordering across all five indicators, with
-profile 3 highest, profile 1 intermediate, and profile 2 lowest. The distance
-between profiles 3 and 1 varies across indicators: they are relatively close on
-page browsing but more clearly separated on attendance, consistent with the
-estimated means reported above. Because the profiles differ mainly in overall
-elevation rather than in the shape of their indicator patterns, the principal
-contrast is the overall amount of recorded activity.
+the active profile highest, the average profile intermediate and the
+disengaged profile lowest, and the distances between them are similar on
+every indicator. Because the profiles differ mainly in overall elevation
+rather than in the shape of their indicator patterns, the principal contrast
+is the overall amount of recorded activity.
 
 ## Reading each student's course history
 
@@ -339,16 +350,30 @@ courses appear in columns.
 get_results(fit, "sequences", format = "wide") |> head(4)
 ```
 
-Students 1 and 2 are assigned to student class 1. Student 1 is assigned to the
-**intermediate-activity** profile for the first two observed courses and to the
-**lower-activity** profile for the courses that follow, whereas student 2 is
-assigned to the **lower-activity** profile throughout the observed sequence.
-Students 3 and 4 are assigned to class 2 and have enrolments classified as both
-**higher activity** and **intermediate activity**. These patterns illustrate
+Student 1 is assigned to the mostly disengaged class 1 and to the
+**disengaged** profile in every one of 15 observed courses. Students 2 and 4
+are assigned to the fluctuating class 2, and their enrolments move between
+all three profiles. Student 3 is assigned to the engaged class 3, with most
+enrolments in the **active** profile. These patterns illustrate
 the class-specific profile compositions described above, but they should not be
 interpreted as estimated transition processes. Trailing `NA` values indicate
 courses that were not observed for that student rather than missing profile
 assignments within the observed history.
+
+The sequence plot displays the same information for every student: one row
+per student, one cell per course, coloured by the assigned profile, with the
+students grouped by their assigned class and ordered within each class by
+their most frequent profile.
+
+```{r sequence-plot, fig.height = 7}
+plot_sequences(fit)
+```
+
+The three classes are clearly visible as three blocks of sequences. The
+mostly disengaged students spend long runs of consecutive courses in the
+disengaged profile, the engaged students long runs in the active profile,
+and the fluctuating students move between all three profiles from one course
+to the next.
 
 The `"sequence_summary"` table summarizes the modal student-class assignments
 and the amount of longitudinal information available within each class. It
@@ -361,11 +386,30 @@ history does not constitute a gap.
 get_results(fit, "sequence_summary")
 ```
 
-The modal assignments place 30, 25, and 51 students in classes 1, 2, and 3,
-respectively. Their mean sequence lengths are 13.43, 13.20, and 13.51 observed
+The modal assignments place 21, 47 and 38 students in classes 1, 2 and 3,
+respectively. Their mean sequence lengths are 12.62, 12.13 and 12.50 observed
 courses. Thus, the classes have similar amounts of longitudinal information,
 even though their profile compositions differ substantially. None of the
 observed sequences contains an internal gap.
+
+## Recovery of the generating structure
+
+Because the data are simulated, the fitted profiles and classes can be
+compared with the states and trajectories that generated them. The `truth`
+argument cross-tabulates the modal assignments with these labels.
+
+```{r recovery}
+get_results(fit, "assignments", data = engagement_momentum,
+            truth = c("state", "trajectory"))
+```
+
+The active and disengaged profiles contain 92.9% and 94.7% of the
+enrolments generated in the corresponding states, and the average profile
+79.9% of the average enrolments, the state that lies between the other two
+and is therefore the hardest to classify. At Level 2, the engaged,
+fluctuating and mostly disengaged classes contain 86.0%, 95.1% and 90.9% of
+the students generated with the corresponding trajectories. The three-profile,
+three-class model therefore recovers the structure that generated the data.
 
 ## Interpretation
 
@@ -373,29 +417,33 @@ Profile composition and profile order describe different aspects of the data.
 Two students may spend similar proportions of their enrolments in the same
 profiles while encountering those profiles in a different sequence. The MLPA
 estimated here captures the former by modeling class-specific profile
-probabilities, but it does not model the ordering of profiles over time. The
-[transition vignette](case-engagement-transitions.html) extends the analysis to that
-question by estimating probabilities of moving from one profile to another
-across successive observations.
+probabilities, but it does not model the ordering of profiles over time. The runs
+visible in the sequence plot, long stretches of disengaged courses in one class
+and of active courses in another, are such an ordering. The
+[transition vignette](case-engagement-transitions.html) models it by
+estimating the probabilities of moving from one profile to another across
+successive courses, which show the inertia of disengagement and the momentum
+of engagement directly.
 
 ## Limitations
 
-The bundled data are designed to reproduce the structure of the published case
-for instructional purposes; they do not provide a numerical replication of the
-original study. The published analysis used latent class analysis followed by
-hidden Markov modeling, whereas the present example fits a joint MLPA model.
-The resulting three student classes therefore summarize differences in profile
-composition across enrolments rather than reproducing the longitudinal
-trajectories estimated in the original study.
+The bundled data are designed to reproduce the structure of the published
+case for instructional purposes; they do not provide a numerical replication
+of the original study, and their parameter values are illustrative. The
+published analyses identified the states first and modelled the sequences of
+states afterwards, whereas the present example fits a joint MLPA model. The
+resulting three student classes therefore summarize differences in profile
+composition across enrolments rather than the order in which the profiles
+occur.
 
 The **3 × 3 specification** should also be treated as a candidate model rather
 than a definitive representation of the latent structure. Its adequacy depends
 on comparisons with alternative numbers of Level-1 profiles and Level-2
 classes, as well as on the model's distributional assumptions. In particular,
 the default diagonal covariance structure assumes that the activity indicators
-are conditionally independent within each profile. Residual associations among
-the indicators may violate this assumption and alter the estimated profile
-solution. In addition, modal profile and class assignments simplify the fitted
+are conditionally independent within each profile. The synthetic data were
+generated under this assumption; in applied data, residual associations among
+the indicators may violate it and alter the estimated profile solution. In addition, modal profile and class assignments simplify the fitted
 model by ignoring classification uncertainty. The
 [evaluation vignette](case-engagement-evaluation.html) examines these issues using the
 same data and candidate specification.
@@ -408,6 +456,11 @@ behaviour. In *Proceedings TEEM 2022: Tenth International Conference on
 Technological Ecosystems for Enhancing Multiculturality* (pp. 1169-1178).
 Springer Nature Singapore.
 [doi:10.1007/978-981-99-0942-1_123](https://doi.org/10.1007/978-981-99-0942-1_123).
+
+López-Pernas, S., & Saqr, M. (2024). How the dynamics of engagement explain
+the momentum of achievement and the inertia of disengagement: A complex
+systems theory approach. *Computers in Human Behavior, 153*, 108126.
+[doi:10.1016/j.chb.2023.108126](https://doi.org/10.1016/j.chb.2023.108126).
 
 Saqr, M., & López-Pernas, S. (2021). The longitudinal trajectories of online
 engagement over a full program. *Computers & Education, 175*, 104325.

@@ -1,7 +1,7 @@
 # Re-run each generator with its save step disabled and compare with the shipped data; check documented values.
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 options(digits = 6, width = 150)
-root <- "/Users/mohammedsaqr/Documents/Github/latents"
+root <- "/Users/mohammedsaqr/Github/latents"
 run <- function(file, name) {
   src <- readLines(file.path(root, "data-raw", file))
   src <- src[!grepl("^\\s*(usethis::use_data|save\\()", src)]

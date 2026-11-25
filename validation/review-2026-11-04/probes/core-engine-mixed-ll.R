@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 quiet <- function(e) withCallingHandlers(e, warning=function(w) {message("WARN[",class(w)[1],"]: ",conditionMessage(w)); invokeRestart("muffleWarning")})
 # Two-level data with continuous, categorical, ordinal, count (Poisson, NB), missing cells.
 J <- 40; nj <- sample(4:9, J, TRUE); gid <- rep(seq_len(J), nj); n <- length(gid)

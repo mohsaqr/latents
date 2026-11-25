@@ -1,5 +1,5 @@
 # A state reached only at the final wave, moderate separation, K = 3, T = 4.
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 n <- 300; T <- 4; vars <- paste0("y", 1:5)
 mu <- rbind(c(0,0,0,0,0), c(2.5,2.5,0,0,0), c(5,5,5,5,5))
 set.seed(3)

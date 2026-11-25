@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(3)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(3)
 quiet <- function(e) withCallingHandlers(e, warning=function(w) {invokeRestart("muffleWarning")})
 J <- 50; nj <- sample(3:6, J, TRUE); gid <- rep(seq_len(J), nj); n <- length(gid)
 gc <- rbinom(J,1,.5)[gid]; z <- rbinom(n,1,ifelse(gc==1,.8,.2))+1L

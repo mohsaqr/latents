@@ -1007,7 +1007,7 @@
     },
     {
       "file": "issues-final.json",
-      "source_path": "/Users/mohammedsaqr/Documents/Github/latents/validation/audit-repairs-2026-10-25/issues.json",
+      "source_path": "/Users/mohammedsaqr/Github/latents/validation/audit-repairs-2026-10-25/issues.json",
       "purpose": "Root final53issue-group closure ledger with documented remaining limits; source original retained unchanged.",
       "kind": "json",
       "media_type": "application/json",

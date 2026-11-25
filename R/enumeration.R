@@ -1062,7 +1062,7 @@ print.summary_multilpa_enumeration <- function(x, digits = 4L, rows = 10L, ...) 
 #' The grid's table carries `n_best_replicated`, but a reader who goes
 #' straight to `as.data.frame()` or `get_results(x, "best")` never sees a
 #' note about it; a local maximum then decides the comparison unnoticed
-#' (case-esm-lca 2026-11-17: at five starts 3x2 stopped at -7694.998,
+#' (student_esm LCA grid 2026-11-17: at five starts 3x2 stopped at -7694.998,
 #' below its maximum -7678.145, and ICL chose 2x2). A message, not a
 #' warning: the grid is valid, and the remedy is the caller's choice.
 #' @param result An enumeration result with `table` and named `fits`.

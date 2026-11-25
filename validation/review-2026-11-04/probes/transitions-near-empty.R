@@ -1,6 +1,6 @@
 # A profile occupied only at the last occasion, with well separated indicators.
 # The docs promise such a row is uniform, estimated = FALSE and not counted.
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 n <- 200
 for (sep in c(6, 12, 30, 60)) {
   set.seed(1)

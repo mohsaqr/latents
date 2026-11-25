@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 G <- 60; n <- 6
 d <- do.call(rbind, lapply(seq_len(G), function(g){ z <- rnorm(n); k <- rbinom(n,1,plogis(.3+1*z))+1L
   q <- rbind(c(.8,.15,.05),c(.1,.2,.7)); 

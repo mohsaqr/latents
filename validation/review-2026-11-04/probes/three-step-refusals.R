@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 G <- 60; m <- 8; n <- G*m
 g <- rep(seq_len(G), each=m)
 tr <- 1L+(runif(n)<c(.3,.7)[rep(rep(1:2,length.out=G),each=m)])

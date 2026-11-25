@@ -1,6 +1,12 @@
 ---
 title: "Evaluating a multilevel latent profile model"
-author: "Written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me)"
+author:
+  - name: Mohammed Saqr
+    url: https://saqr.me
+    affiliation: University of Eastern Finland
+  - name: Sonsoles López-Pernas
+    url: https://sonsoles.me
+    affiliation: University of Eastern Finland
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Evaluating a multilevel latent profile model}
@@ -18,6 +24,11 @@ A fitted mixture model is evaluated on four questions: whether the estimation
 found a stable solution, how clearly observations and groups are classified,
 whether the indicators are independent within profiles as the model assumes,
 and whether a different number of profiles or group classes fits better.
+These questions follow current guidance for latent profile analysis (Spurk et
+al., 2020; Scrucca et al., 2024), and they matter because the profiles of a
+person-centred model are interpreted as substantive subgroups (Saqr et al.,
+2024). This guide shows the functions that answer each of them for a
+two-level model.
 
 ## Data
 
@@ -32,10 +43,11 @@ library(latents)
 
 ## The model to evaluate
 
-To fit the model, we call `multilpa()` with `vars` for the indicators, `id`
-for the group, `n_profiles` for the number of profiles, `n_group_classes` for
-the number of group classes, `n_starts` for the number of random EM starts, and
-`seed` for reproducible starts.
+`multilpa()` fits the model, with `vars` for the indicators, `id` for the
+group, `n_profiles` for the number of profiles, `n_group_classes` for the
+number of group classes, `n_starts` for the number of random EM starts, and
+`seed` for reproducible starts. The model evaluated first uses the default
+diagonal covariance structure.
 
 ```{r fit}
 fit <- multilpa(course_engagement,
@@ -47,7 +59,7 @@ fit <- multilpa(course_engagement,
 
 ## Estimation
 
-To check convergence, we call `get_results()` with `"model"`. `converged`
+`get_results()` with `"model"` reports the convergence of the fit. `converged`
 reports convergence of the best start, `boundary` whether a variance reached
 its lower bound, and `n_best_replicated` how many starts reached the best log
 likelihood. A variance at its lower bound in a profile of about one
@@ -61,14 +73,14 @@ interpreting it.
 get_results(fit, "model")
 ```
 
-To check the individual starts, we call `get_results()` with `"starts"`.
+`get_results()` with `"starts"` reports every start.
 
 ```{r starts}
 get_results(fit, "starts")
 ```
 
-To check whether other random seeds reach the same solution, we call
-`sensitivity()` with `seeds` for the seeds to try. `optimum` numbers the
+`sensitivity()` refits the model from the seeds given in `seeds` and reports
+whether they reach the same solution. `optimum` numbers the
 distinct maxima found, and `agreement` is the share of observations assigned
 as in the original fit, after matching the arbitrary profile labels.
 
@@ -76,28 +88,37 @@ as in the original fit, after matching the arbitrary profile labels.
 sensitivity(fit, seeds = 1:3)
 ```
 
+All three starts and all three seeds reach the log likelihood of -8440 with
+identical assignments, so the solution does not depend on the starting
+values.
+
 ## Classification
 
-To obtain relative entropy, we call `get_results()` with `"entropy"`. It is
-reported for observations and for groups: 1 means every case is assigned with
-certainty, 0 means no separation.
+`get_results()` with `"entropy"` reports the relative entropy (Ramaswamy et
+al., 1993) for observations and for groups: 1 means every case is assigned
+with certainty, 0 means no separation.
 
 ```{r entropy}
 get_results(fit, "entropy")
 ```
 
-To obtain classification quality by class, we call `get_results()` with
-`"classification"`. `n_modal` is the number of cases assigned to the class,
+`get_results()` with `"classification"` reports the classification quality
+of every class. `n_modal` is the number of cases assigned to the class,
 `average_posterior` the mean posterior probability of those cases, and
-`odds_correct_classification` compares that certainty with the class's size.
+`odds_correct_classification` compares that certainty with the class's size
+(Nagin, 2005).
 
 ```{r classification}
 get_results(fit, "classification")
 ```
 
-To see the uncertainty, we call `plot_diagnostics()` with `what = "entropy"`
-for the per-case uncertainty within each profile, and with `what = "avepp"` for the
-average posterior of each assigned class across all classes.
+Relative entropy is 0.938 for the enrolments and 0.940 for the students, and
+the average posterior probabilities of the two profiles are 0.985 and 0.982:
+the classification is clear at both levels.
+
+`plot_diagnostics()` draws the uncertainty: `what = "entropy"` the per-case
+uncertainty within each profile, and `what = "avepp"` the average posterior of
+each assigned class across all classes.
 
 ```{r entropy-plot}
 plot_diagnostics(fit, what = "entropy")
@@ -109,19 +130,23 @@ plot_diagnostics(fit, what = "avepp")
 
 ## Local independence
 
-The default model assumes the indicators are independent within a profile. To
-test this, we call `get_results()` with `"residuals"`. `residual` is the
-correlation between two indicators that the profiles leave unexplained;
-`by = "overall"` pools the profiles. The p-values are approximate.
+The default model assumes the indicators are independent within a profile.
+`get_results()` with `"residuals"` tests this: `residual` is the correlation
+between two indicators that the profiles leave unexplained, and
+`by = "overall"` pools the profiles. The p-values are approximate and are
+adjusted for multiple testing (Benjamini & Hochberg, 1995).
 
 ```{r residuals}
 get_results(fit, "residuals", by = "overall")
 ```
 
-To relax the assumption, we call `multilpa()` with `covariance_model = "full"`,
-which estimates the covariances between indicators within each profile. To
-compare the two models, we call `get_results()` with
-`"information_criteria"` on each; lower values are better.
+The four largest residuals all involve `attendance` (0.17 to 0.22, adjusted
+p-values below 0.001), so the assumption does not hold for these data;
+`attendance` is generated from the four click measures
+(`?course_engagement`). `covariance_model = "full"` relaxes the assumption by
+estimating the covariances between indicators within each profile, and
+`get_results()` with `"information_criteria"` compares the two models; lower
+values are better.
 
 ```{r full-covariance}
 full <- multilpa(course_engagement,
@@ -134,11 +159,15 @@ get_results(full, "information_criteria")
 get_results(full, "residuals", by = "overall")
 ```
 
+The full model lowers the BIC with students as units from 16,987 to 16,827.
+Its residuals are zero, because it estimates every within-profile covariance;
+the residual check is informative only for a model that restricts them. The
+full model is the one to evaluate further.
+
 ## Number of profiles and group classes
 
-To compare numbers of profiles and group classes, we call
-`enumerate_classes()` with `n_profiles` and `n_group_classes` for the counts to
-cross. It crosses the counts with four covariance structures, equal or
+`enumerate_classes()` compares numbers of profiles and group classes, with
+`n_profiles` and `n_group_classes` for the counts to cross. It crosses the counts with four covariance structures, equal or
 varying variances with and without covariances, fits every combination, and
 does not choose a model.
 
@@ -148,40 +177,47 @@ candidates <- enumerate_classes(course_engagement,
                                          "forum_post", "attendance"),
                                 id = "student", n_profiles = 2:4,
                                 n_group_classes = 1:3, n_starts = 3, seed = 1)
-as.data.frame(candidates)
+subset(as.data.frame(candidates), model == "VVV")
 ```
 
-To find which candidate minimizes each criterion, we call `get_results()` with
-`"best"`. Criteria that depend on a sample size are reported with the
+`get_results()` with `"best"` gives the candidate that minimizes each
+criterion. Criteria that depend on a sample size are reported with the
 number of groups and with the number of observations.
 
 ```{r best}
 get_results(candidates, "best")
 ```
 
-To draw one criterion across the grid, we call `plot_enumeration()` with its
-name as `what`; `what = "all"` draws every criterion.
+The BIC (Schwarz, 1978) with students as units is lowest for two profiles,
+three group classes and the `VVV` structure, and most criteria select two
+profiles with a structure that estimates covariances. The
+[Class enumeration](https://pak.dynasite.org/latents/articles/enumeration.html)
+article examines the choice between two and three group classes on these
+data.
+
+`plot_enumeration()` draws one criterion across the grid, named in `what`;
+`what = "all"` draws every criterion.
 
 ```{r enumeration-plot}
 plot_enumeration(candidates, what = "bic_groups")
 ```
 
-To take one candidate out of the grid as a fitted model, we call
-`get_candidate()` with its `n_profiles`, `n_group_classes` and `model`.
+`get_candidate()` takes one candidate out of the grid as a fitted model,
+given by its `n_profiles`, `n_group_classes` and `model`.
 
 ```{r candidate}
-get_candidate(candidates, n_profiles = 3, n_group_classes = 2, model = "VVI")
+get_candidate(candidates, n_profiles = 2, n_group_classes = 3, model = "VVV")
 ```
 
 ## Parameter uncertainty
 
-To obtain standard errors and 95% Wald intervals, we call
-`parameter_inference()` on the fit. With `vcov_type = "robust"`, the standard
-errors are clustered on groups.
+`parameter_inference()` returns standard errors and 95% Wald intervals; with
+`vcov_type = "robust"`, the standard errors are clustered on groups. The first
+ten rows of each, for the full model:
 
 ```{r inference}
-parameter_inference(fit)
-parameter_inference(fit, vcov_type = "robust")
+head(parameter_inference(full), 10)
+head(parameter_inference(full, vcov_type = "robust"), 10)
 ```
 
 ## Reference
@@ -196,8 +232,8 @@ get_results(fit, "classification_errors")       # P(assigned class | true class)
 get_results(fit, "residuals")                   # residuals within each profile
 get_results(candidates, "candidates")           # the full enumeration grid
 summary(candidates)                             # every grid table, truncated
-bootstrap_lrt(fit, get_candidate(candidates, n_profiles = 3,
-                                n_group_classes = 2, model = "VVI"),
+bootstrap_lrt(full, get_candidate(candidates, n_profiles = 2,
+                                 n_group_classes = 3, model = "VVV"),
               iter = 199, seed = 42)            # bootstrap test of one more class (slow)
 enumerate_classes(course_engagement, vars = c("browse", "lectures"),
                   id = "student", n_profiles = 2:3,
@@ -217,6 +253,38 @@ diagnostics(fit)                                # all classification diagnostics
 - Wald intervals assume a converged fit with no variance at its bound, and are
   conditional on the chosen numbers of profiles and classes.
 - Unmodelled dependence between indicators can make extra classes look better.
+
+## References
+
+Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery rate:
+A practical and powerful approach to multiple testing. *Journal of the Royal
+Statistical Society: Series B*, 57(1), 289--300.
+
+Nagin, D. S. (2005). *Group-based modeling of development*. Harvard
+University Press.
+
+Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., & Robinson, W. T. (1993).
+An empirical pooling approach for estimating marketing mix elasticities with
+PIMS data. *Marketing Science*, 12, 103--124.
+
+Saqr, M., Vogelsmeier, L. V. D. E., & López-Pernas, S. (2024). Capturing
+where the learning process takes place: A person-specific and
+person-centered primer. *Learning and Individual Differences*, 113, 102492.
+<https://doi.org/10.1016/j.lindif.2024.102492>
+
+Schwarz, G. (1978). Estimating the dimension of a model. *The Annals of
+Statistics*, 6, 461--464.
+
+Scrucca, L., Saqr, M., López-Pernas, S., & Murphy, K. (2024). An
+introduction and R tutorial to model-based clustering in education via
+latent profile analysis. In M. Saqr & S. López-Pernas (Eds.), *Learning
+analytics methods and tutorials: A practical guide using R* (pp. 285--317).
+Springer. <https://doi.org/10.1007/978-3-031-54464-4_9>
+
+Spurk, D., Hirschi, A., Wang, M., Valero, D., & Kauffeld, S. (2020). Latent
+profile analysis: A review and "how to" guide of its application within
+vocational behavior research. *Journal of Vocational Behavior*, 120, 103445.
+<https://doi.org/10.1016/j.jvb.2020.103445>
 
 ```{r restore-options, include = FALSE}
 options(old_options)

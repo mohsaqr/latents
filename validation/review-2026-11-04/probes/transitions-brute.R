@@ -1,7 +1,7 @@
 # Independent brute-force check of the likelihood, posteriors and expected
 # counts: enumerate every latent path of every person in plain base R, reading
 # parameters off the fit and building covariate designs by hand from the data.
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 
 softmax <- function(eta) { eta <- eta - max(eta); exp(eta) / sum(exp(eta)) }
 

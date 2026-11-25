@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 ## LCA, 2 classes, N=400, item u1 3 categories with class-1 never in cat "c" (non-last floor case impossible to force exactly,
 ## so category labels are arranged two ways: floored category in the middle, floored category last)
 sim <- function(lev){ n<-400; z<-rnorm(n); k<-rbinom(n,1,plogis(.3+.7*z))+1L

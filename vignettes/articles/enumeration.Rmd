@@ -1,6 +1,12 @@
 ---
 title: "Class enumeration"
-author: "Written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me)"
+author:
+  - name: Mohammed Saqr
+    url: https://saqr.me
+    affiliation: University of Eastern Finland
+  - name: Sonsoles López-Pernas
+    url: https://sonsoles.me
+    affiliation: University of Eastern Finland
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Class enumeration}
@@ -14,43 +20,135 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7.5,
 old_options <- options(digits = 3, width = 100)
 ```
 
-Finite mixture models represent heterogeneity through a specified number of
-latent components. In latent profile analysis, components describe patterns
-in continuous indicators; in latent class analysis, they describe categorical
-response probabilities. Two-level models additionally represent differences
-between groups through latent group classes. For course enrolments nested
-within students, observation-level profiles describe engagement patterns,
-while group classes describe differences in the probabilities of those
-patterns across students. The analyst specifies the number of components
-at each level before estimation.
+Class enumeration refers to the process of determining the number of latent
+classes to be retained in an analysis. In latent profile analysis (LPA), these
+classes are referred to as *profiles*. The number of profiles is not estimated
+directly by the model; rather, it is specified a priori by the analyst. The
+model is then fitted to the data under the specified number of profiles,
+yielding a solution containing exactly that number. Class enumeration
+therefore involves fitting a sequence of models with progressively increasing
+numbers of profiles, typically beginning with a one-profile model, and
+evaluating their relative adequacy to determine which solution best
+represents the underlying structure of the data.
 
-Class enumeration compares alternative numbers of components. Ordinary
-chi-squared likelihood ratio approximations generally do not apply when
-comparing different numbers of mixture components because the usual
-regularity conditions fail. A parametric bootstrap likelihood ratio test
-provides a simulation-based alternative for supported models, but requires
-repeated fitting and careful assessment of convergence. Information criteria
-provide complementary comparisons by balancing log likelihood against a
-penalty for model complexity. These procedures can favour different numbers
-of classes; their performance depends on the model and data. See
+The selection of the number of profiles is consequential because it
+determines the structure and interpretation of the entire subsequent
+analysis. A model with too few profiles may combine substantively distinct
+groups of observations into a single profile, resulting in estimated means
+that adequately characterize none of the underlying groups. Conversely, a
+model with too many profiles may divide a genuine profile into smaller, less
+distinct groups that reflect sampling variability rather than meaningful
+heterogeneity. Additional profiles may also capture features of the
+measurement structure, such as residual correlations among indicators, rather
+than substantively distinct patterns of observations. Consequently, the
+number of profiles affects their estimated means, relative proportions, the
+assignment of observations to profiles, and the conclusions of subsequent
+analyses based on profile membership. In the data examined in this article,
+the two-profile and four-profile solutions provide different representations
+of the same enrolments. However, only one of these solutions corresponds to
+the data-generating structure, illustrating that a model with more profiles
+does not necessarily provide a more accurate representation of the
+underlying population.
+
+In a two-level latent profile analysis, class enumeration concerns three
+distinct specifications, each of which must be determined by the analyst:
+
+- **The number of profiles.** Profiles represent distinct patterns of
+  observations at the lower level, in this article course enrolments, and are
+  defined by their means on the indicators.
+- **The number of group classes.** Group classes represent distinct types of
+  groups at the upper level, in this article students, and are defined by the
+  probability with which the observations of their groups belong to each
+  profile. Because group classes are defined in terms of the profiles, a
+  model with a single profile cannot contain more than one group class.
+- **The covariance structure.** The covariance structure determines whether
+  the indicators are allowed to be correlated within a profile and whether
+  profiles may differ in the size, shape and orientation of their
+  distributions (`EEI`, `VVI`, `EEE` and `VVV`; Celeux & Govaert, 1995).
+
+Class enumeration involves fitting and comparing models across alternative
+specifications of the number of profiles, the number of group classes, and
+the model structures under consideration. The objective is to identify the
+model that provides the most adequate representation of the data while
+accounting for model complexity and the substantive characteristics of the
+resulting profiles and group classes.
+
+Conventional likelihood ratio tests are generally not appropriate for
+comparing finite mixture models that differ in the number of profiles or
+group classes. In such comparisons, the model with fewer classes can be
+viewed as a constrained version of the more complex model in which the
+probability of an additional class is fixed at zero. This restriction places
+the parameter on the boundary of the parameter space, violating the
+regularity conditions required for the usual chi-squared approximation of
+the likelihood ratio statistic (McLachlan, 1987). Alternative procedures
+include the parametric bootstrap likelihood ratio test (McLachlan, 1987) and
+the Lo-Mendell-Rubin approximate likelihood ratio test (Lo et al., 2001),
+which are available for supported models through `bootstrap_lrt()`. These
+tests require repeated model estimation and, consequently, careful
+evaluation of convergence and estimation stability.
+
+Information criteria provide a complementary approach to model comparison by
+balancing model fit, typically represented by the log likelihood, against a
+penalty for model complexity. The Akaike information criterion (AIC; Akaike,
+1974), Bayesian information criterion (BIC; Schwarz, 1978), sample-size
+adjusted BIC (Sclove, 1987), consistent AIC (CAIC; Bozdogan, 1987), and
+Kullback information criterion (KIC; Cavanaugh, 1999) incorporate penalties
+related to the number of estimated parameters. In contrast, the integrated
+classification likelihood (ICL; Biernacki et al., 2000), approximate weight
+of evidence (AWE; Banfield & Raftery, 1993), and classification likelihood
+criterion (CLC; Biernacki & Govaert, 1997) additionally account for
+classification uncertainty. These criteria therefore tend to favour
+solutions in which profiles and group classes are more clearly separated and
+observations can be assigned with greater certainty.
+
+The various enumeration procedures do not necessarily identify the same
+model, and their relative performance depends on the characteristics of the
+model and the data. A simulation study by
 [Nylund, Asparouhov, and Muthén (2007)](https://www.statmodel.com/bmuthen/articles/Article_111.pdf)
-for a simulation study of class-enumeration methods.
+found that the BIC and the bootstrap likelihood ratio test performed
+particularly well among the methods examined. Subsequent simulation research
+indicated that the AIC and relative entropy perform poorly in identifying
+the number of classes and that no criterion achieves adequate power when
+classes are weakly separated (Tein et al., 2013). Moreover, implementation of
+the Lo-Mendell-Rubin test differs between Mplus and Latent GOLD (Vermunt,
+2024), highlighting the importance of considering software-specific
+procedures when interpreting test results.
 
-An information criterion may continue to decrease throughout the candidate
-range. This can reflect unresolved heterogeneity or departures from the
-measurement model rather than a clearly defined set of substantive classes.
-In two-level models, the numbers of profiles and group classes must be
-considered jointly. The sample-size convention used in BIC also matters:
-the package reports variants based on groups and observations. Classification
-separation, convergence, sensitivity to starting values, and the substantive
-interpretation of the classes provide additional evidence.
+Current recommendations therefore emphasize evaluating a range of candidate
+models, reporting the available fit indices and statistical tests, and
+integrating these results with classification diagnostics and substantive
+interpretability (Nylund-Gibson & Choi, 2018; Spurk et al., 2020; Weller et
+al., 2020; Sorgente et al., 2025). Entropy should be interpreted as a measure
+of classification quality for a given model rather than as a standalone
+criterion for determining the number of classes. The final selection should
+reflect the collective evidence from model fit, classification uncertainty,
+estimation stability, and the substantive meaningfulness of the resulting
+profiles and group classes. Houle et al. (2026) provide corresponding
+guidance for class enumeration in multilevel latent profile analysis.
+
+These three specifications are not independent of one another and should
+therefore be evaluated jointly rather than sequentially. A diagonal
+covariance structure assumes that the indicators are uncorrelated within each
+profile. When this assumption is violated, the model can represent the
+residual association among the indicators only by introducing additional
+profiles, and the enumeration consequently overstates the number of profiles.
+In a similar manner, dependence among the observations of a group that the
+model does not represent, such as change across a sequence of courses, may be
+absorbed by additional group classes. A criterion that continues to decrease
+throughout the candidate range may reflect such departures from the model
+rather than a substantively meaningful set of profiles. For the number of
+group classes, the sample-size convention of the BIC is also consequential:
+the package reports criteria based on both the number of groups and the
+number of observations, and Lukočienė et al. (2010) recommend basing the
+choice of the number of group classes on the number of groups.
 
 This vignette uses `enumerate_classes()` to fit a grid of two-level latent
-profile models. It examines information criteria, changes between adjacent
-candidates, descriptive curve summaries, classification diagnostics, and
-estimation diagnostics. Selected models are compared and a fitted candidate
-is extracted for further analysis. No single statistic is treated as a
-conclusive estimate of the number of classes.
+profile models over numbers of profiles, numbers of group classes and
+covariance structures. It examines information criteria, changes between
+adjacent candidates, descriptive curve summaries, classification diagnostics,
+and estimation diagnostics. Selected models are compared and a fitted
+candidate is extracted for further analysis. No single statistic is treated
+as a conclusive estimate of the number of classes.
 
 ```{r setup}
 library(latents)
@@ -63,14 +161,19 @@ n_students <- with(course_engagement, length(unique(student)))
 
 ## Data
 
-The examples use `course_engagement`, a simulated data frame in long format with one
-row per course enrolment. It contains
+The examples use `course_engagement`, a simulated data frame in long format
+with one row per course enrolment. It contains
 `r format(n_enrolments, big.mark = ",")` enrolments of `r n_students`
 students. Five measures of activity in each course serve as indicators:
 browsing of the course site, lecture viewing, reading of the forum, posting
 to the forum and attendance. Each measure is standardized within its course,
 so a value of zero is the course average. The column `student` identifies the
-student to whom each enrolment belongs.
+student to whom each enrolment belongs. The simulation is calibrated to the
+engagement data of students followed through a full study programme (Saqr &
+López-Pernas, 2021; Saqr et al., 2023). It was generated from two profiles
+and two kinds of students, and `attendance` is generated from the four click
+measures, so the indicators are correlated within profiles
+(`?course_engagement`).
 
 ```{r data}
 head(course_engagement)
@@ -85,18 +188,29 @@ how their enrolments are distributed across those patterns.
 The candidates are fitted with `enumerate_classes()` from the data, the
 indicators in `vars` and the group identifier in `id`. The arguments
 `n_profiles` and `n_group_classes` give the numbers of classes to try, and
-one model is fitted for every combination of them. Here the numbers of profiles run from one to six and the numbers of
-group classes from one to four. The argument `model` sets the covariance
-structure of the profiles. The value `"VVI"` gives every profile its own
-variances and fixes the covariances at zero. Without `model`, the four basic
-structures are fitted for every combination.
+one model is fitted for every combination of them. Here the numbers of
+profiles and of group classes both run from one to four. The argument `model`
+sets the covariance structure of the profiles; without it, as here, the four
+basic structures `EEI`, `VVI`, `EEE` and `VVV` are fitted for every
+combination.
 
 Mixture likelihoods can have multiple local maxima, so each candidate is
 estimated from several starting values. The `n_starts` argument controls the
 number of fully fitted starts and `seed` controls reproducibility. This
-example uses three starts per candidate to limit computation. An applied
+example uses five starts per candidate to limit computation. An applied
 analysis should assess whether increasing the number of starts changes the
 selected likelihood or substantive conclusions.
+
+Every estimation argument, such as `n_starts`, applies identically to all
+candidates, and a grid is re-estimated in its entirety when more starts are
+required, so that every candidate has the same opportunity to reach its
+maximum. When many starts are used, a candidate with more profiles than the
+data support can reach a degenerate solution in which one profile collapses
+on a single observation with every variance at its lower bound; its
+likelihood, and hence its criteria, then depend on `min_variance` rather than
+on the data. A profile can also be spurious without reaching the bound, when
+a few nearly coincident observations give it variances close to zero
+(McLachlan & Peel, 2000, section 3.10).
 
 A Gaussian component can concentrate around very few observations and
 approach a variance bound. The `boundary = "exclude"` option excludes starts
@@ -108,17 +222,18 @@ test. Inspect component sizes and covariance diagnostics before interpreting
 such a profile.
 
 The default search depends on the covariance specification. EII, EEI and EEE
-models use emEM screening, which performs short EM runs for a larger pool of
-starts before completing selected candidates. Other covariance structures
-use k-means initialization by default. The `search` argument can override
-these defaults. The `cores` argument permits parallel candidate fitting.
+models use emEM screening: five times `n_starts` starts are screened by a
+short EM run each, and the best `n_starts` are continued to convergence
+(Biernacki et al., 2003). The other structures start from k-means, because
+with profile-specific variances emEM reaches spurious maxima more often. The `search`
+argument can override these defaults. The `cores` argument permits parallel
+candidate fitting.
 
-```{r enumerate}
+```{r enumerate, warning = FALSE}
 activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 models <- enumerate_classes(course_engagement, activity, "student",
-                            n_profiles = 1:6, n_group_classes = 1:4,
-                            model = "VVI", n_starts = 3, seed = 1)
-models
+                            n_profiles = 1:4, n_group_classes = 1:4,
+                            n_starts = 5, seed = 1)
 ```
 
 ```{r models-values, include = FALSE}
@@ -133,17 +248,34 @@ pick <- function(name, convention_name) {
 bic_groups_pick <- pick("bic", "groups")
 bic_individual_pick <- pick("bic", "individuals")
 icl_groups_pick <- pick("icl", "groups")
+icl_individual_pick <- pick("icl", "individuals")
 awe_groups_pick <- pick("awe", "groups")
+awe_individual_pick <- pick("awe", "individuals")
 aic_pick <- with(subset(best, criterion == "aic"), candidate)
-# The code below names these candidates; stop if the results ever change.
-stopifnot(bic_groups_pick == "profiles4_groups3",
-          icl_groups_pick == "profiles2_groups3",
-          awe_groups_pick == "profiles2_groups2")
+chosen_name <- "profiles2_groups2_VVV"
+diagonal <- subset(candidates, model == "VVI" & !is.na(bic_groups))
+diagonal_pick <- with(subset(diagonal, bic_groups == min(bic_groups)), candidate)
+bic_of <- function(name) with(subset(candidates, candidate == name), bic_groups)
+diagonal_bic <- round(bic_of(diagonal_pick))
+chosen_bic <- round(bic_of(chosen_name))
+bic_gap <- round(bic_of(chosen_name) - bic_of(bic_groups_pick))
+# The text below names these candidates; stop if the results ever change.
+stopifnot(n_candidates == 64, n_failed == 12,
+          bic_groups_pick == "profiles2_groups4_VVV",
+          bic_individual_pick == "profiles2_groups3_EEE",
+          icl_groups_pick == "profiles2_groups3_VVV",
+          icl_individual_pick == "profiles2_groups3_EEE",
+          awe_groups_pick == "profiles2_groups2_EEE",
+          awe_individual_pick == "profiles2_groups2_VVI",
+          aic_pick == "profiles4_groups4_VVV",
+          diagonal_pick == "profiles4_groups3_VVI",
+          chosen_bic < diagonal_bic)
 ```
 
-The result records `r n_candidates` requested candidates. Each candidate is named
-by its numbers of profiles and group classes, so that `profiles4_groups3` has
-four profiles and three group classes, and the name identifies the candidate
+The result records `r n_candidates` requested candidates. Each candidate is
+named by its numbers of profiles and group classes and its covariance
+structure, so that `profiles2_groups4_VVV` has two profiles, four group
+classes and a full covariance per profile; the name identifies the candidate
 in every function that follows. The `r n_failed` candidates with one profile
 and several group classes could not be estimated. Group classes are defined
 by differences in the distribution of profiles, and a model with a single
@@ -153,10 +285,12 @@ the error that stopped them.
 ## The table of candidates
 
 The table of candidates has one row per candidate and is returned by
-`as.data.frame()`.
+`as.data.frame()`; printing `models` shows the same table with a summary of
+failed and unreplicated candidates. The 16 candidates with the `VVV`
+structure:
 
 ```{r table}
-as.data.frame(models)
+subset(as.data.frame(models), model == "VVV")
 ```
 
 The columns fall into groups.
@@ -177,16 +311,15 @@ Many information criteria combine deviance (minus twice the maximized log
 likelihood) with a penalty for the number of estimated parameters. Some
 criteria also penalize classification uncertainty. Lower values are preferred
 under the chosen criterion. In a two-level model, several parameter penalties
-depend on the sample-size convention. Criteria ending in
-`_groups` count the `r n_students` students as the independent units, and
-criteria ending in `_individual` count the
-`r format(n_enrolments, big.mark = ",")` enrolments. An analysis uses one of
-the two conventions throughout.
+depend on the sample-size convention. Criteria ending in `_groups` count the
+`r n_students` students as the independent units, and criteria ending in
+`_individual` count the `r format(n_enrolments, big.mark = ",")` enrolments.
+An analysis uses one of the two conventions throughout.
 
 ICL and AWE include uncertainty about both the students' group classes and
 their enrolments' profiles under either convention. Changing the sample-size
-convention changes the parameter penalty, not which classification uncertainty
-is included.
+convention changes the parameter penalty, not which classification
+uncertainty is included.
 
 The candidate at the minimum of each criterion:
 
@@ -194,15 +327,27 @@ The candidate at the minimum of each criterion:
 get_results(models, "best")
 ```
 
-The criteria disagree. With students as the units, the Bayesian information
-criterion (BIC) is lowest for `r bic_groups_pick`, the integrated completed
-likelihood (ICL) for `r icl_groups_pick` and the approximate weight of
-evidence (AWE) for `r awe_groups_pick`. With enrolments as the units, BIC is
-lowest for `r bic_individual_pick`. The Akaike information criterion (AIC) is
-lowest for `r aic_pick`, the largest candidate fitted in this example.
+Most criteria select two profiles; the AIC, the CLC and the SABIC with
+students as the units, whose parameter penalties are weakest or absent,
+select four, and the CAIC with students as the units three. They
+agree that the indicators are correlated within profiles: all but one select
+a structure with covariances (`EEE` or `VVV`). They disagree on the number of
+group classes. With students as the units, the BIC is lowest for
+`r bic_groups_pick`, the ICL for `r icl_groups_pick` and the AWE for
+`r awe_groups_pick`; with enrolments as the units, the BIC is lowest for
+`r bic_individual_pick`. The AIC is lowest for `r aic_pick`, the largest
+candidate fitted.
+
+The covariance structure matters for the number of profiles. Among the
+diagonal `VVI` candidates alone, the BIC with students as the units is lowest
+for `r diagonal_pick` (BIC `r format(diagonal_bic, big.mark = ",")`): with
+the within-profile correlation of attendance excluded, two further profiles
+absorb it. Two profiles with free covariances and two group classes fit
+better (BIC `r format(chosen_bic, big.mark = ",")`).
 
 The criteria are plotted against the number of profiles, one line per number
-of group classes, with the lowest value of each criterion ringed.
+of group classes, for every structure, with the lowest value of each
+criterion ringed.
 
 ```{r plot-criteria, fig.height = 5}
 plot_enumeration(models)
@@ -219,49 +364,56 @@ plot_enumeration(models, what = "bic_groups")
 ```
 
 The tree summarizes correspondence between profiles across independently
-fitted models. Links are weighted by shared posterior membership mass,
-computed from products of the models' membership probabilities, rather than
-by assuming that profiles form nested partitions. Each number of group
-classes has its own tree, and
-`n_group_classes` selects one; `plot_tree(models)` returns them all, one plot
-each. The guide *Tree plot* compares solutions at one number of profiles and
-plots the tree of group classes.
+fitted models (Zappia & Oshlack, 2018). Links are weighted by shared
+posterior membership mass, computed from products of the models' membership
+probabilities, rather than by assuming that profiles form nested partitions.
+Each number of group classes and structure has its own tree;
+`n_group_classes` and `model` select one, and `plot_tree(models)` returns
+them all, one plot each. The guide *Tree plot* compares solutions at one
+number of profiles and plots the tree of group classes.
 
 ```{r plot-tree, fig.height = 6}
-plot_tree(models, n_group_classes = 1)
+plot_tree(models, n_group_classes = 1, model = "VVV")
 ```
 
 ## Change with each added class
 
 When a criterion decreases across the whole candidate range, successive
-changes help describe how much each additional class improves that criterion. For every candidate, the table reports the decrease in
-BIC from the candidate with one profile fewer and the same number of group
-classes, and the decrease from the candidate with one group class fewer and
-the same number of profiles. A positive value means that the added class
-lowered the criterion. The argument `using` selects another criterion.
+changes help describe how much each additional class improves that
+criterion. For every candidate, the table reports the decrease in BIC from
+the candidate with one profile fewer and the same number of group classes
+and structure, and the decrease from the candidate with one group class
+fewer. A positive value means that the added class lowered the criterion.
+The argument `using` selects another criterion.
+
+The rows of the `VVV` candidates:
 
 ```{r deltas}
-get_results(models, "deltas")
+subset(get_results(models, "deltas"), model == "VVV")
 ```
 
 ```{r deltas-values, include = FALSE}
 deltas <- get_results(models, "deltas")
-delta_of <- function(name) {
-  with(subset(deltas, candidate == name), round(delta_profile))
+delta_of <- function(name, direction) {
+  row <- subset(deltas, candidate == name)
+  round(if (direction == "profile") with(row, delta_profile) else with(row, delta_group_class))
 }
-step_3 <- delta_of("profiles3_groups3")
-step_4 <- delta_of("profiles4_groups3")
-step_5 <- delta_of("profiles5_groups3")
-stopifnot(step_3 > 0, step_4 > 0, step_5 < 0)
+profile_2 <- delta_of("profiles2_groups1_VVV", "profile")
+profile_3 <- delta_of("profiles3_groups1_VVV", "profile")
+group_2 <- delta_of("profiles2_groups2_VVV", "group")
+group_3 <- delta_of("profiles2_groups3_VVV", "group")
+group_4 <- delta_of("profiles2_groups4_VVV", "group")
+stopifnot(profile_2 > 0, profile_3 < 0, group_2 > 0, group_3 > 0, group_4 > 0,
+          group_2 > 10 * group_3)
 ```
 
-With three group classes, adding a third profile lowers BIC by
-`r format(step_3, big.mark = ",")` and adding a fourth lowers it by
-`r format(step_4, big.mark = ",")`. Adding a fifth profile raises BIC by
-`r format(-step_5, big.mark = ",")`, which appears in the table as a negative
-decrease. The decreases are plotted for both directions, along the
-number of profiles on the left and along the number of group classes on the
-right.
+For the `VVV` structure with one group class, a second profile lowers the BIC
+by `r format(profile_2, big.mark = ",")` and a third raises it by
+`r format(-profile_3, big.mark = ",")`, which appears in the table as a
+negative decrease. With two profiles, a second group class lowers the BIC by
+`r format(group_2, big.mark = ",")`, a third by `r group_3` and a fourth by
+`r group_4`. The decreases are plotted for both directions, along the number
+of profiles on the left and along the number of group classes on the right.
 
 ```{r plot-deltas, fig.height = 5}
 plot_selection(models, what = "deltas")
@@ -270,33 +422,38 @@ plot_selection(models, what = "deltas")
 The knee summary scales both axes of a curve to the unit interval and finds
 the candidate with the largest perpendicular distance below the straight
 line from the first point to the last. This chord-distance rule is inspired
-by Kneedle, without its smoothing or sensitivity thresholds. A nearly linear
-curve can have a very small maximum distance, so the reported distance
-describes the strength of the bend as well as its location. The knee is computed
-along the number of profiles for each number of group classes, along the
-number of group classes for each number of profiles, and across all
-candidates ordered by their number of parameters.
+by Kneedle (Satopää et al., 2011), without its smoothing or sensitivity
+thresholds. A nearly linear curve can have a very small maximum distance, so
+the reported distance describes the strength of the bend as well as its
+location. The knee is computed along the number of profiles for each number
+of group classes, along the number of group classes for each number of
+profiles, and across all candidates ordered by their number of parameters,
+separately for each structure.
+
+The lines of the `VVV` candidates:
 
 ```{r knees}
-get_results(models, "knees")
+subset(get_results(models, "knees"), endsWith(line, "VVV"))
 ```
 
 ```{r knee-values, include = FALSE}
 knees <- get_results(models, "knees")
-profile_line <- subset(knees, direction == "profiles" &
-                         line == "3 group classes")
-knee_along_profiles <- with(profile_line, knee_candidate)
-knee_without_largest <- with(profile_line, knee_without_largest)
-knee_along_groups <- with(subset(knees, direction == "group_classes" &
-                                   line == "4 profiles"), knee_candidate)
+group_line <- subset(knees, direction == "group_classes" &
+                       line == "2 profiles, VVV")
+knee_along_groups <- with(group_line, knee_candidate)
+knee_stable <- with(group_line, stable)
+group_knees <- with(subset(knees, direction == "group_classes" &
+                             !is.na(knee_candidate)), knee_candidate)
+stopifnot(knee_along_groups == "profiles2_groups2_VVV", isTRUE(knee_stable),
+          all(grepl("_groups2_", group_knees)))
 ```
 
-With three group classes, the knee along the number of profiles is
-`r knee_along_profiles`. The straight line ends at the largest
-candidate, so the knee depends on the range fitted. Without the largest
-candidate the knee is `r knee_without_largest`, which the
-table records in `stable` and `note`. Along the number of group classes with
-four profiles, the knee is `r knee_along_groups`.
+Along the number of group classes, the knee lies at two group classes for
+every number of profiles and every structure; with two profiles and `VVV`
+it is `r knee_along_groups`, and it does not move when the largest candidate
+is removed (`stable`). Along the number of profiles, the BIC of the `VVV`
+candidates with two or more group classes does not fall beyond two
+profiles, so those lines have no knee (`note`).
 
 The heatmap displays each candidate's criterion value relative to the
 minimum across the fitted grid:
@@ -310,9 +467,10 @@ plot_selection(models, what = "heatmap")
 Every observation has a posterior probability of membership in each class.
 Relative entropy summarizes these probabilities over all observations, from 0
 when every observation is equally likely to belong to every class, to 1 when
-every observation belongs to one class with certainty. The average posterior
-probability (AvePP) of a class is the mean posterior probability of that
-class among the observations assigned to it. Higher AvePP values indicate greater posterior certainty within the assigned
+every observation belongs to one class with certainty (Ramaswamy et al.,
+1993). The average posterior probability (AvePP) of a class is the mean
+posterior probability of that class among the observations assigned to it.
+Higher AvePP values indicate greater posterior certainty within the assigned
 class. The candidate table reports the lowest, highest and mean AvePP at each
 level and the number of classes below a user-selected cutoff (`cutoff`,
 default 0.8). This threshold is a descriptive screening choice, not a
@@ -322,36 +480,43 @@ validated criterion for selecting the number of classes.
 plot_selection(models, what = "diagnostics")
 ```
 
-The AvePP of every class of every candidate, with its size and the relative
-entropy of its level:
+`get_results(models, "classification")` returns the AvePP of every class of
+every candidate, with its size and the relative entropy of its level; for the
+`VVV` candidates with two profiles:
 
 ```{r classification}
-get_results(models, "classification")
+subset(get_results(models, "classification"), n_profiles == 2 & model == "VVV")
 ```
 
 ```{r quality-values, include = FALSE}
-chosen_row <- subset(candidates, candidate == bic_groups_pick)
-profile_entropy_chosen <- with(chosen_row, round(profile_entropy, 2))
-group_entropy_chosen <- with(chosen_row, round(group_entropy, 2))
-avepp_chosen <- with(chosen_row, round(avepp_min, 2))
-group_avepp_chosen <- with(chosen_row, round(group_avepp_min, 2))
+row_of <- function(name) subset(candidates, candidate == name)
+group_entropy_of <- function(name) with(row_of(name), round(group_entropy, 3))
+group_avepp_of <- function(name) with(row_of(name), round(group_avepp_min, 3))
+entropy_2 <- group_entropy_of("profiles2_groups2_VVV")
+entropy_3 <- group_entropy_of("profiles2_groups3_VVV")
+entropy_4 <- group_entropy_of("profiles2_groups4_VVV")
+avepp_2 <- group_avepp_of("profiles2_groups2_VVV")
+avepp_4 <- group_avepp_of("profiles2_groups4_VVV")
+profile_entropy_chosen <- with(row_of(chosen_name), round(profile_entropy, 3))
+avepp_chosen <- with(row_of(chosen_name), round(avepp_min, 3))
+stopifnot(entropy_2 > entropy_3, entropy_3 > entropy_4)
 ```
 
-For `r bic_groups_pick`, the relative entropy is
-`r profile_entropy_chosen` for the profiles and `r group_entropy_chosen` for
-the group classes. The lowest AvePP is `r avepp_chosen` among the profiles
-and `r group_avepp_chosen` among the group classes.
+Separation of the students declines as group classes are added. With two
+profiles and `VVV`, the group-level relative entropy is `r entropy_2` with
+two group classes, `r entropy_3` with three and `r entropy_4` with four, and
+the lowest group-class AvePP falls from `r avepp_2` to `r avepp_4`.
 
 ## Checks of the estimation
 
 Replication of the selected likelihood across starts provides evidence of
 numerical stability, but cannot establish that the global maximum has been
-found. Boundary estimates and small components warrant investigation because
+found. Boundary estimates and small profiles warrant investigation because
 they can indicate a solution driven by limited support or a restrictive
 parameter bound. Their interpretation depends on the fitted model and data.
 Refitting with `boundary = "exclude"` selects among starts whose continuous
 variance parameters are above their lower bounds. This option changes start
-selection and does not by itself establish that the retained components are
+selection and does not by itself establish that the retained profiles are
 substantively meaningful. The following plots summarize these diagnostics.
 
 ```{r trust}
@@ -365,16 +530,32 @@ plot_selection(models, what = "smallest")
 All of the plots for choosing the number of classes are produced together
 with `plot_selection(models)`.
 
+A candidate on a boundary whose smallest profile holds about one observation
+is a degenerate solution, not a profile: a Gaussian profile centred on one
+observation raises the likelihood without limit as its variances shrink, so
+the reported likelihood is fixed by `min_variance`. The default,
+`boundary = "allow"`, reports it, as Mplus does, with a warning.
+`boundary = "exclude"` retains for each candidate the best start with no
+variance at its lower bound, and is advisable when many starts are used,
+since each additional start increases the chance of reaching such a
+solution. Categorical indicators are unaffected.
+
+```{r exclude, eval = FALSE}
+excluded <- enumerate_classes(course_engagement, activity, "student",
+                              n_profiles = 1:4, n_group_classes = 1:4,
+                              n_starts = 200, boundary = "exclude", seed = 1)
+```
+
 ## Comparing candidates
 
 Selected candidates are placed side by side with `compare_models()`.
-Candidates are named as in the table, given by their numbers of classes, or
-selected by a number of profiles or group classes. The comparison adds the difference in
-BIC from the lowest of the candidates compared and the BIC weight. The weight
-is `exp(-delta_bic / 2)` normalized over the compared candidates. It summarizes
-relative support under this BIC approximation and depends on the candidate
-set; it should not be interpreted as a calibrated probability that a model
-is correct.
+Candidates are named as in the table or selected by a number of profiles or
+group classes. The comparison adds the difference in BIC from the lowest of
+the candidates compared and the BIC weight. The weight is
+`exp(-delta_bic / 2)` normalized over the compared candidates (Wagenmakers &
+Farrell, 2004). It summarizes relative support under this BIC approximation
+and depends on the candidate set; it should not be interpreted as a
+calibrated probability that a model is correct.
 
 The candidates preferred by BIC, ICL and AWE with students as the units:
 
@@ -382,16 +563,19 @@ The candidates preferred by BIC, ICL and AWE with students as the units:
 compare_models(models, bic_groups_pick, icl_groups_pick, awe_groups_pick)
 ```
 
-The same candidates given by their numbers of classes, with labels:
+The same comparison with labels, and with the candidate analysed below:
 
-```{r compare-counts}
-compare_models(models, bic = c(4, 3), icl = c(2, 3), awe = c(2, 2))
+```{r compare-labels}
+compare_models(models, bic = "profiles2_groups4_VVV",
+               icl = "profiles2_groups3_VVV", awe = "profiles2_groups2_EEE",
+               chosen = "profiles2_groups2_VVV")
 ```
 
-Every candidate with four profiles, which shows what the group classes add:
+The four structures with two profiles and two group classes, which shows
+what the covariance structure adds:
 
 ```{r compare-select}
-comparison <- compare_models(models, n_profiles = 4)
+comparison <- compare_models(models, n_profiles = 2, n_group_classes = 2)
 comparison
 plot(comparison)
 ```
@@ -404,23 +588,80 @@ compared model is returned by `get_results()`, and the model behind a row by
 get_results(comparison, "classification")
 ```
 
+## Testing neighbouring candidates
+
+The bootstrap likelihood ratio test (McLachlan, 1987) compares two
+candidates that differ by one class. Data sets are simulated from the
+smaller candidate and both candidates are re-estimated on each. Of `B`
+requested data sets, let `V` pass the estimation checks and `b` of those yield
+a likelihood ratio at least as large as the observed one. The p-value is
+`(b + 1) / (V + 1)` (Davison & Hinkley, 1997); the additional count includes
+the observed statistic and precludes a p-value of zero. Invalid replicates
+are reported, and the p-value is withheld when fewer than half the requested
+replicates are valid. The test below compares two and three group classes
+with two profiles and the `VVV` structure, the decision on which the criteria
+disagree. Nineteen data sets keep the example brief; if all pass, the
+smallest attainable p-value is 1/20 = 0.05. Applied analyses should use at
+least 99 and inspect the valid count.
+
+```{r blrt}
+smaller <- get_candidate(models, "profiles2_groups2_VVV")
+larger <- get_candidate(models, "profiles2_groups3_VVV")
+test <- bootstrap_lrt(smaller, larger, data = course_engagement,
+                      iter = 19, n_starts = 2, seed = 1)
+test
+plot(test)
+```
+
+```{r blrt-values, include = FALSE}
+test_result <- get_results(test)
+test_p <- with(test_result, p_value)
+test_valid <- with(test_result, n_valid)
+stopifnot(test_valid == 19, isTRUE(all.equal(test_p, 0.05)))
+```
+
+All `r test_valid` simulated data sets are valid, and none yields a
+likelihood ratio as large as the observed one, so the p-value is
+`r test_p`, the smallest attainable with this number of data sets. The test
+therefore rejects two group classes in favour of three, in agreement with the
+BIC.
+
+## The choice
+
+The evidence points to two profiles with free within-profile covariances.
+For the group classes, the bootstrap test and the BIC indicate that the data
+contain structure beyond two group classes. The magnitude of that structure
+is small: the second group class accounts for almost all of the improvement
+in the BIC (`r format(group_2, big.mark = ",")` against
+`r group_3` and `r group_4` for the third and fourth), the knee lies at two
+group classes for every structure, and further group classes separate the
+students less clearly. The analysis therefore continues with
+`r chosen_name`, whose BIC is `r bic_gap` above the lowest. The small
+improvements from further group classes have an identifiable source: a
+student's engagement changes along the course sequence, a dependence between
+the enrolments of a student that the multilevel model does not represent and
+that additional group classes partly absorb. A latent transition model
+represents it directly (see the
+[latent transition analysis](https://pak.dynasite.org/latents/articles/lta.html)
+article).
+
 ## Analysis of the chosen candidate
 
-The example continues with `r bic_groups_pick`, the candidate with the lowest
-BIC with students as the units. It is taken from the fitted candidates by
-name with `get_candidate()`. The numbers of classes give the same model, as
-in `get_candidate(models, 4, 3)`.
+The candidate is taken from the fitted candidates by name with
+`get_candidate()`. The numbers of classes with the structure give the same
+model, as in `get_candidate(models, 2, 2, model = "VVV")`.
 
 ```{r chosen}
-chosen <- get_candidate(models, "profiles4_groups3")
+chosen <- get_candidate(models, "profiles2_groups2_VVV")
 chosen
 ```
 
 `chosen` is the same kind of object that `multilpa()` returns. Its summary
-reports the estimates with their standard errors.
+reports the estimates with their standard errors; `rows` limits the rows
+printed from each table.
 
 ```{r chosen-summary}
-summary(chosen)
+print(summary(chosen), rows = 3)
 ```
 
 The profiles are plotted as their means on the five indicators.
@@ -429,7 +670,7 @@ The profiles are plotted as their means on the five indicators.
 plot_profiles(chosen)
 ```
 
-Each group class of students has its own distribution of the four profiles.
+Each group class of students has its own distribution of the two profiles.
 
 ```{r chosen-prevalence}
 plot_prevalence(chosen)
@@ -440,6 +681,10 @@ The classification diagnostics of the chosen model:
 ```{r chosen-diagnostics}
 diagnostics(chosen)
 ```
+
+The relative entropy of the chosen model is `r profile_entropy_chosen` for the
+profiles and `r entropy_2` for the group classes; the lowest AvePP is
+`r avepp_chosen` among the profiles and `r avepp_2` among the group classes.
 
 ```{r chosen-diagnostic-plots, fig.height = 7}
 plot_diagnostics(chosen)
@@ -454,13 +699,175 @@ head(get_results(chosen, "assignments", data = course_engagement))
 
 The profiles can also be related to an external variable. The following
 analysis uses `three_step()` to estimate profile-specific means of
-`previous_grade`, with BCH correction for classification error. The variable
-precedes the course enrolment, so these comparisons describe associations
-rather than effects of profile membership on grades.
+`previous_grade`, with the BCH correction for classification error (Bolck et
+al., 2004; Bakk & Vermunt, 2016). The variable precedes the course enrolment,
+so these comparisons describe associations rather than effects of profile
+membership on grades.
 
 ```{r chosen-outcome}
 three_step(chosen, data = course_engagement, outcome = "previous_grade")
 ```
+
+The previous grade averages 0.23 standard deviations above the mean before
+enrolments of the first profile and 0.33 below it before enrolments of the
+second, with 95% intervals that do not overlap.
+
+## Other model types
+
+### Latent class models
+
+```{r lca-values, include = FALSE}
+n_reports <- nrow(student_esm)
+```
+
+`student_esm` contains `r format(n_reports, big.mark = ",")` momentary
+reports from students, with eight activities recorded as present or absent.
+Declaring the indicators in `categorical` makes every candidate a latent
+class model, and the candidates are named with `classes` in place of
+`profiles`.
+
+```{r lca}
+activities <- c("time_with_friends", "on_social_media", "tv_video_games",
+                "listened_music", "sports", "walking", "reading",
+                "part_time_job")
+lca_models <- enumerate_classes(student_esm, activities, "student",
+                                n_profiles = 2:4, n_group_classes = 1:2,
+                                categorical = activities, n_starts = 5,
+                                seed = 1)
+lca_models
+plot_selection(lca_models, what = "diagnostics")
+compare_models(lca_models, n_profiles = 3)
+```
+
+```{r lca-check, include = FALSE}
+lca_row <- subset(as.data.frame(lca_models), candidate == "classes3_groups2")
+lca_entropy <- with(lca_row, round(profile_entropy, 2))
+lca_avepp <- with(lca_row, round(avepp_min, 2))
+lca_lowest <- with(subset(get_results(compare_models(lca_models, n_profiles = 3),
+                                     "comparison"), delta_bic == min(delta_bic)),
+                   model)
+stopifnot(lca_entropy < 0.6, lca_avepp < 0.7, lca_lowest == "classes3_groups2")
+```
+
+Among the three-class models, the model with two group classes has the
+lower BIC. Its relative entropy is `r lca_entropy`, and its least distinct
+class has an AvePP of `r lca_avepp`. The classes of this model overlap
+substantially, which limits their substantive interpretation; the
+[two-level latent class analysis](https://pak.dynasite.org/latents/articles/lca.html)
+vignette analyses these data with more starts.
+
+### Single-level models
+
+Observations without a grouping structure are modelled with
+`enumerate_lpa()` for continuous indicators and `enumerate_lca()` for
+categorical indicators. The candidates are named by their numbers of
+profiles or classes alone. The example below enumerates the `srl` data under
+the diagonal `VVI` structure, which shows how an unsuitable structure leads to
+degenerate candidates; the
+[latent profile analysis workflow](https://pak.dynasite.org/latents/articles/workflow-lpa.html)
+analyses the same data with the full `EEE` structure.
+
+```{r single}
+srl_models <- enumerate_lpa(srl, c("cognitive_strategies", "intrinsic_value",
+                                   "self_efficacy", "self_regulation",
+                                   "test_anxiety"),
+                            n_profiles = 1:8, model = "VVI", n_starts = 10,
+                            seed = 1)
+srl_models
+compare_models(srl_models, "profiles5", "profiles6", "profiles7")
+plot_selection(srl_models, what = "deltas")
+```
+
+```{r single-check, include = FALSE}
+srl_bic <- with(subset(get_results(srl_models, "best"),
+                       criterion == "bic" & convention == "groups"),
+                candidate)
+on_boundary <- with(subset(as.data.frame(srl_models), boundary), candidate)
+warned <- with(subset(as.data.frame(srl_models), nzchar(warnings)), candidate)
+thin <- with(subset(as.data.frame(srl_models), grepl("membership mass for", warnings)),
+             candidate)
+seven_mass <- with(subset(as.data.frame(srl_models), candidate == "profiles7"),
+                   round(min_gaussian_mass))
+six_mass <- with(subset(as.data.frame(srl_models), candidate == "profiles6"),
+                 round(min_gaussian_mass))
+stopifnot(srl_bic == "profiles7",
+          identical(on_boundary, c("profiles7", "profiles8")),
+          identical(warned, c("profiles6", "profiles7", "profiles8")),
+          identical(thin, warned), seven_mass <= 5, six_mass <= 12)
+```
+
+BIC is minimized by `r srl_bic`, but that candidate is a boundary fit: a
+variance reached its lower bound, and one profile holds about `r seven_mass`
+observations. Its low BIC reflects a nearly degenerate component, not a
+better description of the data. The six-profile candidate is the best fit
+that is not on the boundary, but it too has a profile of about `r six_mass`
+observations, too few to determine its own ten means and variances. The
+enumeration reports both with a `latents_thin_profiles` warning; such a
+profile may be a spurious maximum, and the choice should be weighed against
+the five-profile candidate, which `compare_models()` shows beside them. The
+eight-profile candidate is also on the boundary, with two nearly empty
+profiles, which marks the limit of what `r nrow(srl)` observations can
+support. Every warning issued during the enumeration is retained in the
+`warnings` column of the table.
+
+### Missing values and scaled indicators
+
+Two arguments alter the data to which the candidates are fitted and, like
+`n_starts`, apply to all candidates. With `missing = "fiml"`, rows with some
+indicators missing contribute through the indicators observed (full
+information maximum likelihood); rows with every indicator missing are
+excluded from the individual sample size, entropy and AvePP, since they
+carry no information on class membership. `centering` subtracts and
+`scaling` divides by a mean or standard deviation computed over the sample
+(`"grand"`) or within each group (`"person"`); combined, they yield grand
+or within-person z-scores. Information criteria are comparable only among
+candidates fitted under the same settings. [Model
+selection](model-selection.html) describes both with examples.
+
+### Multiple covariance structures in single-level models
+
+Specifying several structures in `model` multiplies the candidates, and the
+structure is appended to each name. Because the numbers of classes then
+match several candidates, a candidate must be specified by its full name.
+
+```{r crossed}
+crossed_models <- enumerate_lpa(srl, c("cognitive_strategies",
+                                       "intrinsic_value", "self_efficacy",
+                                       "self_regulation", "test_anxiety"),
+                                n_profiles = 2:4, model = c("VVI", "EEE"),
+                                n_starts = 5, seed = 1)
+crossed_models
+compare_models(crossed_models, "profiles3_VVI", "profiles3_EEE")
+```
+
+### Latent transition models
+
+With `time`, every candidate is a latent transition model over the
+occasions, here the order of each student's enrolments in `sequence`. As in
+the two-level grid above, the within-profile covariances are estimated
+(`covariance_model = "full"`).
+
+```{r transitions, warning = FALSE}
+transition_models <- enumerate_classes(course_engagement, activity, "student",
+                                       time = "sequence",
+                                       covariance_model = "full",
+                                       n_profiles = 2:4, n_group_classes = 1,
+                                       n_starts = 3, seed = 1)
+transition_models
+compare_models(transition_models)
+```
+
+```{r transitions-check, include = FALSE}
+transition_table <- as.data.frame(transition_models)
+stopifnot(all(with(transition_table, converged)),
+          with(subset(transition_table, bic == min(bic)), candidate) ==
+            "profiles2_groups1")
+```
+
+The BIC selects two profiles, the generating number, and every candidate
+converges. The
+[latent transition analysis](https://pak.dynasite.org/latents/articles/lta.html)
+article enumerates profiles and group classes together.
 
 ## Functions
 
@@ -468,6 +875,10 @@ three_step(chosen, data = course_engagement, outcome = "previous_grade")
 knitr::kable(data.frame(
   Call = c(
     "enumerate_classes(data, vars, id, n_profiles, n_group_classes, model)",
+    "enumerate_classes(..., n_starts = , missing = \"fiml\", centering = , scaling = )",
+    "enumerate_classes(..., boundary = \"exclude\")",
+    "enumerate_classes(..., time = ), enumerate_lpa(), enumerate_lca()",
+    "bootstrap_lrt(smaller, larger, data = , iter = )",
     "as.data.frame(models)",
     "get_results(models, \"best\")",
     "get_results(models, \"classification\")",
@@ -475,18 +886,22 @@ knitr::kable(data.frame(
     "get_results(models, \"deltas\", using = )",
     "get_results(models, \"knees\", using = )",
     "plot_enumeration(models), plot_enumeration(models, what = \"bic_groups\"), what = \"all\"",
-    "plot_tree(models)",
+    "plot_tree(models, n_group_classes = , model = )",
     "plot_enumeration(models, what = \"entropy\", \"avepp\" or \"diagnostics\", cutoff = )",
     "plot_selection(models, what = \"deltas\", \"heatmap\", \"smallest\" or \"trust\", using = )",
     "plot_selection(models)",
-    "get_candidate(models, \"profiles4_groups3\"), get_candidate(models, 4, 3)",
-    "compare_models(models, \"name\", c(4, 2), ...)",
+    "get_candidate(models, \"profiles2_groups2_VVV\"), get_candidate(models, 2, 2, model = \"VVV\")",
+    "compare_models(models, \"name\", label = \"name\", ...)",
     "compare_models(models, n_profiles = , n_group_classes = )",
     "compare_models(name = fit, name = fit)",
     "get_candidate(comparison, \"name\")",
     "get_results(comparison, \"classification\")"),
   Result = c(
     "The fitted candidate models",
+    "The same starts, missing-data handling, centring and scaling for every candidate",
+    "Starts with a variance at its lower bound set aside for every candidate",
+    "Transition models, single-level profile and class models",
+    "Bootstrap likelihood ratio test of two neighbouring candidates",
     "One row per candidate with every column",
     "The candidate at the minimum of each criterion",
     "Size, AvePP and entropy of every class of every candidate",
@@ -506,6 +921,126 @@ knitr::kable(data.frame(
     "Every class of every compared model")),
   col.names = c("Call", "Result"))
 ```
+
+## References
+
+Akaike, H. (1974). A new look at the statistical model identification.
+*IEEE Transactions on Automatic Control*, 19, 716--723.
+
+Bakk, Z., & Vermunt, J. K. (2016). Robustness of stepwise latent class
+modeling with continuous distal outcomes. *Structural Equation Modeling*, 23,
+20--31.
+
+Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
+non-Gaussian clustering. *Biometrics*, 49, 803--821.
+
+Biernacki, C., & Govaert, G. (1997). Using the classification likelihood to
+choose the number of clusters. *Computing Science and Statistics*, 29,
+451--457.
+
+Biernacki, C., Celeux, G., & Govaert, G. (2000). Assessing a mixture model
+for clustering with the integrated completed likelihood. *IEEE Transactions
+on Pattern Analysis and Machine Intelligence*, 22, 719--725.
+
+Biernacki, C., Celeux, G., & Govaert, G. (2003). Choosing starting values for
+the EM algorithm for getting the highest likelihood in multivariate Gaussian
+mixture models. *Computational Statistics & Data Analysis*, 41, 561--575.
+
+Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent structure
+models with categorical variables: One-step versus three-step estimators.
+*Political Analysis*, 12(1), 3--27.
+
+Bozdogan, H. (1987). Model selection and Akaike's information criterion.
+*Psychometrika*, 52, 345--370.
+
+Cavanaugh, J. E. (1999). A large-sample model selection criterion based on
+Kullback's symmetric divergence. *Statistics and Probability Letters*, 42,
+333--343.
+
+Celeux, G., & Govaert, G. (1995). Gaussian parsimonious clustering models.
+*Pattern Recognition*, 28(5), 781--793.
+
+Davison, A. C., & Hinkley, D. V. (1997). *Bootstrap methods and their
+application*. Cambridge University Press.
+
+Houle, S. A., Morin, A. J. S., & Harvey, J.-F. (2026). Multilevel latent
+profile analyses: A comprehensive guide. *Organizational Research Methods*.
+<https://doi.org/10.1177/10944281261469432>
+
+Lo, Y., Mendell, N. R., & Rubin, D. B. (2001). Testing the number of
+components in a normal mixture. *Biometrika*, 88, 767--778.
+
+Lukočienė, O., Varriale, R., & Vermunt, J. K. (2010). The simultaneous
+decision(s) about the number of lower- and higher-level classes in
+multilevel latent class analysis. *Sociological Methodology*, 40, 247--283.
+
+McLachlan, G. J. (1987). On bootstrapping the likelihood ratio test statistic
+for the number of components in a normal mixture. *Applied Statistics*, 36,
+318--324.
+
+McLachlan, G. J., & Peel, D. (2000). *Finite mixture models*. Wiley.
+
+Nylund, K. L., Asparouhov, T., & Muthén, B. O. (2007). Deciding on the
+number of classes in latent class analysis and growth mixture modeling: A
+Monte Carlo simulation study. *Structural Equation Modeling*, 14, 535--569.
+
+Nylund-Gibson, K., & Choi, A. Y. (2018). Ten frequently asked questions about
+latent class analysis. *Translational Issues in Psychological Science*, 4(4),
+440--461. <https://doi.org/10.1037/tps0000176>
+
+Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., & Robinson, W. T. (1993).
+An empirical pooling approach for estimating marketing mix elasticities with
+PIMS data. *Marketing Science*, 12, 103--124.
+
+Saqr, M., & López-Pernas, S. (2021). The longitudinal trajectories of online
+engagement over a full program. *Computers & Education*, 175, 104325.
+<https://doi.org/10.1016/j.compedu.2021.104325>
+
+Saqr, M., López-Pernas, S., Helske, S., & Hrastinski, S. (2023). The
+longitudinal association between engagement and achievement varies by time,
+students' profiles, and achievement state: A full program study.
+*Computers & Education*, 199, 104787.
+<https://doi.org/10.1016/j.compedu.2023.104787>
+
+Satopää, V., Albrecht, J., Irwin, D., & Raghavan, B. (2011). Finding a
+"kneedle" in a haystack: Detecting knee points in system behavior. In *31st
+International Conference on Distributed Computing Systems Workshops* (pp.
+166--171). IEEE.
+
+Schwarz, G. (1978). Estimating the dimension of a model. *The Annals of
+Statistics*, 6, 461--464.
+
+Sclove, S. L. (1987). Application of model-selection criteria to some
+problems in multivariate analysis. *Psychometrika*, 52, 333--343.
+
+Sorgente, A., Caliciuri, R., Robba, M., Lanz, M., & Zumbo, B. D. (2025). A
+systematic review of latent class analysis in psychology: Examining the gap
+between guidelines and research practice. *Behavior Research Methods*, 57,
+301. <https://doi.org/10.3758/s13428-025-02812-1>
+
+Spurk, D., Hirschi, A., Wang, M., Valero, D., & Kauffeld, S. (2020). Latent
+profile analysis: A review and "how to" guide of its application within
+vocational behavior research. *Journal of Vocational Behavior*, 120, 103445.
+<https://doi.org/10.1016/j.jvb.2020.103445>
+
+Tein, J.-Y., Coxe, S., & Cham, H. (2013). Statistical power to detect the
+correct number of classes in latent profile analysis. *Structural Equation
+Modeling*, 20(4), 640--657. <https://doi.org/10.1080/10705511.2013.824781>
+
+Vermunt, J. K. (2024). The Vuong-Lo-Mendell-Rubin test for latent class and
+latent profile analysis: A note on the different implementations in Mplus
+and LatentGOLD. *Methodology*, 20(1), 72--83.
+<https://doi.org/10.5964/meth.12467>
+
+Wagenmakers, E.-J., & Farrell, S. (2004). AIC model selection using Akaike
+weights. *Psychonomic Bulletin & Review*, 11, 192--196.
+
+Weller, B. E., Bowen, N. K., & Faubert, S. J. (2020). Latent class analysis:
+A guide to best practice. *Journal of Black Psychology*, 46(4), 287--311.
+<https://doi.org/10.1177/0095798420930932>
+
+Zappia, L., & Oshlack, A. (2018). Clustering trees: A visualization for
+evaluating clusterings at multiple resolutions. *GigaScience*, 7(7), giy083.
 
 ```{r restore, include = FALSE}
 options(old_options)

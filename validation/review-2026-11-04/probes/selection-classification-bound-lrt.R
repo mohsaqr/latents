@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(5)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(5)
 n <- 300; kk <- rbinom(n,1,.5)+1
 dp <- data.frame(a = ifelse(kk==1, "x", ifelse(runif(n)<.5,"x","y")), b = ifelse(kk==1,"u", ifelse(runif(n)<.3,"u","v")),
                  c = ifelse(kk==1, ifelse(runif(n)<.8,"r","s"), ifelse(runif(n)<.2,"r","s")), d = ifelse(kk==1, ifelse(runif(n)<.9,"p","q"), ifelse(runif(n)<.3,"p","q")),

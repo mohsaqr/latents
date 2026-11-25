@@ -1,6 +1,12 @@
 ---
 title: "Multilevel latent profile analysis"
-author: "Written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me)"
+author:
+  - name: Mohammed Saqr
+    url: https://saqr.me
+    affiliation: University of Eastern Finland
+  - name: Sonsoles López-Pernas
+    url: https://sonsoles.me
+    affiliation: University of Eastern Finland
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Multilevel latent profile analysis}
@@ -14,206 +20,443 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
 old_options <- options(digits = 3, width = 100)
 ```
 
-Multilevel latent profile analysis captures heterogeneity in continuous
-responses by modelling variation within and across groups. Observation-level
-profiles describe patterns across indicators, while latent group classes
-capture differences in the prevalence of these profiles across groups.
+Latent profile analysis (LPA) is a person-centred statistical approach used to identify unobserved subpopulations within a heterogeneous population. It assumes that the observed data arise from a finite mixture of latent profiles, each characterized by a distinct pattern of means across a set of continuous indicators. Rather than assuming that all observations originate from a single homogeneous population, LPA allows individuals to differ in their underlying response patterns and estimates the number and characteristics of the latent profiles, their relative proportions, and the posterior probability of each observation belonging to each profile. From a statistical perspective, LPA is a finite Gaussian mixture model in which the observed distribution is represented as a weighted combination of profile-specific multivariate normal distributions (Scrucca et al., 2024).
 
-In this vignette, course enrolments are nested within students. Engagement
-profiles describe variation in activity patterns across enrolments, while
-student classes capture differences in how frequently students exhibit those
-patterns. The profiles share the same indicator means and covariance structure
-across student classes, allowing their prevalence to be compared on a common
-basis.
+Conventional LPA assumes that observations are independent of one another. This assumption may be inappropriate when the data have a hierarchical structure, in which observations are nested within higher-level units. For example, courses completed by the same students or employees belonging to the same departments may exhibit similarities arising from their shared context. Such dependencies may also result in differences in the distribution of latent profiles across groups. Multilevel latent profile analysis extends the conventional model by accounting for heterogeneity at both the individual and group levels (Vermunt, 2003; Asparouhov & Muthén, 2008; Mäkikangas et al., 2018).
+
+In multilevel LPA, individuals are classified into latent profiles based on their patterns across the observed indicators, while groups are classified into latent group classes according to the distribution of individual-level profiles within them. Consequently, the model captures not only differences between individuals but also systematic differences in the composition of groups. For example, two groups may contain individuals belonging to the same set of latent profiles but differ in the relative proportions of individuals assigned to each profile. These differences are represented through group-specific profile probabilities.
+
+Formally, let $C_{ij}$ denote the latent profile membership of observation $i$ in group $j$, and let $G_j$ denote the latent group class of group $j$. The composition of each group class is described by the conditional profile probabilities:
+
+$$
+\pi_{k\mid m}=P(C_{ij}=k\mid G_j=m),
+\qquad
+\sum_k\pi_{k\mid m}=1.
+$$
+
+Here, $\pi_{k\mid m}$ represents the probability that an observation belongs to individual-level profile $k$, conditional on its group belonging to group class $m$. These probabilities therefore characterize the distribution of individual-level profiles within each group class. Groups assigned to different group classes may consequently differ in their profile composition, even when the underlying individual-level profiles are identical.
+
+An important feature of this specification is that the profile-specific means and variances are assumed to remain invariant across group classes. In other words, the individual-level profiles retain the same measurement characteristics regardless of the group class in which they occur. Differences between group classes are therefore expressed through the relative prevalence of individual-level profiles rather than through changes in the profiles' underlying definitions. This constraint provides a common measurement structure for comparing group classes and facilitates the interpretation of differences in their profile compositions.
+
+Houle et al. (2026) provide an overview of multilevel latent profile analysis and its extensions, including alternative specifications that allow additional sources of heterogeneity at the individual and group levels. In the `latents` package, the function `multilpa()` estimates the multilevel latent profile model using maximum likelihood estimation and the expectation-maximization (EM) algorithm (Dempster et al., 1977). The algorithm alternates between estimating posterior probabilities of latent class membership and updating the model parameters until convergence is reached.
+
+The analysis below proceeds in the usual order: the extent of nesting, a
+first model, a check of its assumptions, the numbers of profiles and group
+classes, interpretation and evaluation of the chosen model, and the relation
+of its classes to another variable.
 
 ## Data
 
-`course_engagement` has one row per course enrolment: 1,422 enrolments from
-106 students. `multilpa()` requires a group identifier and indicator variables.
+`course_engagement` contains 1,422 course enrolments of 106 students.
 
-- **Group:** `student` identifies which enrolments belong to the same
-  student.
+- **Group:** `student`.
 - **Indicators:** five activity measures (`browse`, `lectures`, `forum_read`,
-  `forum_post`, `attendance`), each standardized within course, so 0 is the
-  course average.
+  `forum_post`, `attendance`), standardized within course (0 is the course
+  mean, 1 one standard deviation above it).
+- **External variable:** `previous_grade`, the standardized grade of the
+  preceding course.
 
-The data are simulated, and two further variables record the structure that
-generated them: `engagement` for each enrolment and `student_type` for each
-student.
+Two further columns hold the generating structure, `engagement` for each
+enrolment and `student_type` for each student; they serve only to check
+recovery.
 
 ```{r setup}
 library(latents)
+vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 ```
 
 ## Clustering within groups
 
-The `descriptives()` function summarizes the indicators specified in `vars`
-and their clustering within the groups specified by `id`. The intraclass
-correlation (`icc`) estimates the proportion of an indicator's variance
-attributable to between-group differences.
+`descriptives()` summarizes the indicators and their intraclass correlation
+(`icc`), the share of variance between groups, estimated from the one-way
+analysis of variance (Shrout & Fleiss, 1979).
 
 ```{r descriptives}
-descriptives(course_engagement,
-             vars = c("browse", "lectures", "forum_read", "forum_post",
-                      "attendance"),
-             id = "student")
+descriptives(course_engagement, vars = vars, id = "student")
 ```
 
-## Fit
+Between 9% (`lectures`) and 22% (`forum_read`, `attendance`) of the variance
+lies between students. Enrolments of one student are therefore not
+independent, and the students are the independent units of the analysis.
+Most of the variance remains within students, where the profiles operate.
 
-The arguments `n_profiles` and `n_group_classes` specify the numbers of
-observation-level profiles and group classes. Estimation uses multiple
-expectation-maximization (EM) starts, controlled by `n_starts`; `seed`
-controls reproducibility. The `cores` argument permits parallel estimation
-of starts. The printed model summary includes the estimated profile means.
+## A first model
+
+`n_profiles` and `n_group_classes` set the numbers of profiles and group
+classes; `n_starts` sets the number of EM starts, `seed` makes them
+reproducible and `cores` runs them in parallel. The default covariance
+structure is `"VVI"` (Celeux & Govaert, 1995): profile-specific variances and
+no covariances within profiles, so the indicators are independent given the
+profile.
 
 ```{r fit}
-fit <- multilpa(course_engagement,
-                vars = c("browse", "lectures", "forum_read", "forum_post",
-                         "attendance"),
-                id = "student", n_profiles = 2, n_group_classes = 2,
-                n_starts = 10, seed = 1)
+fit <- multilpa(course_engagement, vars = vars, id = "student",
+                n_profiles = 2, n_group_classes = 2, n_starts = 10, seed = 1)
 fit
 ```
 
-The starting-value summary reports the log likelihood reached by each start.
-Replication of the selected likelihood provides evidence of numerical
-stability, although it does not establish that the global maximum has been
-found.
+Profile 1 (58.7% of the enrolments) lies 0.43 to 0.65 standard deviations
+above the course mean on all indicators and profile 2 (41.3%) 0.61 to 0.92
+below it: engaged and disengaged enrolments. The BIC uses the 106 students as
+its sample size. All ten starts reached the same log likelihood.
 
-```{r starts}
-get_results(fit, "starts")
+## Checking local independence
+
+Under a diagonal structure, any association between indicators within a
+profile can only be represented by additional profiles, which then describe
+the association rather than types of observations. The `"residuals"` table
+compares each within-profile association with the value the model implies,
+with p-values adjusted by the Benjamini-Hochberg procedure (Benjamini &
+Hochberg, 1995).
+
+```{r residuals}
+head(get_results(fit, "residuals"), 6)
 ```
 
-## Profiles
+The six largest residuals all involve `attendance`, in both profiles: its
+within-profile correlations with the other measures are 0.17 to 0.23, with
+adjusted p-values below 0.00001. The data documentation confirms the source:
+attendance is generated from the four click measures (`?course_engagement`).
+`covariance_model = "full"` estimates all within-profile covariances
+(`"VVV"`); `local_dependence` frees selected pairs.
 
-By default, `get_results()` returns profile means and variances, with one
-row per profile and continuous indicator.
+```{r full}
+full <- multilpa(course_engagement, vars = vars, id = "student",
+                 n_profiles = 2, n_group_classes = 2,
+                 covariance_model = "full", n_starts = 10, seed = 1)
+compare_models(diagonal = fit, full = full)
+```
+
+The full structure adds 20 parameters and lowers the BIC by 160 (BIC weight
+1.000). The profiles and group classes retain their sizes and meaning; the
+numbers of classes are chosen under this structure.
+
+## Choosing the numbers of profiles and group classes
+
+`enumerate_classes()` fits every combination of the requested numbers of
+profiles and group classes and returns information criteria, classification
+statistics and estimation checks. For the group classes, Lukočienė et al.
+(2010) recommend the BIC (Schwarz, 1978) with the number of groups as sample
+size (`bic_groups`). Group classes require at least two profiles, so
+candidates with one profile and several group classes fail by design.
+
+```{r enumerate}
+grid <- enumerate_classes(course_engagement, vars = vars, id = "student",
+                          covariance_model = "full", n_profiles = 1:3,
+                          n_group_classes = 1:4, n_starts = 5, seed = 1)
+grid
+```
+
+`get_deltas()` gives the improvement of each criterion when a profile or a
+group class is added.
+
+```{r deltas}
+subset(get_deltas(grid), criterion == "bic_groups")
+```
+
+Two profiles are supported unambiguously: the second profile lowers the BIC by
+343, and a third raises it at every number of group classes, by 55 to 67.
+For the group classes, the second lowers the BIC by 344, the third by 26 and
+the fourth by 3, while group-level separation declines (relative entropy
+0.942, 0.816 and 0.797; lowest group average posterior 0.971, 0.903 and
+0.830). The AWE (Banfield & Raftery, 1993) and the ICL computed on the
+enrolments (Biernacki et al., 2000), which penalize uncertain classification,
+select two group classes (`get_best(grid)`). The model with two profiles and
+two group classes is retained. The small gains of further group classes have
+an identifiable source: engagement changes along each student's course
+sequence, a dependence that multilevel LPA does not model and that additional
+group classes partly absorb; `lta()` models the sequence directly (see the
+[latent transition analysis](https://pak.dynasite.org/latents/articles/lta.html)
+article).
+
+Two candidates with three profiles (two and four group classes) raise
+warnings: one profile has too little membership for its 20 free means and
+covariances, and both reached their best likelihood from a single start.
+Every criterion rejects three profiles, so the warnings do not affect the
+choice.
+
+## The chosen model
+
+```{r chosen}
+full
+```
+
+Profile 1 (59.0%) lies 0.42 to 0.63 standard deviations above the course
+mean and profile 2 (41.0%) 0.61 to 0.91 below it; attendance and forum reading
+separate the profiles most, lecture viewing least. `get_results()` returns
+the means and variances, `get_results(full, "covariances")` the covariances.
 
 ```{r profiles}
-get_results(fit)
+get_results(full)
 ```
 
-The profile plot displays the estimated indicator means for each profile.
-The labels also report the profiles' estimated shares of observations.
+All variances are below 1, the variance of the standardized indicators:
+enrolments within a profile are more homogeneous than the sample. The profile
+plot shows the means, with the profile shares in the labels.
 
 ```{r profile-plot}
-plot_profiles(fit)
+plot_profiles(full)
 ```
 
-## Group classes
+### Group classes
 
-The `"profile_probabilities"` table reports the conditional probability of
-each observation-level profile within each group class (`probability`).
-The column `group_class_probability` reports the estimated proportion of
-groups in that class.
+The `"profile_probabilities"` table gives $\pi_{k \mid m}$ (`probability`) and
+the proportion of groups in each class (`group_class_probability`).
 
 ```{r profile-probabilities}
-get_results(fit, "profile_probabilities")
+get_results(full, "profile_probabilities")
 ```
 
-The prevalence plot compares these conditional profile probabilities, with
-one line per group class.
+Group class 2 (67.5% of the students) has 79.3% engaged enrolments and group
+class 1 (32.5%) 16.4%: mostly engaged and mostly disengaged students. Neither
+class is pure: a mostly engaged student is disengaged in about one course in
+five, a mostly disengaged student engaged in about one in six. Students are
+mixtures of profiles in class-specific proportions, consistent with the
+longitudinal studies cited above. The prevalence plot shows these
+probabilities.
 
 ```{r probability-plot}
-plot_prevalence(fit)
+plot_prevalence(full)
 ```
 
-## Class sizes
+## Class sizes and classification
 
-The `"counts"` table summarizes class sizes. The column `effective_count`
-sums posterior membership probabilities and can therefore be noninteger.
+`effective_count` sums the posterior probabilities and is therefore not
+necessarily an integer.
 
 ```{r counts}
-get_results(fit, "counts")
+get_results(full, "counts")
 ```
 
-## Classification
-
-The `"entropy"` table summarizes classification uncertainty at both levels.
-For a model with more than one class, relative entropy is 1 when posterior
-membership is certain and 0 when every case has equal posterior probability
-of membership in every class. It describes separation under the fitted model,
-not overall model fit.
+The profiles hold 838.8 and 583.2 enrolments, the group classes 34.5 and 71.5
+students; no class is small enough to threaten estimation. Relative entropy
+measures the separation of the classes on a scale from 0 (no separation) to 1
+(certain assignment) (Ramaswamy et al., 1993); it is not a measure of fit.
 
 ```{r entropy}
-get_results(fit, "entropy")
+get_results(full, "entropy")
 ```
 
-The `"assignments"` table appends classification results to `data` in its
-original row order. The columns `profile` and `group_class` contain the most
-probable classes. The column `uncertainty` is one minus the posterior
-probability of the assigned profile, and the `posterior_profile_` columns
-contain membership probabilities for each profile. The number of posterior
-columns depends on `n_profiles`. Analyses based only on the assigned labels
-omit this classification uncertainty.
+Relative entropy is 0.906 for the enrolments and 0.942 for the students. The
+average posterior probability of the assigned class gives the same
+information by class.
+
+```{r average-posteriors}
+get_results(full, "average_posteriors")
+```
+
+The average posteriors are 0.978 and 0.973 for the profiles and 0.971 and
+0.993 for the group classes. Assignments are therefore accurate at both
+levels, although analyses of assigned classes still ignore the remaining
+uncertainty; the three-step methods below account for it. The
+`"assignments"` table adds the most probable `profile` and `group_class`, the
+`uncertainty` of the profile assignment and the posterior probabilities to the
+data.
 
 ```{r assignments}
-get_results(fit, "assignments", data = course_engagement) |> head()
+get_results(full, "assignments", data = course_engagement) |> head()
 ```
+
+The first student's first two enrolments are assigned to the engaged
+profile, the second with an uncertainty of 0.148, and the next four to the
+disengaged profile with uncertainties below 0.001; the student belongs to the
+mostly disengaged group class.
 
 ## Recovery of the known structure
 
-For these simulated data, the `truth` argument permits comparison with the
-generating labels: `engagement` for profiles and `student_type` for group
-classes. Class numbers are arbitrary, so correspondence is assessed from the
-cross-tabulation rather than by matching numeric labels directly.
+The `truth` argument cross-tabulates the assignments with the generating
+labels; class numbers are arbitrary, so correspondence is read from the table.
 
 ```{r recovery}
-get_results(fit, "assignments", data = course_engagement,
+get_results(full, "assignments", data = course_engagement,
             truth = c("engagement", "student_type"))
 ```
 
-## Reference
+Profile 1 contains 824 of the 837 engaged enrolments and profile 2 567 of the
+585 disengaged ones (98% and 97%). Group class 2 contains 61 of the 62
+committed students but also 10 of the 44 wavering ones. Each student's class
+rests on about 13 enrolments, much less information than the five indicators
+provide about one enrolment, so the upper level is classified less
+accurately.
+
+## Uncertainty of the estimates
+
+`parameter_inference()` returns each estimate with its standard error and 95%
+Wald interval, from the observed information by default; `vcov_type =
+"robust"` gives sandwich standard errors with the students as clusters. The
+first ten rows are the profile means.
+
+```{r inference}
+inference <- parameter_inference(full)
+head(inference, 10)
+```
+
+The standard errors of the means are 0.024 to 0.033, and the intervals of the
+two profiles are far apart. The last six rows contain the group-level
+probabilities.
+
+```{r inference-groups}
+tail(inference, 6)
+```
+
+The group level is estimated less precisely. The share of mostly disengaged
+students is 0.325 (95% interval 0.240 to 0.424); the probability of an
+engaged enrolment is 0.164 (0.125 to 0.213) in that class and 0.793 (0.760 to
+0.823) in the other.
+
+## Stability across seeds
+
+`sensitivity()` refits the model from several seeds and compares the maxima
+and classifications.
+
+```{r sensitivity}
+sensitivity(full, seeds = 1:5)
+```
+
+All five refits reach the log likelihood of -8313 with identical
+classifications (`agreement` of 1).
+
+## Relating the classes to other variables
+
+Entering an external variable in the model changes the classes it is meant to
+explain. Three-step methods hold the classes fixed and correct for
+classification error (Bolck et al., 2004; Vermunt, 2010). `r3step()`
+regresses profile membership on predictors, with the last profile, here the
+disengaged one, as reference.
+
+```{r r3step}
+r3step(full, data = course_engagement, covariates = "previous_grade")
+```
+
+A previous grade one standard deviation higher increases the log odds of an
+engaged enrolment by 0.615 (95% interval 0.495 to 0.735), an odds ratio of
+about 1.85. `three_step()` compares the mean of a variable across profiles.
+
+```{r three-step}
+three_step(full, data = course_engagement, outcome = "previous_grade",
+           contrast = "pairs")
+```
+
+Previous grades are 0.57 standard deviations lower before disengaged than
+before engaged enrolments (95% interval 0.47 to 0.67). Both results are
+associations; temporal order alone does not establish an effect of grades on
+engagement. One-step alternatives enter predictors in the model
+(`profile_covariates` for observations, `group_covariates` for groups);
+`fit_staged()` holds the profiles fixed while the group classes are
+estimated. The [covariates](https://pak.dynasite.org/latents/articles/covariates.html)
+and [case study](https://pak.dynasite.org/latents/articles/case-engagement-covariates.html)
+articles compare these approaches.
+
+## Sampling weights
+
+`weights` names a column of sampling weights, constant within the
+independent unit (here `student`). Estimation maximizes a weighted
+pseudo-log-likelihood, with weights normalized to sum to the number of
+students, and reports Kish's (1965) effective sample size. The example
+doubles the weight of the simulated wavering students, as for a design that
+sampled them at half the rate, and uses the diagonal structure of the first
+model.
+
+```{r weights}
+weighted_data <- transform(course_engagement,
+                           survey_weight = ifelse(student_type == "wavering", 2, 1))
+weighted_fit <- multilpa(weighted_data, vars = vars, id = "student",
+                         n_profiles = 2, n_group_classes = 2,
+                         weights = "survey_weight", n_starts = 10, seed = 1)
+weighted_fit
+```
+
+Weighting changes the prevalence of the classes, not their definition: the
+mostly disengaged group class grows from 32.5% to 45.2% of the students and
+the engaged profile shrinks from 58.7% to 49.5% of the enrolments, while the
+profile means barely change (browsing in the engaged profile 0.525 against
+0.540). The effective sample size is 94.5 of 106 students.
+
+For weighted fits, `parameter_inference()` uses sandwich standard errors by
+default; `vcov_type = "observed"` is not available, because inverse-information
+standard errors do not represent the sampling variance under unequal weights.
+
+```{r weights-inference}
+head(parameter_inference(weighted_fit), 4)
+```
+
+`weights` is also available in `lta()`, `mixture_regression()` and the other
+model families of `multilpa()`. The parametric bootstrap likelihood ratio test
+does not accept weighted fits, because its simulations do not reproduce a
+sampling design.
+
+## Other options of multilpa()
+
+- **Covariance structures.** `model` takes the fourteen mclust codes (`"EII"`
+  to `"VVV"`); `volume`, `shape` and `orientation` set the components
+  separately; `local_dependence` frees selected pairs.
+- **Missing values.** `missing = "fiml"` uses all observed indicators of
+  incomplete rows.
+- **Indicator types.** `categorical`, `ordinal` and `count` combine
+  categorical, ordinal and count indicators with continuous ones (see the
+  [latent class analysis](https://pak.dynasite.org/latents/articles/lca.html)
+  vignette).
+- **Model families.** `family` fits group-class models from raw ratings
+  (`"additive"`, `"restricted_cross_level"`, `"full_cross_level"`; see the
+  [group-class and cross-level](https://pak.dynasite.org/latents/articles/additive.html)
+  article).
+- **Order of observations.** `time` orders each group's observations for the
+  sequence tables and `plot_sequences()`; `lta()` models transitions between
+  profiles.
+- **Centring.** `centering = "person"` subtracts each group's mean, so that
+  profiles describe deviations from a group's usual level and group classes
+  describe patterns of change; `"grand"` subtracts the sample mean.
+
+## Other tables, plots and functions
 
 The calls below list the other tables, functions and views available for a
 fitted model. Each comment states what the call returns.
 
 ```{r reference, eval = FALSE}
-# Tables: get_results(fit, what)
-get_results(fit, "all")                          # every table, as a named list
-get_results(fit, "covariances")                  # within-profile residual covariances
-get_results(fit, "posteriors")                   # one row per observation and profile
-get_results(fit, "posteriors", format = "wide")  # one row per observation
-get_results(fit, "group_posteriors")             # one row per group and group class
-get_results(fit, "classification")               # class sizes and average posteriors
-get_results(fit, "average_posteriors")           # mean posterior by assigned class
-get_results(fit, "classification_errors")        # P(assigned class | true class)
-get_results(fit, "bch_weights")                  # weights for three-step analysis
-get_results(fit, "residuals")                    # residual correlations within profiles
-get_results(fit, "information_criteria")         # AIC, BIC and the other criteria
-get_results(fit, "model")                        # one row describing the fit
-get_results(fit, "data")                         # the variables used in the fit
-as.data.frame(fit)                               # the profile table
+# Tables: get_results(full, what)
+get_results(full, "all")                          # every table, as a named list
+get_results(full, "covariances")                  # within-profile residual covariances
+get_results(full, "posteriors")                   # one row per observation and profile
+get_results(full, "posteriors", format = "wide")  # one row per observation
+get_results(full, "group_posteriors")             # one row per group and group class
+get_results(full, "classification")               # class sizes and average posteriors
+get_results(full, "average_posteriors")           # mean posterior by assigned class
+get_results(full, "classification_errors")        # P(assigned class | true class)
+get_results(full, "bch_weights")                  # weights for three-step analysis
+get_results(full, "residuals")                    # residual correlations within profiles
+get_results(full, "information_criteria")         # AIC, BIC and the other criteria
+get_results(full, "model")                        # one row describing the fit
+get_results(full, "data")                         # the variables used in the fit
+as.data.frame(full)                               # the profile table
 
 # Summaries and diagnostics
-descriptives(fit)                    # indicator summaries with the ICC
-descriptives(fit, by = "profile")    # the same, by assigned profile
-diagnostics(fit)                     # every classification diagnostic
-report(fit)                          # summary, diagnostics and plots together
+descriptives(full)                    # indicator summaries with the ICC
+descriptives(full, by = "profile")    # the same, by assigned profile
+diagnostics(full)                     # every classification diagnostic
+report(full)                          # summary, diagnostics and plots together
 
 # Inference and likelihood
-parameter_inference(fit)             # standard errors and Wald intervals
-confint(fit)                         # confidence intervals
-vcov(fit)                            # covariance matrix of the estimates
-logLik(fit)                          # log likelihood
-AIC(fit)                             # Akaike information criterion
-BIC(fit)                             # BIC with the number of groups
-nobs(fit)                            # number of groups
+parameter_inference(full)             # standard errors and Wald intervals
+confint(full)                         # confidence intervals
+vcov(full)                            # covariance matrix of the estimates
+logLik(full)                          # log likelihood
+AIC(full)                             # Akaike information criterion
+BIC(full)                             # BIC with the number of groups
+nobs(full)                            # number of groups
 
 # Plots: the plot_ functions, each with what = and "all"
 plot_views()                                   # every view and what it shows
-plot_profiles(fit, what = "bars")              # profile means with 95% intervals
-plot_profiles(fit, what = "heatmap")           # means in standard deviations
-plot_profiles(fit, what = "all")               # every profile view
-plot_diagnostics(fit, what = "sizes")          # effective size of each profile
-plot_diagnostics(fit, what = "entropy")        # per-case classification uncertainty
-plot_diagnostics(fit, what = "posteriors")     # posterior of each assigned profile
-plot_diagnostics(fit, what = "avepp")          # average posteriors, assigned by posterior class
-plot(fit, what = "all")                        # every view this fit supports
+plot_profiles(full, what = "bars")              # profile means with 95% intervals
+plot_profiles(full, what = "heatmap")           # means in standard deviations
+plot_profiles(full, what = "all")               # every profile view
+plot_diagnostics(full, what = "sizes")          # effective size of each profile
+plot_diagnostics(full, what = "entropy")        # per-case classification uncertainty
+plot_diagnostics(full, what = "posteriors")     # posterior of each assigned profile
+plot_diagnostics(full, what = "avepp")          # average posteriors, assigned by posterior class
+plot(full, what = "all")                        # every view this fit supports
 
 # Other functions
-sensitivity(fit, seeds = 1:10)       # refits under several seeds
+sensitivity(full, seeds = 1:10)       # refits under several seeds
 ```
 
 The [class enumeration](https://pak.dynasite.org/latents/articles/enumeration.html)
@@ -224,61 +467,111 @@ article covers `lta()`, `get_tna()` and `get_group_tna()`. The evaluation articl
 `bootstrap_lrt()`, and the covariates article covers `three_step()`,
 `r3step()` and `fit_staged()`.
 
-## Sampling weights
-
-Sampling weights can represent unequal selection probabilities. The example
-below assigns twice the weight to the simulated `"wavering"` student class,
-as would be appropriate if its sampling probability were half that of the
-other class. The weight column is supplied through `weights` and must be
-constant within the independent sampling unit, here `student`. Estimation
-maximizes a weighted pseudo-log-likelihood after normalizing weights to sum
-to the number of students. The output also reports Kish's effective sample
-size.
-
-```{r weights}
-weighted_data <- transform(course_engagement,
-                           survey_weight = ifelse(student_type == "wavering", 2, 1))
-weighted_fit <- multilpa(weighted_data,
-                         vars = c("browse", "lectures", "forum_read",
-                                  "forum_post", "attendance"),
-                         id = "student", n_profiles = 2, n_group_classes = 2,
-                         weights = "survey_weight", n_starts = 10, seed = 1)
-weighted_fit
-```
-
-For weighted fits, `parameter_inference()` uses sandwich standard errors by
-default. The package does not support `vcov_type = "observed"` for these
-fits because inverse-information standard errors do not generally represent
-the sampling variance under unequal weighting.
-
-```{r weights-inference}
-head(parameter_inference(weighted_fit), 4)
-```
-
-The `weights` argument is also available in `lta()`, `mixture_regression()`
-and the model families fitted through `multilpa()`. The parametric bootstrap
-likelihood ratio test does not support weighted fits; its simulations do not
-reproduce a sampling design.
-
 ## All tables
 
-The model summary collects the result tables. The `rows` argument limits
-the number of rows printed from each table.
+`summary()` collects the result tables; `rows` limits the rows printed per
+table.
 
 ```{r summary}
-print(summary(fit), rows = 3)
+print(summary(full), rows = 3)
 ```
 
 ## Assumptions
 
-- Profiles have the same means and variances in every group class.
-- Observations are independent given their group's class, and groups are
-  independent of one another.
-- Indicators are independent within a profile (the default diagonal
-  covariance; `covariance_model = "full"` relaxes it).
-- The numbers of profiles and group classes are chosen by the analyst; see
+- Profiles have the same means and covariances in every group class.
+- Observations are independent given the class of their group, and groups
+  are independent. Observations ordered in time, such as a student's course
+  sequence, can violate the first condition; `lta()` models the order.
+- Under the default diagonal structure, indicators are independent within a
+  profile; `covariance_model = "full"`, `model` and `local_dependence` relax
+  this, and the `"residuals"` table checks it.
+- The numbers of profiles and group classes are chosen from the criteria (see
   the [class enumeration](https://pak.dynasite.org/latents/articles/enumeration.html)
-  article for comparing them.
+  and [model selection](https://pak.dynasite.org/latents/articles/model-selection.html)
+  articles).
+
+## Reporting
+
+A report of a multilevel LPA states:
+
+- the indicators, their scaling, the grouping variable and the intraclass
+  correlations;
+- the covariance structure and the evidence for it;
+- the candidates compared, the criteria used and the reasons for the chosen
+  numbers of profiles and group classes;
+- the number of starts, the replication of the best log likelihood and the
+  seeds;
+- the profile means with standard errors or intervals, the profile
+  probabilities of each group class and the class sizes at both levels;
+- relative entropy and average posterior probabilities at both levels;
+- for external variables, the method (three-step, BCH or one-step) and its
+  estimates with intervals.
+
+## References
+
+Asparouhov, T., & Muthén, B. (2008). Multilevel mixture models. In G. R.
+Hancock & K. M. Samuelsen (Eds.), *Advances in latent variable mixture
+models* (pp. 27--51). Information Age.
+
+Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
+non-Gaussian clustering. *Biometrics*, 49, 803--821.
+
+Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery rate:
+A practical and powerful approach to multiple testing. *Journal of the Royal
+Statistical Society: Series B*, 57(1), 289--300.
+
+Biernacki, C., Celeux, G., & Govaert, G. (2000). Assessing a mixture model
+for clustering with the integrated completed likelihood. *IEEE Transactions
+on Pattern Analysis and Machine Intelligence*, 22, 719--725.
+
+Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent structure
+models with categorical variables: One-step versus three-step estimators.
+*Political Analysis*, 12(1), 3--27.
+
+Celeux, G., & Govaert, G. (1995). Gaussian parsimonious clustering models.
+*Pattern Recognition*, 28(5), 781--793.
+
+Dempster, A. P., Laird, N. M., & Rubin, D. B. (1977). Maximum likelihood
+from incomplete data via the EM algorithm. *Journal of the Royal Statistical
+Society: Series B*, 39(1), 1--38.
+
+Houle, S. A., Morin, A. J. S., & Harvey, J.-F. (2026). Multilevel latent
+profile analyses: A comprehensive guide. *Organizational Research Methods*.
+<https://doi.org/10.1177/10944281261469432>
+
+Kish, L. (1965). *Survey sampling*. Wiley.
+
+Lukočienė, O., Varriale, R., & Vermunt, J. K. (2010). The simultaneous
+decision(s) about the number of lower- and higher-level classes in
+multilevel latent class analysis. *Sociological Methodology*, 40, 247--283.
+
+Mäkikangas, A., Tolvanen, A., Aunola, K., Feldt, T., Mauno, S., & Kinnunen,
+U. (2018). Multilevel latent profile analysis with covariates: Identifying
+job characteristics profiles in hierarchical data as an example.
+*Organizational Research Methods*, 21(4), 931--954.
+<https://doi.org/10.1177/1094428118760690>
+
+Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., & Robinson, W. T. (1993).
+An empirical pooling approach for estimating marketing mix elasticities with
+PIMS data. *Marketing Science*, 12, 103--124.
+
+Schwarz, G. (1978). Estimating the dimension of a model. *The Annals of
+Statistics*, 6, 461--464.
+
+Scrucca, L., Saqr, M., López-Pernas, S., & Murphy, K. (2024). An
+introduction and R tutorial to model-based clustering in education via
+latent profile analysis. In M. Saqr & S. López-Pernas (Eds.), *Learning
+analytics methods and tutorials: A practical guide using R* (pp. 285--317).
+Springer. <https://doi.org/10.1007/978-3-031-54464-4_9>
+
+Shrout, P. E., & Fleiss, J. L. (1979). Intraclass correlations: Uses in
+assessing rater reliability. *Psychological Bulletin*, 86(2), 420--428.
+
+Vermunt, J. K. (2003). Multilevel latent class models. *Sociological
+Methodology*, 33, 213--239.
+
+Vermunt, J. K. (2010). Latent class modeling with covariates: Two improved
+three-step approaches. *Political Analysis*, 18, 450--469.
 
 ```{r restore-options, include = FALSE}
 options(old_options)

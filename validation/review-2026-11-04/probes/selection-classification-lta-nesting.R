@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(2)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(2)
 nid <- 80; nt <- 4
 state <- matrix(0L, nid, nt); state[,1] <- 1 + rbinom(nid, 1, .5)
 for (t in 2:nt) state[,t] <- ifelse(runif(nid) < .8, state[,t-1], 3 - state[,t-1])

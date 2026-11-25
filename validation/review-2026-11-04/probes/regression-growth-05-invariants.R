@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(5)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(5)
 # Duplicates vs integer weights, row order, unit rescale, NA-omit alignment, unused factor levels.
 N <- 60
 d <- do.call(rbind, lapply(1:N, function(i) { k <- rbinom(1, 1, .5); t <- 0:3; b <- rnorm(1, 0, .6); data.frame(id = i, t = t, y = c(0, 2)[k + 1] + c(.8, -.4)[k + 1] * t + b + rnorm(4, sd = .5), v = rep(sample(c(1, 2), 1), 4), cnt = rpois(4, exp(c(.2, 1.4)[k + 1] + .2 * t))) }))

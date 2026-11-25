@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(8)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(8)
 ng <- 40; nper <- 5; g <- sample(1:2, ng, TRUE); id <- rep(seq_len(ng), each=nper); k <- 1+rbinom(length(id),1,ifelse(g[id]==1,.8,.2))
 d <- data.frame(id=id, y1=rnorm(length(id),c(-1.5,1.5)[k]))
 d$a <- ifelse(runif(nrow(d)) < c(.2,.8)[k], "x", "y"); d$b <- ifelse(runif(nrow(d)) < c(.7,.3)[k], "u", "v")

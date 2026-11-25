@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 vars <- c("y1", "y2")
 # No group structure at all: every member draws her profile iid, whatever the group.
 draw <- function(seed, J = 100, n = 6) { set.seed(seed)

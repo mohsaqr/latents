@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(21)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(21)
 ns <- asNamespace("latents")
 # (1) general and homogeneous LTA residuals: table and the check's reason
 nid <- 100; nt <- 3; st <- matrix(0L,nid,nt); st[,1] <- 1+rbinom(nid,1,.5); for (t in 2:nt) st[,t] <- ifelse(runif(nid)<.85,st[,t-1],3-st[,t-1])

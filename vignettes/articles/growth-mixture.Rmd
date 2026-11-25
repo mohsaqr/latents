@@ -1,6 +1,12 @@
 ---
 title: "Growth mixture models: classes of trajectories"
-author: "Written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me)"
+author:
+  - name: Mohammed Saqr
+    url: https://saqr.me
+    affiliation: University of Eastern Finland
+  - name: Sonsoles López-Pernas
+    url: https://sonsoles.me
+    affiliation: University of Eastern Finland
 output:
   rmarkdown::html_vignette:
     toc: true
@@ -18,31 +24,49 @@ old_options <- options(width = 90)
 has_ggplot <- requireNamespace("ggplot2", quietly = TRUE)
 ```
 
-When the same people are measured repeatedly, a single average trajectory
-often hides several kinds of change: some improve, some hold steady, some
-decline. A **growth model with classes** finds those kinds from the data. This
-vignette is about the growth mixture model, which lets people vary around
-their class trajectory, and its multilevel form for people nested in
-clusters; it compares it with latent class growth analysis, the model
-without that variation, which has its own article,
-[Latent class growth analysis](https://pak.dynasite.org/latents/articles/trajectory-classes.html)
-(including pass/fail, count and ordered outcomes).
+When individuals are measured repeatedly over time, a single average growth
+trajectory may conceal substantial heterogeneity in their developmental
+patterns. Individuals within the same population may follow markedly
+different courses of change, with some improving, others remaining
+relatively stable, and others experiencing a decline. Growth mixture
+modelling addresses this heterogeneity by identifying latent subgroups of
+individuals who follow distinct developmental trajectories. Consistent with
+the person-centred perspective, these latent classes represent subgroups
+characterized by different patterns of change over time (Scrucca et al.,
+2024; Saqr et al., 2024).
+
+This article examines growth mixture modelling and its multilevel extension,
+which accommodates the hierarchical structure of longitudinal data in which
+individuals are nested within higher-level clusters. A central distinction is
+made between growth mixture modelling and latent class growth analysis.
+Whereas latent class growth analysis assumes that individuals within each
+class follow the same underlying trajectory, growth mixture modelling allows
+individual growth parameters to vary within classes. This additional
+flexibility makes it possible to account for individual differences in
+developmental patterns while simultaneously identifying distinct subgroups
+within the population.
+
+Latent class growth analysis, including trajectories of binary, count and
+ordered outcomes, is presented in its own article,
+[Latent class growth analysis](https://pak.dynasite.org/latents/articles/trajectory-classes.html).
 
 ## Two models
 
-- **Latent class growth analysis** (Nagin 2005) gives every class its own
-  trajectory. Everyone in a class follows that trajectory exactly; anything
-  else is noise.
-- **The growth mixture model** (Verbeke and Lesaffre 1996; Muthén and Shedden
-  1999) also lets people vary *around* their class trajectory: each has their
-  own start and rate of change (random intercepts and slopes).
+- **Latent class growth analysis** (Nagin, 2005) gives every class its own
+  trajectory. Every individual in a class follows that trajectory exactly;
+  deviations from it are attributed to measurement error.
+- **The growth mixture model** (Verbeke & Lesaffre, 1996; Muthén & Shedden,
+  1999) also allows individuals to vary *around* their class trajectory: each
+  has their own starting level and rate of change (random intercepts and
+  slopes).
 
-The difference matters. When people vary within their kind, the first model
-can only express that variation by adding classes, so it tends to find more
-classes than there are (Bauer and Curran 2003). The second model separates
-*kinds* of change from *individual* variation.
+The difference is consequential. When individuals vary within their kind,
+the first model can represent that variation only by adding classes, and it
+therefore tends to identify more classes than there are (Bauer & Curran,
+2003). The second model separates *kinds* of change from *individual*
+variation.
 
-Both are one call. Persons are the classified units, so `id` names them and
+Both models are fitted with one call. Persons are the classified units, so `id` names them and
 `class_level = "group"` keeps all of a person's measurements in one class;
 `random` adds the random effects.
 
@@ -66,9 +90,9 @@ library(latents)
 head(growth_scores)
 ```
 
-## How many classes, and which model?
+## The number of classes and the choice of model
 
-Fit both models for a range of classes and compare them in one table.
+Both models are fitted for a range of classes and compared in one table.
 `random_covariance = "equal"` gives every class the same random-effect spread,
 the usual first choice.
 
@@ -90,10 +114,13 @@ comparison <- compare_models(
 comparison
 ```
 
-The growth mixture model with three classes is preferred, with nearly all
-the BIC weight. The trajectory model without random effects keeps improving
-as classes are added: five classes are still better than four, though only
-three kinds of student exist. That is the over-extraction described above.
+The growth mixture model with three classes is preferred, with a BIC weight
+of 1.000 (BIC 10,803.6, against 10,890.1 for two and 10,820.6 for four
+classes). The trajectory model without random effects keeps improving as
+classes are added: five classes are still better than four (BIC 11,424.8
+against 11,640.6), although only three kinds of student exist. This is the
+overextraction described above, and every trajectory model has a far higher
+BIC than any growth mixture model.
 
 ```{r comparison-plot, eval = has_ggplot, fig.height = 4}
 plot(comparison)
@@ -115,7 +142,7 @@ enumerate_regressions(score ~ wave, growth_scores, n_classes = 1:4,
 
 ## The chosen model
 
-Refit it with motivation predicting the class:
+The chosen model is refitted with motivation predicting the class:
 
 ```{r chosen}
 fit <- mixture_regression(score ~ wave, growth_scores, n_classes = 3,
@@ -146,12 +173,15 @@ Because the data were simulated, the classes can be checked against the truth:
 get_results(fit, "recovery", data = growth_scores, truth = "trajectory")
 ```
 
+The improving, declining and stable classes contain 98.2%, 97.0% and 94.3%
+students of the corresponding simulated kind, a much closer recovery than the
+trajectory model without random effects achieves.
+
 ## Distal outcomes
 
-Do the classes differ on something measured once per student? `three_step()`
-compares class means with the bias-corrected three-step method (Vermunt 2010;
-Bakk and Vermunt 2016), which accounts for students being classified with
-error. The trajectory model must be fitted without `membership` for this
+`three_step()` compares the classes on a variable measured once per student,
+using the bias-corrected three-step method (Vermunt, 2010; Bakk & Vermunt,
+2016), which accounts for students being classified with error. The trajectory model must be fitted without `membership` for this
 correction, so motivation is treated here as a distal variable of the
 classes from the model without it:
 
@@ -164,6 +194,9 @@ trajectory_classes <- mixture_regression(score ~ wave, growth_scores,
 three_step(trajectory_classes, data = growth_scores, outcome = "motivation",
            contrast = "pairs")
 ```
+
+All three pairs of classes differ in motivation (Benjamini-Hochberg adjusted
+p-values below .001).
 
 ## Seeing the classes
 
@@ -208,9 +241,9 @@ plot(fit, what = "classification")
 
 ## Students in schools
 
-When the persons are nested in clusters -- students in schools, patients in
-clinics -- the clusters may differ in which trajectories their persons
-follow. The multilevel growth mixture model (Asparouhov and Muthén 2008;
+When the persons are nested in clusters, such as students in schools or
+patients in clinics, the clusters may differ in which trajectories their
+persons follow. The multilevel growth mixture model (Asparouhov and Muthén 2008;
 Vermunt 2003) gives every cluster a group class, and the group class shifts
 how probable each trajectory class is for its persons. `cluster` names the
 clusters and `n_group_classes` their number of classes; `group_membership`
@@ -239,6 +272,11 @@ head(get_results(schools, "clusters"))
 get_results(schools, "membership")
 ```
 
+In group class 1 (21 schools), 85.1% of the students follow the first
+trajectory class; in group class 2 (19 schools), only 24.5% do. The
+programme lowers the log odds of a school belonging to the second group class
+by 2.11 (95% interval 0.76 to 3.46).
+
 The trajectory views read the same as for one level, and the classification
 view shows how confidently each student is classified:
 
@@ -262,6 +300,9 @@ enumerate_regressions(score ~ wave, growth_schools, n_classes = 2,
                       n_starts = 3, seed = 1)
 ```
 
+The BIC is lowest for two group classes (14,102, against 14,246 for one and
+14,109 for three), the number of school types that generated the data.
+
 ## Choices and warnings
 
 - **Random effects.** `random = "intercept"` lets students differ in level
@@ -271,13 +312,13 @@ enumerate_regressions(score ~ wave, growth_schools, n_classes = 2,
   `"varying"` estimates one per class; `"proportional"` shares its shape and
   lets its size differ. `random_diagonal = TRUE` makes the random effects
   uncorrelated.
-- **Curved trajectories.** Use `score ~ wave + I(wave^2)` or
-  `score ~ splines::ns(wave, df = 3)`.
+- **Curved trajectories.** `score ~ wave + I(wave^2)` or
+  `score ~ splines::ns(wave, df = 3)` give curved class trajectories.
 - **A degenerate covariance.** When the data cannot support a random effect in
   some class (a variance at zero, or two random effects perfectly
   correlated), the fit warns (`latents_random_boundary`), reports no interval
   for that covariance, and marks it as a boundary in the tables and plots.
-  Simplify the random effects, or drop them.
+  The random effects are then simplified or removed.
 
 ## How this was checked
 
@@ -292,6 +333,10 @@ membership covariates, the likelihoods agree at `hlme`'s own estimates and
 `mixture_regression()` reaches at least `hlme`'s maximum.
 
 ## References
+
+```{r restore-options, include = FALSE}
+options(old_options)
+```
 
 Asparouhov, T., & Muthén, B. (2008). Multilevel mixture models. In G. R.
 Hancock & K. M. Samuelsen (Eds.), *Advances in latent variable mixture
@@ -323,16 +368,23 @@ Proust-Lima, C., Philipps, V., & Liquet, B. (2017). Estimation of extended
 mixed models using latent classes and latent processes: The R package lcmm.
 *Journal of Statistical Software*, 78(2), 1--56.
 
-Vermunt, J. K. (2010). Latent class modeling with covariates: Two improved
-three-step approaches. *Political Analysis*, 18, 450--469.
+Saqr, M., Vogelsmeier, L. V. D. E., & López-Pernas, S. (2024). Capturing
+where the learning process takes place: A person-specific and
+person-centered primer. *Learning and Individual Differences*, 113, 102492.
+<https://doi.org/10.1016/j.lindif.2024.102492>
 
-Vermunt, J. K. (2003). Multilevel latent class models. *Sociological
-Methodology*, 33, 213--239.
+Scrucca, L., Saqr, M., López-Pernas, S., & Murphy, K. (2024). An
+introduction and R tutorial to model-based clustering in education via
+latent profile analysis. In M. Saqr & S. López-Pernas (Eds.), *Learning
+analytics methods and tutorials: A practical guide using R* (pp. 285--317).
+Springer. <https://doi.org/10.1007/978-3-031-54464-4_9>
 
 Verbeke, G., & Lesaffre, E. (1996). A linear mixed-effects model with
 heterogeneity in the random-effects population. *Journal of the American
 Statistical Association*, 91, 217--221.
 
-```{r restore-options, include = FALSE}
-options(old_options)
-```
+Vermunt, J. K. (2003). Multilevel latent class models. *Sociological
+Methodology*, 33, 213--239.
+
+Vermunt, J. K. (2010). Latent class modeling with covariates: Two improved
+three-step approaches. *Political Analysis*, 18, 450--469.

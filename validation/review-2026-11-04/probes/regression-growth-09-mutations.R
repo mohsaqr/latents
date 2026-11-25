@@ -1,5 +1,5 @@
 # In-memory mutations of table formulas; test files run from a scratchpad copy, so no snapshot is touched.
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 ns <- asNamespace("latents")
 wrap <- function(name, post) { old <- get(name, envir = ns); new <- function(...) post(old(...)); environment(new) <- environment(); unlockBinding(name, ns); assign(name, new, envir = ns); lockBinding(name, ns) }
 wrap(".mixture_coefficient_table", function(t) { t$p_adjusted <- p.adjust(t$p_value, "BH"); if (!is.null(t$exp_estimate)) t$exp_estimate <- t$estimate; t })

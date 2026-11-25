@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(2)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(2)
 lse <- function(v) { m <- max(v); m + log(sum(exp(v - m))) }
 softmax <- function(s) exp(s) / sum(exp(s))
 # Data: groups with row-level classes shifted by a group class

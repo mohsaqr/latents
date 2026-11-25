@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 options(digits = 5, width = 140)
 activities <- c("time_with_friends", "on_social_media", "tv_video_games","listened_music", "sports", "walking", "reading","part_time_job")
 print(sapply(student_esm[activities], function(v) sum(v == "yes")))

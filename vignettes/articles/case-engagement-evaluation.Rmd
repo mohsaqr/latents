@@ -1,6 +1,12 @@
 ---
 title: "Case study: Evaluating multilevel latent profile models"
-author: "Written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me)"
+author:
+  - name: Mohammed Saqr
+    url: https://saqr.me
+    affiliation: University of Eastern Finland
+  - name: Sonsoles López-Pernas
+    url: https://sonsoles.me
+    affiliation: University of Eastern Finland
 output:
   rmarkdown::html_vignette:
     toc: true
@@ -28,10 +34,10 @@ library(latents)
 
 ## Data and starting model
 
-The `course_engagement` dataset contains repeated course enrolments nested within students. The bundled data are synthetic, and their relationship to the longitudinal engagement study is described in the [introductory vignette](case-engagement-profiles.html). Engagement is measured using five course-level indicators: course-page views (`browse`), lecture-video views (`lectures`), forum posts read (`forum_read`), forum posts written (`forum_post`), and days active (`attendance`). Each indicator is simulated as a continuous value representing a log-count scale and standardized within course; no raw counts or `log1p()` transformation are generated. The vector `vars` holds their names.
+The `engagement_momentum` dataset contains repeated course enrolments nested within students. The bundled data are synthetic, and their relationship to the longitudinal engagement studies of Saqr and López-Pernas (2021) and López-Pernas and Saqr (2024) is described in the [introductory vignette](case-engagement-profiles.html). Engagement is measured using five course-level indicators: course-page views (`browse`), lecture-video views (`lectures`), forum posts read (`forum_read`), forum posts written (`forum_post`), and days active (`active_days`). Each indicator is simulated as a continuous value representing a log-activity scale and standardized within course. The vector `vars` holds their names.
 
 ```{r variables}
-vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
+vars <- c("browse", "lectures", "forum_read", "forum_post", "active_days")
 ```
 
 The variable `student` identifies the higher-level unit, while `sequence` records the order of each student's course enrolments. In the present model, enrolments are treated as observations nested within students. Courses themselves are not modeled as an additional grouping level. The multilevel structure therefore distinguishes between variation across enrolments and variation across students.
@@ -51,13 +57,13 @@ Like other finite-mixture models, MLPA can also be sensitive to local likelihood
 The `multilpa()` function estimates the model by maximum likelihood. A stricter convergence tolerance (`tol`) is used here so that the optimization proceeds closer to a stationary solution before standard errors are calculated. This provides a more stringent convergence criterion for the starting model used in the subsequent evaluation steps.
 
 ```{r fit}
-fit <- multilpa(course_engagement, vars, id = "student", time = "sequence",
+fit <- multilpa(engagement_momentum, vars, id = "student", time = "sequence",
                 n_profiles = 3, n_group_classes = 3, n_starts = 10,
                 max_iter = 2000, tol = 1e-10, seed = 1)
 fit
 ```
 
-The fitted model summarizes 1,422 course enrolments contributed by 106 students. The three estimated profiles show a clear ordering across the engagement indicators. Profile 3 has the highest mean on every indicator, Profile 1 has intermediate means, and Profile 2 has the lowest means. For example, the estimated attendance means are 1.133, 0.256, and -0.940 standard deviations relative to the corresponding course mean for Profiles 3, 1, and 2, respectively.
+The fitted model summarizes 1,310 course enrolments contributed by 106 students. The three estimated profiles show a clear ordering across the engagement indicators. Profile 3 has the highest mean on every indicator, Profile 2 has means close to the course average, and Profile 1 has the lowest means; following the introductory vignette, they are the **active**, **average** and **disengaged** profiles. For example, the estimated means of days active are 0.793, -0.029, and -0.961 standard deviations relative to the corresponding course mean for Profiles 3, 2, and 1, respectively.
 
 These differences in indicator means define the substantive interpretation of the fitted profiles. In this example, the profiles can therefore be understood as representing progressively lower levels of engagement across the observed activity measures. However, the presence of distinct estimated means does not by itself establish that the profiles are well supported. The diagnostic checks that follow examine the extent to which the data support this separation and whether the fitted solution is numerically stable.
 
@@ -67,7 +73,7 @@ The command `get_results(fit, "starts")` summarizes the outcome of each model in
 get_results(fit, "starts")
 ```
 
-All ten starting values converged to the same solution, with no reported boundary issues and a maximized log likelihood of approximately -8348.429. This replication across starts provides evidence that the fitted solution is numerically stable. The comparisons of alternative profile and class counts below therefore begin from a solution that was recovered consistently across multiple initializations.
+All ten starting values converged to the same solution, with no reported boundary issues and a maximized log likelihood of approximately -7487.955. This replication across starts provides evidence that the fitted solution is numerically stable. The comparisons of alternative profile and class counts below therefore begin from a solution that was recovered consistently across multiple initializations.
 
 ## Classification uncertainty
 
@@ -89,7 +95,7 @@ The command `get_results(fit, "entropy")` reports both the unnormalized entropy 
 get_results(fit, "entropy")
 ```
 
-The fitted model has a relative entropy of 0.792 at the enrolment level and 0.797 at the student level. These values indicate that posterior membership probabilities are reasonably concentrated at both levels, but that classification remains uncertain for some enrolments and students. Consequently, reducing each posterior probability distribution to a single most likely profile or class results in a loss of information. Where possible, subsequent analyses should therefore retain the uncertainty represented by the full posterior probabilities.
+The fitted model has a relative entropy of 0.813 at the enrolment level and 0.836 at the student level. These values indicate that posterior membership probabilities are reasonably concentrated at both levels, but that classification remains uncertain for some enrolments and students. Consequently, reducing each posterior probability distribution to a single most likely profile or class results in a loss of information. Where possible, subsequent analyses should therefore retain the uncertainty represented by the full posterior probabilities.
 
 A complementary measure of classification certainty is the average posterior probability within each assigned class. Let $A_k$ denote the set of units whose most probable assignment is to class $k$. The average posterior probability for that class is
 
@@ -112,9 +118,9 @@ The command `get_results(fit, "classification")` reports these class-specific cl
 get_results(fit, "classification")
 ```
 
-The class-specific results show that classification certainty varies across profiles and student classes. At the enrolment level, 479 enrolments are assigned to the intermediate-activity Profile 1, with an average posterior probability of 0.853. By comparison, the 576 enrolments assigned to the lower-activity Profile 2 have a much higher average posterior probability of 0.978. This indicates that enrolments classified into Profile 1 are, on average, more ambiguous than those classified into Profile 2.
+The class-specific results show that classification certainty varies across profiles and student classes. At the enrolment level, 320 enrolments are assigned to the average Profile 2, with an average posterior probability of 0.826. By comparison, the 441 enrolments assigned to the disengaged Profile 1 and the 549 assigned to the active Profile 3 have average posterior probabilities of 0.953 and 0.938. The average profile lies between the other two, so enrolments classified into it are, on average, more ambiguous.
 
-A similar pattern appears at the student level. Students assigned to Class 3 have an average posterior probability of 0.864, whereas those assigned to Class 1 have an average posterior probability of 0.977. The student-level classifications are therefore not equally certain across classes, even though the overall relative entropy is similar across the two levels.
+A similar pattern appears at the student level. Students assigned to the fluctuating Class 2 and the engaged Class 3 have average posterior probabilities of 0.920 and 0.921, whereas those assigned to the mostly disengaged Class 1 have an average posterior probability of 0.950. The student-level classifications are therefore not equally certain across classes, even though the overall relative entropy is similar across the two levels.
 
 These differences matter for subsequent analyses because modal class assignments treat the most likely class as if it were observed without error. When average posterior probabilities are lower, that simplification discards more of the uncertainty contained in the posterior distribution. Later analyses should therefore retain or adjust for classification uncertainty.
 
@@ -140,9 +146,7 @@ The command `get_results(fit, "residuals")` returns the indicator pairs ordered 
 get_results(fit, "residuals") |> head(4)
 ```
 
-The largest residual correlation is 0.211 between forum reading and attendance in the lower-activity Profile 2. The next largest is 0.177 between browsing and attendance, also in Profile 2. Notably, all four of the largest residuals involve the attendance indicator. This pattern suggests that the three-profile model does not completely account for the association between recorded online activity and the number of days on which students are active.
-
-The concentration of the largest residuals around attendance provides a specific direction for further model evaluation. The results identify a particular part of the measurement structure where the conditional-independence assumption may be too restrictive. Alternative specifications could therefore examine whether allowing selected within-profile associations involving attendance changes the estimated profiles or improves the representation of the engagement data.
+The largest residual correlation is 0.115, between lecture views and days active in the disengaged Profile 1, and none of the residuals remains significant after the Benjamini-Hochberg adjustment (the smallest adjusted p-value is 0.46). Within each profile, the indicators are therefore approximately uncorrelated, as the diagonal covariance structure assumes. This is expected for these synthetic data, which were generated with indicators that are conditionally independent within each engagement state; in applied data, a concentration of large residuals on particular indicator pairs would identify the part of the measurement structure where the assumption is too restrictive.
 
 ## Class counts and covariance assumptions
 
@@ -165,30 +169,32 @@ The `enumerate_classes()` function fits every requested combination of profile c
 These diagnostics should be considered before interpreting differences in BIC. Comparisons are most informative when the candidate models have converged, no relevant parameter bounds are active, and the best likelihood is reproduced across multiple starts. BIC then provides evidence about relative fit within the specified candidate set, but it does not by itself establish that the Gaussian measurement assumptions are correct or that a unique number of latent profiles or classes exists.
 
 ```{r enumeration}
-candidates <- enumerate_classes(course_engagement, vars, id = "student",
-                                n_profiles = 2:3, n_group_classes = 2:3,
+candidates <- enumerate_classes(engagement_momentum, vars, id = "student",
+                                n_profiles = 2:4, n_group_classes = 2:4,
                                 model = c("VVI", "VVV"), n_starts = 6,
                                 max_iter = 2000, tol = 1e-10, seed = 1)
 get_results(candidates, "candidates")
 ```
 
-Under the diagonal covariance specification, the lowest BIC is obtained for the model with three profiles and three student classes, with a BIC of 16874.1. When residual covariances are allowed to vary freely within profiles, however, the preferred profile count changes. The two-profile, three-class full-covariance model has a BIC of 16800.6, the lowest value among the models in the candidate grid, and its best likelihood is reproduced across all six starting values. The three-profile, three-class full-covariance model has a higher BIC of 16867.3.
+Under the diagonal covariance specification, the lowest BIC is obtained for the model with three profiles and three student classes, with a BIC of 15153.1, an interior minimum: removing a profile or a class (15390.2 for two profiles, 15216.0 for two classes) or adding one (15178.6 for four profiles, 15164.7 for four classes) raises the BIC. The full-covariance models fit worse throughout; the best of them, also with three profiles and three classes, has a BIC of 15248.0, 94.9 points above its diagonal counterpart, because its 30 additional covariance parameters do not improve the likelihood enough to justify them.
 
-Most candidate models also show stable likelihood replication across starts. The exception is the three-profile, two-class full-covariance model, whose best solution is recovered by only one of the six initializations. This weaker replication suggests greater numerical uncertainty for that candidate and illustrates why class enumeration should not be based on information criteria alone.
+Most candidate models also show stable likelihood replication across starts. The exceptions are the larger candidates: the four-profile, four-class models with either covariance structure and the four-profile, two-class full-covariance model reach their best solution from only one of the six initializations. This weaker replication suggests greater numerical uncertainty for those candidates and illustrates why class enumeration should not be based on information criteria alone.
 
-Taken together, these results show that support for the original three-profile, three-class specification depends on the assumptions made about within-profile covariance. Under the diagonal model, the three-by-three solution is preferred within the candidate set. Once residual correlations are estimated directly, a two-profile, three-class model receives stronger BIC support. The original three-by-three model should therefore be regarded as a working representation whose support depends on the measurement assumptions.
+Taken together, these results support the three-profile, three-class specification with a diagonal covariance structure. Because the residual dependence examined above is negligible, freeing the within-profile covariances does not change the preferred numbers of profiles and classes; it only adds parameters. In applied data with substantial residual dependence, the same comparison can favour a different profile count once the covariances are estimated, so the two analyses should always be read together.
 
 The `get_candidate()` function can be used to retrieve a fitted candidate with a particular combination of profile count, student-class count, and covariance structure. Examining its residual correlations provides a direct check of whether the estimated covariance parameters reproduce the within-profile associations observed in the data.
 
 ```{r covariance-check}
-full <- get_candidate(candidates, n_profiles = 2, n_group_classes = 3,
+full <- get_candidate(candidates, n_profiles = 3, n_group_classes = 3,
                       model = "VVV")
-get_results(full, "residuals") |> head(4)
+get_results(full, "covariances") |>
+  subset(indicator != indicator_2) |>
+  head(6)
 ```
 
-In the two-profile, three-class full-covariance model, the estimated correlation between forum reading and attendance in Profile 1 is 0.226, closely matching the corresponding observed within-profile correlation. As a result, even the largest residual correlations are close to zero. This is expected because the full-covariance specification estimates these within-profile associations directly rather than constraining them to zero.
+In the three-profile, three-class full-covariance model, the estimated within-profile covariances between indicators are all close to zero (about -0.002 to 0.032 in the first profile shown here). The full-covariance model therefore estimates the associations that the diagonal model fixes at zero and finds them negligible, which is why its additional parameters are penalized without a compensating gain in fit.
 
-The close agreement between the observed and expected correlations therefore verifies that the fitted covariance structure is reproducing the associations it was designed to model. It should not, however, be interpreted as independent evidence that the two-profile solution or the three student classes are substantively correct. Those questions require consideration of the broader pattern of model fit, numerical stability, classification quality, and substantive interpretability.
+This agreement between the two specifications supports the diagonal measurement model for these data. It should not, however, be interpreted as independent evidence that the three profiles or the three student classes are substantively correct. Those questions require consideration of the broader pattern of model fit, numerical stability, classification quality, and substantive interpretability.
 
 ## Uncertainty in profile means
 
@@ -206,15 +212,15 @@ These intervals provide a local approximation to parameter uncertainty within th
 
 The intervals are also conditional on the specified latent structure. In particular, they treat the selected numbers of enrolment-level profiles and student-level classes, together with the assumed covariance structure, as fixed. A parameter estimate can therefore have a narrow confidence interval even when an alternative model specification supports a different number of profiles. Wald intervals describe uncertainty about parameters within a chosen model; they do not incorporate uncertainty about the choice of model itself.
 
-The `parameter_inference()` function calculates standard errors and confidence intervals for every parameter of the original three-profile, three-class model. The discussion below uses the rows for the attendance means.
+The `parameter_inference()` function calculates standard errors and confidence intervals for every parameter of the three-profile, three-class model. The discussion below uses the rows for the means of days active.
 
 ```{r inference}
 parameter_inference(fit)
 ```
 
-For the higher-activity Profile 3, the estimated attendance mean is 1.133 standard deviations above the course mean, with a standard error of 0.061 and a 95% Wald interval from 1.013 to 1.252. The intermediate-activity Profile 1 has an interval from 0.155 to 0.358, while the lower-activity Profile 2 has an interval from $-0.993$ to $-0.887$.
+For the active Profile 3, the estimated mean of days active is 0.793 standard deviations above the course mean, with a standard error of 0.034 and a 95% Wald interval from 0.727 to 0.859. The average Profile 2 has an interval from $-0.129$ to $0.070$, which includes the course mean, while the disengaged Profile 1 has an interval from $-1.026$ to $-0.896$.
 
-Within the original three-profile, three-class specification, these intervals show clear separation among the attendance means. This provides evidence that the fitted profiles differ substantially in their expected levels of attendance under that model. However, the precision of these estimates should not be interpreted as resolving the model-specification uncertainty identified in the covariance comparison. The confidence intervals quantify uncertainty in the profile means conditional on the three-by-three model; they do not address whether a different covariance structure or profile count provides a preferable representation of the data.
+Within the three-profile, three-class specification, these intervals show clear separation among the means of days active. This provides evidence that the fitted profiles differ substantially in their expected levels of activity under that model. However, the precision of these estimates should not be interpreted as resolving model-specification uncertainty. The confidence intervals quantify uncertainty in the profile means conditional on the three-by-three model; they do not address whether a different covariance structure or profile count provides a preferable representation of the data.
 
 ## Limits of the interpretation
 
@@ -225,6 +231,17 @@ Additional caution is warranted for candidate models whose best likelihood was n
 The multilevel structure accounts for the nesting of repeated enrolments within students by allowing students to differ in the composition of their engagement profiles. However, the model does not directly estimate serial dependence between adjacent enrolments. The argument `time = "sequence"` preserves the ordering of each student's enrolments and makes that ordering available for sequence-based summaries, but it does not by itself introduce a transition or autoregressive structure into the fitted model.
 
 When the scientific question concerns how students move from one engagement profile to another over time, a transition model is more appropriate. The [transition vignette](case-engagement-transitions.html) extends the analysis by estimating probabilities of movement between profiles across successive enrolments.
+
+## References
+
+López-Pernas, S., & Saqr, M. (2024). How the dynamics of engagement explain
+the momentum of achievement and the inertia of disengagement: A complex
+systems theory approach. *Computers in Human Behavior, 153*, 108126.
+[doi:10.1016/j.chb.2023.108126](https://doi.org/10.1016/j.chb.2023.108126).
+
+Saqr, M., & López-Pernas, S. (2021). The longitudinal trajectories of online
+engagement over a full program. *Computers & Education, 175*, 104325.
+[doi:10.1016/j.compedu.2021.104325](https://doi.org/10.1016/j.compedu.2021.104325).
 
 ```{r restore-options, include = FALSE}
 options(old_options)

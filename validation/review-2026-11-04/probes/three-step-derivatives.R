@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 stopifnot(requireNamespace("numDeriv", quietly=TRUE))
 n <- 500; tr <- sample.int(3,n,TRUE,c(.4,.35,.25)); mus <- rbind(c(-1.5,-1),c(1.5,-1),c(0,1.5))
 d <- data.frame(a=rnorm(n,mus[tr,1]),b=rnorm(n,mus[tr,2]),y=rnorm(n,c(0,1,3)[tr],c(1,1.3,.8)[tr]),x=rnorm(n)+tr/2)

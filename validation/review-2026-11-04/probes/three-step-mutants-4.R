@@ -1,6 +1,6 @@
-source("/Users/mohammedsaqr/Documents/Github/latents/validation/review-2026-11-04/probes/three-step-mutants-common.R")
-root <- "/Users/mohammedsaqr/Documents/Github/latents/equivalence"; assign("root", root, envir=globalenv())
-setwd("/Users/mohammedsaqr/Documents/Github/latents")
+source("/Users/mohammedsaqr/Github/latents/validation/review-2026-11-04/probes/three-step-mutants-common.R")
+root <- "/Users/mohammedsaqr/Github/latents/equivalence"; assign("root", root, envir=globalenv())
+setwd("/Users/mohammedsaqr/Github/latents")
 t0 <- proc.time()[[3]]
 mutate("categorical overall: no 1/p delta", ".multilpa_three_step_categorical",
   "sweep(clustered[, columns, drop = FALSE], 2L, p, \"/\")", "clustered[, columns, drop = FALSE]",

@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 options(digits = 5, width = 150)
 vars <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 fit <- multilpa(data = course_engagement, vars = vars, id = "student", n_profiles = 2, n_group_classes = 2, variance_model = "varying", n_starts = 10, seed = 1)

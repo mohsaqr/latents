@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 # A handful of data sets: bounded 1-5 outcome, K = 3, moderate separation. Does the
 # multi-start selection move ML away from the start Latent GOLD uses (proportional)?
 em_from <- function(pieces, y, m0, v0) {

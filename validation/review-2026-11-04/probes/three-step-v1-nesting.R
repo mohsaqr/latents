@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 # Nested data, one group class: step three is cluster-robust by default, while V1 is the
 # observed-information covariance of a likelihood that treats observations as independent.
 ns <- asNamespace("latents")

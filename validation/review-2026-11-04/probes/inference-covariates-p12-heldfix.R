@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 n <- 500; z <- rnorm(n); k <- rbinom(n,1,plogis(.2+.8*z))+1L; q <- c(.75,.3)
 d <- data.frame(g=seq_len(n),z=z); for (v in paste0("u",1:5)) d[[v]] <- factor(ifelse(runif(n)<q[k],"yes","no")); vars <- paste0("u",1:5)
 base <- multilpa(d, vars, "g", n_profiles=2, n_group_classes=1, categorical=vars, n_starts=5, seed=1, tol=1e-10, max_iter=5000)

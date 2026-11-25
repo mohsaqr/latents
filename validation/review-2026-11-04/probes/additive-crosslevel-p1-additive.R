@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 # 1. Tiny case: direct numerical integration of the group intercept
 d <- data.frame(g = c(1, 2, 2, 3, 3, 3, 3), y = c(0.3, -1.2, 0.4, 2.1, 1.7, 3.0, 2.2),
                 z = c(1.0, 0.2, 0.7, -0.5, -1.1, 0.1, 0.6))

@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 # r3step chain and by_group_class run BFGS from one start. Do other starts find a higher maximum?
 multi <- function(obj, gr, start, sd=1, B=12) {
   ends <- vapply(seq_len(B), function(i) {

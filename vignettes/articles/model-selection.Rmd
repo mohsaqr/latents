@@ -1,6 +1,12 @@
 ---
 title: "Model selection: the evidence for the number of classes"
-author: "Written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me)"
+author:
+  - name: Mohammed Saqr
+    url: https://saqr.me
+    affiliation: University of Eastern Finland
+  - name: Sonsoles López-Pernas
+    url: https://sonsoles.me
+    affiliation: University of Eastern Finland
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Model selection: the evidence for the number of classes}
@@ -26,7 +32,18 @@ guide describes each source of evidence that latents computes for a set of
 candidate models: its definition, its interpretation, and the conditions
 under which it is unreliable. It then outlines how these sources are combined
 into a defensible and reproducible decision. A complete applied example is
-given in [Class enumeration in mixture models](class-enumeration.html).
+given in [Class enumeration](enumeration.html).
+
+Latent profile and latent class analysis are person-centred methods. Rather
+than describing the average relationship among variables across the whole
+sample, they identify subgroups of individuals who share a pattern of
+responses, and thereby capture heterogeneity that variable-centred methods
+average away (Saqr et al., 2024). Model-based clustering with finite
+Gaussian mixtures provides the statistical framework for latent profile
+analysis, and Scrucca et al. (2024) introduce its estimation, its covariance
+structures and the selection of the number of profiles in R. Because the
+subgroups are defined by the model rather than observed, their number has to
+be decided from the data, which is the subject of this guide.
 
 The evidence considered here addresses five distinct questions, summarized
 below together with the functions that report it.
@@ -51,18 +68,21 @@ library(latents)
 
 The examples use `course_engagement`, in which course enrolments are nested
 within students and each enrolment is described by five standardized
-indicators of activity. A model is fitted for every combination of one to six
-profiles and one to four group classes, with class-specific variances and no
-covariances (`"VVI"`). Three random starts per candidate are used to limit
-computation; applied analyses should use at least ten, because replication of
-the maximum likelihood across starts is itself part of the evidence.
+indicators of activity. A model is fitted for every combination of one to
+four profiles, one to four group classes and the four basic covariance
+structures (`EEI`, `VVI`, `EEE` and `VVV`), the grid analysed in
+[Class enumeration](enumeration.html). Five random starts per candidate are
+used to limit computation; applied analyses should use at least ten, because
+replication of the maximum likelihood across starts is itself part of the
+evidence. The examples below illustrate each source of evidence on this
+grid; the [Class enumeration](enumeration.html) article interprets the same
+results and reaches a decision.
 
-```{r enumerate}
+```{r enumerate, warning = FALSE}
 activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 models <- enumerate_classes(course_engagement, activity, "student",
-                            n_profiles = 1:6, n_group_classes = 1:4,
-                            model = "VVI", n_starts = 3, seed = 1)
-models
+                            n_profiles = 1:4, n_group_classes = 1:4,
+                            n_starts = 5, seed = 1)
 ```
 
 ```{r grid-values, include = FALSE}
@@ -77,8 +97,9 @@ The grid comprises `r n_candidates` candidates, of which `r n_fitted` were
 estimated. A model with one profile and several group classes is not
 identified, because group classes defined over a single profile cannot
 differ; such candidates are listed but not estimated. Each candidate is
-labelled by its numbers of classes (e.g., `profiles4_groups3` for four
-profiles and three group classes), and the functions below accept this label.
+labelled by its numbers of classes and its structure (e.g.,
+`profiles2_groups3_VVV` for two profiles, three group classes and a full
+covariance per profile), and the functions below accept this label.
 
 ## Before fitting: starts, scaling and missing values
 
@@ -102,8 +123,8 @@ the remaining candidates were not given.
 
 ```{r starts, eval = FALSE}
 models <- enumerate_classes(course_engagement, activity, "student",
-                            n_profiles = 1:6, n_group_classes = 1:4,
-                            model = "VVI", n_starts = 20, seed = 1)
+                            n_profiles = 1:4, n_group_classes = 1:4,
+                            n_starts = 20, seed = 1)
 ```
 
 Additional starts also make a degenerate solution more likely to be found
@@ -127,9 +148,8 @@ warning naming the affected profile and its effective membership.
 
 ```{r starts-exclude, eval = FALSE}
 models <- enumerate_classes(course_engagement, activity, "student",
-                            n_profiles = 1:6, n_group_classes = 1:4,
-                            model = "VVI", n_starts = 200,
-                            boundary = "exclude", seed = 1)
+                            n_profiles = 1:4, n_group_classes = 1:4,
+                            n_starts = 200, boundary = "exclude", seed = 1)
 ```
 
 ### Centring and scaling
@@ -286,8 +306,10 @@ under both conventions together with the log likelihood, the number of
 parameters, summaries of classification quality and diagnostics of
 estimation.
 
+The 16 candidates with the `VVV` structure:
+
 ```{r candidates}
-as.data.frame(models)
+subset(as.data.frame(models), model == "VVV")
 ```
 
 ### The minimum of each criterion
@@ -341,10 +363,6 @@ evidence (see below).
 per number of group classes and the minimum of each criterion marked. `what`
 selects criteria by column name, and `what = "all"` displays all of them.
 
-```{r plot-criteria, fig.height = 5}
-plot_enumeration(models)
-```
-
 ```{r plot-bic}
 plot_enumeration(models, what = "bic_groups")
 ```
@@ -363,36 +381,23 @@ that the additional class reduced the criterion, and a negative value that it
 increased it; candidates without such a neighbour in the grid have `NA`. BIC
 with groups as units is used unless `using` specifies another criterion.
 
+The rows of the `VVV` candidates:
+
 ```{r deltas}
-get_results(models, "deltas")
+subset(get_results(models, "deltas"), model == "VVV")
 ```
 
-```{r deltas-values, include = FALSE}
-deltas <- get_results(models, "deltas")
-delta_of <- function(name) with(subset(deltas, candidate == name),
-                                round(delta_profile))
-step_3 <- delta_of("profiles3_groups3")
-step_4 <- delta_of("profiles4_groups3")
-step_5 <- delta_of("profiles5_groups3")
-stopifnot(step_3 > step_4, step_4 > 0, step_5 < 0)
-```
-
-With three group classes, the third profile reduces BIC by
-`r format(step_3, big.mark = ",")` and the fourth by
-`r format(step_4, big.mark = ",")`, whereas the fifth increases it by
-`r format(-step_5, big.mark = ",")` (shown as a negative decrease). The
-candidate with two profiles has no profile-wise delta because its neighbour,
-with one profile and three group classes, is not identified. Diminishing
-decreases indicate the point beyond which additional profiles capture detail
-rather than structure, and the first negative value marks where they cease to
-improve the criterion. The deltas are displayed for both directions: along
+In the `VVV` candidates, the second profile and the second group class
+produce large decreases, whereas further profiles increase the criterion and
+further group classes reduce it only slightly; the
+[Class enumeration](enumeration.html) article interprets these values.
+Diminishing decreases indicate the point beyond which additional classes
+capture detail rather than structure, and the first negative value marks
+where they cease to improve the criterion. The deltas are displayed for both directions: along
 the number of profiles (left) and along the number of group classes (right).
 
-```{r plot-deltas, fig.height = 5}
-plot_selection(models, what = "deltas")
-```
-
-The same display is available for any criterion:
+The display is available for any criterion, here the ICL with enrolments as
+units:
 
 ```{r plot-deltas-icl, fig.height = 5}
 plot_selection(models, what = "deltas", using = "icl_individual")
@@ -425,8 +430,10 @@ over all candidates ordered by number of parameters (`"parameters"`). The
 columns `from` and `to` identify the endpoints of each curve and `n_points`
 its length.
 
+The lines of the `VVV` candidates:
+
 ```{r knees}
-get_results(models, "knees")
+subset(get_results(models, "knees"), endsWith(line, "VVV"))
 ```
 
 Because the chord terminates at the largest candidate estimated, the location
@@ -447,22 +454,11 @@ shifts when the range is shortened by one candidate constitutes weak evidence.
 | `no knee when the largest is left out` | the shortened line has no knee |
 | `moves when the largest is left out` | the knee depends on the range fitted |
 
-```{r knee-values, include = FALSE}
-knees <- get_results(models, "knees")
-profile_line <- subset(knees, direction == "profiles" &
-                         line == "3 group classes")
-knee_three <- with(profile_line, knee_candidate)
-knee_three_without <- with(profile_line, knee_without_largest)
-knee_three_distance <- with(profile_line, round(distance, 2))
-knee_three_stable <- with(profile_line, stable)
-```
-
-With three group classes, the knee along the number of profiles is
-`r knee_three`, at a distance of `r knee_three_distance`. Without the largest
-candidate it is `r knee_three_without`, so `stable` is `r knee_three_stable`:
-the bend lies between three and four profiles, and which of the two is
-identified depends on the extent of the grid. The deltas locate the same
-region with less ambiguity, which is why the two are interpreted jointly.
+In this grid the knee along the number of group classes lies at two group
+classes for every number of profiles and every structure, and it is stable;
+along the number of profiles, the `VVV` lines with two or more group classes
+have no knee, because the criterion does not fall beyond two profiles. The
+deltas and the knees are interpreted jointly.
 
 ### The criterion over the whole grid
 
@@ -502,8 +498,10 @@ default, set with `cutoff`). `get_results(x, "classification")` reports, for
 every class of every candidate, its size by modal assignment and by estimate,
 its AvePP, its OCC and the relative entropy of its level.
 
+For the `VVV` candidates with two profiles:
+
 ```{r classification}
-get_results(models, "classification")
+subset(get_results(models, "classification"), n_profiles == 2 & model == "VVV")
 ```
 
 `plot_selection(x, what = "diagnostics")` displays relative entropy and the minimum
@@ -540,7 +538,7 @@ separation and available information. For a single candidate, `plot_diagnostics(
 displays both levels:
 
 ```{r group-certainty}
-plot_diagnostics(get_candidate(models, "profiles4_groups3"),
+plot_diagnostics(get_candidate(models, "profiles2_groups3_VVV"),
                  what = "group_posteriors")
 ```
 
@@ -615,9 +613,7 @@ class, the estimation diagnostics and the classification diagnostics as a
 list of plots displayed in sequence. `using` sets the criterion for the first
 two and `cutoff` the AvePP threshold for the last.
 
-```{r selection, fig.height = 5}
-plot_selection(models)
-```
+
 
 ## How the profiles divide
 
@@ -627,11 +623,12 @@ the larger model that receive its observations (Zappia and Oshlack, 2018). A
 profile that divides cleanly into two suggests a substantive distinction,
 whereas a profile formed from several profiles of the smaller model suggests
 a reallocation of observations rather than a refinement. Each number of
-group classes has its own tree, selected with `n_group_classes`; the guide
-*Tree plot* compares solutions at one number of profiles.
+group classes and structure has its own tree, selected with
+`n_group_classes` and `model`; the guide *Tree plot* compares solutions at
+one number of profiles.
 
 ```{r tree, fig.height = 6}
-plot_tree(models, n_group_classes = 1)
+plot_tree(models, n_group_classes = 1, model = "VVV")
 ```
 
 ## Comparing chosen candidates
@@ -646,19 +643,16 @@ probabilities, assuming one of them is correct (Wagenmakers and Farrell,
 2004). The weights are conditional on the set of candidates compared.
 
 ```{r compare}
-comparison <- compare_models(models, "profiles3_groups3", "profiles4_groups3",
-                             "profiles4_groups2")
+comparison <- compare_models(models, "profiles2_groups2_VVV",
+                             "profiles2_groups3_VVV", "profiles2_groups4_VVV")
 comparison
 plot(comparison)
 ```
 
 The fitted model corresponding to a row is extracted with `get_candidate()`,
-by label or by numbers of classes.
-
-```{r chosen}
-chosen <- get_candidate(models, "profiles4_groups3")
-chosen
-```
+by label, or by numbers of classes together with `model` when the grid
+contains several structures, as in `get_candidate(models, 2, 2, model =
+"VVV")`.
 
 ## Testing one more class
 
@@ -675,16 +669,9 @@ observed one. The p-value is `(b + 1) / (V + 1)`, bounded below by
 `1 / (V + 1)`. Invalid replicates are reported; the p-value is withheld when
 fewer than half the requested replicates are valid. The example requests 19
 replicates: if all are valid, the smallest attainable p-value is 0.05.
-Applied analyses should use 99 or more and inspect the valid count.
-
-```{r blrt}
-smaller <- get_candidate(models, "profiles3_groups3")
-larger <- get_candidate(models, "profiles4_groups3")
-test <- bootstrap_lrt(smaller, larger, data = course_engagement,
-                      iter = 19, n_starts = 2, seed = 1)
-test
-plot(test)
-```
+Applied analyses should use 99 or more and inspect the valid count. The
+[Class enumeration](enumeration.html) article applies the test to two and
+three group classes with two profiles.
 
 The Vuong-Lo-Mendell-Rubin test refers the same statistic to an asymptotic
 approximation of its distribution (Vuong, 1989; Lo, Mendell and Rubin, 2001):
@@ -695,12 +682,22 @@ version (aLMR) divides the statistic by `1 + 1 / (d log n)`, with `d` the
 number of added parameters and `n` the number of independent units, and
 refers it to the same distribution. `get_results()` with `"lmr"` reports both
 for every pair of converged candidates that differ by one profile or one group
-class. A pair whose information matrix is singular, here the candidates with
-five and six profiles, is kept with its reason in `note`.
+class. A pair whose information matrix is singular is kept with its reason in
+`note`. The tests of the `VVV` candidates with two profiles:
 
 ```{r lmr}
-subset(get_results(models, "lmr"), n_group_classes == 3)
+subset(get_results(models, "lmr"), model == "VVV" & n_profiles == 2)
 ```
+
+```{r lmr-values, include = FALSE}
+lmr <- subset(get_results(models, "lmr"), model == "VVV" & n_profiles == 2 &
+                direction == "group_classes")
+stopifnot(all(with(lmr, vlmr_p) < 0.01))
+```
+
+Each additional group class is supported by the test (every p-value below
+0.01), as it is by the bootstrap test and the BIC, although the improvement
+from the third and fourth group classes is small.
 
 The regularity conditions of Vuong's theorem do not hold for mixture models
 (Jeffries, 2003), and the test's p-values are not uniformly distributed when
@@ -801,13 +798,13 @@ Akaike, H. (1974). A new look at the statistical model identification.
 Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
 non-Gaussian clustering. *Biometrics*, 49, 803--821.
 
-Biernacki, C., Celeux, G., & Govaert, G. (2000). Assessing a mixture model
-for clustering with the integrated completed likelihood. *IEEE Transactions
-on Pattern Analysis and Machine Intelligence*, 22, 719--725.
-
 Biernacki, C., & Govaert, G. (1997). Using the classification likelihood to
 choose the number of clusters. *Computing Science and Statistics*, 29,
 451--457.
+
+Biernacki, C., Celeux, G., & Govaert, G. (2000). Assessing a mixture model
+for clustering with the integrated completed likelihood. *IEEE Transactions
+on Pattern Analysis and Machine Intelligence*, 22, 719--725.
 
 Bozdogan, H. (1987). Model selection and Akaike's information criterion.
 *Psychometrika*, 52, 345--370.
@@ -833,6 +830,11 @@ Nylund, K. L., Asparouhov, T., & Muthén, B. O. (2007). Deciding on the
 number of classes in latent class analysis and growth mixture modeling: A
 Monte Carlo simulation study. *Structural Equation Modeling*, 14, 535--569.
 
+Saqr, M., Vogelsmeier, L. V. D. E., & López-Pernas, S. (2024). Capturing
+where the learning process takes place: A person-specific and
+person-centered primer. *Learning and Individual Differences*, 113, 102492.
+<https://doi.org/10.1016/j.lindif.2024.102492>
+
 Satopää, V., Albrecht, J., Irwin, D., & Raghavan, B. (2011). Finding a
 "kneedle" in a haystack: detecting knee points in system behavior. *31st
 International Conference on Distributed Computing Systems Workshops*,
@@ -843,6 +845,12 @@ Statistics*, 6, 461--464.
 
 Sclove, S. L. (1987). Application of model-selection criteria to some
 problems in multivariate analysis. *Psychometrika*, 52, 333--343.
+
+Scrucca, L., Saqr, M., López-Pernas, S., & Murphy, K. (2024). An
+introduction and R tutorial to model-based clustering in education via
+latent profile analysis. In M. Saqr & S. López-Pernas (Eds.), *Learning
+analytics methods and tutorials: A practical guide using R* (pp. 285--317).
+Springer. <https://doi.org/10.1007/978-3-031-54464-4_9>
 
 Vermunt, J. K. (2024). The Vuong-Lo-Mendell-Rubin test for latent class and
 latent profile analysis: A note on the different implementations in Mplus

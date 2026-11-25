@@ -1,7 +1,7 @@
 # mclust on the benchmark's heteroscedastic datasets (same seeds as pilot.R),
 # spike measure as in equivalence/search/spike-measure.R.
 suppressPackageStartupMessages({ library(simulab); library(mclust); library(latents) })
-source("/Users/mohammedsaqr/Documents/Github/latents/equivalence/search/spike-measure.R")
+source("/Users/mohammedsaqr/Github/latents/equivalence/search/spike-measure.R")
 S <- "/private/tmp/claude-503/-Users-mohammedsaqr-Documents-Github-latents/c17a2edf-450c-4631-b62e-18ced1b5c86e/scratchpad"
 conditions <- list(
   lpa_vvi_k3 = list(index = 1L, model = "VVI", n = 300, fit_k = 3:4,

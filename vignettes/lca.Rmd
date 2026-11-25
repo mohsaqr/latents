@@ -1,6 +1,12 @@
 ---
 title: "Two-level latent class analysis"
-author: "Written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me)"
+author:
+  - name: Mohammed Saqr
+    url: https://saqr.me
+    affiliation: University of Eastern Finland
+  - name: Sonsoles López-Pernas
+    url: https://sonsoles.me
+    affiliation: University of Eastern Finland
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Two-level latent class analysis}
@@ -14,211 +20,377 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7,
 old_options <- options(digits = 3, width = 100)
 ```
 
-Two-level latent class analysis (LCA) represents heterogeneity in categorical
-response patterns among observations nested within groups. Observation-level
-classes, labelled profiles in the output, are defined by item-response
-probabilities. Group classes differ in their conditional probabilities of
-observation-level class membership. By default, `multilca()` treats all
-selected indicators as categorical. `multilpa()` supports mixed continuous
-and categorical indicators through the `categorical` argument.
+Latent class analysis (LCA) is the categorical-data counterpart of latent profile analysis, extending the person-centred approach to situations in which the observed indicators are categorical rather than continuous. Whereas latent profile analysis identifies subgroups based on differences in the means of continuous indicators, LCA identifies latent subgroups based on differences in the probabilities of endorsing or selecting particular response categories across a set of categorical items. Each latent class is therefore characterized by a specific configuration of item-response probabilities, representing the likelihood of observing each response category conditional on membership in that class (Collins & Lanza, 2010). The resulting classes can be interpreted as distinct response patterns that capture unobserved heterogeneity in the population.
 
-## What the package supports
+Two-level latent class analysis extends this framework to hierarchical data structures in which individual observations are nested within higher-level units, such as students within classrooms, employees within organizations, or patients within healthcare institutions (Vermunt, 2003). In conventional LCA, individuals are assumed to originate from a single population characterized by a common set of class proportions. However, when observations are clustered, the distribution of individual-level latent classes may differ across groups. Two-level LCA accounts for this possibility by introducing a second latent classification at the group level. The model consequently distinguishes between individual-level classes, which describe differences in response patterns, and group-level classes, which capture differences in the composition of those individual-level classes across groups.
 
-- **Item types.** Binary, ordinal and nominal items share one
-  parameterization: unrestricted category probabilities in each profile, subject to summing
-  to one.
-  Numeric, integer, logical, character and factor columns are accepted; factor
-  levels keep their order, other types are sorted. Ordered items can instead
-  be modelled as `ordinal` (an adjacent-category logit with shared category intercepts), and counts as `count` (Poisson); see below.
-- **Mixed measurement.** Continuous and categorical indicators in one model.
-- **Missing answers.** `missing = "fiml"` uses the observed answers of each
-  row.
-- **Standard errors.** Observed-information and robust
-  (`vcov_type = "robust"`) standard errors through `parameter_inference()`.
-- **Model comparison.** `enumerate_classes()` and `bootstrap_lrt()`, which
-  keeps each row's pattern of missing answers in a FIML fit.
-- **External variables.** `three_step()` and `r3step()` work on a categorical
-  fit.
-- **Membership covariates.** `profile_covariates` and `group_covariates` work
-  with categorical indicators, and `parameter_inference()` reports their
-  standard errors.
-- **Transitions.** `lta()` accepts categorical indicators.
-- **Bounds.** `min_probability` keeps every response probability above a
-  lower bound.
+For observation $i$ belonging to group $j$, let $C_{ij}$ denote the individual-level latent class and $G_j$ the latent group class. The model estimates three sets of parameters that jointly describe the individual and group classifications.
+
+First, the item-response probabilities, defined as $\theta_{kqc}=P(Y_{ijq}=c\mid C_{ij}=k)$, describe the probability of observing response category $c$ on item $q$, conditional on an individual's membership in class $k$. These probabilities determine the substantive characteristics of each individual-level class by describing its characteristic response pattern. An important assumption of the two-level specification is that these item-response probabilities remain invariant across group classes. Thus, an individual belonging to a particular latent class is assumed to exhibit the same conditional response probabilities regardless of the group to which they belong.
+
+Second, the individual-level class probabilities, expressed as $\pi_{k\mid m}=P(C_{ij}=k\mid G_j=m)$, represent the probability that an individual belongs to class $k$, conditional on the membership of their group in group class $m$. These probabilities describe the composition of each group class in terms of its constituent individual-level classes. For example, different group classes may be characterized by different proportions of individuals exhibiting particular response patterns, even though the underlying item-response probabilities defining those individual-level classes remain unchanged. The probabilities sum to one across the individual-level classes within each group class.
+
+Third, the group-level class probabilities, defined as $\omega_m=P(G_j=m)$, represent the proportion of groups belonging to each latent group class. These parameters describe the distribution of the higher-level latent classes across the population and determine the relative prevalence of the different group types.
+
+The distinction between the two levels of classification is important for interpreting the model. Individual-level classes represent subgroups of observations characterized by similar response patterns, whereas group-level classes represent subgroups of higher-level units characterized by different distributions of individual-level class membership. Consequently, two groups may belong to different group classes even when the same individual-level classes are present in both. Their distinction lies in the relative proportions of individuals belonging to each class rather than in differences in the response probabilities defining those classes. This allows the model to identify systematic differences in group composition without requiring the individual-level measurement structure to vary across groups.
+
+The two-level LCA specification relies on several conditional independence assumptions. First, the observed categorical items are assumed to be locally independent conditional on individual-level class membership. This means that the association between items is assumed to be explained by the underlying latent class, such that no additional residual association remains between the indicators after conditioning on class membership. Second, observations within the same group are assumed to be independent conditional on their group's latent class. Their responses may therefore be associated at the population level through their shared group classification, but are treated as conditionally independent once that classification has been taken into account. Finally, groups are assumed to be independent of one another. Together, these assumptions establish the hierarchical structure through which individual response patterns and between-group differences in class composition are modelled simultaneously.
+
+In the `latents` package, the function `multilca()` estimates the two-level latent class model using maximum likelihood estimation and the expectation-maximization (EM) algorithm (Dempster et al., 1977). The algorithm alternates between estimating the posterior probabilities of latent class membership and updating the model parameters until convergence is achieved. As in multilevel latent profile analysis, the estimated individual-level classes are labelled `profile_1`, `profile_2`, and so forth in the model output. These labels are used for consistency across the package's modelling functions and do not imply that the classes are based on continuous indicators. The same naming convention is used in `multilpa()`, facilitating a consistent interpretation of individual-level latent classifications across categorical and continuous measurement models.
 
 ## Data
 
-`student_esm` holds experience-sampling data: 2,582 prompts from 100 university
-students, answered at times when the student had not been studying. `student`
-identifies the group. Eight yes/no items record the leisure activities done
-since the previous prompt, and four items rate affect from 1 to 7. `day` is the
-study day, from 0 to 13. `?student_esm` gives the source.
+`student_esm` comes from an experience-sampling study of university students
+(Neubauer & Schmiedek, 2024) and contains 2,582 prompts from 100 students (15
+to 51 per student), answered when the student had not studied since the
+previous prompt. Prompts are the observations and students the groups. Eight yes/no items record leisure activities since that prompt; four
+ratings from 1 to 7 record affect; `?student_esm` describes the source and
+the selection of prompts.
 
 ```{r setup}
 library(latents)
-```
-
-The example uses the first week of observations (`day <= 6`), retaining all
-100 students while limiting computation.
-
-```{r first-week}
-first_week <- subset(student_esm, day <= 6)
-```
-
-The eight activity items are used in several fits, so we store their names
-once.
-
-```{r activities}
 activities <- c("time_with_friends", "on_social_media", "tv_video_games",
                 "listened_music", "sports", "walking", "reading",
                 "part_time_job")
+summary(student_esm)
 ```
 
-## Fitting the model
+Social media is the most frequent activity (745 of the 2,582 prompts),
+followed by TV or video games (549); a part-time job is the rarest (103).
+Every activity is absent at most prompts, so classes are distinguished by how
+far their "yes" probabilities exceed these base rates.
 
-The model specifies two observation-level classes and two group classes.
-The `tol` argument sets a stricter convergence tolerance for this example;
-accurate numerical standard errors require a sufficiently well-converged
-solution.
+## A first model
 
-```{r lca}
-lca <- multilca(first_week, vars = activities, id = "student",
-                n_profiles = 2, n_group_classes = 2, n_starts = 3,
+`multilca()` treats every item in `vars` as categorical. `n_starts` sets the
+number of random starts and `tol` the convergence tolerance; a strict
+tolerance is required for accurate standard errors. A first model has two
+classes and two group classes.
+
+```{r first}
+first <- multilca(student_esm, vars = activities, id = "student",
+                  n_profiles = 2, n_group_classes = 2, n_starts = 20,
+                  tol = 1e-10, seed = 1)
+```
+
+## Number of classes
+
+`enumerate_classes()` fits every combination of two to four classes and one
+to three group classes, each from twenty random starts, and
+`get_results(candidates, "best")` reports the candidate that each criterion
+selects.
+
+```{r enumerate}
+candidates <- enumerate_classes(student_esm, vars = activities,
+                                categorical = activities, id = "student",
+                                n_profiles = 2:4, n_group_classes = 1:3,
+                                n_starts = 20, tol = 1e-10, seed = 1)
+get_results(candidates, "best")
+```
+
+The BIC (Schwarz, 1978) decreases up to the largest model in the grid, four
+classes and three group classes; that model and the one with three classes
+and three group classes reach their best log likelihood from a single start,
+as the message reports, so their low BIC rests on solutions that the starts
+do not replicate. The ICL (Biernacki et al., 2000), AWE (Banfield & Raftery,
+1993) and CLC, which penalize uncertain classification, select three classes
+and two group classes, a model whose best solution is reached by two of the
+twenty starts. `compare_models()`
+sets the two-class model beside the three-class model.
+
+```{r chosen}
+lca <- multilca(student_esm, vars = activities, id = "student",
+                n_profiles = 3, n_group_classes = 2, n_starts = 20,
                 tol = 1e-10, seed = 1)
+compare_models(two = first, three = lca)
+```
+
+The third class lowers the BIC by 77 and the ICL by 122, and raises relative
+entropy from 0.67 to 0.80. The three-class model is retained.
+
+## The chosen model
+
+```{r chosen-print}
 lca
 ```
 
-The `"responses"` table contains one row per profile, item and category.
-The column `probability` is the estimated conditional probability of that
-response within the profile.
-
-```{r responses}
-get_results(lca, "responses")
-```
-
-The response plot compares the fitted item-response probabilities across
-profiles.
+The classes describe three kinds of leisure interval. Class 2 (71.6% of the
+prompts) is low activity: no activity exceeds a probability of 0.17. Class 3
+(24.9%) is media use: social media (0.792), TV or video games (0.397) and
+music (0.366). Class 1 (3.5%) consists of the prompts at which the student
+worked in the part-time job (probability 1.000), with almost no other
+activity. `get_results(lca, "responses")` returns the same probabilities as a
+table, and the response plot compares them across classes.
 
 ```{r responses-plot}
 plot_responses(lca)
 ```
 
-These activity items have "no"/"yes" labels, so `plot_responses(lca)` is the
-appropriate view. A profile-score plot requires distinct finite numeric
-category labels. On a model fitted to numeric categories, such as ratings
-from 1 to 5, `plot_profiles()` can summarize each item's distribution with
-probability-weighted means, or with `statistic = "median"` or `"mode"`.
+The activity items have "no"/"yes" labels, so the response plot is the
+appropriate view. For items with distinct, finite numeric category labels,
+such as ratings from 1 to 5, `plot_profiles()` summarizes each item's
+distribution in each class by its probability-weighted mean, or by its median
+or mode (`statistic = "median"` or `"mode"`). Means assume meaningful spacing
+between the category scores. The median is the smallest score whose
+cumulative probability reaches 0.5, and tied modes take the smallest score.
+These summaries use the fitted probabilities, including in FIML models,
+rather than averages of the cases assigned to each class, and they are on the
+raw scale. They have no confidence intervals and therefore do not require
+the parameter-inference calculation of the response plot. In mixed models,
+`plot_profiles()` shows only the continuous indicators.
 
-Means assume meaningful spacing between category scores. The median is the
-smallest score whose cumulative probability reaches 0.5; tied modes use the
-smallest score. These summaries use fitted probabilities, including in FIML
-models, rather than averages of cases assigned to each class. They require
-numeric category labels and use the raw scale. Confidence intervals are not
-computed, so these plots avoid the parameter-inference calculation used by
-the response-probability plot. In mixed models, `plot_profiles()` continues
-to show only continuous indicators.
-
-The `"profile_probabilities"` table and the prevalence plot summarize how
-the distribution of observation-level classes differs across group classes.
+### Group classes
 
 ```{r profile-probabilities}
 get_results(lca, "profile_probabilities")
 ```
 
+The group classes are kinds of students. In group class 2 (56.4% of the
+students), 92.8% of the prompts fall in the low-activity class, 5.9% in the
+job class and 1.4% in the media class. In group class 1 (43.6%), the prompts
+divide between media use (52.9%) and low activity (46.3%). The two kinds of
+students therefore differ in media use rather than in activity overall. The
+prevalence plot shows these probabilities.
+
 ```{r probability-plot}
 plot_prevalence(lca)
 ```
 
-The `"entropy"` table summarizes posterior classification separation at
-both levels.
+## Replication of the maximum
 
-```{r entropy}
-get_results(lca, "entropy")
+The likelihood of latent class models often has several local maxima. The
+`"starts"` table reports the maximum reached from each start.
+
+```{r starts}
+get_results(lca, "starts")
 ```
 
-## Mixed indicators
+The best log likelihood, -7678, is reached by 2 of the 20 starts; 11 starts
+stop at -7686 and the others lower. With few starts, the analysis would
+report a different solution. The number of starts is therefore part of the
+specification, and the replication of the best maximum belongs in the
+report.
 
-Mixed models specify all indicators in `vars` and the categorical subset in
-`categorical`. This example treats three affect ratings as continuous and
-the activity indicators as categorical. Treating ratings as continuous is a
-measurement assumption that should be evaluated against an ordinal
-specification. The `worried` item is omitted because its concentration at
-the lowest category can produce a component with variance near the lower
-bound under a Gaussian specification.
+## Classification
+
+```{r classification}
+get_results(lca, "counts")
+get_results(lca, "entropy")
+get_results(lca, "average_posteriors")
+```
+
+The classes hold 91.4, 1,848.0 and 642.6 prompts and the group classes 43.6
+and 56.4 students. Relative entropy (Ramaswamy et al., 1993) is 0.804 for the
+prompts and 0.878 for the students. The average posterior of the assigned
+class is 0.991 for the job class, 0.930 for low activity and 0.858 for media
+use, and 0.971 and 0.952 for the group classes: the media class overlaps most
+with low activity, and analyses of assigned classes should use the
+three-step methods below.
+
+## Local independence
+
+The `"residuals"` table compares the association of each pair of items within
+each class with the association the model implies (none), with
+Benjamini-Hochberg adjusted p-values (Benjamini & Hochberg, 1995).
+
+```{r residuals}
+head(get_results(lca, "residuals"), 6)
+```
+
+Walking remains associated with sports, time with friends and music within
+the media class (residuals of 0.13 to 0.17, adjusted p-values 0.001 to
+0.010), and with social media within the small job class. `local_dependence`
+estimates the joint distribution of a pair of categorical items within each
+class, as in Latent GOLD.
+
+```{r local-dependence}
+dependent <- multilca(student_esm, vars = activities, id = "student",
+                      n_profiles = 3, n_group_classes = 2,
+                      local_dependence = "sports:walking", n_starts = 20,
+                      tol = 1e-10, seed = 1)
+compare_models(independent = lca, dependent = dependent)
+```
+
+Freeing the pair lowers the BIC by 5.6. The gain is small, the solution is
+reached by a single start, and the classes keep their meaning, so the model
+with independent items is retained and the residual association reported.
+
+## Uncertainty of the estimates
+
+Several response probabilities of the job class lie on the bound of zero or
+one, where Wald inference is undefined. `boundary = "fix"` holds them at the
+bound and reports every other parameter conditional on them, as in Mplus; the
+`fixed_at_bound` attribute names the held parameters.
+
+```{r inference}
+inference <- parameter_inference(lca, boundary = "fix")
+attr(inference, "fixed_at_bound")
+tail(inference, 8)
+```
+
+Ten probabilities are held, both answers of five items: TV or video games,
+music, sports and the job in the job class, and the job in the low-activity
+class. Group class 1 holds 0.436 of the students (95% interval 0.320 to
+0.559), and the probability of a media prompt in that class is 0.529 (0.463
+to 0.594).
+
+## Relating the classes to affect
+
+`three_step()` compares the mean of a variable across classes with the BCH
+correction for classification error (Bolck et al., 2004; Vermunt, 2010).
+
+```{r three-step}
+three_step(lca, data = student_esm, outcome = "happy", contrast = "pairs")
+```
+
+Students report higher happiness at low-activity prompts than at job prompts
+(difference 0.53 on the 1 to 7 scale, 95% interval 0.13 to 0.94, adjusted
+p = .029). Media prompts do not differ from either class.
+
+## Mixed, ordinal and count indicators
+
+`multilpa()` combines categorical indicators, listed in `categorical`, with
+continuous ones. The model below adds three affect ratings as continuous
+indicators. `worried` is omitted: half of its ratings are 1, and a Gaussian
+component for that floor reaches the variance bound.
 
 ```{r mixed}
-mixed <- multilpa(first_week,
+mixed <- multilpa(student_esm,
                   vars = c("happy", "relaxed", "exhausted", activities),
-                  categorical = activities, id = "student", n_profiles = 2,
-                  n_group_classes = 2, n_starts = 3, seed = 1)
+                  categorical = activities, id = "student", n_profiles = 3,
+                  n_group_classes = 2, n_starts = 10, seed = 1)
+mixed
 ```
 
-The default results table reports the continuous indicators' means and
-variances. The `"responses"` table reports categorical response probabilities.
+The affect ratings dominate the classes: the means separate a low-affect
+class (happy 3.31, exhausted 4.57) from two positive ones, and the variance
+of `exhausted` in one class reaches its bound (`min_variance`), as the
+warning reports. Indicators with more information define the classes, so
+variables that are to be explained by the classes, as affect is here, are
+better related to them with `three_step()` than added as indicators.
 
-```{r mixed-results}
-get_results(mixed)
-get_results(mixed, "responses")
-```
-
-## Ordinal and count indicators
-
-The affect ratings range from 1 to 7. An unrestricted categorical
-specification requires six free probability parameters per item and profile.
-The ordinal specification instead uses shared category intercepts and
-profile locations under an adjacent-category logit model, with identifying
-constraints described in `?multilpa`. The `ordinal` argument identifies the
-items to which this specification applies.
+Ordinal ratings can be modelled as `ordinal`: an adjacent-category logit with
+category intercepts shared across classes and a location per class, instead
+of six free probabilities per item and class (identifying constraints in
+`?multilpa`).
 
 ```{r ordinal}
 affect <- c("happy", "relaxed", "worried", "exhausted")
-ordinal <- multilpa(first_week, vars = c(affect, activities), id = "student",
-                    ordinal = affect, categorical = activities, n_profiles = 2,
-                    n_group_classes = 2, n_starts = 3, seed = 1)
-ordinal
-```
-
-The `"ordinal"` table reports fitted category probabilities and profile
-locations for the ordinal indicators.
-
-```{r ordinal-results}
+ordinal <- multilpa(student_esm, vars = c(affect, activities),
+                    id = "student", ordinal = affect,
+                    categorical = activities, n_profiles = 3,
+                    n_group_classes = 2, n_starts = 10, seed = 1)
 head(get_results(ordinal, "ordinal"), 7)
 ```
 
-Count indicators, such as numbers of messages or absences, are specified in
-`count`. The default Poisson model estimates one mean per profile, available
-through `get_results(fit, "count_means")`. The negative-binomial option,
-`count_model = "negative_binomial"`, permits within-profile overdispersion
-through profile-specific dispersion parameters, or a common parameter with
-`count_dispersion = "equal"`. Both count specifications support membership
-covariates and latent transition models.
+The `"ordinal"` table gives the fitted probability of each category and the
+location of each class. Count indicators, such as numbers of messages or
+absences, are listed in `count`: Poisson by
+default, with one mean per class (`get_results(fit, "count_means")`), or
+negative binomial (`count_model = "negative_binomial"`) for overdispersion,
+with class-specific or common (`count_dispersion = "equal"`) dispersion.
 
-## Reference
+## Options of multilca()
 
-The calls below list other functions that work with categorical and mixed
-models. Each comment states what the call returns.
+- **Item types.** Binary, ordinal and nominal items share one
+  parameterization, unrestricted category probabilities in each class.
+  Numeric, integer, logical, character and factor columns are accepted;
+  factor levels keep their order, other types are sorted. Ordered items can
+  instead be modelled as `ordinal` and counts as `count` (above).
+- **Mixed measurement.** Continuous and categorical indicators in one model,
+  through `multilpa()` with `categorical`.
+- **Missing answers.** `missing = "fiml"` uses the observed answers of each
+  row.
+- **Bounds.** `min_probability` keeps every response probability above a
+  lower bound.
+- **Standard errors.** Observed-information and robust (`vcov_type =
+  "robust"`) standard errors through `parameter_inference()`.
+- **Model comparison.** `enumerate_classes()` and `bootstrap_lrt()`; in a
+  FIML fit the bootstrap keeps each row's pattern of missing answers.
+- **Membership covariates.** `profile_covariates` and `group_covariates` work
+  with categorical indicators, and `parameter_inference()` reports their
+  standard errors.
+- **External variables.** `three_step()` and `r3step()` work on a categorical
+  fit.
+- **Transitions.** `lta()` accepts categorical indicators.
+
+## Other functions
 
 ```{r reference, eval = FALSE}
-get_results(lca, "classification")               # class sizes and average posteriors
-get_results(lca, "residuals")                    # residual association within profiles
-parameter_inference(lca)                         # standard errors and intervals
-enumerate_classes(first_week, vars = activities, categorical = activities,
-                  id = "student", n_profiles = 2:3,
-                  n_group_classes = 1:2, seed = 1)  # compare numbers of classes (slow)
-plot_profiles(mixed)                             # means of the continuous indicators
-plot_responses(mixed)                            # answers to the categorical ones
-multilca(first_week, vars = activities, id = "student", n_profiles = 2,
-         n_group_classes = 2, missing = "fiml")  # incomplete answers, if any
+get_results(lca, "classification")      # class sizes and average posteriors
+get_results(lca, "responses")           # response probabilities with standard errors
+r3step(lca, data = student_esm, covariates = "day")  # membership regressed on a predictor
+enumerate_classes(student_esm, vars = activities, categorical = activities,
+                  id = "student", n_profiles = 2:4,
+                  n_group_classes = 1:3, n_starts = 20, tol = 1e-10,
+                  seed = 1)              # compare numbers of classes (slow)
+plot_profiles(mixed)                    # means of the continuous indicators
+plot_responses(mixed)                   # probabilities of the categorical ones
+multilca(student_esm, vars = activities, id = "student", n_profiles = 3,
+         n_group_classes = 2, missing = "fiml")  # incomplete answers
 ```
 
 ## Assumptions
 
-- Items are independent within a profile.
-- Under unrestricted categorical measurement, each item has a separate
-  response-probability distribution in every profile. Rare responses can
-  produce estimates at the lower bound (`min_probability`).
+- Items are independent within a class, unless freed with
+  `local_dependence`.
+- Under unrestricted categorical measurement, each item has its own response
+  distribution in every class; rare responses can produce estimates at the
+  lower bound (`min_probability`).
+- Prompts are independent given the student's class; their order within a
+  day or across days is not modelled.
 - Categories are taken from the observed values; factor levels keep their
   order.
+
+## Reporting
+
+A report of a two-level LCA states the items and their coding, the grouping
+variable, the candidates compared and the criteria used, the number of
+starts and the replication of the best log likelihood, the response
+probabilities and class probabilities with intervals, parameters held at
+bounds, relative entropy and average posteriors at both levels, residual
+associations, and the method used for external variables.
+
+## References
+
+Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
+non-Gaussian clustering. *Biometrics*, 49, 803--821.
+
+Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery rate:
+A practical and powerful approach to multiple testing. *Journal of the Royal
+Statistical Society: Series B*, 57(1), 289--300.
+
+Biernacki, C., Celeux, G., & Govaert, G. (2000). Assessing a mixture model
+for clustering with the integrated completed likelihood. *IEEE Transactions
+on Pattern Analysis and Machine Intelligence*, 22, 719--725.
+
+Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent structure
+models with categorical variables: One-step versus three-step estimators.
+*Political Analysis*, 12(1), 3--27.
+
+Collins, L. M., & Lanza, S. T. (2010). *Latent class and latent transition
+analysis*. Wiley.
+
+Dempster, A. P., Laird, N. M., & Rubin, D. B. (1977). Maximum likelihood
+from incomplete data via the EM algorithm. *Journal of the Royal Statistical
+Society: Series B*, 39(1), 1--38.
+
+Neubauer, A. B., & Schmiedek, F. (2024). Approaching academic adjustment on
+multiple time scales. *Zeitschrift für Erziehungswissenschaft*, 27(1),
+147--168. <https://doi.org/10.1007/s11618-023-01182-8>
+
+Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., & Robinson, W. T. (1993).
+An empirical pooling approach for estimating marketing mix elasticities with
+PIMS data. *Marketing Science*, 12, 103--124.
+
+Schwarz, G. (1978). Estimating the dimension of a model. *The Annals of
+Statistics*, 6, 461--464.
+
+Vermunt, J. K. (2003). Multilevel latent class models. *Sociological
+Methodology*, 33, 213--239.
+
+Vermunt, J. K. (2010). Latent class modeling with covariates: Two improved
+three-step approaches. *Political Analysis*, 18, 450--469.
 
 ```{r restore-options, include = FALSE}
 options(old_options)

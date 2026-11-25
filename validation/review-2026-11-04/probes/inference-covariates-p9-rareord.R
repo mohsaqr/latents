@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 G<-50;n<-6
 d<-do.call(rbind,lapply(seq_len(G),function(g){k<-rbinom(n,1,.5)+1L; data.frame(g=g,y=rnorm(n,c(-1.5,1.5)[k]),o=sapply(k,function(j) sample(1:3,1,prob=list(c(.6,.3,.1),c(.1,.3,.6))[[j]])))}))
 d$o[d$g %in% c(3,17) & d$y>0][1:2]<-4L   # rare top level in two groups only

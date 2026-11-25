@@ -1,7 +1,7 @@
 # T = 2 with a stayer class: show the stayer share is arbitrary. Build other
 # parameter points from the fit's implied latent joint distribution and evaluate
 # them with the package's own likelihood.
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 sim <- function(n, T, seed) {
   set.seed(seed)
   P <- matrix(c(.8,.2,.3,.7), 2, byrow = TRUE)

@@ -1,6 +1,12 @@
 ---
 title: "Latent class analysis: a complete workflow"
-author: "Written by [Mohammed Saqr](https://saqr.me) and [Sonsoles López-Pernas](https://sonsoles.me)"
+author:
+  - name: Mohammed Saqr
+    url: https://saqr.me
+    affiliation: University of Eastern Finland
+  - name: Sonsoles López-Pernas
+    url: https://sonsoles.me
+    affiliation: University of Eastern Finland
 output:
   rmarkdown::html_vignette:
     toc: true
@@ -17,14 +23,34 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7.5,
 old_options <- options(digits = 3, width = 90)
 ```
 
-Latent class analysis (LCA) is a mixture model for categorical indicators.
-It assumes that the observations come from a small number of unobserved
-classes, and that within each class the indicators are independent, each
-with its own response probabilities. This vignette presents a complete
-single-level analysis: description of the data, selection of the number of
-classes, estimation, interpretation, evaluation of the classification, and
-the relation of the classes to a distal outcome. The final section extends
-the model to two levels. In the output of this package the classes of
+Latent class analysis (LCA) is a person-centred method for identifying
+unobserved subgroups in data measured on categorical indicators (Collins &
+Lanza, 2010). It assumes that the observations come from a small number of
+unobserved classes, each characterized by its own probability of every
+response to every indicator. Within a class, the indicators are assumed to be
+independent of one another; this assumption of local independence means that
+the classes alone account for the associations among the indicators. The
+model estimates the response probabilities of each class, the proportion of
+the sample in each class, and the posterior probability with which each
+observation belongs to each class.
+
+In learning analytics, LCA has been used to identify the engagement state of
+each student in each course from indicators of online activity. In the
+VaSSTra method, these states are subsequently arranged into sequences across
+the courses of a programme, and similar sequences are grouped into
+trajectories of engagement (López-Pernas & Saqr, 2023, 2024). Saqr and
+López-Pernas (2021) and Saqr et al. (2023) applied this approach to the
+engagement of students followed through a complete study programme, so that
+the latent classes of single course enrolments form the building blocks of
+students' longitudinal trajectories.
+
+As with latent profile analysis, an LCA involves a sequence of decisions:
+the number of classes, the estimation from multiple starting values, the
+interpretation of the classes, the evaluation of the classification and of
+local independence, and the relation of the classes to other variables
+(Nylund-Gibson & Choi, 2018; Weller et al., 2020). This vignette presents a
+complete single-level analysis in that order and extends the model to two
+levels in the final section. In the output of this package the classes of
 observations are labelled `profile_1`, `profile_2`, and so on.
 
 ```{r package}
@@ -32,33 +58,43 @@ library(latents)
 set.seed(1)
 ```
 
-The estimation uses random starting values, so the seed is set once to make
-the results reproducible.
+The estimation uses random starting values; the seed is therefore set once
+so that the results can be reproduced.
 
 ## Data
 
-The `student_esm` data contain 2,582 experience-sampling reports from
-university students. At each report a student indicated whether they had
-been engaged in each of eight activities, and rated how happy, relaxed,
-worried and exhausted they felt. The aim of the analysis is to identify
-typical combinations of activities.
+The `student_esm` data contain 2,582 experience-sampling reports from 100
+university students, collected in a study of academic adjustment (Neubauer &
+Schmiedek, 2024). At each report a student indicated whether they had been
+engaged in each of eight activities since the previous report, and rated how
+happy, relaxed, worried and exhausted they felt. The aim of the analysis is
+to identify typical combinations of activities.
 
 ```{r data}
 activities <- c("time_with_friends", "on_social_media", "tv_video_games",
                 "listened_music", "sports", "walking", "reading",
                 "part_time_job")
-descriptives(student_esm, activities)
+summary(subset(student_esm, select = activities))
 ```
+
+Every activity is absent at most reports. Social media is the most frequent
+(745 reports) and a part-time job the least frequent (103), so the classes
+are distinguished by how far their probabilities of each activity exceed
+these base rates.
 
 The reports are nested in students. The first part of this vignette treats
 each report as an independent observation, which corresponds to the
-conventional single-level model. The nesting is taken into account in the
+conventional single-level model; the nesting is taken into account in the
 final section.
 
 ## Selecting the number of classes
 
-`enumerate_lca()` estimates models with one to six classes and returns the
-results in one table.
+The number of classes is not estimated by the model but specified by the
+analyst, and is therefore chosen by fitting models with different numbers of
+classes and comparing them (see the
+[class enumeration](https://pak.dynasite.org/latents/articles/enumeration.html)
+article). `enumerate_lca()` estimates models with one to six classes and
+returns the results in one table.
 
 ```{r enumerate}
 models <- enumerate_lca(student_esm, activities, n_classes = 1:6)
@@ -69,19 +105,24 @@ plot_enumeration(models)
 summary(models)
 ```
 
-The BIC is lowest for four classes, 13.2 points below the three-class
-model. The fourth class, however, contains 1.3% of the reports (about 32),
-which describe many activities at once; a class of this size is poorly
-supported, and the ICL, which penalizes classification uncertainty, is lower
-for three classes than for four. The ICL is lowest for one class, which has
-no uncertainty to penalize, and among the models with more than one class it
-is lowest for two; the two-class solution, however, has a relative entropy
+The BIC (Schwarz, 1978) is lowest for four classes, 13.2 points below the
+three-class model. The fourth class, however, contains 1.3% of the reports
+(about 32), which describe many activities at once, and the four-class model
+reaches its best log likelihood from only one of its starting values. A
+class of this size, supported by a solution that the starts do not
+replicate, is weakly supported, and the ICL (Biernacki et al., 2000), which
+additionally penalizes classification uncertainty, is lower for three
+classes than for four. The ICL is lowest for one class, which has no
+uncertainty to penalize, and among the models with more than one class it is
+lowest for two; the two-class solution, however, has a relative entropy
 below 0.5 and therefore separates the reports poorly. The three-class model
 is retained.
 
 ## Estimation
 
-`lca()` fits a single-level latent class model.
+`lca()` fits a single-level latent class model, estimated by maximum
+likelihood with the expectation-maximization algorithm from multiple starting
+values.
 
 ```{r fit}
 fit <- lca(student_esm, activities, n_classes = 3)
@@ -130,7 +171,10 @@ probability matrix, which shows which classes are confused with which.
 diagnostics(fit)
 ```
 
-The relative entropy of 0.66 indicates a moderately clear classification.
+The relative entropy of 0.66 (Ramaswamy et al., 1993) indicates a moderately
+clear classification. Relative entropy describes the quality of the
+classification for the chosen model rather than serving as a criterion for
+the number of classes (Sorgente et al., 2025).
 
 ## Local dependence
 
@@ -144,7 +188,7 @@ in simulated data from a correctly specified latent class model it rejected
 0.25% of pairs per class, and 0.08% pooled, at a nominal 5%. `p_adjusted` is
 corrected across all the pairs by Benjamini-Hochberg. A pair that passes the
 filter below is therefore strong evidence of dependence, but a pair that does
-not pass it is not evidence of independence.
+not pass it is not evidence of independence (Benjamini & Hochberg, 1995).
 
 ```{r residuals}
 subset(get_results(fit, "residuals"), p_adjusted < 0.01)
@@ -225,9 +269,65 @@ The two-level model is presented in detail in `vignette("lca")`.
 
 ## References
 
+Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery rate:
+A practical and powerful approach to multiple testing. *Journal of the Royal
+Statistical Society: Series B*, 57(1), 289--300.
+
+Biernacki, C., Celeux, G., & Govaert, G. (2000). Assessing a mixture model
+for clustering with the integrated completed likelihood. *IEEE Transactions
+on Pattern Analysis and Machine Intelligence*, 22, 719--725.
+
 Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent structure
 models with categorical variables: One-step versus three-step estimators.
-*Political Analysis*, 12(1), 3–27.
+*Political Analysis*, 12(1), 3--27.
+
+Collins, L. M., & Lanza, S. T. (2010). *Latent class and latent transition
+analysis*. Wiley.
+
+López-Pernas, S., & Saqr, M. (2023). From variables to states to trajectories
+(VaSSTra): A method for modelling the longitudinal dynamics of learning and
+behaviour. In *Proceedings TEEM 2022: Tenth International Conference on
+Technological Ecosystems for Enhancing Multiculturality* (pp. 1169--1178).
+
+López-Pernas, S., & Saqr, M. (2024). Modeling the dynamics of longitudinal
+processes in education: A tutorial with R for the VaSSTra method. In M. Saqr
+& S. López-Pernas (Eds.), *Learning analytics methods and tutorials: A
+practical guide using R* (pp. 355--379). Springer.
+<https://doi.org/10.1007/978-3-031-54464-4_11>
+
+Neubauer, A. B., & Schmiedek, F. (2024). Approaching academic adjustment on
+multiple time scales. *Zeitschrift für Erziehungswissenschaft*, 27(1),
+147--168. <https://doi.org/10.1007/s11618-023-01182-8>
+
+Nylund-Gibson, K., & Choi, A. Y. (2018). Ten frequently asked questions about
+latent class analysis. *Translational Issues in Psychological Science*, 4(4),
+440--461. <https://doi.org/10.1037/tps0000176>
+
+Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., & Robinson, W. T. (1993).
+An empirical pooling approach for estimating marketing mix elasticities with
+PIMS data. *Marketing Science*, 12, 103--124.
+
+Saqr, M., & López-Pernas, S. (2021). The longitudinal trajectories of online
+engagement over a full program. *Computers & Education*, 175, 104325.
+<https://doi.org/10.1016/j.compedu.2021.104325>
+
+Saqr, M., López-Pernas, S., Helske, S., & Hrastinski, S. (2023). The
+longitudinal association between engagement and achievement varies by time,
+students' profiles, and achievement state: A full program study.
+*Computers & Education*, 199, 104787.
+<https://doi.org/10.1016/j.compedu.2023.104787>
+
+Schwarz, G. (1978). Estimating the dimension of a model. *The Annals of
+Statistics*, 6, 461--464.
+
+Sorgente, A., Caliciuri, R., Robba, M., Lanz, M., & Zumbo, B. D. (2025). A
+systematic review of latent class analysis in psychology: Examining the gap
+between guidelines and research practice. *Behavior Research Methods*, 57,
+301. <https://doi.org/10.3758/s13428-025-02812-1>
+
+Weller, B. E., Bowen, N. K., & Faubert, S. J. (2020). Latent class analysis:
+A guide to best practice. *Journal of Black Psychology*, 46(4), 287--311.
+<https://doi.org/10.1177/0095798420930932>
 
 ```{r restore-options, include = FALSE}
 options(old_options)

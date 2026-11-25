@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 options(digits = 5, width = 140)
 indicators <- c("cognitive_strategies", "intrinsic_value", "self_efficacy","self_regulation", "test_anxiety")
 models <- enumerate_lpa(srl, indicators, n_profiles = 1:6)

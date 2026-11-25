@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(6)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(6)
 ng <- 60; nper <- 5
 g <- sample(1:2, ng, TRUE); id <- rep(seq_len(ng), each = nper)
 k <- vapply(g[id], function(h) sample(1:3, 1, prob = if (h == 1) c(.6,.3,.1) else c(.1,.3,.6)), 1L)

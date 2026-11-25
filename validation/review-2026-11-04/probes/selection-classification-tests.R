@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(7)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(7)
 # ---- VLMR: fully independent reference on K=1 v K=2, univariate equal variance + numDeriv
 n <- 200; k <- rbinom(n,1,.4); dv <- data.frame(y = rnorm(n, ifelse(k==1, 2.2, 0)), id = seq_len(n))
 grid <- enumerate_lpa(dv, "y", n_profiles = 1:2, model = "EEI", n_starts = 5, seed = 1)

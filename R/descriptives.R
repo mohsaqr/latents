@@ -388,22 +388,6 @@ descriptives.multilpa_covariates <-descriptives.multilpa
   invisible(NULL)
 }
 
-#' One-way random-effects intraclass correlation
-#'
-#' The share of variance lying between groups, from the one-way ANOVA mean
-#' squares. `n0` is the size-corrected average group size, which equals the
-#' common size when the groups are balanced and is smaller when they are not, so
-#' a few large groups cannot inflate the estimate.
-#'
-#' The estimate is returned as computed. It can fall slightly below zero when
-#' the between-group mean square is smaller than the within-group one, which is
-#' the estimator saying there is no group structure; truncating it at zero would
-#' hide that rather than report it.
-#'
-#' @param values Numeric observations, already complete.
-#' @param groups The group each observation belongs to.
-#' @return A single number, or `NA_real_` where the design cannot support one.
-#' @noRd
 #' Within-group and between-group standard deviations
 #'
 #' The within-group SD is the square root of the pooled within-group
@@ -430,6 +414,22 @@ descriptives.multilpa_covariates <-descriptives.multilpa
   c(within = within, between = between)
 }
 
+#' One-way random-effects intraclass correlation
+#'
+#' The share of variance lying between groups, from the one-way ANOVA mean
+#' squares. `n0` is the size-corrected average group size, which equals the
+#' common size when the groups are balanced and is smaller when they are not, so
+#' a few large groups cannot inflate the estimate.
+#'
+#' The estimate is returned as computed. It can fall slightly below zero when
+#' the between-group mean square is smaller than the within-group one, which is
+#' the estimator saying there is no group structure; truncating it at zero would
+#' hide that rather than report it.
+#'
+#' @param values Numeric observations, already complete.
+#' @param groups The group each observation belongs to.
+#' @return A single number, or `NA_real_` where the design cannot support one.
+#' @noRd
 .multilpa_icc <- function(values, groups) {
   index <- match(groups, unique(groups))
   sizes <- tabulate(index)

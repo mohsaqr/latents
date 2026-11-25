@@ -1,9 +1,9 @@
 # Mutation check, in memory only: override one internal function in the loaded
 # namespace, run the area's test files, restore. Nothing on disk changes.
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 Sys.setenv(NOT_CRAN = "true")
 ns <- asNamespace("latents")
-tdir <- "/Users/mohammedsaqr/Documents/Github/latents/tests/testthat"
+tdir <- "/Users/mohammedsaqr/Github/latents/tests/testthat"
 run <- function(label, name, mutant, files) {
   original <- get(name, ns)
   unlockBinding(name, ns); assign(name, mutant(original), ns); lockBinding(name, ns)

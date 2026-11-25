@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 options(digits = 5, width = 150)
 trajectories <- function(k) mixture_regression(score ~ wave, growth_scores, n_classes = k, id = "student", class_level = "group", n_starts = 5, seed = 1)
 growth <- function(k) mixture_regression(score ~ wave, growth_scores, n_classes = k, id = "student", class_level = "group", random = "wave", random_covariance = "equal", n_starts = 5, seed = 1)

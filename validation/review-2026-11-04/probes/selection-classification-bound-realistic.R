@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 print(names(student_esm)[1:15])
 items <- c("time_with_friends", "on_social_media", "sports")
 items <- intersect(names(student_esm), c(items, "homework", "studying", "working", "reading", "gaming", "music", "chores"))

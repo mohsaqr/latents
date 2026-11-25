@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 stopifnot(requireNamespace("numDeriv", quietly=TRUE))
 # One data set per separation. The cross term of the stacked M-estimator, and a bootstrap reference.
 run <- function(sep, n=800, seed=1, B=300) {

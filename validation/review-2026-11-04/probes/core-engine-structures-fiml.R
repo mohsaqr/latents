@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 # Independent likelihood (plain base R), independent parameter count (numerical
 # rank of the map from a hand parameterization) and stationarity under FIML
 # (optim from the fit in the structure's own coordinates) for all 14 structures.

@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 # 1. Brute-force path sum of the three-step chain on a tiny case, plain base R.
 K <- 3L
 D <- rbind(c(.8,.15,.05), c(.1,.7,.2), c(.05,.25,.7))

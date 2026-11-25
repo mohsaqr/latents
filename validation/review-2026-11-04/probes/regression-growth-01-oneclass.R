@@ -1,4 +1,4 @@
-suppressMessages(devtools::load_all("/Users/mohammedsaqr/Documents/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
+suppressMessages(devtools::load_all("/Users/mohammedsaqr/Github/latents", quiet = TRUE)); pdf(NULL); set.seed(1)
 # One-class mixture regressions against stats::glm, MASS, hand likelihoods, by family.
 n <- 300
 d <- data.frame(x = rnorm(n), z = rbinom(n, 1, .4), e = runif(n, 1, 3))
