@@ -1,27 +1,59 @@
 # Latent class growth analysis: classes of trajectories
 
-When the same people are measured repeatedly, **latent class growth
-analysis** (Nagin 2005; also called group-based trajectory modelling)
-finds a small number of classes, each with its own trajectory, and
-assigns every person to the class whose trajectory they follow. Everyone
-in a class is assumed to follow that trajectory exactly; what remains is
-noise.
+Latent class growth analysis (LCGA), also known as group-based
+trajectory modelling, is a person-centred approach used to identify
+distinct subgroups of individuals who exhibit different patterns of
+change over time. When the same individuals are measured repeatedly,
+LCGA assumes that the population consists of a finite number of latent
+classes, each characterized by a specific developmental trajectory.
+These trajectories describe how the outcome of interest changes over
+time within each subgroup. Individuals are assigned to latent classes
+according to their posterior probabilities of membership, which indicate
+the extent to which their observed measurement patterns correspond to
+each estimated trajectory (Nagin, 2005).
 
-That assumption is its strength and its limit:
+Similar to latent profile analysis, LCGA focuses on identifying
+meaningful subgroups within a population, but rather than distinguishing
+individuals according to their patterns of responses at a particular
+point in time, it differentiates them according to their longitudinal
+patterns of development (Scrucca et al., 2024; Saqr et al., 2024). A
+defining feature of LCGA is the assumption that individuals within the
+same class share an identical underlying growth trajectory. Accordingly,
+within-class variation in individual growth parameters is constrained to
+zero, and deviations from the estimated trajectory are attributed to
+random measurement error. This assumption distinguishes LCGA from growth
+mixture modelling, which allows individuals within the same class to
+vary in their growth parameters and, consequently, in their individual
+developmental trajectories.
 
-- **Strength.** The model is simple, fast and fits any outcome the
-  regression mixture fits: continuous scores, pass/fail, counts, ordered
-  ratings.
-- **Limit.** People of the same kind rarely follow one curve exactly.
-  When they vary around it, the model can only express that by adding
-  classes, so it tends to find more classes than there are kinds (Bauer
-  and Curran 2003). The growth mixture model adds random effects for
-  that variation; it is the subject of the [growth mixture
+LCGA is a special case of mixture regression (see the [mixture
+regression](https://pak.dynasite.org/latents/articles/mixture-regression.html)
+article). Time is the predictor, and the class is shared by all
+measurements of a person rather than assigned to each measurement
+separately. In latents it is therefore fitted with
+[`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md),
+with time on the right of the formula and `class_level = "group"`;
+adding random effects through `random` turns the same call into a growth
+mixture model.
+
+The assumption of identical trajectories within a class is both the
+strength and the limitation of the model:
+
+- **Strength.** The model is simple, fast to estimate and, as a mixture
+  regression, accommodates every outcome family of
+  [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md):
+  continuous scores, binary outcomes, counts and ordered ratings.
+- **Limitation.** Individuals of the same kind rarely follow one
+  trajectory exactly. When they vary around it, the model can represent
+  that variation only by adding classes, and it therefore tends to
+  identify more classes than there are kinds of individuals (Bauer &
+  Curran, 2003). The growth mixture model adds random effects for that
+  variation; it is the subject of the [growth mixture
   article](https://pak.dynasite.org/latents/articles/growth-mixture.html).
 
-A useful habit is to fit both and compare them
-([`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md)),
-as the growth-mixture vignette does.
+Fitting both models and comparing them with
+[`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md),
+as the growth mixture article does, is therefore advisable.
 
 | Role | Argument | Here |
 |----|----|----|
@@ -81,11 +113,12 @@ enumerate_regressions(score ~ wave, growth_scores, n_classes = 1:5,
 #> One model: get_results(x, "model", n_classes = ).
 ```
 
-The BIC keeps falling up to five classes, although only three kinds of
-student generated the data: the students’ own spread around their kind’s
-trajectory is being absorbed by extra classes. With these data the
-growth mixture model, which models that spread, picks three. Here, to
-keep the three kinds, the three-class model is read:
+The BIC keeps falling up to five classes (from 13,276 with one class to
+11,425 with five), although only three kinds of student generated the
+data: the students’ own spread around their kind’s trajectory is
+absorbed by additional classes. With these data the growth mixture
+model, which models that spread, picks three. Here, to keep the three
+kinds, the three-class model is read:
 
 ``` r
 
@@ -157,6 +190,18 @@ get_results(fit, "recovery", data = growth_scores, truth = "trajectory")
 #> Class 2   declining       96              0.950
 #> Class 3   declining        0              0.000
 ```
+
+The three classes are an improving trajectory (class 3, 31.9% of the
+students, gaining 3.37 points per wave from 47.56), a declining
+trajectory (class 2, 33.6%, losing 2.35 points per wave from 57.87) and
+a stable trajectory (class 1, 34.5%, gaining 1.05 points per wave from
+61.00). Higher motivation lowers the odds of the declining class
+relative to the stable one (odds ratio 0.36) and raises the odds of the
+improving class (odds ratio 1.87). Of the students assigned to the
+improving and declining classes, 92.6% and 95.0% were generated with
+those trajectories, whereas a quarter of the stable class (26 of 104
+students) are improving students, whose spread around their trajectory
+the model does not represent.
 
 ## Seeing the classes
 
@@ -233,8 +278,9 @@ compare_models(straight = straight, curved = curved)
 #> curved          3  none    14  -5888.78  11857.41  15.56   0.000     0.92
 ```
 
-These trajectories were generated straight, so the BIC does not reward
-the curvature.
+These trajectories were generated as straight lines, and the BIC of the
+curved model is 15.6 points higher: the additional curvature is not
+supported.
 
 ``` r
 
@@ -245,10 +291,13 @@ plot(curved)
 
 ## Outcomes that are not scores
 
-This is where latent class growth analysis is needed: random effects for
-a binary, count or ordered outcome need numerical integration, which the
-growth mixture model does not do, so trajectories of such outcomes are
-fitted here.
+For outcomes that are not continuous scores, latent class growth
+analysis is the available model: random effects for a binary, count or
+ordered outcome require numerical integration, which the growth mixture
+model in latents does not perform. An alternative for trajectories of
+categorical states is to identify the state of each person at each
+occasion and model the resulting sequences of states (López-Pernas &
+Saqr, 2023, 2024).
 
 **Pass or fail.** Whether each test reached 60 points, with a logistic
 trajectory per class:
@@ -290,7 +339,7 @@ plot(pass_fit, what = "coefficients")
 ![](trajectory-classes_files/figure-html/binary-plot-2.png)
 
 **Ordered bands.** The score in four ordered bands, with a
-cumulative-logit (proportional odds) trajectory per class (McCullagh
+cumulative-logit (proportional odds) trajectory per class (McCullagh,
 1980): each class has its own thresholds between the bands and its own
 slope over the waves.
 
@@ -316,7 +365,7 @@ get_results(band_fit, "coefficients")
 #> Class 2  Threshold middle|high     0.100  [ -0.205,  0.404]   .520            
 #> Class 2  Threshold high|top        2.913  [  2.195,  3.630]  <.001            
 #> Class 2  wave                     -0.822  [ -0.951, -0.692]  <.001        0.44
-#> Class 3  Threshold low|middle     -6.248  [-13.838,  1.343]   .107            
+#> Class 3  Threshold low|middle     -6.246  [-13.827,  1.335]   .106            
 #> Class 3  Threshold middle|high    -1.538  [ -2.106, -0.971]  <.001            
 #> Class 3  Threshold high|top        0.802  [  0.403,  1.202]  <.001            
 #> Class 3  wave                      0.241  [  0.137,  0.346]  <.001        1.27
@@ -345,12 +394,11 @@ a Poisson allows.
 
 ## Distal outcomes
 
-Do the classes differ on something measured once per person?
 [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
-compares class means with the bias-corrected three-step method (Vermunt
-2010; Bakk and Vermunt 2016), which accounts for persons being
-classified with error. The trajectory model must be fitted without
-`membership` for this correction:
+compares the classes on a variable measured once per person, using the
+bias-corrected three-step method (Vermunt, 2010; Bakk & Vermunt, 2016),
+which accounts for persons being classified with error. The trajectory
+model must be fitted without `membership` for this correction:
 
 ``` r
 
@@ -365,15 +413,19 @@ three_step(straight, data = growth_scores, outcome = "motivation",
 #>     3   2        0.51  [0.24, 0.79]  <.001   <.001
 ```
 
+All three pairs of classes differ in motivation (Benjamini-Hochberg
+adjusted p-values below .001).
+
 ## Choices and warnings
 
-- **Latent class growth analysis or a growth mixture model?** If persons
-  of the same kind vary around their trajectory – they almost always do
-  for scores – fit the growth mixture model too and compare them with
+- **Latent class growth analysis and growth mixture models.** When
+  persons of the same kind vary around their trajectory, as they almost
+  always do for scores, the growth mixture model is fitted as well and
+  the two are compared with
   [`compare_models()`](https://pak.dynasite.org/latents/reference/compare_models.md);
-  prefer it when it fits better. Use latent class growth analysis for
-  non-Gaussian outcomes, for a first look, and when within-class
-  variation is not plausible.
+  the growth mixture model is preferred when it fits better. Use latent
+  class growth analysis for non-Gaussian outcomes, for a first look, and
+  when within-class variation is not plausible.
 - **Number of classes.** Read the BIC with the over-extraction above in
   mind; the bootstrap likelihood-ratio test
   (`enumerate_regressions(bootstrap =)`) simulates from the same model
@@ -381,8 +433,9 @@ three_step(straight, data = growth_scores, outcome = "motivation",
   omitted within-class variation. Compare the random-effects model as
   well; the bootstrap does not repair misspecification of its null
   model.
-- **Starts.** Use several (`n_starts`), and check that the best
-  likelihood is reached more than once (the fit reports how many times).
+- **Starts.** Several starts are used (`n_starts`), and the best
+  likelihood should be reached more than once (the fit reports how many
+  times).
 
 ## References
 
@@ -394,11 +447,35 @@ Bauer, D. J., & Curran, P. J. (2003). Distributional assumptions of
 growth mixture models: Implications for overextraction of latent
 trajectory classes. *Psychological Methods*, 8, 338–363.
 
+López-Pernas, S., & Saqr, M. (2023). From variables to states to
+trajectories (VaSSTra): A method for modelling the longitudinal dynamics
+of learning and behaviour. In *Proceedings TEEM 2022: Tenth
+International Conference on Technological Ecosystems for Enhancing
+Multiculturality* (pp. 1169–1178). Lecture Notes in Educational
+Technology. Springer. <https://doi.org/10.1007/978-981-99-0942-1_123>
+
+López-Pernas, S., & Saqr, M. (2024). Modeling the dynamics of
+longitudinal processes in education: A tutorial with R for the VaSSTra
+method. In M. Saqr & S. López-Pernas (Eds.), *Learning analytics methods
+and tutorials: A practical guide using R* (pp. 355–379). Springer.
+<https://doi.org/10.1007/978-3-031-54464-4_11>
+
 McCullagh, P. (1980). Regression models for ordinal data. *Journal of
 the Royal Statistical Society B*, 42, 109–142.
 
 Nagin, D. S. (2005). *Group-based modeling of development*. Harvard
 University Press.
+
+Saqr, M., Vogelsmeier, L. V. D. E., & López-Pernas, S. (2024). Capturing
+where the learning process takes place: A person-specific and
+person-centered primer. *Learning and Individual Differences*, 113,
+102492. <https://doi.org/10.1016/j.lindif.2024.102492>
+
+Scrucca, L., Saqr, M., López-Pernas, S., & Murphy, K. (2024). An
+introduction and R tutorial to model-based clustering in education via
+latent profile analysis. In M. Saqr & S. López-Pernas (Eds.), *Learning
+analytics methods and tutorials: A practical guide using R*
+(pp. 285–317). Springer. <https://doi.org/10.1007/978-3-031-54464-4_9>
 
 Vermunt, J. K. (2010). Latent class modeling with covariates: Two
 improved three-step approaches. *Political Analysis*, 18, 450–469.

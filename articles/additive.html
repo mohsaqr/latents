@@ -15,6 +15,13 @@
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Group-class and cross-level models: classes of groups from raw ratings">
+<meta name="citation_title" content="Group-class and cross-level models: classes of groups from raw ratings">
+<meta name="citation_author" content="Saqr, Mohammed">
+<meta name="citation_author" content="López-Pernas, Sonsoles">
+<meta name="citation_publication_date" content="2026">
+<meta name="citation_publisher" content="latents">
+<meta name="citation_pdf_url" content="https://pak.dynasite.org/latents/pdf/additive.pdf">
+<meta name="citation_abstract_html_url" content="https://pak.dynasite.org/latents/articles/additive.html">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -24,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +54,6 @@
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
     <li><a class="dropdown-item" href="../articles/tree-plot.html">Tree plot</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
@@ -65,7 +71,9 @@
     <li><a class="dropdown-item" href="../articles/case-engagement-evaluation.html">Case study: Evaluating multilevel latent profile models</a></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-covariates.html">Case study: Covariates and staged estimation in multilevel LPA</a></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-transitions.html">Case study: Latent transition analysis of course engagement</a></li>
-    <li><a class="dropdown-item" href="../articles/case-esm-lca.html">Case study: Two-level latent class analysis of leisure activities</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Resources</h6></li>
+    <li><a class="dropdown-item" href="../articles/cite-articles.html">Resources</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -88,63 +96,114 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Group-class and cross-level models: classes of groups from raw ratings</h1>
-                        <h4 data-toc-skip class="author">Written by <a href="https://saqr.me" class="external-link">Mohammed Saqr</a> and <a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a>
-</h4>
-            
-      
-      <small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/vignettes/articles/additive.Rmd" class="external-link"><code>vignettes/articles/additive.Rmd</code></a></small>
+                        <h4 data-toc-skip class="author">Mohammed
+Saqr</h4>
+            <address class="author_afil">
+      University of Eastern
+Finland<br><h4 data-toc-skip class="author">Sonsoles
+López-Pernas</h4>
+            <address class="author_afil">
+      University of Eastern Finland<br><small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/vignettes/articles/additive.Rmd" class="external-link"><code>vignettes/articles/additive.Rmd</code></a></small>
       <div class="d-none name"><code>additive.Rmd</code></div>
-    </div>
+    </address>
+</address>
+</div>
 
     
     
-<p>Members of the same team, pupils of the same class or sessions of the
-same student give ratings that share something: the unit they belong to.
-The <em>additive</em> model of Houle, Morin and Harvey (2026) asks
-whether those units fall into a small number of latent <strong>group
-classes</strong> that differ in where their members’ ratings sit. It has
-no individual profiles: every member of a group belongs to the group’s
-class, and varies around the group’s own level.</p>
-<p>The same machinery fits the other families of that framework: the
-<em>dispersion</em> family, whose group classes differ in how much
-members vary around their group, the <em>additive-dispersion</em>
-family, which allows both, and two <em>cross-level</em> families that
-estimate individual profiles and group classes together.</p>
-<blockquote>
-<p>These families are <strong>experimental</strong>. Estimation,
-standard errors, tables, plots, enumeration and the bootstrap
-likelihood-ratio test are available; missing data and covariates are not
-yet.</p>
-</blockquote>
+<p>Individuals belonging to the same team, pupils attending the same
+classroom, or repeated observations from the same student may share
+characteristics because they belong to a common higher-level unit.
+Consequently, their ratings may exhibit similarities that cannot be
+explained solely by individual-level differences. The additive model
+introduced by Houle, Morin and Harvey (2026) accounts for this
+hierarchical structure by identifying latent group classes that differ
+in the average level of their members’ ratings. Unlike models that
+identify individual-level profiles, the additive model does not classify
+individuals into separate latent profiles. Instead, each group is
+assigned to a latent group class, and all individuals within that group
+share the same group-level classification while retaining individual
+variation around their group’s estimated level. The group classes can
+therefore be interpreted as distinct types of groups, rather than
+subgroups of individuals. This distinction follows the person-centred
+perspective, in which latent classifications are interpreted according
+to the level at which the underlying heterogeneity occurs (Scrucca et
+al., 2024; Saqr et al., 2024).</p>
+<p>The framework extends beyond differences in group means through
+several additional model specifications. The dispersion family
+identifies group classes that differ in the extent of variation among
+their members, while the additive-dispersion family simultaneously
+accounts for differences in group means and within-group variability.
+Two further cross-level families allow individual-level profiles and
+group-level classes to be estimated jointly, thereby capturing
+heterogeneity at both levels of the hierarchical structure.</p>
+<p>These model families are currently experimental. Their implementation
+supports model estimation, standard errors, descriptive tables,
+graphical representations, class enumeration, and bootstrap
+likelihood-ratio testing. However, handling missing data and
+incorporating covariates are not yet supported.</p>
 <div class="section level2">
-<h2 id="the-model">The model<a class="anchor" aria-label="anchor" href="#the-model"></a>
+<h2 id="the-additive-model">The additive model<a class="anchor" aria-label="anchor" href="#the-additive-model"></a>
 </h2>
-<p>For group
+<p>Consider a dataset consisting of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>J</mi><annotation encoding="application/x-tex">J</annotation></semantics></math>
+groups, where group
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>j</mi><annotation encoding="application/x-tex">j</annotation></semantics></math>
-with
+contains
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>n</mi><mi>j</mi></msub><annotation encoding="application/x-tex">n_j</annotation></semantics></math>
-members rating
+individuals who provide ratings on
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>d</mi><annotation encoding="application/x-tex">d</annotation></semantics></math>
-indicators, and group class
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>h</mi><annotation encoding="application/x-tex">h</annotation></semantics></math>:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mi>j</mi></msub><mo>∼</mo><mtext mathvariant="normal">Categorical</mtext><mo stretchy="false" form="prefix">(</mo><msub><mi>ω</mi><mn>1</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>ω</mi><mi>H</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>B</mi><mrow><mi>j</mi><mi>r</mi></mrow></msub><mo>∣</mo><msub><mi>C</mi><mi>j</mi></msub><mo>=</mo><mi>h</mi><mo>∼</mo><mi>N</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>μ</mi><mrow><mi>h</mi><mi>r</mi></mrow></msub><mo>,</mo><msub><mi>T</mi><mrow><mi>h</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>Y</mi><mrow><mi>i</mi><mi>j</mi><mi>r</mi></mrow></msub><mo>∣</mo><msub><mi>B</mi><mrow><mi>j</mi><mi>r</mi></mrow></msub><mo>∼</mo><mi>N</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>B</mi><mrow><mi>j</mi><mi>r</mi></mrow></msub><mo>,</mo><msub><mi>W</mi><mi>r</mi></msub><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mrow><annotation encoding="application/x-tex">
-C_j \sim \text{Categorical}(\omega_1, \dots, \omega_H), \qquad
-B_{jr} \mid C_j = h \sim N(\mu_{hr}, T_{hr}), \qquad
-Y_{ijr} \mid B_{jr} \sim N(B_{jr}, W_r).
-</annotation></semantics></math></p>
-<p>Each group has its own intercept
+indicators. The additive model assumes that each group belongs to one of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>H</mi><annotation encoding="application/x-tex">H</annotation></semantics></math>
+latent group classes. The group-level classification is represented by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>C</mi><mi>j</mi></msub><annotation encoding="application/x-tex">C_j</annotation></semantics></math>,
+while
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>B</mi><mrow><mi>j</mi><mi>r</mi></mrow></msub><annotation encoding="application/x-tex">B_{jr}</annotation></semantics></math>
-per indicator, drawn from its class’s distribution. The group classes
-differ in their means
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>μ</mi><mi>h</mi></msub><annotation encoding="application/x-tex">\mu_h</annotation></semantics></math>
-and, optionally, in the between-group spread
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mi>h</mi></msub><annotation encoding="application/x-tex">T_h</annotation></semantics></math>;
-the <strong>within-group</strong> variance
+denotes the group-specific intercept for indicator
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>r</mi><annotation encoding="application/x-tex">r</annotation></semantics></math>.
+The model can be expressed as follows:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mi>j</mi></msub><mo>∼</mo><mrow><mi mathvariant="normal">Categorical</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>ω</mi><mn>1</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>ω</mi><mi>H</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+C_j \sim \operatorname{Categorical}(\omega_1,\ldots,\omega_H)
+</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>B</mi><mrow><mi>j</mi><mi>r</mi></mrow></msub><mo>∣</mo><msub><mi>C</mi><mi>j</mi></msub><mo>=</mo><mi>h</mi><mo>∼</mo><mi>N</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>μ</mi><mrow><mi>h</mi><mi>r</mi></mrow></msub><mo>,</mo><msub><mi>T</mi><mrow><mi>h</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+B_{jr}\mid C_j=h \sim N(\mu_{hr},T_{hr})
+</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Y</mi><mrow><mi>i</mi><mi>j</mi><mi>r</mi></mrow></msub><mo>∣</mo><msub><mi>B</mi><mrow><mi>j</mi><mi>r</mi></mrow></msub><mo>∼</mo><mi>N</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>B</mi><mrow><mi>j</mi><mi>r</mi></mrow></msub><mo>,</mo><msub><mi>W</mi><mi>r</mi></msub><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mrow><annotation encoding="application/x-tex">
+Y_{ijr}\mid B_{jr}\sim N(B_{jr},W_r).
+</annotation></semantics></math></p>
+<p>The first component specifies the probability of belonging to each
+latent group class, with
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ω</mi><mi>h</mi></msub><annotation encoding="application/x-tex">\omega_h</annotation></semantics></math>
+representing the proportion of groups belonging to class
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>h</mi><annotation encoding="application/x-tex">h</annotation></semantics></math>.
+The second component describes the distribution of group-specific
+intercepts within each class. In particular,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>μ</mi><mrow><mi>h</mi><mi>r</mi></mrow></msub><annotation encoding="application/x-tex">\mu_{hr}</annotation></semantics></math>
+represents the average level of indicator
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>r</mi><annotation encoding="application/x-tex">r</annotation></semantics></math>
+for group class
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>h</mi><annotation encoding="application/x-tex">h</annotation></semantics></math>,
+while
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mrow><mi>h</mi><mi>r</mi></mrow></msub><annotation encoding="application/x-tex">T_{hr}</annotation></semantics></math>
+captures between-group variability within that class. The third
+component specifies the distribution of individual ratings around their
+respective group intercepts, with
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>W</mi><mi>r</mi></msub><annotation encoding="application/x-tex">W_r</annotation></semantics></math>
-is the same in every class. That shared within-group variance is what
-makes the model additive. The likelihood is exact: it is computed from
-each group’s size, mean and within-group scatter, with no numerical
-integration.</p>
+representing the within-group variance for indicator
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>r</mi><annotation encoding="application/x-tex">r</annotation></semantics></math>.</p>
+<p>The defining characteristic of the additive model is that the
+within-group variance is constrained to be equal across all latent group
+classes. Thus, the classes can differ in their average indicator levels
+and, when specified, in their between-group variability, but not in the
+residual variation among individuals within groups. This shared
+within-group variance distinguishes the additive specification from
+models that also allow within-group dispersion to vary across
+classes.</p>
+<p>An additional computational advantage is that the likelihood can be
+evaluated directly using the group sizes, group means, and within-group
+sums of squares. Consequently, estimation does not require numerical
+integration, making the model computationally tractable even when the
+analysis involves multiple indicators and latent group classes.</p>
 </div>
 <div class="section level2">
 <h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
@@ -195,9 +254,9 @@ there are no individual profiles.</p>
 <span><span class="co">#&gt; Tables: get_results(x, what = ), e.g. "parameters", "group_classes", "groups", "intercepts"; summary(x); plot(x).</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="how-many-group-classes">How many group classes?<a class="anchor" aria-label="anchor" href="#how-many-group-classes"></a>
+<h2 id="the-number-of-group-classes">The number of group classes<a class="anchor" aria-label="anchor" href="#the-number-of-group-classes"></a>
 </h2>
-<p>Fit one, two and three classes and compare them by BIC, which for
+<p>Models with one, two and three classes are compared by BIC, which for
 this family is penalized by the number of groups (<code>nobs(fit)</code>
 is the number of teams).</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -220,7 +279,7 @@ distribution, not the chi-square; <code><a href="../reference/bootstrap_lrt.html
 it, as shown below for one against two classes.</p>
 </div>
 <div class="section level2">
-<h2 id="do-the-classes-differ-in-spread">Do the classes differ in spread?<a class="anchor" aria-label="anchor" href="#do-the-classes-differ-in-spread"></a>
+<h2 id="differences-in-spread-between-classes">Differences in spread between classes<a class="anchor" aria-label="anchor" href="#differences-in-spread-between-classes"></a>
 </h2>
 <p><code>between_variance = "equal"</code> constrains the between-group
 variances to be equal across classes, which leaves the classes differing
@@ -240,7 +299,7 @@ in location only.</p>
 <p>Both criteria prefer the equal-spread model, although the data were
 simulated with more spread in climate among strained teams. With 120
 teams that difference is too small to be told apart from sampling noise,
-which is what the criteria report. The rest of this vignette uses the
+which is what the criteria report. The rest of this article uses the
 varying model to show every parameter.</p>
 </div>
 <div class="section level2">
@@ -287,8 +346,8 @@ the one-class fit:</p>
 <span><span class="co">#&gt; Null: additive_equal, 1 group class; alternative: additive_equal, 2 group classes</span></span>
 <span><span class="co">#&gt; Observed statistic: 73.015578</span></span>
 <span><span class="co">#&gt; p-value: 0.05 (Monte Carlo SE 0.0487) from 19 of 19 valid replicates (0 invalid)</span></span></code></pre></div>
-<p>With 19 replicates the smallest attainable p-value is 0.05; use
-several hundred replicates for a report.</p>
+<p>With 19 replicates the smallest attainable p-value is 0.05; a report
+uses several hundred replicates.</p>
 </div>
 <div class="section level2">
 <h2 id="parameters">Parameters<a class="anchor" aria-label="anchor" href="#parameters"></a>
@@ -328,14 +387,16 @@ information:</p>
 <span><span class="co">#&gt; 11       NA         NA   0.4873     0.684</span></span>
 <span><span class="co">#&gt; 12       NA         NA   0.3156     0.513</span></span></code></pre></div>
 <p>The warning comes from a check on each class’s <em>effective
-groups</em>: the number of perfectly classified groups that would pin
-down the class weight as precisely as this fit does. It is shown in the
-<code>group_classes</code> table below. Here the strained class has
-about 38 effective groups of the 49 it is expected to hold, so most of
-the information survives the classification; the class is simply not
-large. With fewer than 50 effective groups, the simulation study found
-interval coverage for class parameters starting to fall below 95%, and
-far below it when a class is also poorly separated.</p>
+groups</em>: the number of groups the class would hold in a perfectly
+classified sample that pins down the class weight as precisely as this
+fit does. It is shown in the <code>group_classes</code> table below.
+Here the strained class has about 38 effective groups of the 49 it is
+expected to hold, so most of the information survives the
+classification; the class is simply not large. With fewer than 50
+effective groups, the simulation study described under <em>Known
+limitations</em> found interval coverage for class parameters starting
+to fall below 95%, and far below it when a class is also poorly
+separated.</p>
 <p><code>level</code> separates the three kinds of parameter:
 <code>"between"</code> rows are the class means and between-group
 variances, <code>"within"</code> rows the within-group variances shared
@@ -453,7 +514,7 @@ Houle et al. (2026): each group’s means of the indicators are the
 group-level indicators of its class. In the <em>full</em> family, the
 group classes also differ in how their members are distributed over the
 individual profiles; in the <em>restricted</em> family they do not, and
-the two levels are estimated separately. Here, sessions of
+the two levels are estimated separately. Here, the course enrolments of
 <code>course_engagement</code> form engagement profiles and students
 form group classes.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
@@ -482,18 +543,18 @@ form group classes.</p>
 <span><span class="co">#&gt;     bic bic_individual n_groups n_obs converged boundary</span></span>
 <span><span class="co">#&gt; 1 17225          17337      106  1422      TRUE    FALSE</span></span>
 <span><span class="co">#&gt; 2 17700          17809      106  1422      TRUE    FALSE</span></span></code></pre></div>
-<p>In the full model one class of students has most of its sessions in
+<p>In the full model one class of students has most of its enrolments in
 one profile and the other class mostly in the other. The fits warn that
 their criteria cannot show this is real. A group mean is computed from
 the same ratings, so these likelihoods count the data twice: on
-simulated data in which group membership has no effect, BIC still
-preferred two group classes in every data set we checked. The
-<code>fit</code> table therefore does not choose the number of group
-classes or the form, and it is not comparable with the group-class
-families above. Standard errors are not reported. Evidence for the
-classes has to come from outside these criteria, such as an ordinary
-<code>family = "profiles"</code> fit to the same data, whose BIC did not
-prefer group classes in those data sets.</p>
+simulated data in which group membership has no effect, the BIC of the
+full form preferred two group classes in all 18 simulated data sets
+examined. The <code>fit</code> table therefore does not choose the
+number of group classes or the form, and it is not comparable with the
+group-class families above. Standard errors are not reported. Evidence
+for the classes has to come from outside these criteria, such as an
+ordinary <code>family = "profiles"</code> fit to the same data, whose
+BIC did not prefer group classes in those data sets.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">full</span>, what <span class="op">=</span> <span class="st">"composition"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="additive_files/figure-html/plot-composition-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
@@ -553,7 +614,16 @@ are withheld, or the interval excludes zero by construction.</li>
 </h2>
 <p>Houle, S. A., Morin, A. J. S., &amp; Harvey, J.-F. (2026). Multilevel
 latent profile analyses: A comprehensive guide. <em>Organizational
-Research Methods</em>. <a href="doi:10.1177/10944281261469432" class="uri">doi:10.1177/10944281261469432</a>.</p>
+Research Methods</em>. <a href="https://doi.org/10.1177/10944281261469432" class="external-link uri">https://doi.org/10.1177/10944281261469432</a></p>
+<p>Saqr, M., Vogelsmeier, L. V. D. E., &amp; López-Pernas, S. (2024).
+Capturing where the learning process takes place: A person-specific and
+person-centered primer. <em>Learning and Individual Differences</em>,
+113, 102492. <a href="https://doi.org/10.1016/j.lindif.2024.102492" class="external-link uri">https://doi.org/10.1016/j.lindif.2024.102492</a></p>
+<p>Scrucca, L., Saqr, M., López-Pernas, S., &amp; Murphy, K. (2024). An
+introduction and R tutorial to model-based clustering in education via
+latent profile analysis. In M. Saqr &amp; S. López-Pernas (Eds.),
+<em>Learning analytics methods and tutorials: A practical guide using
+R</em> (pp. 285–317). Springer. <a href="https://doi.org/10.1007/978-3-031-54464-4_9" class="external-link uri">https://doi.org/10.1007/978-3-031-54464-4_9</a></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -15,6 +15,13 @@
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Covariates, outcomes and staged estimation">
+<meta name="citation_title" content="Covariates, outcomes and staged estimation">
+<meta name="citation_author" content="Saqr, Mohammed">
+<meta name="citation_author" content="López-Pernas, Sonsoles">
+<meta name="citation_publication_date" content="2026">
+<meta name="citation_publisher" content="latents">
+<meta name="citation_pdf_url" content="https://pak.dynasite.org/latents/pdf/covariates.pdf">
+<meta name="citation_abstract_html_url" content="https://pak.dynasite.org/latents/articles/covariates.html">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -24,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +54,6 @@
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
     <li><a class="dropdown-item" href="../articles/tree-plot.html">Tree plot</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
@@ -65,7 +71,9 @@
     <li><a class="dropdown-item" href="../articles/case-engagement-evaluation.html">Case study: Evaluating multilevel latent profile models</a></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-covariates.html">Case study: Covariates and staged estimation in multilevel LPA</a></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-transitions.html">Case study: Latent transition analysis of course engagement</a></li>
-    <li><a class="dropdown-item" href="../articles/case-esm-lca.html">Case study: Two-level latent class analysis of leisure activities</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Resources</h6></li>
+    <li><a class="dropdown-item" href="../articles/cite-articles.html">Resources</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -88,23 +96,86 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Covariates, outcomes and staged estimation</h1>
-                        <h4 data-toc-skip class="author">Written by <a href="https://saqr.me" class="external-link">Mohammed Saqr</a> and <a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a>
-</h4>
-            
-      
-      <small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/vignettes/articles/covariates.Rmd" class="external-link"><code>vignettes/articles/covariates.Rmd</code></a></small>
+                        <h4 data-toc-skip class="author">Mohammed
+Saqr</h4>
+            <address class="author_afil">
+      University of Eastern
+Finland<br><h4 data-toc-skip class="author">Sonsoles
+López-Pernas</h4>
+            <address class="author_afil">
+      University of Eastern Finland<br><small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/vignettes/articles/covariates.Rmd" class="external-link"><code>vignettes/articles/covariates.Rmd</code></a></small>
       <div class="d-none name"><code>covariates.Rmd</code></div>
-    </div>
+    </address>
+</address>
+</div>
 
     
     
-<p>Variables outside the measurement model can be related to the latent
-classes in two ways. The three-step approach fits the profiles first and
-then relates them to an external variable, correcting for classification
-error, so the profiles stay fixed. The one-step approach adds the
-variable to the model, so it can also change the profiles. Staged
-estimation applies the same idea of fixed profiles to the group
-classes.</p>
+<p>The distinction between one-step and three-step approaches concerns
+whether external variables are allowed to influence the estimation and
+definition of latent profiles. External variables are not included among
+the indicators used to identify the profiles but are introduced to
+examine their relationships with profile membership. These variables may
+function as predictors of profile membership, covariates, or distal
+outcomes.</p>
+<p>In the three-step approach, the measurement model is estimated first,
+using only the indicators specified to define the profiles. Once the
+profiles have been identified, individuals are assigned to their most
+likely profile based on their posterior membership probabilities. In the
+subsequent step, external variables are incorporated into the analysis
+while correcting for the classification errors associated with this
+assignment. This correction is important because profile membership is
+latent and individuals cannot necessarily be classified with complete
+certainty. By accounting for this uncertainty, the three-step approach
+reduces the bias that would arise from treating assigned profile
+membership as if it were directly observed. Importantly, the original
+measurement model remains unchanged: the profile-specific means and
+other measurement parameters are not re-estimated in response to the
+external variables.</p>
+<p>In contrast, the one-step approach incorporates external variables
+directly into the latent profile model, estimating the measurement and
+structural components simultaneously. Consequently, the external
+variables can influence the estimation of profile membership and,
+depending on the model specification, alter the profile characteristics
+and classification of individuals. Although this approach allows the
+relationships between latent profiles and external variables to be
+estimated jointly, it may produce a different profile solution from the
+model estimated using only the original measurement indicators (Bolck et
+al., 2004; Vermunt, 2010).</p>
+<p>This distinction is particularly relevant in person-centred research,
+where profiles are interpreted as substantively meaningful subgroups
+characterized by distinct patterns across a set of indicators (Saqr et
+al., 2024; Scrucca et al., 2024). Researchers often seek to investigate
+the characteristics, antecedents, and consequences of these subgroups
+after establishing their measurement structure. In such cases, allowing
+external variables to influence profile estimation may change the very
+subgroups that the subsequent analyses are intended to investigate. The
+three-step approach addresses this concern by preserving the original
+profile solution while accounting for classification uncertainty. Staged
+estimation extends the same principle to group classes in multilevel
+models, keeping the profile solution fixed while the group classes are
+estimated. Thus, three-step methods are particularly useful when the
+objective is to investigate relationships with external variables
+without changing the substantive meaning of the previously identified
+profiles.</p>
+<p>This guide demonstrates these approaches in a two-level latent
+profile model of course engagement, in which course enrolments are
+nested within students. The measurement model is first estimated from
+the engagement indicators alone, and its classification-error matrix is
+examined, since this matrix is the basis of every three-step correction.
+The previous grade before each enrolment is then related to the profiles
+in three ways: as a distal variable whose mean is compared across
+profiles with <code><a href="../reference/three_step.html">three_step()</a></code>, using the BCH and maximum
+likelihood corrections and, for comparison, uncorrected modal
+assignment; as a predictor of profile membership with
+<code><a href="../reference/r3step.html">r3step()</a></code>; and as a covariate estimated jointly with the
+profiles in a one-step model through <code>profile_covariates</code>.
+The guide then shows how a covariate can affect an indicator directly
+rather than through profile membership, a form of differential item
+functioning that can otherwise be mistaken for a difference between
+profiles, and concludes with staged estimation, in which the group
+classes are estimated with the profiles held fixed through
+<code><a href="../reference/fit_staged.html">fit_staged()</a></code>.</p>
 <div class="section level2">
 <h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
 </h2>
@@ -121,34 +192,37 @@ not an indicator, so it can serve as an external variable.</p>
 <div class="section level2">
 <h2 id="the-measurement-model">The measurement model<a class="anchor" aria-label="anchor" href="#the-measurement-model"></a>
 </h2>
-<p>To fit the profiles without the external variable, we call
-<code><a href="../reference/multilpa.html">multilpa()</a></code> with <code>vars</code> for the indicators,
-<code>id</code> for the group, <code>n_profiles</code>,
-<code>n_group_classes</code>, <code>n_starts</code> and
-<code>seed</code>.</p>
+<p><code><a href="../reference/multilpa.html">multilpa()</a></code> fits the profiles without the external
+variable, with <code>vars</code> for the indicators, <code>id</code> for
+the group, <code>n_profiles</code>, <code>n_group_classes</code>,
+<code>n_starts</code> and <code>seed</code>. The within-profile
+covariances are estimated (<code>covariance_model = "full"</code>),
+because the indicators are correlated within profiles (see the <a href="https://pak.dynasite.org/latents/articles/lpa.html">multilevel
+latent profile analysis</a> vignette).</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">course_engagement</span>,</span>
 <span>                vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>,</span>
 <span>                         <span class="st">"attendance"</span><span class="op">)</span>,</span>
 <span>                id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                covariance_model <span class="op">=</span> <span class="st">"full"</span>,</span>
 <span>                n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">fit</span></span>
 <span><span class="co">#&gt; Two-level latent profile analysis: 2 profiles, 2 group classes</span></span>
-<span><span class="co">#&gt; 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)</span></span>
-<span><span class="co">#&gt; Log likelihood: -8439.816424 | AIC: 16925.633 | BIC (groups): 16986.892</span></span>
-<span><span class="co">#&gt; Converged: TRUE | iterations: 9 | best log likelihood reached by 3 of 3 starts (3 converged)</span></span>
-<span><span class="co">#&gt; Smallest standardized Gaussian eigenvalue: 0.3715 (profiles, profile_2); Gaussian mass: 587.9; weight effective n: 606.</span></span>
+<span><span class="co">#&gt; 1422 individuals in 106 groups; varying full residual covariance (VVV)</span></span>
+<span><span class="co">#&gt; Log likelihood: -8313.111554 | AIC: 16712.223 | BIC (groups): 16826.751</span></span>
+<span><span class="co">#&gt; Converged: TRUE | iterations: 12 | best log likelihood reached by 3 of 3 starts (3 converged)</span></span>
+<span><span class="co">#&gt; Smallest standardized Gaussian eigenvalue: 0.271 (profiles, profile_2); Gaussian mass: 583.2; weight effective n: 610.5.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Class sizes   profile_1 58.7% (834)   profile_2 41.3% (588)</span></span>
+<span><span class="co">#&gt; Class sizes   profile_1 59.0% (839)   profile_2 41.0% (583)</span></span>
 <span><span class="co">#&gt; Group classes group_class_1 32.5% (34)   group_class_2 67.5% (72)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Means</span></span>
 <span><span class="co">#&gt;   indicator profile_1 profile_2</span></span>
-<span><span class="co">#&gt;      browse     0.540    -0.766</span></span>
-<span><span class="co">#&gt;    lectures     0.427    -0.606</span></span>
-<span><span class="co">#&gt;  forum_read     0.620    -0.879</span></span>
-<span><span class="co">#&gt;  forum_post     0.530    -0.753</span></span>
-<span><span class="co">#&gt;  attendance     0.649    -0.921</span></span>
+<span><span class="co">#&gt;      browse     0.531    -0.764</span></span>
+<span><span class="co">#&gt;    lectures     0.422    -0.607</span></span>
+<span><span class="co">#&gt;  forum_read     0.613    -0.881</span></span>
+<span><span class="co">#&gt;  forum_post     0.527    -0.758</span></span>
+<span><span class="co">#&gt;  attendance     0.632    -0.908</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Variances and standard errors: get_results(x, "profiles").</span></span>
 <span><span class="co">#&gt; Every other table: get_results(x, what = ), or get_results(x, "all").</span></span></code></pre></div>
@@ -156,37 +230,43 @@ not an indicator, so it can serve as an external variable.</p>
 <div class="section level2">
 <h2 id="classification-error">Classification error<a class="anchor" aria-label="anchor" href="#classification-error"></a>
 </h2>
-<p>To obtain the classification-error matrix, we call
-<code><a href="../reference/get_results.html">get_results()</a></code> with <code>"classification_errors"</code> and
-<code>level</code> for the observations or the groups. Each row gives
-the probability of each assigned class for cases in a true class; the
-three-step methods use it to correct for misclassification.</p>
+<p><code><a href="../reference/get_results.html">get_results()</a></code> with <code>"classification_errors"</code>
+returns the classification-error matrix, with <code>level</code> for the
+observations or the groups. Each row gives the probability of each
+assigned class for cases in a true class; the three-step methods use it
+to correct for misclassification.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"classification_errors"</span>, level <span class="op">=</span> <span class="st">"individuals"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         level true_class assigned_class probability</span></span>
-<span><span class="co">#&gt; 1 individuals          1              1      0.9872</span></span>
-<span><span class="co">#&gt; 2 individuals          1              2      0.0128</span></span>
-<span><span class="co">#&gt; 3 individuals          2              1      0.0214</span></span>
-<span><span class="co">#&gt; 4 individuals          2              2      0.9786</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 individuals          1              1      0.9815</span></span>
+<span><span class="co">#&gt; 2 individuals          1              2      0.0185</span></span>
+<span><span class="co">#&gt; 3 individuals          2              1      0.0321</span></span>
+<span><span class="co">#&gt; 4 individuals          2              2      0.9679</span></span></code></pre></div>
+<p>Enrolments of the first profile are assigned to it with probability
+0.982 and those of the second with probability 0.968, so the corrections
+below are small but not negligible.</p>
 </div>
 <div class="section level2">
 <h2 id="class-means-of-an-external-variable">Class means of an external variable<a class="anchor" aria-label="anchor" href="#class-means-of-an-external-variable"></a>
 </h2>
-<p>To estimate the mean of an external variable in each profile, we call
-<code><a href="../reference/three_step.html">three_step()</a></code> with <code>data</code> for the data frame and
+<p><code><a href="../reference/three_step.html">three_step()</a></code> estimates the mean of an external variable
+in each profile, with <code>data</code> for the data frame and
 <code>outcome</code> for the variable. The default method, BCH, corrects
-for classification error; standard errors are clustered on groups.</p>
+for classification error (Bolck et al., 2004; Bakk &amp; Vermunt, 2016);
+standard errors are clustered on groups.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/three_step.html">three_step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, outcome <span class="op">=</span> <span class="st">"previous_grade"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Distal outcome by class (bch, 95% CI)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Class   Mean          95% CI     SE  Effective n</span></span>
 <span><span class="co">#&gt; -----  -----  --------------  -----  -----------</span></span>
-<span><span class="co">#&gt;     1   0.22  [ 0.15,  0.29]  0.035       810.27</span></span>
-<span><span class="co">#&gt;     2  -0.31  [-0.39, -0.24]  0.036       564.36</span></span></code></pre></div>
-<p>To compare the profiles, we call <code><a href="../reference/three_step.html">three_step()</a></code> with
-<code>contrast = "pairs"</code>, which returns each difference between
-profile means with a Benjamini-Hochberg adjusted p-value.</p>
+<span><span class="co">#&gt;     1   0.23  [ 0.16,  0.30]  0.035       803.34</span></span>
+<span><span class="co">#&gt;     2  -0.33  [-0.40, -0.27]  0.035       548.42</span></span></code></pre></div>
+<p>Previous grades average 0.23 standard deviations above the mean
+before enrolments of the first profile and 0.33 below it before
+enrolments of the second. <code>contrast = "pairs"</code> returns each
+difference between profile means with a Benjamini-Hochberg adjusted
+p-value (Benjamini &amp; Hochberg, 1995).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/three_step.html">three_step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, outcome <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
 <span>           contrast <span class="op">=</span> <span class="st">"pairs"</span><span class="op">)</span></span>
@@ -194,14 +274,18 @@ profile means with a Benjamini-Hochberg adjusted p-value.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Class  vs  Difference          95% CI      p  p (BH)</span></span>
 <span><span class="co">#&gt; -----  --  ----------  --------------  -----  ------</span></span>
-<span><span class="co">#&gt;     2   1       -0.54  [-0.64, -0.43]  &lt;.001   &lt;.001</span></span></code></pre></div>
+<span><span class="co">#&gt;     2   1       -0.57  [-0.67, -0.47]  &lt;.001   &lt;.001</span></span></code></pre></div>
+<p>The difference is -0.57 standard deviations (95% interval -0.67 to
+-0.47).</p>
 <p>Maximum likelihood is the other correction. With
 <code>method = "ml"</code>, the assigned profile becomes an indicator of
 the true profile whose classification errors are fixed at those of the
 measurement model, and the external variable is normal within each
 profile, with its own variance. The table adds that variance. When the
-variable is close to normal within profiles, ML gives smaller standard
-errors than BCH; when it is skewed, BCH is the more robust choice.</p>
+variable is close to normal within profiles, ML is usually more
+efficient than BCH (Vermunt, 2010), although with classification as
+accurate as here the standard errors are nearly equal; when it is
+skewed, BCH is the more robust choice.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/three_step.html">three_step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, outcome <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
 <span>           method <span class="op">=</span> <span class="st">"ml"</span><span class="op">)</span></span>
@@ -209,11 +293,13 @@ errors than BCH; when it is skewed, BCH is the more robust choice.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Class   Mean          95% CI     SE  Variance  Effective n</span></span>
 <span><span class="co">#&gt; -----  -----  --------------  -----  --------  -----------</span></span>
-<span><span class="co">#&gt;     1   0.22  [ 0.15,  0.29]  0.035      0.94       834.09</span></span>
-<span><span class="co">#&gt;     2  -0.32  [-0.39, -0.24]  0.037      0.91       587.91</span></span></code></pre></div>
-<p>To see the effect of ignoring classification error, we call
-<code><a href="../reference/three_step.html">three_step()</a></code> with <code>method = "modal"</code>, which
-treats each case’s most probable profile as known.</p>
+<span><span class="co">#&gt;     1   0.23  [ 0.17,  0.30]  0.035      0.93       838.76</span></span>
+<span><span class="co">#&gt;     2  -0.34  [-0.41, -0.27]  0.036      0.91       583.24</span></span></code></pre></div>
+<p>ML gives nearly the same means (0.23 and -0.34), with variances of
+0.93 and 0.91 within the profiles.</p>
+<p><code>method = "modal"</code> shows the effect of ignoring
+classification error: it treats each case’s most probable profile as
+known.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/three_step.html">three_step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, outcome <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
 <span>           method <span class="op">=</span> <span class="st">"modal"</span><span class="op">)</span></span>
@@ -221,124 +307,105 @@ treats each case’s most probable profile as known.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Class   Mean          95% CI     SE  Effective n</span></span>
 <span><span class="co">#&gt; -----  -----  --------------  -----  -----------</span></span>
-<span><span class="co">#&gt;     1   0.21  [ 0.15,  0.28]  0.034          836</span></span>
-<span><span class="co">#&gt;     2  -0.30  [-0.38, -0.23]  0.036          586</span></span></code></pre></div>
+<span><span class="co">#&gt;     1   0.22  [ 0.15,  0.29]  0.034          842</span></span>
+<span><span class="co">#&gt;     2  -0.32  [-0.39, -0.25]  0.035          580</span></span></code></pre></div>
+<p>The modal means (0.22 and -0.32) are slightly closer together than
+the corrected ones, the attenuation that classification error produces;
+with classification as accurate as here, the difference is small.</p>
 </div>
 <div class="section level2">
 <h2 id="predicting-class-membership">Predicting class membership<a class="anchor" aria-label="anchor" href="#predicting-class-membership"></a>
 </h2>
-<p>To regress profile membership on a covariate, we call
-<code><a href="../reference/r3step.html">r3step()</a></code> with <code>data</code> for the data frame and
-<code>covariates</code> for the predictors. It returns multinomial logit
-coefficients, corrected for classification error.
-<code>vcov_type = "robust"</code>, the default, clusters the standard
-errors on groups.</p>
+<p><code><a href="../reference/r3step.html">r3step()</a></code> regresses profile membership on a covariate,
+with <code>data</code> for the data frame and <code>covariates</code>
+for the predictors. It returns multinomial logit coefficients, corrected
+for classification error. <code>vcov_type = "robust"</code>, the
+default, clusters the standard errors on groups.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/r3step.html">r3step</a></span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="va">course_engagement</span>, covariates <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
 <span>       vcov_type <span class="op">=</span> <span class="st">"robust"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         level   outcome           term estimate standard_error statistic  p_value p_adjusted</span></span>
-<span><span class="co">#&gt; 1 individuals profile_1    (Intercept)    0.376         0.1309      2.87 4.08e-03         NA</span></span>
-<span><span class="co">#&gt; 2 individuals profile_1 previous_grade    0.575         0.0596      9.64 5.24e-22   5.24e-22</span></span>
+<span><span class="co">#&gt; 1 individuals profile_1    (Intercept)    0.394         0.1362      2.89 3.80e-03         NA</span></span>
+<span><span class="co">#&gt; 2 individuals profile_1 previous_grade    0.615         0.0612     10.05 9.55e-24   9.55e-24</span></span>
 <span><span class="co">#&gt;   conf_low conf_high</span></span>
-<span><span class="co">#&gt; 1    0.119     0.633</span></span>
-<span><span class="co">#&gt; 2    0.458     0.692</span></span></code></pre></div>
+<span><span class="co">#&gt; 1    0.127     0.661</span></span>
+<span><span class="co">#&gt; 2    0.495     0.735</span></span></code></pre></div>
+<p>A previous grade one standard deviation higher raises the log odds of
+the first, more active profile against the second by 0.615 (95% interval
+0.495 to 0.735), an odds ratio of about 1.85.</p>
 </div>
 <div class="section level2">
 <h2 id="one-step-estimation">One-step estimation<a class="anchor" aria-label="anchor" href="#one-step-estimation"></a>
 </h2>
-<p>To estimate the covariate together with the profiles, we call
-<code><a href="../reference/multilpa.html">multilpa()</a></code> with <code>profile_covariates</code> for
-predictors of profile membership. <code>group_covariates</code> does the
-same for group-class membership and needs a variable that is constant
-within groups. Covariates must have no missing values; missing
-indicators are integrated out with <code>missing = "fiml"</code>.</p>
+<p><code><a href="../reference/multilpa.html">multilpa()</a></code> with <code>profile_covariates</code>
+estimates the covariate together with the profiles, as a predictor of
+profile membership. <code>group_covariates</code> does the same for
+group-class membership and needs a variable that is constant within
+groups. Covariates must have no missing values; missing indicators are
+integrated out with <code>missing = "fiml"</code>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">one_step</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">course_engagement</span>,</span>
 <span>                     vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>,</span>
 <span>                              <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span>,</span>
 <span>                     id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                     covariance_model <span class="op">=</span> <span class="st">"full"</span>,</span>
 <span>                     profile_covariates <span class="op">=</span> <span class="st">"previous_grade"</span>, n_starts <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>                     seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">one_step</span></span>
 <span><span class="co">#&gt; Multilevel LPA with covariates: 2 profiles, 2 group classes</span></span>
-<span><span class="co">#&gt; Log likelihood -8422.837628; AIC 16893.675; BIC (groups) 16957.598; converged TRUE</span></span>
-<span><span class="co">#&gt; Smallest standardized Gaussian eigenvalue: 0.3712 (profiles, profile_2); Gaussian mass: 587.7; weight effective n: 605.1.</span></span>
+<span><span class="co">#&gt; Log likelihood -8295.460308; AIC 16678.921; BIC (groups) 16796.112; converged TRUE</span></span>
+<span><span class="co">#&gt; Smallest standardized Gaussian eigenvalue: 0.2705 (profiles, profile_2); Gaussian mass: 582.2; weight effective n: 607.8.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Class sizes   profile_1 58.7% (834)   profile_2 41.3% (588)</span></span>
+<span><span class="co">#&gt; Class sizes   profile_1 59.1% (840)   profile_2 40.9% (582)</span></span>
 <span><span class="co">#&gt; Group classes group_class_1 31.8% (34)   group_class_2 68.2% (72)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Means</span></span>
 <span><span class="co">#&gt;   indicator profile_1 profile_2</span></span>
-<span><span class="co">#&gt;      browse     0.540    -0.766</span></span>
-<span><span class="co">#&gt;    lectures     0.429    -0.609</span></span>
-<span><span class="co">#&gt;  forum_read     0.619    -0.879</span></span>
-<span><span class="co">#&gt;  forum_post     0.530    -0.753</span></span>
-<span><span class="co">#&gt;  attendance     0.648    -0.920</span></span>
+<span><span class="co">#&gt;      browse     0.530    -0.765</span></span>
+<span><span class="co">#&gt;    lectures     0.424    -0.612</span></span>
+<span><span class="co">#&gt;  forum_read     0.612    -0.882</span></span>
+<span><span class="co">#&gt;  forum_post     0.525    -0.757</span></span>
+<span><span class="co">#&gt;  attendance     0.631    -0.910</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Variances and standard errors: get_results(x, "profiles").</span></span>
 <span><span class="co">#&gt; Every other table: get_results(x, what = ), or get_results(x, "all").</span></span></code></pre></div>
-<p>To obtain the membership coefficients, we call
-<code><a href="../reference/get_results.html">get_results()</a></code> with <code>"coefficients"</code>, and for
-their standard errors and intervals,
-<code><a href="../reference/parameter_inference.html">parameter_inference()</a></code>.</p>
+<p><code><a href="../reference/get_results.html">get_results()</a></code> with <code>"coefficients"</code> returns
+the membership coefficients, and <code><a href="../reference/parameter_inference.html">parameter_inference()</a></code> the
+standard errors and intervals of every parameter, beginning with the
+measurement means.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">one_step</span>, <span class="st">"coefficients"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     level       outcome           term parameter estimate</span></span>
-<span><span class="co">#&gt; 1 profile     profile_1  group_class_1     logit   -1.538</span></span>
-<span><span class="co">#&gt; 2 profile     profile_1  group_class_2     logit    1.268</span></span>
-<span><span class="co">#&gt; 3 profile     profile_1 previous_grade     logit    0.422</span></span>
-<span><span class="co">#&gt; 4   group group_class_1    (Intercept)     logit   -0.762</span></span>
-<span><span class="fu"><a href="../reference/parameter_inference.html">parameter_inference</a></span><span class="op">(</span><span class="va">one_step</span><span class="op">)</span></span>
-<span><span class="co">#&gt;          level       outcome           term   parameter estimate standard_error statistic   p_value</span></span>
-<span><span class="co">#&gt; 1  measurement     profile_1         browse        mean    0.540         0.0271     19.88  6.40e-88</span></span>
-<span><span class="co">#&gt; 2  measurement     profile_1       lectures        mean    0.429         0.0324     13.24  4.85e-40</span></span>
-<span><span class="co">#&gt; 3  measurement     profile_1     forum_read        mean    0.619         0.0248     25.02 3.95e-138</span></span>
-<span><span class="co">#&gt; 4  measurement     profile_1     forum_post        mean    0.530         0.0294     18.02  1.42e-72</span></span>
-<span><span class="co">#&gt; 5  measurement     profile_1     attendance        mean    0.648         0.0223     29.12 2.05e-186</span></span>
-<span><span class="co">#&gt; 6  measurement     profile_2         browse        mean   -0.766         0.0311    -24.65 3.79e-134</span></span>
-<span><span class="co">#&gt; 7  measurement     profile_2       lectures        mean   -0.609         0.0309    -19.71  1.67e-86</span></span>
-<span><span class="co">#&gt; 8  measurement     profile_2     forum_read        mean   -0.879         0.0261    -33.65 3.00e-248</span></span>
-<span><span class="co">#&gt; 9  measurement     profile_2     forum_post        mean   -0.753         0.0277    -27.14 3.54e-162</span></span>
-<span><span class="co">#&gt; 10 measurement     profile_2     attendance        mean   -0.920         0.0264    -34.87 2.04e-266</span></span>
-<span><span class="co">#&gt; 11 measurement     profile_1         browse    variance    0.591         0.0296        NA        NA</span></span>
-<span><span class="co">#&gt; 12 measurement     profile_1       lectures    variance    0.842         0.0419        NA        NA</span></span>
-<span><span class="co">#&gt; 13 measurement     profile_1     forum_read    variance    0.483         0.0245        NA        NA</span></span>
-<span><span class="co">#&gt; 14 measurement     profile_1     forum_post    variance    0.688         0.0347        NA        NA</span></span>
-<span><span class="co">#&gt; 15 measurement     profile_1     attendance    variance    0.385         0.0196        NA        NA</span></span>
-<span><span class="co">#&gt; 16 measurement     profile_2         browse    variance    0.526         0.0321        NA        NA</span></span>
-<span><span class="co">#&gt; 17 measurement     profile_2       lectures    variance    0.538         0.0320        NA        NA</span></span>
-<span><span class="co">#&gt; 18 measurement     profile_2     forum_read    variance    0.363         0.0227        NA        NA</span></span>
-<span><span class="co">#&gt; 19 measurement     profile_2     forum_post    variance    0.422         0.0262        NA        NA</span></span>
-<span><span class="co">#&gt; 20 measurement     profile_2     attendance    variance    0.375         0.0228        NA        NA</span></span>
-<span><span class="co">#&gt; 21     profile     profile_1  group_class_1 coefficient   -1.538         0.1676     -9.18  4.51e-20</span></span>
-<span><span class="co">#&gt; 22     profile     profile_1  group_class_2 coefficient    1.268         0.0943     13.44  3.46e-41</span></span>
-<span><span class="co">#&gt; 23     profile     profile_1 previous_grade coefficient    0.422         0.0736      5.73  9.78e-09</span></span>
-<span><span class="co">#&gt; 24       group group_class_1    (Intercept) coefficient   -0.762         0.2212     -3.44  5.72e-04</span></span>
+<span><span class="co">#&gt; 1 profile     profile_1  group_class_1     logit   -1.577</span></span>
+<span><span class="co">#&gt; 2 profile     profile_1  group_class_2     logit    1.316</span></span>
+<span><span class="co">#&gt; 3 profile     profile_1 previous_grade     logit    0.447</span></span>
+<span><span class="co">#&gt; 4   group group_class_1    (Intercept)     logit   -0.764</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/parameter_inference.html">parameter_inference</a></span><span class="op">(</span><span class="va">one_step</span><span class="op">)</span>, <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="co">#&gt;          level   outcome       term parameter estimate standard_error statistic   p_value</span></span>
+<span><span class="co">#&gt; 1  measurement profile_1     browse      mean    0.530         0.0281      18.9  1.45e-79</span></span>
+<span><span class="co">#&gt; 2  measurement profile_1   lectures      mean    0.424         0.0328      12.9  2.98e-38</span></span>
+<span><span class="co">#&gt; 3  measurement profile_1 forum_read      mean    0.612         0.0257      23.8 5.55e-125</span></span>
+<span><span class="co">#&gt; 4  measurement profile_1 forum_post      mean    0.525         0.0303      17.3  3.15e-67</span></span>
+<span><span class="co">#&gt; 5  measurement profile_1 attendance      mean    0.631         0.0238      26.5 6.98e-155</span></span>
+<span><span class="co">#&gt; 6  measurement profile_2     browse      mean   -0.765         0.0323     -23.7 4.29e-124</span></span>
+<span><span class="co">#&gt; 7  measurement profile_2   lectures      mean   -0.612         0.0318     -19.2  2.87e-82</span></span>
+<span><span class="co">#&gt; 8  measurement profile_2 forum_read      mean   -0.882         0.0273     -32.4 1.20e-229</span></span>
+<span><span class="co">#&gt; 9  measurement profile_2 forum_post      mean   -0.757         0.0285     -26.6 2.16e-155</span></span>
+<span><span class="co">#&gt; 10 measurement profile_2 attendance      mean   -0.910         0.0283     -32.1 3.91e-226</span></span>
 <span><span class="co">#&gt;    p_adjusted conf_low conf_high</span></span>
-<span><span class="co">#&gt; 1    6.40e-88    0.486     0.593</span></span>
-<span><span class="co">#&gt; 2    4.85e-40    0.365     0.492</span></span>
-<span><span class="co">#&gt; 3   3.95e-138    0.571     0.668</span></span>
-<span><span class="co">#&gt; 4    1.42e-72    0.473     0.588</span></span>
-<span><span class="co">#&gt; 5   2.05e-186    0.605     0.692</span></span>
-<span><span class="co">#&gt; 6   3.79e-134   -0.827    -0.705</span></span>
-<span><span class="co">#&gt; 7    1.67e-86   -0.669    -0.548</span></span>
-<span><span class="co">#&gt; 8   3.00e-248   -0.930    -0.828</span></span>
-<span><span class="co">#&gt; 9   3.54e-162   -0.807    -0.699</span></span>
-<span><span class="co">#&gt; 10  2.04e-266   -0.972    -0.868</span></span>
-<span><span class="co">#&gt; 11         NA    0.536     0.652</span></span>
-<span><span class="co">#&gt; 12         NA    0.764     0.928</span></span>
-<span><span class="co">#&gt; 13         NA    0.437     0.534</span></span>
-<span><span class="co">#&gt; 14         NA    0.623     0.759</span></span>
-<span><span class="co">#&gt; 15         NA    0.348     0.426</span></span>
-<span><span class="co">#&gt; 16         NA    0.467     0.593</span></span>
-<span><span class="co">#&gt; 17         NA    0.478     0.604</span></span>
-<span><span class="co">#&gt; 18         NA    0.321     0.410</span></span>
-<span><span class="co">#&gt; 19         NA    0.374     0.477</span></span>
-<span><span class="co">#&gt; 20         NA    0.333     0.422</span></span>
-<span><span class="co">#&gt; 21   4.51e-20   -1.866    -1.209</span></span>
-<span><span class="co">#&gt; 22   3.46e-41    1.083     1.453</span></span>
-<span><span class="co">#&gt; 23   9.78e-09    0.278     0.567</span></span>
-<span><span class="co">#&gt; 24   5.72e-04   -1.196    -0.328</span></span></code></pre></div>
+<span><span class="co">#&gt; 1    1.45e-79    0.475     0.585</span></span>
+<span><span class="co">#&gt; 2    2.98e-38    0.360     0.488</span></span>
+<span><span class="co">#&gt; 3   5.55e-125    0.561     0.662</span></span>
+<span><span class="co">#&gt; 4    3.15e-67    0.465     0.584</span></span>
+<span><span class="co">#&gt; 5   6.98e-155    0.584     0.677</span></span>
+<span><span class="co">#&gt; 6   4.29e-124   -0.828    -0.702</span></span>
+<span><span class="co">#&gt; 7    2.87e-82   -0.674    -0.549</span></span>
+<span><span class="co">#&gt; 8   1.20e-229   -0.936    -0.829</span></span>
+<span><span class="co">#&gt; 9   2.16e-155   -0.813    -0.701</span></span>
+<span><span class="co">#&gt; 10  3.91e-226   -0.965    -0.854</span></span></code></pre></div>
+<p>The one-step coefficient of previous grade is 0.447, smaller than the
+three-step coefficient, because it is conditional on the group class and
+the profiles are estimated together with it.</p>
 </div>
 <div class="section level2">
 <h2 id="direct-effects-on-indicators">Direct effects on indicators<a class="anchor" aria-label="anchor" href="#direct-effects-on-indicators"></a>
@@ -346,14 +413,22 @@ their standard errors and intervals,
 <p>A covariate can also act on an indicator rather than on membership:
 students with better previous grades may attend more within every
 profile. Left out of the model, such an effect is read as a difference
-between the profiles (differential item functioning). To estimate it, we
-call <code><a href="../reference/multilpa.html">multilpa()</a></code> with <code>direct_effects</code>, one
-<code>"indicator ~ covariate"</code> term per effect. The covariate
+between the profiles (differential item functioning).
+<code><a href="../reference/multilpa.html">multilpa()</a></code> with <code>direct_effects</code> estimates it,
+one <code>"indicator ~ covariate"</code> term per effect. The covariate
 shifts the indicator’s mean by the same amount in every profile, and the
 profile means are then the means at a covariate value of zero, here the
-average standardized grade.</p>
+average standardized grade. Direct effects are estimated in a profile
+model with a diagonal covariance structure (<code>EEI</code> or
+<code>VVI</code>), so the comparison below uses the diagonal model with
+and without them.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">direct</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">course_engagement</span>,</span>
+<code class="sourceCode R"><span><span class="va">diagonal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">course_engagement</span>,</span>
+<span>                     vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>,</span>
+<span>                              <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span>,</span>
+<span>                     id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                     n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">direct</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">course_engagement</span>,</span>
 <span>                   vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>,</span>
 <span>                            <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span>,</span>
 <span>                   id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>,</span>
@@ -364,7 +439,7 @@ average standardized grade.</p>
 <span><span class="co">#&gt;    indicator      covariate estimate standard_error statistic p_value conf_low conf_high</span></span>
 <span><span class="co">#&gt; 1 attendance previous_grade  0.03626         0.0178     2.040  0.0414  0.00142    0.0711</span></span>
 <span><span class="co">#&gt; 2 forum_post previous_grade  0.00375         0.0209     0.179  0.8578 -0.03724    0.0447</span></span>
-<span><span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span>without <span class="op">=</span> <span class="va">fit</span>, direct <span class="op">=</span> <span class="va">direct</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span>without <span class="op">=</span> <span class="va">diagonal</span>, direct <span class="op">=</span> <span class="va">direct</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Model comparison</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Model    Profiles  Group classes   k    LogLik       BIC  ΔBIC  Weight       ICL  Entropy  Min AvePP  &lt; 0.8  Group entropy  Group min AvePP</span></span>
@@ -375,56 +450,61 @@ average standardized grade.</p>
 profile (95% interval 0.001 to 0.071), and forum posting by 0.004
 (interval -0.037 to 0.045). The effects are small against the profile
 differences, and BIC is lower without them (16986.9 against 16992.1), so
-the profiles do not owe their separation to previous grades.</p>
+the profile differences on these indicators are not produced by direct
+effects of previous grades.</p>
 </div>
 <div class="section level2">
 <h2 id="staged-estimation">Staged estimation<a class="anchor" aria-label="anchor" href="#staged-estimation"></a>
 </h2>
-<p>To hold the profiles fixed while the group classes are estimated, we
-call <code><a href="../reference/fit_staged.html">fit_staged()</a></code> with the same arguments as
-<code><a href="../reference/multilpa.html">multilpa()</a></code>. It first fits the profiles with one group
+<p><code><a href="../reference/fit_staged.html">fit_staged()</a></code> holds the profiles fixed while the group
+classes are estimated, with the arguments of <code><a href="../reference/multilpa.html">multilpa()</a></code>
+that define the profiles. It first fits the profiles with one group
 class, then estimates the group classes with the profile means and
-variances held fixed.</p>
+covariance matrices held fixed.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">staged</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_staged.html">fit_staged</a></span><span class="op">(</span><span class="va">course_engagement</span>,</span>
 <span>                     vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>,</span>
 <span>                              <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span>,</span>
 <span>                     id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                     covariance_model <span class="op">=</span> <span class="st">"full"</span>,</span>
 <span>                     n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">staged</span></span>
 <span><span class="co">#&gt; Two-level latent profile analysis: 2 profiles, 2 group classes</span></span>
-<span><span class="co">#&gt; 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)</span></span>
-<span><span class="co">#&gt; Log likelihood: -8440.080258 | AIC: 16886.161 | BIC (groups): 16894.151</span></span>
+<span><span class="co">#&gt; 1422 individuals in 106 groups; varying full residual covariance (VVV)</span></span>
+<span><span class="co">#&gt; Log likelihood: -8313.829076 | AIC: 16633.658 | BIC (groups): 16641.648</span></span>
 <span><span class="co">#&gt; Converged: TRUE | iterations: 9 | best log likelihood reached by 2 of 3 starts (3 converged)</span></span>
 <span><span class="co">#&gt; Held fixed, not estimated here: means, variances (first stage)</span></span>
-<span><span class="co">#&gt; Parameters estimated here: 3; with the held measurement: 23</span></span>
-<span><span class="co">#&gt; Smallest standardized Gaussian eigenvalue: 0.375 (profiles, profile_2); Gaussian mass: 588.5; weight effective n: 606.8.</span></span>
+<span><span class="co">#&gt; Parameters estimated here: 3; with the held measurement: 43</span></span>
+<span><span class="co">#&gt; Smallest standardized Gaussian eigenvalue: 0.2696 (profiles, profile_2); Gaussian mass: 579.9; weight effective n: 607.9.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Class sizes   profile_1 58.6% (834)   profile_2 41.4% (588)</span></span>
+<span><span class="co">#&gt; Class sizes   profile_1 59.2% (842)   profile_2 40.8% (580)</span></span>
 <span><span class="co">#&gt; Group classes group_class_1 67.5% (72)   group_class_2 32.5% (34)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Means</span></span>
 <span><span class="co">#&gt;   indicator profile_1 profile_2</span></span>
-<span><span class="co">#&gt;      browse     0.537    -0.759</span></span>
-<span><span class="co">#&gt;    lectures     0.430    -0.608</span></span>
-<span><span class="co">#&gt;  forum_read     0.618    -0.873</span></span>
-<span><span class="co">#&gt;  forum_post     0.533    -0.753</span></span>
-<span><span class="co">#&gt;  attendance     0.653    -0.923</span></span>
+<span><span class="co">#&gt;      browse     0.520    -0.761</span></span>
+<span><span class="co">#&gt;    lectures     0.424    -0.621</span></span>
+<span><span class="co">#&gt;  forum_read     0.605    -0.885</span></span>
+<span><span class="co">#&gt;  forum_post     0.522    -0.764</span></span>
+<span><span class="co">#&gt;  attendance     0.625    -0.914</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Variances and standard errors: get_results(x, "profiles").</span></span>
 <span><span class="co">#&gt; Every other table: get_results(x, what = ), or get_results(x, "all").</span></span></code></pre></div>
-<p>To see what each stage estimated, we call <code><a href="../reference/get_results.html">get_results()</a></code>
-with <code>"stages"</code>. <code>parameters</code> counts the
-parameters estimated at a stage, and
-<code>parameters_with_measurement</code> adds those held fixed.</p>
+<p><code><a href="../reference/get_results.html">get_results()</a></code> with <code>"stages"</code> reports what
+each stage estimated. <code>parameters</code> counts the parameters
+estimated at a stage, and <code>parameters_with_measurement</code> adds
+those held fixed.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">staged</span>, <span class="st">"stages"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         stage group_classes            fixed log_likelihood parameters parameters_with_measurement</span></span>
-<span><span class="co">#&gt; 1 measurement             1             &lt;NA&gt;          -8615         21                          21</span></span>
-<span><span class="co">#&gt; 2  membership             2 means, variances          -8440          3                          23</span></span>
+<span><span class="co">#&gt; 1 measurement             1             &lt;NA&gt;          -8490         41                          41</span></span>
+<span><span class="co">#&gt; 2  membership             2 means, variances          -8314          3                          43</span></span>
 <span><span class="co">#&gt;   converged</span></span>
 <span><span class="co">#&gt; 1      TRUE</span></span>
 <span><span class="co">#&gt; 2      TRUE</span></span></code></pre></div>
+<p>The first stage estimates the 41 parameters of the profiles with one
+group class; the second estimates 3 membership parameters with the
+profiles held fixed.</p>
 </div>
 <div class="section level2">
 <h2 id="reference">Reference<a class="anchor" aria-label="anchor" href="#reference"></a>
@@ -446,16 +526,19 @@ parameters. Each comment states what the call returns.</p>
 <span>                        vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>,</span>
 <span>                                 <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span>,</span>
 <span>                        id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>                        n_group_classes <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>  <span class="co"># a one-class measurement fit</span></span>
+<span>                        n_group_classes <span class="op">=</span> <span class="fl">1</span>, covariance_model <span class="op">=</span> <span class="st">"full"</span>,</span>
+<span>                        seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>  <span class="co"># a one-class measurement fit</span></span>
 <span><span class="fu"><a href="../reference/fit_staged.html">fit_staged</a></span><span class="op">(</span><span class="va">course_engagement</span>,</span>
 <span>           vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>,</span>
 <span>                    <span class="st">"attendance"</span><span class="op">)</span>,</span>
 <span>           id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>           covariance_model <span class="op">=</span> <span class="st">"full"</span>,</span>
 <span>           measurement <span class="op">=</span> <span class="va">measurement</span><span class="op">)</span>      <span class="co"># stage two from that fit</span></span>
 <span><span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">course_engagement</span>,</span>
 <span>         vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>,</span>
 <span>                  <span class="st">"attendance"</span><span class="op">)</span>,</span>
 <span>         id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>         covariance_model <span class="op">=</span> <span class="st">"full"</span>,</span>
 <span>         start <span class="op">=</span> <span class="fu"><a href="../reference/starting_values.html">starting_values</a></span><span class="op">(</span><span class="va">fit</span>, what <span class="op">=</span> <span class="st">"measurement"</span><span class="op">)</span>,</span>
 <span>         fixed <span class="op">=</span> <span class="st">"variances"</span><span class="op">)</span>              <span class="co"># hold chosen parameters fixed</span></span>
 <span><span class="fu"><a href="../reference/parameter_inference.html">parameter_inference</a></span><span class="op">(</span><span class="va">staged</span><span class="op">)</span>                <span class="co"># standard errors of the estimated stage</span></span></code></pre></div>
@@ -476,6 +559,32 @@ coefficients.</li>
 second stage, and its likelihood is not the joint maximum.</li>
 <li>All associations are observational.</li>
 </ul>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<p>Bakk, Z., &amp; Vermunt, J. K. (2016). Robustness of stepwise latent
+class modeling with continuous distal outcomes. <em>Structural Equation
+Modeling</em>, 23, 20–31.</p>
+<p>Benjamini, Y., &amp; Hochberg, Y. (1995). Controlling the false
+discovery rate: A practical and powerful approach to multiple testing.
+<em>Journal of the Royal Statistical Society: Series B</em>, 57(1),
+289–300.</p>
+<p>Bolck, A., Croon, M., &amp; Hagenaars, J. (2004). Estimating latent
+structure models with categorical variables: One-step versus three-step
+estimators. <em>Political Analysis</em>, 12(1), 3–27.</p>
+<p>Saqr, M., Vogelsmeier, L. V. D. E., &amp; López-Pernas, S. (2024).
+Capturing where the learning process takes place: A person-specific and
+person-centered primer. <em>Learning and Individual Differences</em>,
+113, 102492. <a href="https://doi.org/10.1016/j.lindif.2024.102492" class="external-link uri">https://doi.org/10.1016/j.lindif.2024.102492</a></p>
+<p>Scrucca, L., Saqr, M., López-Pernas, S., &amp; Murphy, K. (2024). An
+introduction and R tutorial to model-based clustering in education via
+latent profile analysis. In M. Saqr &amp; S. López-Pernas (Eds.),
+<em>Learning analytics methods and tutorials: A practical guide using
+R</em> (pp. 285–317). Springer. <a href="https://doi.org/10.1007/978-3-031-54464-4_9" class="external-link uri">https://doi.org/10.1007/978-3-031-54464-4_9</a></p>
+<p>Vermunt, J. K. (2010). Latent class modeling with covariates: Two
+improved three-step approaches. <em>Political Analysis</em>, 18,
+450–469.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -259,6 +259,8 @@ Latent transitions handed to the tna package.
 
 - [`course_engagement`](https://pak.dynasite.org/latents/reference/course_engagement.md)
   : Student engagement across a sequence of courses
+- [`engagement_momentum`](https://pak.dynasite.org/latents/reference/engagement_momentum.md)
+  : Simulated engagement states and trajectories over a study programme
 - [`student_esm`](https://pak.dynasite.org/latents/reference/student_esm.md)
   : Leisure activities of university students in daily life
 - [`study_hours`](https://pak.dynasite.org/latents/reference/study_hours.md)

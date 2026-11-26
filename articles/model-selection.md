@@ -5,16 +5,27 @@ priori and is not a parameter of the model; it must be determined by
 comparing models fitted with different numbers of classes. No single
 statistic identifies the correct number: information criteria,
 likelihood-based tests and indices of classification quality each have
-known limitations, and they frequently disagree (Nylund, Asparouhov and
-Muthén, 2007). Class enumeration is therefore an inferential judgement
-that integrates several sources of evidence and is reported
-transparently. This guide describes each source of evidence that latents
-computes for a set of candidate models: its definition, its
-interpretation, and the conditions under which it is unreliable. It then
-outlines how these sources are combined into a defensible and
-reproducible decision. A complete applied example is given in [Class
-enumeration in mixture
-models](https://pak.dynasite.org/latents/articles/class-enumeration.md).
+known limitations, and they frequently disagree (Nylund et al., 2007).
+Class enumeration is therefore an inferential judgement that integrates
+several sources of evidence and is reported transparently. This guide
+describes each source of evidence that latents computes for a set of
+candidate models: its definition, its interpretation, and the conditions
+under which it is unreliable. It then outlines how these sources are
+combined into a defensible and reproducible decision. A complete applied
+example is given in [Class
+enumeration](https://pak.dynasite.org/latents/articles/enumeration.md).
+
+Latent profile and latent class analysis are person-centred methods.
+Rather than describing the average relationship among variables across
+the whole sample, they identify subgroups of individuals who share a
+pattern of responses, and thereby capture heterogeneity that
+variable-centred methods average away (Saqr et al., 2024). Model-based
+clustering with finite Gaussian mixtures provides the statistical
+framework for latent profile analysis, and Scrucca et al. (2024)
+introduce its estimation, its covariance structures and the selection of
+the number of profiles in R. Because the subgroups are defined by the
+model rather than observed, their number has to be decided from the
+data, which is the subject of this guide.
 
 The evidence considered here addresses five distinct questions,
 summarized below together with the functions that report it.
@@ -42,136 +53,33 @@ library(latents)
 The examples use `course_engagement`, in which course enrolments are
 nested within students and each enrolment is described by five
 standardized indicators of activity. A model is fitted for every
-combination of one to six profiles and one to four group classes, with
-class-specific variances and no covariances (`"VVI"`). Three random
-starts per candidate are used to limit computation; applied analyses
-should use at least ten, because replication of the maximum likelihood
-across starts is itself part of the evidence.
+combination of one to four profiles, one to four group classes and the
+four basic covariance structures (`EEI`, `VVI`, `EEE` and `VVV`), the
+grid analysed in [Class
+enumeration](https://pak.dynasite.org/latents/articles/enumeration.md).
+Five random starts per candidate are used to limit computation; applied
+analyses should use at least ten, because replication of the maximum
+likelihood across starts is itself part of the evidence. The examples
+below illustrate each source of evidence on this grid; the [Class
+enumeration](https://pak.dynasite.org/latents/articles/enumeration.md)
+article interprets the same results and reaches a decision.
 
 ``` r
 
 activity <- c("browse", "lectures", "forum_read", "forum_post", "attendance")
 models <- enumerate_classes(course_engagement, activity, "student",
-                            n_profiles = 1:6, n_group_classes = 1:4,
-                            model = "VVI", n_starts = 3, seed = 1)
-#> Warning: Profile 4: 4.9 Gaussian membership mass for 10 free means and variances. This is a
-#> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
-#> Warning: Profile 6: 9.1 Gaussian membership mass for 10 free means and variances. This is a
-#> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
-#> 7 of 21 candidates reached their best log likelihood from one start only (profiles5_groups1, profiles6_groups1, profiles5_groups2, profiles6_groups2, profiles5_groups3, profiles6_groups3, ...); refit those you consider with more starts.
-models
-#> Class enumeration: 24 candidate models (LPA)
-#>          candidate n_profiles n_group_classes model log_likelihood n_parameters   aic bic_groups
-#>  profiles1_groups1          1               1   VVI         -10007           10 20035      20062
-#>  profiles2_groups1          2               1   VVI          -8615           21 17272      17328
-#>  profiles3_groups1          3               1   VVI          -8537           32 17137      17222
-#>  profiles4_groups1          4               1   VVI          -8501           43 17088      17203
-#>  profiles5_groups1          5               1   VVI          -8484           54 17077      17220
-#>  profiles6_groups1          6               1   VVI          -8481           65 17093      17266
-#>  profiles1_groups2          1               2   VVI             NA           NA    NA         NA
-#>  profiles2_groups2          2               2   VVI          -8440           23 16926      16987
-#>  profiles3_groups2          3               2   VVI          -8365           35 16799      16892
-#>  profiles4_groups2          4               2   VVI          -8326           47 16746      16872
-#>  profiles5_groups2          5               2   VVI          -8309           59 16735      16892
-#>  profiles6_groups2          6               2   VVI          -8297           71 16737      16926
-#>  profiles1_groups3          1               3   VVI             NA           NA    NA         NA
-#>  profiles2_groups3          2               3   VVI          -8421           25 16892      16959
-#>  profiles3_groups3          3               3   VVI          -8348           38 16773      16874
-#>  profiles4_groups3          4               3   VVI          -8307           51 16716      16852
-#>  profiles5_groups3          5               3   VVI          -8290           64 16708      16879
-#>  profiles6_groups3          6               3   VVI          -8277           77 16707      16912
-#>  profiles1_groups4          1               4   VVI             NA           NA    NA         NA
-#>  profiles2_groups4          2               4   VVI          -8415           27 16884      16956
-#>  profiles3_groups4          3               4   VVI          -8343           41 16767      16876
-#>  profiles4_groups4          4               4   VVI          -8301           55 16711      16858
-#>  profiles5_groups4          5               4   VVI          -8283           69 16704      16887
-#>  profiles6_groups4          6               4   VVI          -8268           83 16703      16924
-#>  bic_individual icl_individual profile_entropy group_entropy avepp_min avepp_max avepp_mean
-#>           20088          20088              NA            NA        NA        NA         NA
-#>           17383          17537           0.922            NA     0.974     0.982      0.978
-#>           17306          18017           0.772            NA     0.832     0.964      0.886
-#>           17314          18359           0.735            NA     0.803     0.849      0.835
-#>           17361          18400           0.773            NA     0.804     0.962      0.861
-#>           17435          19124           0.668            NA     0.628     0.811      0.729
-#>              NA             NA              NA            NA        NA        NA         NA
-#>           17047          17176           0.938         0.940     0.982     0.985      0.983
-#>           16983          17646           0.790         0.943     0.849     0.979      0.893
-#>           16994          18027           0.739         0.937     0.791     0.859      0.835
-#>           17045          18066           0.775         0.965     0.803     0.860      0.839
-#>           17110          18454           0.733         0.946     0.698     0.845      0.780
-#>              NA             NA              NA            NA        NA        NA         NA
-#>           17024          17180           0.940         0.816     0.982     0.986      0.984
-#>           16973          17663           0.792         0.797     0.843     0.978      0.892
-#>           16985          18045           0.739         0.823     0.801     0.853      0.836
-#>           17045          18259           0.736         0.844     0.702     0.848      0.799
-#>           17112          18571           0.716         0.836     0.664     0.872      0.792
-#>              NA             NA              NA            NA        NA        NA         NA
-#>           17026          17193           0.942         0.798     0.984     0.986      0.985
-#>           16983          17690           0.793         0.772     0.844     0.980      0.892
-#>           17000          18071           0.740         0.803     0.801     0.853      0.837
-#>           17067          18213           0.751         0.830     0.786     0.853      0.820
-#>           17139          18496           0.726         0.851     0.654     0.847      0.783
-#>  avepp_below group_avepp_min group_avepp_max group_avepp_mean group_avepp_below converged boundary
-#>           NA              NA              NA               NA                NA      TRUE    FALSE
-#>            0              NA              NA               NA                NA      TRUE    FALSE
-#>            0              NA              NA               NA                NA      TRUE    FALSE
-#>            0              NA              NA               NA                NA      TRUE    FALSE
-#>            0              NA              NA               NA                NA      TRUE    FALSE
-#>            5              NA              NA               NA                NA      TRUE    FALSE
-#>           NA              NA              NA               NA                NA     FALSE       NA
-#>            0           0.969           0.992            0.980                 0      TRUE    FALSE
-#>            0           0.977           0.992            0.985                 0      TRUE    FALSE
-#>            1           0.975           0.990            0.983                 0      TRUE    FALSE
-#>            0           0.990           0.996            0.993                 0      TRUE    FALSE
-#>            4           0.972           0.987            0.979                 0      TRUE    FALSE
-#>           NA              NA              NA               NA                NA     FALSE       NA
-#>            0           0.900           0.962            0.923                 0      TRUE    FALSE
-#>            0           0.864           0.977            0.913                 0      TRUE    FALSE
-#>            0           0.861           0.981            0.922                 0      TRUE    FALSE
-#>            1           0.889           0.979            0.930                 0      TRUE    FALSE
-#>            2           0.899           0.978            0.933                 0      TRUE    FALSE
-#>           NA              NA              NA               NA                NA     FALSE       NA
-#>            0           0.851           0.912            0.877                 0      TRUE    FALSE
-#>            0           0.841           0.902            0.864                 0      TRUE    FALSE
-#>            0           0.867           0.903            0.885                 0      TRUE    FALSE
-#>            1           0.882           0.926            0.904                 0      TRUE    FALSE
-#>            3           0.907           0.930            0.918                 0      TRUE    FALSE
-#>  n_best_replicated
-#>                  3
-#>                  3
-#>                  3
-#>                  3
-#>                  1
-#>                  1
-#>                 NA
-#>                  3
-#>                  3
-#>                  3
-#>                  1
-#>                  1
-#>                 NA
-#>                  3
-#>                  3
-#>                  3
-#>                  1
-#>                  1
-#>                 NA
-#>                  3
-#>                  2
-#>                  1
-#>                  2
-#>                  2
-#> Every column, unrounded: as.data.frame(x).
-#> 3 candidate(s) failed to fit; the `error` column of as.data.frame(x) gives the reason.
-#> No candidate is selected automatically. Compare one convention consistently.
+                            n_profiles = 1:4, n_group_classes = 1:4,
+                            n_starts = 5, seed = 1)
+#> 7 of 52 candidates reached their best log likelihood from one start only (profiles4_groups4_EEE, profiles4_groups1_VVV, profiles3_groups2_VVV, profiles4_groups2_VVV, profiles4_groups3_VVV, profiles3_groups4_VVV, ...); refit those you consider with more starts.
 ```
 
-The grid comprises 24 candidates, of which 21 were estimated. A model
+The grid comprises 64 candidates, of which 52 were estimated. A model
 with one profile and several group classes is not identified, because
 group classes defined over a single profile cannot differ; such
 candidates are listed but not estimated. Each candidate is labelled by
-its numbers of classes (e.g., `profiles4_groups3` for four profiles and
-three group classes), and the functions below accept this label.
+its numbers of classes and its structure (e.g., `profiles2_groups3_VVV`
+for two profiles, three group classes and a full covariance per
+profile), and the functions below accept this label.
 
 ## Before fitting: starts, scaling and missing values
 
@@ -201,8 +109,8 @@ were not given.
 ``` r
 
 models <- enumerate_classes(course_engagement, activity, "student",
-                            n_profiles = 1:6, n_group_classes = 1:4,
-                            model = "VVI", n_starts = 20, seed = 1)
+                            n_profiles = 1:4, n_group_classes = 1:4,
+                            n_starts = 20, seed = 1)
 ```
 
 Additional starts also make a degenerate solution more likely to be
@@ -228,9 +136,8 @@ warning naming the affected profile and its effective membership.
 ``` r
 
 models <- enumerate_classes(course_engagement, activity, "student",
-                            n_profiles = 1:6, n_group_classes = 1:4,
-                            model = "VVI", n_starts = 200,
-                            boundary = "exclude", seed = 1)
+                            n_profiles = 1:4, n_group_classes = 1:4,
+                            n_starts = 200, boundary = "exclude", seed = 1)
 ```
 
 ### Centring and scaling
@@ -246,17 +153,18 @@ as a deviation from its own group’s mean in units of that group’s
 standard deviation, so that the profiles describe within-person
 fluctuation rather than between-person level.
 
-Under covariance structures that estimate a separate variance for each
-indicator (`EEI`, `VVI`, `EEE`, `VVV`, `EVI`, `VEI`), grand-mean scaling
-is a reparameterization of the unconstrained likelihood. Corresponding
-optima have the same class membership, entropy and AvePP when bounds and
-priors transform consistently. The package’s absolute variance floor is
-expressed in the fitted units, so an active floor can change
-classification after rescaling; numerical search can also reach
-different local optima. The spherical structures `EII` and `VII`
-constrain all indicators to a common variance, so that an unscaled
-indicator with a large range would dominate the classification; under
-these structures the indicators should be standardized beforehand.
+Under the covariance structures `EEI`, `VEI`, `EVI`, `VVI`, `EEE`,
+`VEE`, `EVV` and `VVV`, whose constraints are preserved when each
+indicator is rescaled, grand-mean scaling is a reparameterization of the
+unconstrained likelihood. Corresponding optima have the same class
+membership, entropy and AvePP when bounds and priors transform
+consistently. The package’s absolute variance floor is expressed in the
+fitted units, so an active floor can change classification after
+rescaling; numerical search can also reach different local optima. The
+spherical structures `EII` and `VII` constrain all indicators to a
+common variance, so that an unscaled indicator with a large range would
+dominate the classification; under these structures the indicators
+should be standardized beforehand.
 
 ``` r
 
@@ -391,13 +299,14 @@ the soft entropy of the complete-data classification, which in a
 two-level model is the group class of every student together with the
 profile of every enrolment. It is the entropy of the group-class
 posteriors plus, within each group class, the entropy of the profile
-posteriors (Biernacki, Celeux and Govaert 2000). With one group class it
-is the entropy of the profile posteriors. The two conventions therefore
-differ only in `n`, and in a single-level model, where the two sample
-sizes coincide, every criterion is identical under both. A transition
-model from [`lta()`](https://pak.dynasite.org/latents/reference/lta.md)
-is the exception: its profiles form a Markov chain within a person, and
-its criteria charge one level’s entropy per convention.
+posteriors (the complete-data entropy of Biernacki et al., 2000, applied
+to both levels). With one group class it is the entropy of the profile
+posteriors. The two conventions therefore differ only in `n`, and in a
+single-level model, where the two sample sizes coincide, every criterion
+is identical under both. A transition model from
+[`lta()`](https://pak.dynasite.org/latents/reference/lta.md) is the
+exception: its profiles form a Markov chain within a person, and its
+criteria charge one level’s entropy per convention.
 
 ### The table of every candidate
 
@@ -406,209 +315,147 @@ one row per candidate, containing every criterion under both conventions
 together with the log likelihood, the number of parameters, summaries of
 classification quality and diagnostics of estimation.
 
+The 16 candidates with the `VVV` structure:
+
 ``` r
 
-as.data.frame(models)
-#>            candidate n_profiles n_group_classes model log_likelihood n_parameters   aic   kic
-#> 1  profiles1_groups1          1               1   VVI         -10007           10 20035 20048
-#> 2  profiles2_groups1          2               1   VVI          -8615           21 17272 17296
-#> 3  profiles3_groups1          3               1   VVI          -8537           32 17137 17172
-#> 4  profiles4_groups1          4               1   VVI          -8501           43 17088 17134
-#> 5  profiles5_groups1          5               1   VVI          -8484           54 17077 17134
-#> 6  profiles6_groups1          6               1   VVI          -8481           65 17093 17161
-#> 7  profiles1_groups2          1               2   VVI             NA           NA    NA    NA
-#> 8  profiles2_groups2          2               2   VVI          -8440           23 16926 16952
-#> 9  profiles3_groups2          3               2   VVI          -8365           35 16799 16837
-#> 10 profiles4_groups2          4               2   VVI          -8326           47 16746 16796
-#> 11 profiles5_groups2          5               2   VVI          -8309           59 16735 16797
-#> 12 profiles6_groups2          6               2   VVI          -8297           71 16737 16811
-#> 13 profiles1_groups3          1               3   VVI             NA           NA    NA    NA
-#> 14 profiles2_groups3          2               3   VVI          -8421           25 16892 16920
-#> 15 profiles3_groups3          3               3   VVI          -8348           38 16773 16814
-#> 16 profiles4_groups3          4               3   VVI          -8307           51 16716 16770
-#> 17 profiles5_groups3          5               3   VVI          -8290           64 16708 16775
-#> 18 profiles6_groups3          6               3   VVI          -8277           77 16707 16787
-#> 19 profiles1_groups4          1               4   VVI             NA           NA    NA    NA
-#> 20 profiles2_groups4          2               4   VVI          -8415           27 16884 16914
-#> 21 profiles3_groups4          3               4   VVI          -8343           41 16767 16811
-#> 22 profiles4_groups4          4               4   VVI          -8301           55 16711 16769
-#> 23 profiles5_groups4          5               4   VVI          -8283           69 16704 16776
-#> 24 profiles6_groups4          6               4   VVI          -8268           83 16703 16789
+subset(as.data.frame(models), model == "VVV")
+#>                candidate n_profiles n_group_classes model log_likelihood n_parameters   aic   kic
+#> 49 profiles1_groups1_VVV          1               1   VVV          -8710           20 17460 17483
+#> 50 profiles2_groups1_VVV          2               1   VVV          -8490           41 17061 17105
+#> 51 profiles3_groups1_VVV          3               1   VVV          -8472           62 17067 17132
+#> 52 profiles4_groups1_VVV          4               1   VVV          -8434           83 17033 17119
+#> 53 profiles1_groups2_VVV          1               2   VVV             NA           NA    NA    NA
+#> 54 profiles2_groups2_VVV          2               2   VVV          -8313           43 16712 16758
+#> 55 profiles3_groups2_VVV          3               2   VVV          -8289           65 16708 16776
+#> 56 profiles4_groups2_VVV          4               2   VVV          -8261           87 16696 16786
+#> 57 profiles1_groups3_VVV          1               3   VVV             NA           NA    NA    NA
+#> 58 profiles2_groups3_VVV          2               3   VVV          -8295           45 16681 16729
+#> 59 profiles3_groups3_VVV          3               3   VVV          -8275           68 16686 16757
+#> 60 profiles4_groups3_VVV          4               3   VVV          -8237           91 16656 16750
+#> 61 profiles1_groups4_VVV          1               4   VVV             NA           NA    NA    NA
+#> 62 profiles2_groups4_VVV          2               4   VVV          -8289           47 16672 16722
+#> 63 profiles3_groups4_VVV          3               4   VVV          -8262           71 16666 16740
+#> 64 profiles4_groups4_VVV          4               4   VVV          -8231           95 16652 16750
 #>    bic_groups bic_individual sabic_groups sabic_individual caic_groups caic_individual awe_groups
-#> 1       20062          20088        20030            20056       20072           20098      20138
-#> 2       17328          17383        17262            17316       17349           17404      17644
-#> 3       17222          17306        17121            17204       17254           17338      18179
-#> 4       17203          17314        17067            17178       17246           17357      18577
-#> 5       17220          17361        17050            17189       17274           17415      18674
-#> 6       17266          17435        17061            17228       17331           17500      19453
-#> 7          NA             NA           NA               NA          NA              NA         NA
-#> 8       16987          17047        16914            16974       17010           17070      17292
-#> 9       16892          16983        16782            16872       16927           17018      17824
-#> 10      16872          16994        16723            16844       16919           17041      18265
-#> 11      16892          17045        16706            16858       16951           17104      18365
-#> 12      16926          17110        16701            16884       16997           17181      18814
-#> 13         NA             NA           NA               NA          NA              NA         NA
-#> 14      16959          17024        16880            16944       16984           17049      17306
-#> 15      16874          16973        16754            16852       16912           17011      17856
-#> 16      16852          16985        16691            16823       16903           17036      18303
-#> 17      16879          17045        16677            16842       16943           17109      18583
-#> 18      16912          17112        16669            16868       16989           17189      18961
-#> 19         NA             NA           NA               NA          NA              NA         NA
-#> 20      16956          17026        16871            16941       16983           17053      17330
-#> 21      16876          16983        16747            16853       16917           17024      17897
-#> 22      16858          17000        16684            16826       16913           17055      18350
-#> 23      16887          17067        16669            16847       16956           17136      18563
-#> 24      16924          17139        16661            16876       17007           17222      18917
+#> 49      17514          17565        17450            17502       17534           17585      17667
+#> 50      17170          17277        17041            17147       17211           17318      17732
+#> 51      17232          17393        17036            17196       17294           17455      18344
+#> 52      17254          17470        16992            17206       17337           17553      18315
+#> 53         NA             NA           NA               NA          NA              NA         NA
+#> 54      16827          16938        16691            16802       16870           16981      17346
+#> 55      16881          17050        16676            16844       16946           17115      17593
+#> 56      16927          17153        16652            16877       17014           17240      18366
+#> 57         NA             NA           NA               NA          NA              NA         NA
+#> 58      16801          16917        16658            16775       16846           16962      17360
+#> 59      16867          17044        16652            16828       16935           17112      17958
+#> 60      16899          17135        16611            16846       16990           17226      18195
+#> 61         NA             NA           NA               NA          NA              NA         NA
+#> 62      16798          16920        16649            16770       16845           16967      17380
+#> 63      16855          17040        16631            16814       16926           17111      17636
+#> 64      16905          17151        16604            16849       17000           17246      17910
 #>    awe_individual icl_groups icl_individual clc_groups clc_individual profile_entropy group_entropy
-#> 1           20190      20062          20088      20015          20015              NA            NA
-#> 2           17753      17483          17537      17385          17385           0.922            NA
-#> 3           18345      17934          18017      17785          17785           0.772            NA
-#> 4           18800      18247          18359      18047          18047           0.735            NA
-#> 5           18955      18260          18400      18008          18008           0.773            NA
-#> 6           19791      18955          19124      18652          18652           0.668            NA
-#> 7              NA         NA             NA         NA             NA              NA            NA
-#> 8           17412      17116          17176      17009          17009           0.938         0.940
-#> 9           18005      17556          17646      17392          17392           0.790         0.943
-#> 10          18509      17905          18027      17686          17686           0.739         0.937
-#> 11          18672      17913          18066      17638          17638           0.775         0.965
-#> 12          19183      18270          18454      17939          17939           0.733         0.946
-#> 13             NA         NA             NA         NA             NA              NA            NA
-#> 14          17436      17115          17180      16998          16998           0.940         0.816
-#> 15          18053      17565          17663      17388          17388           0.792         0.797
-#> 16          18568      17913          18045      17675          17675           0.739         0.823
-#> 17          18915      18092          18259      17794          17794           0.736         0.844
-#> 18          19361      18371          18571      18012          18012           0.716         0.836
-#> 19             NA         NA             NA         NA             NA              NA            NA
-#> 20          17470      17123          17193      16997          16997           0.942         0.798
-#> 21          18110      17583          17690      17392          17392           0.793         0.772
-#> 22          18636      17929          18071      17672          17672           0.740         0.803
-#> 23          18921      18034          18213      17713          17713           0.751         0.830
-#> 24          19348      18281          18496      17893          17893           0.726         0.851
+#> 49          17771      17514          17565      17420          17420              NA            NA
+#> 50          17945      17418          17524      17226          17226           0.875            NA
+#> 51          18666      17869          18030      17580          17580           0.796            NA
+#> 52          18746      17679          17894      17292          17292           0.892            NA
+#> 53             NA         NA             NA         NA             NA              NA            NA
+#> 54          17570      17017          17128      16816          16816           0.906         0.942
+#> 55          17931      17095          17264      16792          16792           0.933         0.943
+#> 56          18818      17699          17925      17293          17293           0.805         0.946
+#> 57             NA         NA             NA         NA             NA              NA            NA
+#> 58          17593      17015          17132      16805          16805           0.909         0.816
+#> 59          18312      17437          17614      17120          17120           0.828         0.824
+#> 60          18667      17497          17734      17073          17073           0.855         0.837
+#> 61             NA         NA             NA         NA             NA              NA            NA
+#> 62          17624      17020          17142      16801          16801           0.912         0.797
+#> 63          18005      17092          17276      16761          16761           0.940         0.801
+#> 64          18403      17182          17429      16739          16739           0.936         0.830
 #>    avepp_min avepp_max avepp_mean avepp_below group_avepp_min group_avepp_max group_avepp_mean
-#> 1         NA        NA         NA          NA              NA              NA               NA
-#> 2      0.974     0.982      0.978           0              NA              NA               NA
-#> 3      0.832     0.964      0.886           0              NA              NA               NA
-#> 4      0.803     0.849      0.835           0              NA              NA               NA
-#> 5      0.804     0.962      0.861           0              NA              NA               NA
-#> 6      0.628     0.811      0.729           5              NA              NA               NA
-#> 7         NA        NA         NA          NA              NA              NA               NA
-#> 8      0.982     0.985      0.983           0           0.969           0.992            0.980
-#> 9      0.849     0.979      0.893           0           0.977           0.992            0.985
-#> 10     0.791     0.859      0.835           1           0.975           0.990            0.983
-#> 11     0.803     0.860      0.839           0           0.990           0.996            0.993
-#> 12     0.698     0.845      0.780           4           0.972           0.987            0.979
-#> 13        NA        NA         NA          NA              NA              NA               NA
-#> 14     0.982     0.986      0.984           0           0.900           0.962            0.923
-#> 15     0.843     0.978      0.892           0           0.864           0.977            0.913
-#> 16     0.801     0.853      0.836           0           0.861           0.981            0.922
-#> 17     0.702     0.848      0.799           1           0.889           0.979            0.930
-#> 18     0.664     0.872      0.792           2           0.899           0.978            0.933
-#> 19        NA        NA         NA          NA              NA              NA               NA
-#> 20     0.984     0.986      0.985           0           0.851           0.912            0.877
-#> 21     0.844     0.980      0.892           0           0.841           0.902            0.864
-#> 22     0.801     0.853      0.837           0           0.867           0.903            0.885
-#> 23     0.786     0.853      0.820           1           0.882           0.926            0.904
-#> 24     0.654     0.847      0.783           3           0.907           0.930            0.918
+#> 49        NA        NA         NA          NA              NA              NA               NA
+#> 50     0.959     0.971      0.965           0              NA              NA               NA
+#> 51     0.665     0.956      0.833           1              NA              NA               NA
+#> 52     0.630     0.958      0.837           1              NA              NA               NA
+#> 53        NA        NA         NA          NA              NA              NA               NA
+#> 54     0.973     0.978      0.976           0           0.971           0.993            0.982
+#> 55     0.796     0.976      0.915           1           0.979           0.990            0.985
+#> 56     0.802     0.974      0.856           0           0.962           0.995            0.979
+#> 57        NA        NA         NA          NA              NA              NA               NA
+#> 58     0.974     0.978      0.976           0           0.903           0.960            0.923
+#> 59     0.650     0.973      0.841           1           0.878           0.955            0.920
+#> 60     0.649     0.967      0.838           1           0.881           0.976            0.928
+#> 61        NA        NA         NA          NA              NA              NA               NA
+#> 62     0.977     0.978      0.977           0           0.830           0.925            0.874
+#> 63     0.830     0.979      0.928           0           0.851           0.910            0.879
+#> 64     0.785     0.976      0.887           1           0.868           0.961            0.921
 #>    group_avepp_below converged boundary min_standardized_eigenvalue min_gaussian_mass
-#> 1                 NA      TRUE    FALSE                      1.0000           1422.00
-#> 2                 NA      TRUE    FALSE                      0.3750            589.08
-#> 3                 NA      TRUE    FALSE                      0.1932            418.21
-#> 4                 NA      TRUE    FALSE                      0.1892            172.06
-#> 5                 NA      TRUE    FALSE                      0.0036              4.89
-#> 6                 NA      TRUE    FALSE                      0.1556             95.11
-#> 7                 NA     FALSE       NA                          NA                NA
-#> 8                  0      TRUE    FALSE                      0.3715            587.90
-#> 9                  0      TRUE    FALSE                      0.2000            382.61
-#> 10                 0      TRUE    FALSE                      0.2003            177.99
-#> 11                 0      TRUE    FALSE                      0.0636             36.78
-#> 12                 0      TRUE    FALSE                      0.0849             40.14
-#> 13                NA     FALSE       NA                          NA                NA
-#> 14                 0      TRUE    FALSE                      0.3748            591.09
-#> 15                 0      TRUE    FALSE                      0.2002            369.36
-#> 16                 0      TRUE    FALSE                      0.1951            201.50
-#> 17                 0      TRUE    FALSE                      0.1131             78.19
-#> 18                 0      TRUE    FALSE                      0.0175              9.14
-#> 19                NA     FALSE       NA                          NA                NA
-#> 20                 0      TRUE    FALSE                      0.3747            592.09
-#> 21                 0      TRUE    FALSE                      0.2006            369.51
-#> 22                 0      TRUE    FALSE                      0.1967            201.54
-#> 23                 0      TRUE    FALSE                      0.0994             61.40
-#> 24                 0      TRUE    FALSE                      0.1224            114.83
+#> 49                NA      TRUE    FALSE                    0.279287            1422.0
+#> 50                NA      TRUE    FALSE                    0.269614             577.4
+#> 51                NA      TRUE    FALSE                    0.120317             112.7
+#> 52                NA      TRUE    FALSE                    0.000276              26.1
+#> 53                NA     FALSE       NA                          NA                NA
+#> 54                 0      TRUE    FALSE                    0.271042             583.2
+#> 55                 0      TRUE    FALSE                    0.011064              18.6
+#> 56                 0      TRUE    FALSE                    0.001958              26.3
+#> 57                NA     FALSE       NA                          NA                NA
+#> 58                 0      TRUE    FALSE                    0.272051             589.5
+#> 59                 0      TRUE    FALSE                    0.120469             116.5
+#> 60                 0      TRUE    FALSE                    0.002424              26.9
+#> 61                NA     FALSE       NA                          NA                NA
+#> 62                 0      TRUE    FALSE                    0.271143             590.0
+#> 63                 0      TRUE    FALSE                    0.003469              17.2
+#> 64                 0      TRUE    FALSE                    0.013442              31.2
 #>    n_best_replicated
-#> 1                  3
-#> 2                  3
-#> 3                  3
-#> 4                  3
-#> 5                  1
-#> 6                  1
-#> 7                 NA
-#> 8                  3
-#> 9                  3
-#> 10                 3
-#> 11                 1
-#> 12                 1
-#> 13                NA
-#> 14                 3
-#> 15                 3
-#> 16                 3
-#> 17                 1
-#> 18                 1
-#> 19                NA
-#> 20                 3
-#> 21                 2
-#> 22                 1
-#> 23                 2
-#> 24                 2
-#>                                                                                                                                                                                warnings
-#> 1                                                                                                                                                                                      
-#> 2                                                                                                                                                                                      
-#> 3                                                                                                                                                                                      
-#> 4                                                                                                                                                                                      
-#> 5  Profile 4: 4.9 Gaussian membership mass for 10 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
-#> 6                                                                                                                                                                                      
-#> 7                                                                                                                                                                                      
-#> 8                                                                                                                                                                                      
-#> 9                                                                                                                                                                                      
-#> 10                                                                                                                                                                                     
-#> 11                                                                                                                                                                                     
-#> 12                                                                                                                                                                                     
-#> 13                                                                                                                                                                                     
-#> 14                                                                                                                                                                                     
-#> 15                                                                                                                                                                                     
-#> 16                                                                                                                                                                                     
-#> 17                                                                                                                                                                                     
-#> 18 Profile 6: 9.1 Gaussian membership mass for 10 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
-#> 19                                                                                                                                                                                     
-#> 20                                                                                                                                                                                     
-#> 21                                                                                                                                                                                     
-#> 22                                                                                                                                                                                     
-#> 23                                                                                                                                                                                     
-#> 24                                                                                                                                                                                     
+#> 49                 5
+#> 50                 5
+#> 51                 4
+#> 52                 1
+#> 53                NA
+#> 54                 5
+#> 55                 1
+#> 56                 1
+#> 57                NA
+#> 58                 5
+#> 59                 4
+#> 60                 1
+#> 61                NA
+#> 62                 5
+#> 63                 1
+#> 64                 1
+#>                                                                                                                                                                                 warnings
+#> 49                                                                                                                                                                                      
+#> 50                                                                                                                                                                                      
+#> 51                                                                                                                                                                                      
+#> 52                                                                                                                                                                                      
+#> 53                                                                                                                                                                                      
+#> 54                                                                                                                                                                                      
+#> 55 Profile 2: 18.6 Gaussian membership mass for 20 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+#> 56                                                                                                                                                                                      
+#> 57                                                                                                                                                                                      
+#> 58                                                                                                                                                                                      
+#> 59                                                                                                                                                                                      
+#> 60                                                                                                                                                                                      
+#> 61                                                                                                                                                                                      
+#> 62                                                                                                                                                                                      
+#> 63 Profile 2: 17.2 Gaussian membership mass for 20 free means and variances. This is a conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
+#> 64                                                                                                                                                                                      
 #>                                                                                     error
-#> 1                                                                                    <NA>
-#> 2                                                                                    <NA>
-#> 3                                                                                    <NA>
-#> 4                                                                                    <NA>
-#> 5                                                                                    <NA>
-#> 6                                                                                    <NA>
-#> 7  Multiple group classes are not identifiable with one profile or only singleton groups.
-#> 8                                                                                    <NA>
-#> 9                                                                                    <NA>
-#> 10                                                                                   <NA>
-#> 11                                                                                   <NA>
-#> 12                                                                                   <NA>
-#> 13 Multiple group classes are not identifiable with one profile or only singleton groups.
-#> 14                                                                                   <NA>
-#> 15                                                                                   <NA>
-#> 16                                                                                   <NA>
-#> 17                                                                                   <NA>
-#> 18                                                                                   <NA>
-#> 19 Multiple group classes are not identifiable with one profile or only singleton groups.
-#> 20                                                                                   <NA>
-#> 21                                                                                   <NA>
-#> 22                                                                                   <NA>
-#> 23                                                                                   <NA>
-#> 24                                                                                   <NA>
+#> 49                                                                                   <NA>
+#> 50                                                                                   <NA>
+#> 51                                                                                   <NA>
+#> 52                                                                                   <NA>
+#> 53 Multiple group classes are not identifiable with one profile or only singleton groups.
+#> 54                                                                                   <NA>
+#> 55                                                                                   <NA>
+#> 56                                                                                   <NA>
+#> 57 Multiple group classes are not identifiable with one profile or only singleton groups.
+#> 58                                                                                   <NA>
+#> 59                                                                                   <NA>
+#> 60                                                                                   <NA>
+#> 61 Multiple group classes are not identifiable with one profile or only singleton groups.
+#> 62                                                                                   <NA>
+#> 63                                                                                   <NA>
+#> 64                                                                                   <NA>
 ```
 
 ### The minimum of each criterion
@@ -621,33 +468,34 @@ candidate favoured by each criterion and makes no further inference.
 ``` r
 
 get_results(models, "best")
-#>    criterion  convention         candidate n_profiles n_group_classes model value
-#> 1        aic        <NA> profiles6_groups4          6               4   VVI 16703
-#> 2        kic        <NA> profiles4_groups4          4               4   VVI 16769
-#> 3        bic      groups profiles4_groups3          4               3   VVI 16852
-#> 4        bic individuals profiles3_groups3          3               3   VVI 16973
-#> 5      sabic      groups profiles6_groups4          6               4   VVI 16661
-#> 6      sabic individuals profiles4_groups3          4               3   VVI 16823
-#> 7       caic      groups profiles4_groups3          4               3   VVI 16903
-#> 8       caic individuals profiles3_groups3          3               3   VVI 17011
-#> 9        awe      groups profiles2_groups2          2               2   VVI 17292
-#> 10       awe individuals profiles2_groups2          2               2   VVI 17412
-#> 11       icl      groups profiles2_groups3          2               3   VVI 17115
-#> 12       icl individuals profiles2_groups2          2               2   VVI 17176
-#> 13       clc      groups profiles2_groups4          2               4   VVI 16997
-#> 14       clc individuals profiles2_groups4          2               4   VVI 16997
+#>    criterion  convention             candidate n_profiles n_group_classes model value
+#> 1        aic        <NA> profiles4_groups4_VVV          4               4   VVV 16652
+#> 2        kic        <NA> profiles2_groups4_VVV          2               4   VVV 16722
+#> 3        bic      groups profiles2_groups4_VVV          2               4   VVV 16798
+#> 4        bic individuals profiles2_groups3_EEE          2               3   EEE 16900
+#> 5      sabic      groups profiles4_groups4_VVV          4               4   VVV 16604
+#> 6      sabic individuals profiles2_groups4_VVV          2               4   VVV 16770
+#> 7       caic      groups profiles3_groups3_EEE          3               3   EEE 16844
+#> 8       caic individuals profiles2_groups3_EEE          2               3   EEE 16930
+#> 9        awe      groups profiles2_groups2_EEE          2               2   EEE 17267
+#> 10       awe individuals profiles2_groups2_VVI          2               2   VVI 17412
+#> 11       icl      groups profiles2_groups3_VVV          2               3   VVV 17015
+#> 12       icl individuals profiles2_groups3_EEE          2               3   EEE 17122
+#> 13       clc      groups profiles4_groups4_VVV          4               4   VVV 16739
+#> 14       clc individuals profiles4_groups4_VVV          4               4   VVV 16739
 ```
 
 In this example the criteria favour 7 different candidates: BIC with
-students as units favours profiles4_groups3, BIC with enrolments as
-units profiles3_groups3, ICL with students as units profiles2_groups3,
-and AIC profiles6_groups4. Such disagreement is typical rather than
-anomalous. The criteria were derived for different purposes, and their
-penalties largely account for the pattern: AIC favours the largest
-candidate in this grid, whereas the entropy-based criteria favour
-smaller ones. AIC does not always have the lightest penalty: SABIC’s
-per-parameter penalty is smaller at the group sample size used here, as
-the formula above shows.
+students as units favours profiles2_groups4_VVV, BIC with enrolments as
+units profiles2_groups3_EEE, ICL with students as units
+profiles2_groups3_VVV, and AIC profiles4_groups4_VVV. Such disagreement
+is typical rather than anomalous. The criteria were derived for
+different purposes, and their penalties largely account for the pattern:
+AIC favours the largest candidate in this grid, as does the CLC, which
+has no parameter penalty, whereas the ICL and AWE favour smaller ones.
+AIC does not always have the lightest penalty: SABIC’s per-parameter
+penalty is smaller at the group sample size used here, as the formula
+above shows.
 
 A minimum at the boundary of the grid, that is, at the largest number of
 profiles or group classes estimated, indicates that the criterion was
@@ -664,13 +512,6 @@ displays the criteria against the number of profiles, with one line per
 number of group classes and the minimum of each criterion marked. `what`
 selects criteria by column name, and `what = "all"` displays all of
 them.
-
-``` r
-
-plot_enumeration(models)
-```
-
-![](model-selection_files/figure-html/plot-criteria-1.png)
 
 ``` r
 
@@ -694,79 +535,60 @@ negative value that it increased it; candidates without such a neighbour
 in the grid have `NA`. BIC with groups as units is used unless `using`
 specifies another criterion.
 
-``` r
-
-get_results(models, "deltas")
-#>            candidate n_profiles n_group_classes model  criterion value delta_profile
-#> 1  profiles1_groups1          1               1   VVI bic_groups 20062            NA
-#> 2  profiles2_groups1          2               1   VVI bic_groups 17328        2733.2
-#> 3  profiles3_groups1          3               1   VVI bic_groups 17222         105.9
-#> 4  profiles4_groups1          4               1   VVI bic_groups 17203          19.9
-#> 5  profiles5_groups1          5               1   VVI bic_groups 17220         -17.9
-#> 6  profiles6_groups1          6               1   VVI bic_groups 17266         -45.6
-#> 7  profiles1_groups2          1               2   VVI bic_groups    NA            NA
-#> 8  profiles2_groups2          2               2   VVI bic_groups 16987            NA
-#> 9  profiles3_groups2          3               2   VVI bic_groups 16892          94.6
-#> 10 profiles4_groups2          4               2   VVI bic_groups 16872          20.7
-#> 11 profiles5_groups2          5               2   VVI bic_groups 16892         -20.6
-#> 12 profiles6_groups2          6               2   VVI bic_groups 16926         -33.5
-#> 13 profiles1_groups3          1               3   VVI bic_groups    NA            NA
-#> 14 profiles2_groups3          2               3   VVI bic_groups 16959            NA
-#> 15 profiles3_groups3          3               3   VVI bic_groups 16874          84.6
-#> 16 profiles4_groups3          4               3   VVI bic_groups 16852          21.9
-#> 17 profiles5_groups3          5               3   VVI bic_groups 16879         -26.7
-#> 18 profiles6_groups3          6               3   VVI bic_groups 16912         -33.6
-#> 19 profiles1_groups4          1               4   VVI bic_groups    NA            NA
-#> 20 profiles2_groups4          2               4   VVI bic_groups 16956            NA
-#> 21 profiles3_groups4          3               4   VVI bic_groups 16876          79.9
-#> 22 profiles4_groups4          4               4   VVI bic_groups 16858          18.8
-#> 23 profiles5_groups4          5               4   VVI bic_groups 16887         -29.7
-#> 24 profiles6_groups4          6               4   VVI bic_groups 16924         -36.3
-#>         from_profile delta_group_class  from_group_class
-#> 1               <NA>                NA              <NA>
-#> 2  profiles1_groups1                NA              <NA>
-#> 3  profiles2_groups1                NA              <NA>
-#> 4  profiles3_groups1                NA              <NA>
-#> 5  profiles4_groups1                NA              <NA>
-#> 6  profiles5_groups1                NA              <NA>
-#> 7               <NA>                NA              <NA>
-#> 8               <NA>            341.51 profiles2_groups1
-#> 9  profiles2_groups2            330.20 profiles3_groups1
-#> 10 profiles3_groups2            330.96 profiles4_groups1
-#> 11 profiles4_groups2            328.23 profiles5_groups1
-#> 12 profiles5_groups2            340.42 profiles6_groups1
-#> 13              <NA>                NA              <NA>
-#> 14              <NA>             28.18 profiles2_groups2
-#> 15 profiles2_groups3             18.19 profiles3_groups2
-#> 16 profiles3_groups3             19.43 profiles4_groups2
-#> 17 profiles4_groups3             13.29 profiles5_groups2
-#> 18 profiles5_groups3             13.15 profiles6_groups2
-#> 19              <NA>                NA              <NA>
-#> 20              <NA>              2.37 profiles2_groups3
-#> 21 profiles2_groups4             -2.43 profiles3_groups3
-#> 22 profiles3_groups4             -5.54 profiles4_groups3
-#> 23 profiles4_groups4             -8.53 profiles5_groups3
-#> 24 profiles5_groups4            -11.25 profiles6_groups3
-```
-
-With three group classes, the third profile reduces BIC by 85 and the
-fourth by 22, whereas the fifth increases it by 27 (shown as a negative
-decrease). The candidate with two profiles has no profile-wise delta
-because its neighbour, with one profile and three group classes, is not
-identified. Diminishing decreases indicate the point beyond which
-additional profiles capture detail rather than structure, and the first
-negative value marks where they cease to improve the criterion. The
-deltas are displayed for both directions: along the number of profiles
-(left) and along the number of group classes (right).
+The rows of the `VVV` candidates:
 
 ``` r
 
-plot_selection(models, what = "deltas")
+subset(get_results(models, "deltas"), model == "VVV")
+#>                candidate n_profiles n_group_classes model  criterion value delta_profile
+#> 49 profiles1_groups1_VVV          1               1   VVV bic_groups 17514            NA
+#> 50 profiles2_groups1_VVV          2               1   VVV bic_groups 17170         343.1
+#> 51 profiles3_groups1_VVV          3               1   VVV bic_groups 17232         -61.7
+#> 52 profiles4_groups1_VVV          4               1   VVV bic_groups 17254         -22.0
+#> 53 profiles1_groups2_VVV          1               2   VVV bic_groups    NA            NA
+#> 54 profiles2_groups2_VVV          2               2   VVV bic_groups 16827            NA
+#> 55 profiles3_groups2_VVV          3               2   VVV bic_groups 16881         -54.5
+#> 56 profiles4_groups2_VVV          4               2   VVV bic_groups 16927         -46.0
+#> 57 profiles1_groups3_VVV          1               3   VVV bic_groups    NA            NA
+#> 58 profiles2_groups3_VVV          2               3   VVV bic_groups 16801            NA
+#> 59 profiles3_groups3_VVV          3               3   VVV bic_groups 16867         -66.6
+#> 60 profiles4_groups3_VVV          4               3   VVV bic_groups 16899         -31.5
+#> 61 profiles1_groups4_VVV          1               4   VVV bic_groups    NA            NA
+#> 62 profiles2_groups4_VVV          2               4   VVV bic_groups 16798            NA
+#> 63 profiles3_groups4_VVV          3               4   VVV bic_groups 16855         -57.6
+#> 64 profiles4_groups4_VVV          4               4   VVV bic_groups 16905         -49.3
+#>             from_profile delta_group_class      from_group_class
+#> 49                  <NA>                NA                  <NA>
+#> 50 profiles1_groups1_VVV                NA                  <NA>
+#> 51 profiles2_groups1_VVV                NA                  <NA>
+#> 52 profiles3_groups1_VVV                NA                  <NA>
+#> 53                  <NA>                NA                  <NA>
+#> 54                  <NA>            343.67 profiles2_groups1_VVV
+#> 55 profiles2_groups2_VVV            350.88 profiles3_groups1_VVV
+#> 56 profiles3_groups2_VVV            326.86 profiles4_groups1_VVV
+#> 57                  <NA>                NA                  <NA>
+#> 58                  <NA>             26.13 profiles2_groups2_VVV
+#> 59 profiles2_groups3_VVV             13.99 profiles3_groups2_VVV
+#> 60 profiles3_groups3_VVV             28.46 profiles4_groups2_VVV
+#> 61                  <NA>                NA                  <NA>
+#> 62                  <NA>              3.06 profiles2_groups3_VVV
+#> 63 profiles2_groups4_VVV             12.06 profiles3_groups3_VVV
+#> 64 profiles3_groups4_VVV             -5.74 profiles4_groups3_VVV
 ```
 
-![](model-selection_files/figure-html/plot-deltas-1.png)
+In the `VVV` candidates, the second profile and the second group class
+produce large decreases, whereas further profiles increase the criterion
+and further group classes reduce it only slightly; the [Class
+enumeration](https://pak.dynasite.org/latents/articles/enumeration.md)
+article interprets these values. Diminishing decreases indicate the
+point beyond which additional classes capture detail rather than
+structure, and the first negative value marks where they cease to
+improve the criterion. The deltas are displayed for both directions:
+along the number of profiles (left) and along the number of group
+classes (right).
 
-The same display is available for any criterion:
+The display is available for any criterion, here the ICL with enrolments
+as units:
 
 ``` r
 
@@ -779,8 +601,8 @@ plot_selection(models, what = "deltas", using = "icl_individual")
 
 The knee, or elbow, of a decreasing curve is the point at which it
 changes from steep to flat. `get_results(x, "knees")` locates it with a
-simplified, geometric version of the Kneedle algorithm (Satopää,
-Albrecht, Irwin and Raghavan, 2011):
+simplified, geometric version of the Kneedle algorithm (Satopää et al.,
+2011):
 
 1.  both axes, the number of classes and the criterion, are rescaled to
     the unit interval;
@@ -802,33 +624,41 @@ over the number of group classes at each number of profiles
 parameters (`"parameters"`). The columns `from` and `to` identify the
 endpoints of each curve and `n_points` its length.
 
+The lines of the `VVV` candidates:
+
 ``` r
 
-get_results(models, "knees")
-#>        direction            line  criterion              from                to n_points
-#> 1       profiles   1 group class bic_groups profiles1_groups1 profiles6_groups1        6
-#> 2       profiles 2 group classes bic_groups profiles2_groups2 profiles6_groups2        5
-#> 3       profiles 3 group classes bic_groups profiles2_groups3 profiles6_groups3        5
-#> 4       profiles 4 group classes bic_groups profiles2_groups4 profiles6_groups4        5
-#> 5  group_classes       1 profile bic_groups profiles1_groups1 profiles1_groups1        1
-#> 6  group_classes      2 profiles bic_groups profiles2_groups1 profiles2_groups4        4
-#> 7  group_classes      3 profiles bic_groups profiles3_groups1 profiles3_groups4        4
-#> 8  group_classes      4 profiles bic_groups profiles4_groups1 profiles4_groups4        4
-#> 9  group_classes      5 profiles bic_groups profiles5_groups1 profiles5_groups4        4
-#> 10 group_classes      6 profiles bic_groups profiles6_groups1 profiles6_groups4        4
-#> 11    parameters  all candidates bic_groups profiles1_groups1 profiles6_groups4       21
-#>       knee_candidate distance knee_without_largest stable                               note
-#> 1  profiles2_groups1    0.544    profiles2_groups1   TRUE                                   
-#> 2  profiles4_groups2    0.648    profiles3_groups2  FALSE moves when the largest is left out
-#> 3  profiles4_groups3    0.718    profiles3_groups3  FALSE moves when the largest is left out
-#> 4  profiles4_groups4    0.792    profiles3_groups4  FALSE moves when the largest is left out
-#> 5               <NA>       NA                 <NA>     NA        fewer than three candidates
-#> 6  profiles2_groups2    0.413    profiles2_groups2   TRUE                                   
-#> 7  profiles3_groups2    0.438    profiles3_groups2   TRUE                                   
-#> 8  profiles4_groups2    0.439    profiles4_groups2   TRUE                                   
-#> 9  profiles5_groups2    0.455    profiles5_groups2   TRUE                                   
-#> 10 profiles6_groups2    0.460    profiles6_groups2   TRUE                                   
-#> 11 profiles2_groups2    0.561    profiles2_groups2   TRUE
+subset(get_results(models, "knees"), endsWith(line, "VVV"))
+#>        direction                 line  criterion                  from                    to
+#> 13      profiles   1 group class, VVV bic_groups profiles1_groups1_VVV profiles4_groups1_VVV
+#> 14      profiles 2 group classes, VVV bic_groups profiles2_groups2_VVV profiles4_groups2_VVV
+#> 15      profiles 3 group classes, VVV bic_groups profiles2_groups3_VVV profiles4_groups3_VVV
+#> 16      profiles 4 group classes, VVV bic_groups profiles2_groups4_VVV profiles4_groups4_VVV
+#> 29 group_classes       1 profile, VVV bic_groups profiles1_groups1_VVV profiles1_groups1_VVV
+#> 30 group_classes      2 profiles, VVV bic_groups profiles2_groups1_VVV profiles2_groups4_VVV
+#> 31 group_classes      3 profiles, VVV bic_groups profiles3_groups1_VVV profiles3_groups4_VVV
+#> 32 group_classes      4 profiles, VVV bic_groups profiles4_groups1_VVV profiles4_groups4_VVV
+#> 36    parameters  all candidates, VVV bic_groups profiles1_groups1_VVV profiles4_groups4_VVV
+#>    n_points        knee_candidate distance  knee_without_largest stable
+#> 13        4 profiles2_groups1_VVV    0.597 profiles2_groups1_VVV   TRUE
+#> 14        3                  <NA>       NA                  <NA>     NA
+#> 15        3                  <NA>       NA                  <NA>     NA
+#> 16        3                  <NA>       NA                  <NA>     NA
+#> 29        1                  <NA>       NA                  <NA>     NA
+#> 30        4 profiles2_groups2_VVV    0.416 profiles2_groups2_VVV   TRUE
+#> 31        4 profiles3_groups2_VVV    0.423 profiles3_groups2_VVV   TRUE
+#> 32        4 profiles4_groups2_VVV    0.422 profiles4_groups2_VVV   TRUE
+#> 36       13 profiles2_groups3_VVV    0.542 profiles2_groups3_VVV   TRUE
+#>                                           note
+#> 13                                            
+#> 14 the criterion does not fall along this line
+#> 15 the criterion does not fall along this line
+#> 16 the criterion does not fall along this line
+#> 29                 fewer than three candidates
+#> 30                                            
+#> 31                                            
+#> 32                                            
+#> 36
 ```
 
 Because the chord terminates at the largest candidate estimated, the
@@ -850,12 +680,12 @@ no complete result is available:
 | `no knee when the largest is left out` | the shortened line has no knee |
 | `moves when the largest is left out` | the knee depends on the range fitted |
 
-With three group classes, the knee along the number of profiles is
-profiles4_groups3, at a distance of 0.72. Without the largest candidate
-it is profiles3_groups3, so `stable` is FALSE: the bend lies between
-three and four profiles, and which of the two is identified depends on
-the extent of the grid. The deltas locate the same region with less
-ambiguity, which is why the two are interpreted jointly.
+In this grid the knee along the number of group classes lies at two
+group classes for every number of profiles from two to four and every
+structure, and it is stable; along the number of profiles, the `VVV`
+lines with two or more group classes have no knee, because the criterion
+does not fall beyond two profiles. The deltas and the knees are
+interpreted jointly.
 
 ### The criterion over the whole grid
 
@@ -885,10 +715,9 @@ separation.
   with one class.
 - **Average posterior probability (AvePP)** of a class is the mean
   posterior probability of that class among the units modally assigned
-  to it. Values of 0.7 to 0.8 or above are conventionally taken to
-  indicate adequate separation (Nagin, 2005). Being class-specific, it
-  reveals a single poorly separated class that entropy would average
-  away.
+  to it. Values of 0.7 or above are conventionally taken to indicate
+  adequate separation (Nagin, 2005). Being class-specific, it reveals a
+  single poorly separated class that entropy would average away.
 - **Odds of correct classification (OCC)** of a class is
   `(p / (1 - p)) / (r / (1 - r))`, where `p` is its AvePP and `r` its
   estimated proportion. It compares model-based classification with
@@ -903,261 +732,65 @@ cutoff (0.8 by default, set with `cutoff`).
 candidate, its size by modal assignment and by estimate, its AvePP, its
 OCC and the relative entropy of its level.
 
+For the `VVV` candidates with two profiles:
+
 ``` r
 
-get_results(models, "classification")
-#>             candidate n_profiles n_group_classes model       level class n_modal proportion_modal
-#> 1   profiles2_groups1          2               1   VVI individuals     1     833          0.58579
-#> 2   profiles2_groups1          2               1   VVI individuals     2     589          0.41421
-#> 3   profiles3_groups1          3               1   VVI individuals     1     452          0.31786
-#> 4   profiles3_groups1          3               1   VVI individuals     2     555          0.39030
-#> 5   profiles3_groups1          3               1   VVI individuals     3     415          0.29184
-#> 6   profiles4_groups1          4               1   VVI individuals     1     481          0.33826
-#> 7   profiles4_groups1          4               1   VVI individuals     2     157          0.11041
-#> 8   profiles4_groups1          4               1   VVI individuals     3     419          0.29466
-#> 9   profiles4_groups1          4               1   VVI individuals     4     365          0.25668
-#> 10  profiles5_groups1          5               1   VVI individuals     1     354          0.24895
-#> 11  profiles5_groups1          5               1   VVI individuals     2     419          0.29466
-#> 12  profiles5_groups1          5               1   VVI individuals     3     487          0.34248
-#> 13  profiles5_groups1          5               1   VVI individuals     4       5          0.00352
-#> 14  profiles5_groups1          5               1   VVI individuals     5     157          0.11041
-#> 15  profiles6_groups1          6               1   VVI individuals     1     372          0.26160
-#> 16  profiles6_groups1          6               1   VVI individuals     2     157          0.11041
-#> 17  profiles6_groups1          6               1   VVI individuals     3     378          0.26582
-#> 18  profiles6_groups1          6               1   VVI individuals     4      62          0.04360
-#> 19  profiles6_groups1          6               1   VVI individuals     5     337          0.23699
-#> 20  profiles6_groups1          6               1   VVI individuals     6     116          0.08158
-#> 21  profiles2_groups2          2               2   VVI individuals     1     836          0.58790
-#> 22  profiles2_groups2          2               2   VVI individuals     2     586          0.41210
-#> 23  profiles2_groups2          2               2   VVI      groups     1      35          0.33019
-#> 24  profiles2_groups2          2               2   VVI      groups     2      71          0.66981
-#> 25  profiles3_groups2          3               2   VVI individuals     1     472          0.33193
-#> 26  profiles3_groups2          3               2   VVI individuals     2     570          0.40084
-#> 27  profiles3_groups2          3               2   VVI individuals     3     380          0.26723
-#> 28  profiles3_groups2          3               2   VVI      groups     1      35          0.33019
-#> 29  profiles3_groups2          3               2   VVI      groups     2      71          0.66981
-#> 30  profiles4_groups2          4               2   VVI individuals     1     490          0.34459
-#> 31  profiles4_groups2          4               2   VVI individuals     2     166          0.11674
-#> 32  profiles4_groups2          4               2   VVI individuals     3     418          0.29395
-#> 33  profiles4_groups2          4               2   VVI individuals     4     348          0.24473
-#> 34  profiles4_groups2          4               2   VVI      groups     1      35          0.33019
-#> 35  profiles4_groups2          4               2   VVI      groups     2      71          0.66981
-#> 36  profiles5_groups2          5               2   VVI individuals     1     327          0.22996
-#> 37  profiles5_groups2          5               2   VVI individuals     2     423          0.29747
-#> 38  profiles5_groups2          5               2   VVI individuals     3      31          0.02180
-#> 39  profiles5_groups2          5               2   VVI individuals     4     483          0.33966
-#> 40  profiles5_groups2          5               2   VVI individuals     5     158          0.11111
-#> 41  profiles5_groups2          5               2   VVI      groups     1      72          0.67925
-#> 42  profiles5_groups2          5               2   VVI      groups     2      34          0.32075
-#> 43  profiles6_groups2          6               2   VVI individuals     1     465          0.32700
-#> 44  profiles6_groups2          6               2   VVI individuals     2     171          0.12025
-#> 45  profiles6_groups2          6               2   VVI individuals     3     317          0.22293
-#> 46  profiles6_groups2          6               2   VVI individuals     4      90          0.06329
-#> 47  profiles6_groups2          6               2   VVI individuals     5     343          0.24121
-#> 48  profiles6_groups2          6               2   VVI individuals     6      36          0.02532
-#> 49  profiles6_groups2          6               2   VVI      groups     1      37          0.34906
-#> 50  profiles6_groups2          6               2   VVI      groups     2      69          0.65094
-#> 51  profiles2_groups3          2               3   VVI individuals     1     832          0.58509
-#> 52  profiles2_groups3          2               3   VVI individuals     2     590          0.41491
-#> 53  profiles2_groups3          2               3   VVI      groups     1      31          0.29245
-#> 54  profiles2_groups3          2               3   VVI      groups     2      25          0.23585
-#> 55  profiles2_groups3          2               3   VVI      groups     3      50          0.47170
-#> 56  profiles3_groups3          3               3   VVI individuals     1     476          0.33474
-#> 57  profiles3_groups3          3               3   VVI individuals     2     576          0.40506
-#> 58  profiles3_groups3          3               3   VVI individuals     3     370          0.26020
-#> 59  profiles3_groups3          3               3   VVI      groups     1      30          0.28302
-#> 60  profiles3_groups3          3               3   VVI      groups     2      25          0.23585
-#> 61  profiles3_groups3          3               3   VVI      groups     3      51          0.48113
-#> 62  profiles4_groups3          4               3   VVI individuals     1     509          0.35795
-#> 63  profiles4_groups3          4               3   VVI individuals     2     191          0.13432
-#> 64  profiles4_groups3          4               3   VVI individuals     3     402          0.28270
-#> 65  profiles4_groups3          4               3   VVI individuals     4     320          0.22504
-#> 66  profiles4_groups3          4               3   VVI      groups     1      30          0.28302
-#> 67  profiles4_groups3          4               3   VVI      groups     2      29          0.27358
-#> 68  profiles4_groups3          4               3   VVI      groups     3      47          0.44340
-#> 69  profiles5_groups3          5               3   VVI individuals     1     308          0.21660
-#> 70  profiles5_groups3          5               3   VVI individuals     2     395          0.27778
-#> 71  profiles5_groups3          5               3   VVI individuals     3      50          0.03516
-#> 72  profiles5_groups3          5               3   VVI individuals     4     472          0.33193
-#> 73  profiles5_groups3          5               3   VVI individuals     5     197          0.13854
-#> 74  profiles5_groups3          5               3   VVI      groups     1      47          0.44340
-#> 75  profiles5_groups3          5               3   VVI      groups     2      27          0.25472
-#> 76  profiles5_groups3          5               3   VVI      groups     3      32          0.30189
-#> 77  profiles6_groups3          6               3   VVI individuals     1     210          0.14768
-#> 78  profiles6_groups3          6               3   VVI individuals     2     400          0.28129
-#> 79  profiles6_groups3          6               3   VVI individuals     3     323          0.22714
-#> 80  profiles6_groups3          6               3   VVI individuals     4     285          0.20042
-#> 81  profiles6_groups3          6               3   VVI individuals     5     195          0.13713
-#> 82  profiles6_groups3          6               3   VVI individuals     6       9          0.00633
-#> 83  profiles6_groups3          6               3   VVI      groups     1      28          0.26415
-#> 84  profiles6_groups3          6               3   VVI      groups     2      30          0.28302
-#> 85  profiles6_groups3          6               3   VVI      groups     3      48          0.45283
-#> 86  profiles2_groups4          2               4   VVI individuals     1     832          0.58509
-#> 87  profiles2_groups4          2               4   VVI individuals     2     590          0.41491
-#> 88  profiles2_groups4          2               4   VVI      groups     1      12          0.11321
-#> 89  profiles2_groups4          2               4   VVI      groups     2      25          0.23585
-#> 90  profiles2_groups4          2               4   VVI      groups     3      22          0.20755
-#> 91  profiles2_groups4          2               4   VVI      groups     4      47          0.44340
-#> 92  profiles3_groups4          3               4   VVI individuals     1     369          0.25949
-#> 93  profiles3_groups4          3               4   VVI individuals     2     477          0.33544
-#> 94  profiles3_groups4          3               4   VVI individuals     3     576          0.40506
-#> 95  profiles3_groups4          3               4   VVI      groups     1      15          0.14151
-#> 96  profiles3_groups4          3               4   VVI      groups     2      25          0.23585
-#> 97  profiles3_groups4          3               4   VVI      groups     3      20          0.18868
-#> 98  profiles3_groups4          3               4   VVI      groups     4      46          0.43396
-#> 99  profiles4_groups4          4               4   VVI individuals     1     321          0.22574
-#> 100 profiles4_groups4          4               4   VVI individuals     2     400          0.28129
-#> 101 profiles4_groups4          4               4   VVI individuals     3     191          0.13432
-#> 102 profiles4_groups4          4               4   VVI individuals     4     510          0.35865
-#> 103 profiles4_groups4          4               4   VVI      groups     1      25          0.23585
-#> 104 profiles4_groups4          4               4   VVI      groups     2      24          0.22642
-#> 105 profiles4_groups4          4               4   VVI      groups     3      46          0.43396
-#> 106 profiles4_groups4          4               4   VVI      groups     4      11          0.10377
-#> 107 profiles5_groups4          5               4   VVI individuals     1     189          0.13291
-#> 108 profiles5_groups4          5               4   VVI individuals     2     302          0.21238
-#> 109 profiles5_groups4          5               4   VVI individuals     3     491          0.34529
-#> 110 profiles5_groups4          5               4   VVI individuals     4     402          0.28270
-#> 111 profiles5_groups4          5               4   VVI individuals     5      38          0.02672
-#> 112 profiles5_groups4          5               4   VVI      groups     1      23          0.21698
-#> 113 profiles5_groups4          5               4   VVI      groups     2      11          0.10377
-#> 114 profiles5_groups4          5               4   VVI      groups     3      25          0.23585
-#> 115 profiles5_groups4          5               4   VVI      groups     4      47          0.44340
-#> 116 profiles6_groups4          6               4   VVI individuals     1     341          0.23980
-#> 117 profiles6_groups4          6               4   VVI individuals     2     149          0.10478
-#> 118 profiles6_groups4          6               4   VVI individuals     3     159          0.11181
-#> 119 profiles6_groups4          6               4   VVI individuals     4     107          0.07525
-#> 120 profiles6_groups4          6               4   VVI individuals     5     175          0.12307
-#> 121 profiles6_groups4          6               4   VVI individuals     6     491          0.34529
-#> 122 profiles6_groups4          6               4   VVI      groups     1      14          0.13208
-#> 123 profiles6_groups4          6               4   VVI      groups     2      23          0.21698
-#> 124 profiles6_groups4          6               4   VVI      groups     3      25          0.23585
-#> 125 profiles6_groups4          6               4   VVI      groups     4      44          0.41509
-#>     estimated_n estimated_proportion average_posterior odds_correct_classification relative_entropy
-#> 1        832.92              0.58574             0.982                       37.75            0.922
-#> 2        589.08              0.41426             0.974                       53.24            0.922
-#> 3        452.68              0.31834             0.832                       10.61            0.772
-#> 4        551.11              0.38756             0.964                       42.39            0.772
-#> 5        418.21              0.29410             0.863                       15.17            0.772
-#> 6        477.89              0.33607             0.842                       10.50            0.735
-#> 7        172.06              0.12100             0.803                       29.60            0.735
-#> 8        405.38              0.28508             0.849                       14.15            0.735
-#> 9        366.66              0.25785             0.847                       15.88            0.735
-#> 10       358.75              0.25229             0.848                       16.50            0.773
-#> 11       405.25              0.28499             0.849                       14.13            0.773
-#> 12       480.80              0.33812             0.841                       10.38            0.773
-#> 13         4.89              0.00344             0.962                     7362.68            0.773
-#> 14       172.31              0.12117             0.804                       29.66            0.773
-#> 15       340.74              0.23962             0.734                        8.77            0.668
-#> 16       165.77              0.11658             0.784                       27.55            0.668
-#> 17       348.87              0.24534             0.780                       10.89            0.668
-#> 18        95.11              0.06689             0.637                       24.43            0.668
-#> 19       321.48              0.22608             0.811                       14.73            0.668
-#> 20       150.02              0.10550             0.628                       14.29            0.668
-#> 21       834.10              0.58657             0.985                       46.08            0.938
-#> 22       587.90              0.41343             0.982                       76.35            0.938
-#> 23        34.48              0.32530             0.969                       64.80            0.940
-#> 24        71.52              0.67470             0.992                       59.89            0.940
-#> 25       469.54              0.33020             0.849                       11.40            0.790
-#> 26       569.85              0.40074             0.979                       68.94            0.790
-#> 27       382.61              0.26907             0.851                       15.46            0.790
-#> 28        34.75              0.32787             0.977                       87.77            0.943
-#> 29        71.25              0.67213             0.992                       62.14            0.943
-#> 30       480.20              0.33769             0.845                       10.71            0.739
-#> 31       177.99              0.12517             0.791                       26.46            0.739
-#> 32       407.84              0.28680             0.859                       15.11            0.739
-#> 33       355.98              0.25033             0.846                       16.41            0.739
-#> 34        34.84              0.32868             0.975                       80.78            0.937
-#> 35        71.16              0.67132             0.990                       48.95            0.937
-#> 36       337.69              0.23747             0.848                       17.88            0.775
-#> 37       408.11              0.28700             0.860                       15.27            0.775
-#> 38        36.78              0.02587             0.838                      195.11            0.775
-#> 39       464.27              0.32649             0.846                       11.34            0.775
-#> 40       175.14              0.12317             0.803                       28.94            0.775
-#> 41        71.40              0.67360             0.990                       48.04            0.965
-#> 42        34.60              0.32640             0.996                      581.73            0.965
-#> 43       444.92              0.31288             0.836                       11.23            0.733
-#> 44       173.92              0.12231             0.781                       25.61            0.733
-#> 45       295.07              0.20750             0.729                       10.26            0.733
-#> 46       117.94              0.08294             0.698                       25.59            0.733
-#> 47       350.01              0.24614             0.845                       16.74            0.733
-#> 48        40.14              0.02823             0.789                      128.55            0.733
-#> 49        36.90              0.34809             0.972                       65.69            0.946
-#> 50        69.10              0.65191             0.987                       39.40            0.946
-#> 51       830.91              0.58433             0.986                       49.28            0.940
-#> 52       591.09              0.41567             0.982                       75.73            0.940
-#> 53        30.78              0.29035             0.962                       62.25            0.816
-#> 54        26.66              0.25147             0.905                       28.33            0.816
-#> 55        48.57              0.45818             0.900                       10.69            0.816
-#> 56       477.70              0.33593             0.855                       11.63            0.792
-#> 57       574.94              0.40432             0.978                       64.96            0.792
-#> 58       369.36              0.25975             0.843                       15.29            0.792
-#> 59        31.03              0.29271             0.977                      104.15            0.797
-#> 60        27.65              0.26086             0.898                       24.87            0.797
-#> 61        47.32              0.44643             0.864                        7.90            0.797
-#> 62       496.81              0.34937             0.853                       10.79            0.739
-#> 63       201.50              0.14170             0.801                       24.37            0.739
-#> 64       392.63              0.27611             0.849                       14.69            0.739
-#> 65       331.06              0.23281             0.842                       17.60            0.739
-#> 66        30.60              0.28866             0.981                      127.46            0.823
-#> 67        27.40              0.25845             0.861                       17.82            0.823
-#> 68        48.01              0.45290             0.924                       14.63            0.823
-#> 69       305.11              0.21457             0.824                       17.18            0.736
-#> 70       386.77              0.27199             0.848                       14.89            0.736
-#> 71        78.19              0.05499             0.702                       40.55            0.736
-#> 72       443.05              0.31157             0.813                        9.62            0.736
-#> 73       208.87              0.14688             0.806                       24.09            0.736
-#> 74        47.06              0.44401             0.923                       15.04            0.844
-#> 75        27.25              0.25708             0.889                       23.20            0.844
-#> 76        31.69              0.29892             0.979                      106.79            0.844
-#> 77       216.03              0.15192             0.803                       22.77            0.716
-#> 78       386.49              0.27180             0.841                       14.21            0.716
-#> 79       319.17              0.22445             0.770                       11.54            0.716
-#> 80       284.53              0.20009             0.664                        7.90            0.716
-#> 81       206.64              0.14531             0.803                       24.04            0.716
-#> 82         9.14              0.00643             0.872                     1049.37            0.716
-#> 83        29.69              0.28010             0.922                       30.30            0.836
-#> 84        30.29              0.28571             0.978                      110.58            0.836
-#> 85        46.02              0.43419             0.899                       11.65            0.836
-#> 86       829.91              0.58362             0.986                       50.19            0.942
-#> 87       592.09              0.41638             0.984                       85.01            0.942
-#> 88        11.33              0.10689             0.851                       47.77            0.798
-#> 89        24.59              0.23201             0.868                       21.73            0.798
-#> 90        22.34              0.21072             0.877                       26.81            0.798
-#> 91        47.74              0.45039             0.912                       12.62            0.798
-#> 92       369.51              0.25985             0.844                       15.35            0.793
-#> 93       476.20              0.33488             0.853                       11.50            0.793
-#> 94       576.28              0.40526             0.980                       70.31            0.793
-#> 95        13.62              0.12846             0.841                       35.91            0.772
-#> 96        24.38              0.22998             0.843                       17.98            0.772
-#> 97        20.96              0.19777             0.868                       26.75            0.772
-#> 98        47.04              0.44380             0.902                       11.51            0.772
-#> 99       333.00              0.23418             0.843                       17.58            0.740
-#> 100      393.46              0.27670             0.853                       15.17            0.740
-#> 101      201.54              0.14173             0.801                       24.37            0.740
-#> 102      494.00              0.34740             0.850                       10.64            0.740
-#> 103       25.30              0.23872             0.872                       21.82            0.803
-#> 104       22.90              0.21603             0.867                       23.72            0.803
-#> 105       46.89              0.44233             0.903                       11.76            0.803
-#> 106       10.91              0.10292             0.898                       76.59            0.803
-#> 107      201.06              0.14140             0.803                       24.78            0.751
-#> 108      305.31              0.21471             0.831                       17.96            0.751
-#> 109      461.42              0.32448             0.826                        9.90            0.751
-#> 110      392.81              0.27624             0.853                       15.15            0.751
-#> 111       61.40              0.04318             0.786                       81.56            0.751
-#> 112       23.02              0.21714             0.926                       44.87            0.830
-#> 113       11.14              0.10505             0.899                       75.63            0.830
-#> 114       25.69              0.24240             0.882                       23.27            0.830
-#> 115       46.15              0.43542             0.909                       12.98            0.830
-#> 116      320.63              0.22548             0.806                       14.24            0.726
-#> 117      167.52              0.11781             0.765                       24.39            0.726
-#> 118      158.37              0.11137             0.654                       15.05            0.726
-#> 119      114.83              0.08075             0.847                       63.11            0.726
-#> 120      193.25              0.13590             0.797                       24.99            0.726
-#> 121      467.40              0.32869             0.831                       10.03            0.726
-#> 122       13.24              0.12489             0.907                       68.44            0.851
-#> 123       23.34              0.22015             0.919                       40.30            0.851
-#> 124       25.05              0.23636             0.914                       34.51            0.851
-#> 125       44.37              0.41860             0.930                       18.41            0.851
+subset(get_results(models, "classification"), n_profiles == 2 & model == "VVV")
+#>                 candidate n_profiles n_group_classes model       level class n_modal
+#> 190 profiles2_groups1_VVV          2               1   VVV individuals     1     846
+#> 191 profiles2_groups1_VVV          2               1   VVV individuals     2     576
+#> 199 profiles2_groups2_VVV          2               2   VVV individuals     1     842
+#> 200 profiles2_groups2_VVV          2               2   VVV individuals     2     580
+#> 201 profiles2_groups2_VVV          2               2   VVV      groups     1      35
+#> 202 profiles2_groups2_VVV          2               2   VVV      groups     2      71
+#> 214 profiles2_groups3_VVV          2               3   VVV individuals     1     836
+#> 215 profiles2_groups3_VVV          2               3   VVV individuals     2     586
+#> 216 profiles2_groups3_VVV          2               3   VVV      groups     1      31
+#> 217 profiles2_groups3_VVV          2               3   VVV      groups     2      25
+#> 218 profiles2_groups3_VVV          2               3   VVV      groups     3      50
+#> 232 profiles2_groups4_VVV          2               4   VVV individuals     1     839
+#> 233 profiles2_groups4_VVV          2               4   VVV individuals     2     583
+#> 234 profiles2_groups4_VVV          2               4   VVV      groups     1      14
+#> 235 profiles2_groups4_VVV          2               4   VVV      groups     2      25
+#> 236 profiles2_groups4_VVV          2               4   VVV      groups     3      21
+#> 237 profiles2_groups4_VVV          2               4   VVV      groups     4      46
+#>     proportion_modal estimated_n estimated_proportion average_posterior odds_correct_classification
+#> 190            0.595       844.6                0.594             0.971                        22.7
+#> 191            0.405       577.4                0.406             0.959                        34.6
+#> 199            0.592       838.8                0.590             0.978                        30.6
+#> 200            0.408       583.2                0.410             0.973                        52.3
+#> 201            0.330        34.5                0.325             0.971                        69.2
+#> 202            0.670        71.5                0.675             0.993                        68.6
+#> 214            0.588       832.5                0.585             0.978                        31.2
+#> 215            0.412       589.5                0.415             0.974                        53.6
+#> 216            0.292        30.8                0.290             0.960                        58.4
+#> 217            0.236        26.4                0.249             0.905                        28.5
+#> 218            0.472        48.8                0.460             0.903                        10.9
+#> 232            0.590       832.0                0.585             0.977                        29.6
+#> 233            0.410       590.0                0.415             0.978                        63.7
+#> 234            0.132        12.2                0.115             0.830                        37.5
+#> 235            0.236        24.1                0.228             0.862                        21.2
+#> 236            0.198        21.7                0.204             0.878                        27.9
+#> 237            0.434        48.0                0.453             0.925                        15.0
+#>     relative_entropy
+#> 190            0.875
+#> 191            0.875
+#> 199            0.906
+#> 200            0.906
+#> 201            0.942
+#> 202            0.942
+#> 214            0.909
+#> 215            0.909
+#> 216            0.816
+#> 217            0.816
+#> 218            0.816
+#> 232            0.912
+#> 233            0.912
+#> 234            0.797
+#> 235            0.797
+#> 236            0.797
+#> 237            0.797
 ```
 
 `plot_selection(x, what = "diagnostics")` displays relative entropy and
@@ -1202,7 +835,7 @@ displays both levels:
 
 ``` r
 
-plot_diagnostics(get_candidate(models, "profiles4_groups3"),
+plot_diagnostics(get_candidate(models, "profiles2_groups3_VVV"),
                  what = "group_posteriors")
 ```
 
@@ -1235,10 +868,11 @@ analyses.
 Because the likelihood is multimodal, a solution replicated from several
 random starts is more credible than one obtained from a single start. An
 estimate on the boundary of the parameter space, such as a variance at
-its lower bound or a class with negligible membership, indicates a model
-too complex for the data. `plot_selection(x, what = "trust")` represents
-each candidate by a tile labelled with the number of starts that reached
-its maximum likelihood and shaded by the first problem detected:
+its lower bound or a class with negligible membership, can indicate a
+model too complex for the data. `plot_selection(x, what = "trust")`
+represents each candidate by a tile labelled with the number of starts
+that reached its maximum likelihood and shaded by the first problem
+detected:
 
 | Status | Meaning |
 |----|----|
@@ -1291,28 +925,21 @@ the estimation diagnostics and the classification diagnostics as a list
 of plots displayed in sequence. `using` sets the criterion for the first
 two and `cutoff` the AvePP threshold for the last.
 
-``` r
-
-plot_selection(models)
-```
-
-![](model-selection_files/figure-html/selection-1.png)![](model-selection_files/figure-html/selection-2.png)![](model-selection_files/figure-html/selection-3.png)![](model-selection_files/figure-html/selection-4.png)![](model-selection_files/figure-html/selection-5.png)
-
 ## How the profiles divide
 
 The clustering tree shows how the profiles of each model are partitioned
 in the model with one additional profile: each profile is linked to the
-profiles of the larger model that receive its observations (Zappia and
+profiles of the larger model that receive its observations (Zappia &
 Oshlack, 2018). A profile that divides cleanly into two suggests a
 substantive distinction, whereas a profile formed from several profiles
 of the smaller model suggests a reallocation of observations rather than
-a refinement. Each number of group classes has its own tree, selected
-with `n_group_classes`; the guide *Tree plot* compares solutions at one
-number of profiles.
+a refinement. Each number of group classes and structure has its own
+tree, selected with `n_group_classes` and `model`; the guide *Tree plot*
+compares solutions at one number of profiles.
 
 ``` r
 
-plot_tree(models, n_group_classes = 1)
+plot_tree(models, n_group_classes = 1, model = "VVV")
 ```
 
 ![](model-selection_files/figure-html/tree-1.png)
@@ -1331,16 +958,16 @@ probabilities, assuming one of them is correct (Wagenmakers and Farrell,
 
 ``` r
 
-comparison <- compare_models(models, "profiles3_groups3", "profiles4_groups3",
-                             "profiles4_groups2")
+comparison <- compare_models(models, "profiles2_groups2_VVV",
+                             "profiles2_groups3_VVV", "profiles2_groups4_VVV")
 comparison
 #> Model comparison
 #> 
-#> Model              Profiles  Group classes   k    LogLik       BIC   ΔBIC  Weight       ICL  Entropy  Min AvePP  < 0.8  Group entropy  Group min AvePP
-#> -----------------  --------  -------------  --  --------  --------  -----  ------  --------  -------  ---------  -----  -------------  ---------------
-#> profiles3_groups3         3              3  38  -8348.43  16874.07  21.92   0.000  17663.42     0.79       0.84      0           0.80             0.86
-#> profiles4_groups3         4              3  51  -8307.15  16852.14   0.00   1.000  18045.06     0.74       0.80      0           0.82             0.86
-#> profiles4_groups2         4              2  47  -8326.19  16871.57  19.43   0.000  18027.20     0.74       0.79      1           0.94             0.98
+#> Model                  Profiles  Group classes   k    LogLik       BIC   ΔBIC  Weight       ICL  Entropy  Min AvePP  < 0.8  Group entropy  Group min AvePP
+#> ---------------------  --------  -------------  --  --------  --------  -----  ------  --------  -------  ---------  -----  -------------  ---------------
+#> profiles2_groups2_VVV         2              2  43  -8313.11  16826.75  29.19   0.000  17128.35     0.91       0.97      0           0.94             0.97
+#> profiles2_groups3_VVV         2              3  45  -8295.38  16800.62   3.06   0.178  17131.51     0.91       0.97      0           0.82             0.90
+#> profiles2_groups4_VVV         2              4  47  -8289.19  16797.56   0.00   0.822  17142.10     0.91       0.98      0           0.80             0.83
 plot(comparison)
 ```
 
@@ -1348,32 +975,9 @@ plot(comparison)
 
 The fitted model corresponding to a row is extracted with
 [`get_candidate()`](https://pak.dynasite.org/latents/reference/get_candidate.md),
-by label or by numbers of classes.
-
-``` r
-
-chosen <- get_candidate(models, "profiles4_groups3")
-chosen
-#> Two-level latent profile analysis: 4 profiles, 3 group classes
-#> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
-#> Log likelihood: -8307.154420 | AIC: 16716.309 | BIC (groups): 16852.144
-#> Converged: TRUE | iterations: 70 | best log likelihood reached by 3 of 3 starts (3 converged)
-#> Smallest standardized Gaussian eigenvalue: 0.1951 (profiles, profile_4); Gaussian mass: 331.1; weight effective n: 435.2.
-#> 
-#> Class sizes   profile_1 34.9% (497)   profile_2 14.2% (201)   profile_3 27.6% (393)   profile_4 23.3% (331)
-#> Group classes group_class_1 28.9% (31)   group_class_2 25.8% (27)   group_class_3 45.3% (48)
-#> 
-#> Means
-#>   indicator profile_1 profile_2 profile_3 profile_4
-#>      browse     0.412    -1.114    -0.564     0.728
-#>    lectures     0.232    -0.685    -0.562     0.734
-#>  forum_read     0.490    -1.201    -0.695     0.821
-#>  forum_post     0.383    -0.880    -0.676     0.763
-#>  attendance     0.309    -1.418    -0.657     1.180
-#> 
-#> Variances and standard errors: get_results(x, "profiles").
-#> Every other table: get_results(x, what = ), or get_results(x, "all").
-```
+by label, or by numbers of classes together with `model` when the grid
+contains several structures, as in
+`get_candidate(models, 2, 2, model = "VVV")`.
 
 ## Testing one more class
 
@@ -1383,83 +987,53 @@ boundary of the parameter space of the alternative, where the test
 statistic does not follow its usual asymptotic distribution.
 [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
 approximates the null distribution by parametric bootstrap (McLachlan,
-1987; Nylund, Asparouhov and Muthén, 2007): data sets are simulated from
-the fitted null model, both models are re-estimated on each, and the
-observed statistic is referred to the simulated distribution. Of `B`
-requested data sets, let `V` satisfy the estimation checks and `b` of
-those have a statistic at least as large as the observed one. The
-p-value is `(b + 1) / (V + 1)`, bounded below by `1 / (V + 1)`. Invalid
-replicates are reported; the p-value is withheld when fewer than half
-the requested replicates are valid. The example requests 19 replicates:
-if all are valid, the smallest attainable p-value is 0.05. Applied
-analyses should use 99 or more and inspect the valid count.
-
-``` r
-
-smaller <- get_candidate(models, "profiles3_groups3")
-larger <- get_candidate(models, "profiles4_groups3")
-test <- bootstrap_lrt(smaller, larger, data = course_engagement,
-                      iter = 19, n_starts = 2, seed = 1)
-#> Warning: Profile 4: 7.2 Gaussian membership mass for 10 free means and variances. This is a
-#> conservative diagnostic, not an identification test; inspect the Gaussian covariance diagnostics.
-test
-#> Parametric bootstrap likelihood-ratio comparison
-#> Null: 3 profiles, 3 group classes; alternative: 4 profiles, 3 group classes
-#> Observed statistic: 82.548643
-#> p-value: 0.05 (Monte Carlo SE 0.0487) from 19 of 19 valid replicates (0 invalid)
-plot(test)
-```
-
-![](model-selection_files/figure-html/blrt-1.png)
+1987; Nylund et al., 2007): data sets are simulated from the fitted null
+model, both models are re-estimated on each, and the observed statistic
+is referred to the simulated distribution. Of `B` requested data sets,
+let `V` satisfy the estimation checks and `b` of those have a statistic
+at least as large as the observed one. The p-value is
+`(b + 1) / (V + 1)`, bounded below by `1 / (V + 1)`. Invalid replicates
+are reported; the p-value is withheld when fewer than half the requested
+replicates are valid. The example requests 19 replicates: if all are
+valid, the smallest attainable p-value is 0.05. Applied analyses should
+use 99 or more and inspect the valid count. The [Class
+enumeration](https://pak.dynasite.org/latents/articles/enumeration.md)
+article applies the test to two and three group classes with two
+profiles.
 
 The Vuong-Lo-Mendell-Rubin test refers the same statistic to an
-asymptotic approximation of its distribution (Vuong, 1989; Lo, Mendell
-and Rubin, 2001): a weighted sum of chi-square variables with one degree
-of freedom, whose weights are the eigenvalues of a matrix formed from
-the scores and second derivatives of both models. The test requires no
+asymptotic approximation of its distribution (Vuong, 1989; Lo et al.,
+2001): a weighted sum of chi-square variables with one degree of
+freedom, whose weights are the eigenvalues of a matrix formed from the
+scores and second derivatives of both models. The test requires no
 simulation. Its adjusted version (aLMR) divides the statistic by
 `1 + 1 / (d log n)`, with `d` the number of added parameters and `n` the
 number of independent units, and refers it to the same distribution.
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
 with `"lmr"` reports both for every pair of converged candidates that
 differ by one profile or one group class. A pair whose information
-matrix is singular, here the candidates with five and six profiles, is
-kept with its reason in `note`.
+matrix is singular is kept with its reason in `note`. The tests of the
+`VVV` candidates with two profiles:
 
 ``` r
 
-subset(get_results(models, "lmr"), n_group_classes == 3)
-#>        direction    null_candidate alternative_candidate n_profiles n_group_classes model n_units
-#> 12 group_classes profiles2_groups2     profiles2_groups3          2               3   VVI     106
-#> 14 group_classes profiles3_groups2     profiles3_groups3          3               3   VVI     106
-#> 16 group_classes profiles4_groups2     profiles4_groups3          4               3   VVI     106
-#> 18 group_classes profiles5_groups2     profiles5_groups3          5               3   VVI      NA
-#> 19 group_classes profiles6_groups2     profiles6_groups3          6               3   VVI      NA
-#> 20      profiles profiles2_groups3     profiles3_groups3          3               3   VVI     106
-#> 22      profiles profiles3_groups3     profiles4_groups3          4               3   VVI     106
-#> 24      profiles profiles4_groups3     profiles5_groups3          5               3   VVI      NA
-#> 26      profiles profiles5_groups3     profiles6_groups3          6               3   VVI      NA
-#>    parameters_added    lr   vlmr_p adjusted_lr   almr_p reference_mean reference_sd
-#> 12                2  37.5 3.43e-07        33.9 1.32e-06           0.76         3.37
-#> 14                3  32.2 6.27e-05        30.0 1.20e-04           2.95         4.15
-#> 16                4  38.1 2.26e-04        36.1 3.53e-04           4.65         5.80
-#> 18               NA    NA       NA          NA       NA             NA           NA
-#> 19               NA    NA       NA          NA       NA             NA           NA
-#> 20               13 145.3 4.17e-13       142.9 6.83e-13          13.73         6.38
-#> 22               13  82.5 4.58e-05        81.2 5.43e-05          14.88         8.08
-#> 24               NA    NA       NA          NA       NA             NA           NA
-#> 26               NA    NA       NA          NA       NA             NA           NA
-#>                                                                                                                                                                                                                                                  note
-#> 12                                                                                                                                                                                                                                               <NA>
-#> 14                                                                                                                                                                                                                                               <NA>
-#> 16                                                                                                                                                                                                                                               <NA>
-#> 18 null model: Observed information is not positive definite or is numerically singular; Wald inference is unavailable. | alternative model: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
-#> 19 null model: Observed information is not positive definite or is numerically singular; Wald inference is unavailable. | alternative model: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
-#> 20                                                                                                                                                                                                                                               <NA>
-#> 22                                                                                                                                                                                                                                               <NA>
-#> 24                                                                                                                        alternative model: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
-#> 26 null model: Observed information is not positive definite or is numerically singular; Wald inference is unavailable. | alternative model: Observed information is not positive definite or is numerically singular; Wald inference is unavailable.
+subset(get_results(models, "lmr"), model == "VVV" & n_profiles == 2)
+#>        direction        null_candidate alternative_candidate n_profiles n_group_classes model
+#> 55      profiles profiles1_groups1_VVV profiles2_groups1_VVV          2               1   VVV
+#> 57 group_classes profiles2_groups1_VVV profiles2_groups2_VVV          2               2   VVV
+#> 62 group_classes profiles2_groups2_VVV profiles2_groups3_VVV          2               3   VVV
+#> 67 group_classes profiles2_groups3_VVV profiles2_groups4_VVV          2               4   VVV
+#>    n_units parameters_added    lr   vlmr_p adjusted_lr   almr_p reference_mean reference_sd note
+#> 55     106               21 441.1 0.00e+00       436.6 0.00e+00         21.146         7.31 <NA>
+#> 57     106                2 353.0 0.00e+00       318.8 0.00e+00         -0.363         7.87 <NA>
+#> 62     106                2  35.5 1.25e-06        32.0 4.27e-06          0.985         3.46 <NA>
+#> 67     106                2  12.4 5.45e-04        11.2 1.07e-03          0.274         2.57 <NA>
 ```
+
+Each additional group class is supported by the test (every p-value
+below 0.01), as it is by the BIC (the bootstrap test, run for two
+against three group classes, agrees), although the improvement from the
+third and fourth group classes is small.
 
 The regularity conditions of Vuong’s theorem do not hold for mixture
 models (Jeffries, 2003), and the test’s p-values are not uniformly
@@ -1538,15 +1112,16 @@ Akaike, H. (1974). A new look at the statistical model identification.
 Banfield, J. D., & Raftery, A. E. (1993). Model-based Gaussian and
 non-Gaussian clustering. *Biometrics*, 49, 803–821.
 
-Biernacki, C., Celeux, G., & Govaert, G. (2000). Assessing a mixture
-model for clustering with the integrated completed likelihood. *IEEE
-Transactions on Pattern Analysis and Machine Intelligence*, 22, 719–725.
-
 Biernacki, C., & Govaert, G. (1997). Using the classification likelihood
 to choose the number of clusters. *Computing Science and Statistics*,
 29, 451–457.
 
-Bozdogan, H. (1987). Model selection and Akaike’s information criterion.
+Biernacki, C., Celeux, G., & Govaert, G. (2000). Assessing a mixture
+model for clustering with the integrated completed likelihood. *IEEE
+Transactions on Pattern Analysis and Machine Intelligence*, 22, 719–725.
+
+Bozdogan, H. (1987). Model selection and Akaike’s information criterion
+(AIC): The general theory and its analytical extensions.
 *Psychometrika*, 52, 345–370.
 
 Cavanaugh, J. E. (1999). A large-sample model selection criterion based
@@ -1571,6 +1146,11 @@ number of classes in latent class analysis and growth mixture modeling:
 A Monte Carlo simulation study. *Structural Equation Modeling*, 14,
 535–569.
 
+Saqr, M., Vogelsmeier, L. V. D. E., & López-Pernas, S. (2024). Capturing
+where the learning process takes place: A person-specific and
+person-centered primer. *Learning and Individual Differences*, 113,
+102492. <https://doi.org/10.1016/j.lindif.2024.102492>
+
 Satopää, V., Albrecht, J., Irwin, D., & Raghavan, B. (2011). Finding a
 “kneedle” in a haystack: detecting knee points in system behavior. *31st
 International Conference on Distributed Computing Systems Workshops*,
@@ -1581,6 +1161,12 @@ Statistics*, 6, 461–464.
 
 Sclove, S. L. (1987). Application of model-selection criteria to some
 problems in multivariate analysis. *Psychometrika*, 52, 333–343.
+
+Scrucca, L., Saqr, M., López-Pernas, S., & Murphy, K. (2024). An
+introduction and R tutorial to model-based clustering in education via
+latent profile analysis. In M. Saqr & S. López-Pernas (Eds.), *Learning
+analytics methods and tutorials: A practical guide using R*
+(pp. 285–317). Springer. <https://doi.org/10.1007/978-3-031-54464-4_9>
 
 Vermunt, J. K. (2024). The Vuong-Lo-Mendell-Rubin test for latent class
 and latent profile analysis: A note on the different implementations in

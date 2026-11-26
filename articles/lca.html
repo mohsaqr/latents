@@ -15,6 +15,13 @@
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Two-level latent class analysis">
+<meta name="citation_title" content="Two-level latent class analysis">
+<meta name="citation_author" content="Saqr, Mohammed">
+<meta name="citation_author" content="López-Pernas, Sonsoles">
+<meta name="citation_publication_date" content="2026">
+<meta name="citation_publisher" content="latents">
+<meta name="citation_pdf_url" content="https://pak.dynasite.org/latents/pdf/lca.pdf">
+<meta name="citation_abstract_html_url" content="https://pak.dynasite.org/latents/articles/lca.html">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -24,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +54,6 @@
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
     <li><a class="dropdown-item" href="../articles/tree-plot.html">Tree plot</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
@@ -65,7 +71,9 @@
     <li><a class="dropdown-item" href="../articles/case-engagement-evaluation.html">Case study: Evaluating multilevel latent profile models</a></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-covariates.html">Case study: Covariates and staged estimation in multilevel LPA</a></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-transitions.html">Case study: Latent transition analysis of course engagement</a></li>
-    <li><a class="dropdown-item" href="../articles/case-esm-lca.html">Case study: Two-level latent class analysis of leisure activities</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Resources</h6></li>
+    <li><a class="dropdown-item" href="../articles/cite-articles.html">Resources</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -88,373 +96,699 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Two-level latent class analysis</h1>
-                        <h4 data-toc-skip class="author">Written by <a href="https://saqr.me" class="external-link">Mohammed Saqr</a> and <a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a>
-</h4>
-            
-      
-      <small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/vignettes/lca.Rmd" class="external-link"><code>vignettes/lca.Rmd</code></a></small>
+                        <h4 data-toc-skip class="author">Mohammed
+Saqr</h4>
+            <address class="author_afil">
+      University of Eastern
+Finland<br><h4 data-toc-skip class="author">Sonsoles
+López-Pernas</h4>
+            <address class="author_afil">
+      University of Eastern Finland<br><small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/vignettes/lca.Rmd" class="external-link"><code>vignettes/lca.Rmd</code></a></small>
       <div class="d-none name"><code>lca.Rmd</code></div>
-    </div>
+    </address>
+</address>
+</div>
 
     
     
-<p>Two-level latent class analysis (LCA) represents heterogeneity in
-categorical response patterns among observations nested within groups.
-Observation-level classes, labelled profiles in the output, are defined
-by item-response probabilities. Group classes differ in their
-conditional probabilities of observation-level class membership. By
-default, <code><a href="../reference/multilca.html">multilca()</a></code> treats all selected indicators as
-categorical. <code><a href="../reference/multilpa.html">multilpa()</a></code> supports mixed continuous and
-categorical indicators through the <code>categorical</code>
-argument.</p>
+<p>Latent class analysis (LCA) is the categorical-data counterpart of
+latent profile analysis, extending the person-centred approach to
+situations in which the observed indicators are categorical rather than
+continuous. Whereas latent profile analysis identifies subgroups based
+on differences in the means of continuous indicators, LCA identifies
+latent subgroups based on differences in the probabilities of endorsing
+or selecting particular response categories across a set of categorical
+items. Each latent class is therefore characterized by a specific
+configuration of item-response probabilities, representing the
+likelihood of observing each response category conditional on membership
+in that class (Collins &amp; Lanza, 2010). The resulting classes can be
+interpreted as distinct response patterns that capture unobserved
+heterogeneity in the population.</p>
+<p>Two-level latent class analysis extends this framework to
+hierarchical data structures in which individual observations are nested
+within higher-level units, such as students within classrooms, employees
+within organizations, or patients within healthcare institutions
+(Vermunt, 2003). In conventional LCA, individuals are assumed to
+originate from a single population characterized by a common set of
+class proportions. However, when observations are clustered, the
+distribution of individual-level latent classes may differ across
+groups. Two-level LCA accounts for this possibility by introducing a
+second latent classification at the group level. The model consequently
+distinguishes between individual-level classes, which describe
+differences in response patterns, and group-level classes, which capture
+differences in the composition of those individual-level classes across
+groups.</p>
+<p>For observation
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
+belonging to group
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>j</mi><annotation encoding="application/x-tex">j</annotation></semantics></math>,
+let
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>C</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><annotation encoding="application/x-tex">C_{ij}</annotation></semantics></math>
+denote the individual-level latent class and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>G</mi><mi>j</mi></msub><annotation encoding="application/x-tex">G_j</annotation></semantics></math>
+the latent group class. The model estimates three sets of parameters
+that jointly describe the individual and group classifications.</p>
+<p>First, the item-response probabilities, defined as
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>θ</mi><mrow><mi>k</mi><mi>q</mi><mi>c</mi></mrow></msub><mo>=</mo><mi>P</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>Y</mi><mrow><mi>i</mi><mi>j</mi><mi>q</mi></mrow></msub><mo>=</mo><mi>c</mi><mo>∣</mo><msub><mi>C</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><mi>k</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\theta_{kqc}=P(Y_{ijq}=c\mid C_{ij}=k)</annotation></semantics></math>,
+describe the probability of observing response category
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math>
+on item
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>q</mi><annotation encoding="application/x-tex">q</annotation></semantics></math>,
+conditional on an individual’s membership in class
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>.
+These probabilities determine the substantive characteristics of each
+individual-level class by describing its characteristic response
+pattern. An important assumption of the two-level specification is that
+these item-response probabilities remain invariant across group classes.
+Thus, an individual belonging to a particular latent class is assumed to
+exhibit the same conditional response probabilities regardless of the
+group to which they belong.</p>
+<p>Second, the individual-level class probabilities, expressed as
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>π</mi><mrow><mi>k</mi><mo>∣</mo><mi>m</mi></mrow></msub><mo>=</mo><mi>P</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><mi>k</mi><mo>∣</mo><msub><mi>G</mi><mi>j</mi></msub><mo>=</mo><mi>m</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\pi_{k\mid m}=P(C_{ij}=k\mid G_j=m)</annotation></semantics></math>,
+represent the probability that an individual belongs to class
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>,
+conditional on the membership of their group in group class
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>m</mi><annotation encoding="application/x-tex">m</annotation></semantics></math>.
+These probabilities describe the composition of each group class in
+terms of its constituent individual-level classes. For example,
+different group classes may be characterized by different proportions of
+individuals exhibiting particular response patterns, even though the
+underlying item-response probabilities defining those individual-level
+classes remain unchanged. The probabilities sum to one across the
+individual-level classes within each group class.</p>
+<p>Third, the group-level class probabilities, defined as
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>ω</mi><mi>m</mi></msub><mo>=</mo><mi>P</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>G</mi><mi>j</mi></msub><mo>=</mo><mi>m</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\omega_m=P(G_j=m)</annotation></semantics></math>,
+represent the proportion of groups belonging to each latent group class.
+These parameters describe the distribution of the higher-level latent
+classes across the population and determine the relative prevalence of
+the different group types.</p>
+<p>The distinction between the two levels of classification is important
+for interpreting the model. Individual-level classes represent subgroups
+of observations characterized by similar response patterns, whereas
+group-level classes represent subgroups of higher-level units
+characterized by different distributions of individual-level class
+membership. Consequently, two groups may belong to different group
+classes even when the same individual-level classes are present in both.
+Their distinction lies in the relative proportions of individuals
+belonging to each class rather than in differences in the response
+probabilities defining those classes. This allows the model to identify
+systematic differences in group composition without requiring the
+individual-level measurement structure to vary across groups.</p>
+<p>The two-level LCA specification relies on several conditional
+independence assumptions. First, the observed categorical items are
+assumed to be locally independent conditional on individual-level class
+membership. This means that the association between items is assumed to
+be explained by the underlying latent class, such that no additional
+residual association remains between the indicators after conditioning
+on class membership. Second, observations within the same group are
+assumed to be independent conditional on their group’s latent class.
+Their responses may therefore be associated at the population level
+through their shared group classification, but are treated as
+conditionally independent once that classification has been taken into
+account. Finally, groups are assumed to be independent of one another.
+Together, these assumptions establish the hierarchical structure through
+which individual response patterns and between-group differences in
+class composition are modelled simultaneously.</p>
+<p>In the <code>latents</code> package, the function
+<code><a href="../reference/multilca.html">multilca()</a></code> estimates the two-level latent class model using
+maximum likelihood estimation and the expectation-maximization (EM)
+algorithm (Dempster et al., 1977). The algorithm alternates between
+estimating the posterior probabilities of latent class membership and
+updating the model parameters until convergence is achieved. As in
+multilevel latent profile analysis, the estimated individual-level
+classes are labelled <code>profile_1</code>, <code>profile_2</code>, and
+so forth in the model output. These labels are used for consistency
+across the package’s modelling functions and do not imply that the
+classes are based on continuous indicators. The same naming convention
+is used in <code><a href="../reference/multilpa.html">multilpa()</a></code>, facilitating a consistent
+interpretation of individual-level latent classifications across
+categorical and continuous measurement models.</p>
 <div class="section level2">
-<h2 id="what-the-package-supports">What the package supports<a class="anchor" aria-label="anchor" href="#what-the-package-supports"></a>
+<h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
+</h2>
+<p><code>student_esm</code> comes from an experience-sampling study of
+university students (Neubauer &amp; Schmiedek, 2024) and contains 2,582
+prompts from 100 students (15 to 51 per student), answered when the
+student had not studied since the previous prompt. Prompts are the
+observations and students the groups. Eight yes/no items record leisure
+activities since that prompt; four ratings from 1 to 7 record affect;
+<code><a href="../reference/student_esm.html">?student_esm</a></code> describes the source and the selection of
+prompts.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pak.dynasite.org/latents/">latents</a></span><span class="op">)</span></span>
+<span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"time_with_friends"</span>, <span class="st">"on_social_media"</span>, <span class="st">"tv_video_games"</span>,</span>
+<span>                <span class="st">"listened_music"</span>, <span class="st">"sports"</span>, <span class="st">"walking"</span>, <span class="st">"reading"</span>,</span>
+<span>                <span class="st">"part_time_job"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">student_esm</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     student           day             beep      time_with_friends on_social_media tv_video_games</span></span>
+<span><span class="co">#&gt;  Min.   :  1.0   Min.   : 0.00   Min.   :1.00   no :2211          no :1837        no :2033      </span></span>
+<span><span class="co">#&gt;  1st Qu.: 27.0   1st Qu.: 3.00   1st Qu.:2.00   yes: 371          yes: 745        yes: 549      </span></span>
+<span><span class="co">#&gt;  Median : 53.0   Median : 6.00   Median :3.00                                                   </span></span>
+<span><span class="co">#&gt;  Mean   : 52.3   Mean   : 6.48   Mean   :3.06                                                   </span></span>
+<span><span class="co">#&gt;  3rd Qu.: 79.0   3rd Qu.:10.00   3rd Qu.:4.00                                                   </span></span>
+<span><span class="co">#&gt;  Max.   :100.0   Max.   :13.00   Max.   :5.00                                                   </span></span>
+<span><span class="co">#&gt;  listened_music sports     walking    reading    part_time_job     happy         relaxed    </span></span>
+<span><span class="co">#&gt;  no :2193       no :2397   no :2254   no :2291   no :2479      Min.   :1.00   Min.   :1.00  </span></span>
+<span><span class="co">#&gt;  yes: 389       yes: 185   yes: 328   yes: 291   yes: 103      1st Qu.:4.00   1st Qu.:4.00  </span></span>
+<span><span class="co">#&gt;                                                                Median :5.00   Median :5.00  </span></span>
+<span><span class="co">#&gt;                                                                Mean   :4.88   Mean   :4.63  </span></span>
+<span><span class="co">#&gt;                                                                3rd Qu.:6.00   3rd Qu.:6.00  </span></span>
+<span><span class="co">#&gt;                                                                Max.   :7.00   Max.   :7.00  </span></span>
+<span><span class="co">#&gt;     worried       exhausted   </span></span>
+<span><span class="co">#&gt;  Min.   :1.00   Min.   :1.00  </span></span>
+<span><span class="co">#&gt;  1st Qu.:1.00   1st Qu.:2.00  </span></span>
+<span><span class="co">#&gt;  Median :2.00   Median :3.00  </span></span>
+<span><span class="co">#&gt;  Mean   :2.29   Mean   :3.31  </span></span>
+<span><span class="co">#&gt;  3rd Qu.:3.00   3rd Qu.:5.00  </span></span>
+<span><span class="co">#&gt;  Max.   :7.00   Max.   :7.00</span></span></code></pre></div>
+<p>Social media is the most frequent activity (745 of the 2,582
+prompts), followed by TV or video games (549); a part-time job is the
+rarest (103). Every activity is absent at most prompts, so classes are
+distinguished by how far their “yes” probabilities exceed these base
+rates.</p>
+</div>
+<div class="section level2">
+<h2 id="a-first-model">A first model<a class="anchor" aria-label="anchor" href="#a-first-model"></a>
+</h2>
+<p><code><a href="../reference/multilca.html">multilca()</a></code> treats every item in <code>vars</code> as
+categorical. <code>n_starts</code> sets the number of random starts and
+<code>tol</code> the convergence tolerance; a strict tolerance is
+required for accurate standard errors. A first model has two classes and
+two group classes.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">first</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilca.html">multilca</a></span><span class="op">(</span><span class="va">student_esm</span>, vars <span class="op">=</span> <span class="va">activities</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
+<span>                  n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>                  tol <span class="op">=</span> <span class="fl">1e-10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="number-of-classes">Number of classes<a class="anchor" aria-label="anchor" href="#number-of-classes"></a>
+</h2>
+<p><code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> fits every combination of two to
+four classes and one to three group classes, each from twenty random
+starts, and <code>get_results(candidates, "best")</code> reports the
+candidate that each criterion selects.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">candidates</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="va">student_esm</span>, vars <span class="op">=</span> <span class="va">activities</span>,</span>
+<span>                                categorical <span class="op">=</span> <span class="va">activities</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
+<span>                                n_profiles <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">4</span>, n_group_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
+<span>                                n_starts <span class="op">=</span> <span class="fl">20</span>, tol <span class="op">=</span> <span class="fl">1e-10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 2 of 9 candidates reached their best log likelihood from one start only (classes3_groups3, classes4_groups3); refit those you consider with more starts.</span></span>
+<span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">candidates</span>, <span class="st">"best"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    criterion  convention        candidate n_profiles n_group_classes model value</span></span>
+<span><span class="co">#&gt; 1        aic        &lt;NA&gt; classes4_groups3          4               3  &lt;NA&gt; 15126</span></span>
+<span><span class="co">#&gt; 2        kic        &lt;NA&gt; classes4_groups3          4               3  &lt;NA&gt; 15172</span></span>
+<span><span class="co">#&gt; 3        bic      groups classes4_groups3          4               3  &lt;NA&gt; 15238</span></span>
+<span><span class="co">#&gt; 4        bic individuals classes4_groups3          4               3  &lt;NA&gt; 15377</span></span>
+<span><span class="co">#&gt; 5      sabic      groups classes4_groups3          4               3  &lt;NA&gt; 15102</span></span>
+<span><span class="co">#&gt; 6      sabic individuals classes4_groups3          4               3  &lt;NA&gt; 15241</span></span>
+<span><span class="co">#&gt; 7       caic      groups classes4_groups3          4               3  &lt;NA&gt; 15281</span></span>
+<span><span class="co">#&gt; 8       caic individuals classes4_groups3          4               3  &lt;NA&gt; 15420</span></span>
+<span><span class="co">#&gt; 9        awe      groups classes3_groups2          3               2  &lt;NA&gt; 16767</span></span>
+<span><span class="co">#&gt; 10       awe individuals classes3_groups2          3               2  &lt;NA&gt; 16956</span></span>
+<span><span class="co">#&gt; 11       icl      groups classes3_groups2          3               2  &lt;NA&gt; 16546</span></span>
+<span><span class="co">#&gt; 12       icl individuals classes3_groups2          3               2  &lt;NA&gt; 16641</span></span>
+<span><span class="co">#&gt; 13       clc      groups classes3_groups2          3               2  &lt;NA&gt; 16413</span></span>
+<span><span class="co">#&gt; 14       clc individuals classes3_groups2          3               2  &lt;NA&gt; 16413</span></span></code></pre></div>
+<p>The BIC (Schwarz, 1978) decreases up to the largest model in the
+grid, four classes and three group classes; that model and the one with
+three classes and three group classes reach their best log likelihood
+from a single start, as the message reports, so their low BIC rests on
+solutions that the starts do not replicate. The ICL (Biernacki et al.,
+2000), AWE (Banfield &amp; Raftery, 1993) and CLC, which penalize
+uncertain classification, select three classes and two group classes, a
+model whose best solution is reached by two of the twenty starts.
+<code><a href="../reference/compare_models.html">compare_models()</a></code> sets the two-class model beside the
+three-class model.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">lca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilca.html">multilca</a></span><span class="op">(</span><span class="va">student_esm</span>, vars <span class="op">=</span> <span class="va">activities</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
+<span>                n_profiles <span class="op">=</span> <span class="fl">3</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>                tol <span class="op">=</span> <span class="fl">1e-10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span>two <span class="op">=</span> <span class="va">first</span>, three <span class="op">=</span> <span class="va">lca</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Model comparison</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model  Classes  Group classes   k    LogLik       BIC   ΔBIC  Weight       ICL  Entropy  Min AvePP  &lt; 0.8  Group entropy  Group min AvePP</span></span>
+<span><span class="co">#&gt; -----  -------  -------------  --  --------  --------  -----  ------  --------  -------  ---------  -----  -------------  ---------------</span></span>
+<span><span class="co">#&gt; two          2              2  19  -7739.84  15567.19  77.35   0.000  16762.74     0.67       0.86      0           0.88             0.96</span></span>
+<span><span class="co">#&gt; three        3              2  29  -7678.14  15489.84   0.00   1.000  16640.78     0.80       0.86      0           0.88             0.95</span></span></code></pre></div>
+<p>The third class lowers the BIC by 77 and the ICL by 122, and raises
+relative entropy from 0.67 to 0.80. The three-class model is
+retained.</p>
+</div>
+<div class="section level2">
+<h2 id="the-chosen-model">The chosen model<a class="anchor" aria-label="anchor" href="#the-chosen-model"></a>
+</h2>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">lca</span></span>
+<span><span class="co">#&gt; Two-level latent class analysis: 3 classes, 2 group classes</span></span>
+<span><span class="co">#&gt; 2582 individuals in 100 groups; 8 categorical indicators</span></span>
+<span><span class="co">#&gt; Classes are labelled profile_1, profile_2, ... in every table.</span></span>
+<span><span class="co">#&gt; Log likelihood: -7678.144915 | AIC: 15414.290 | BIC (groups): 15489.840</span></span>
+<span><span class="co">#&gt; Converged: TRUE | iterations: 81 | best log likelihood reached by 2 of 20 starts (20 converged)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class sizes   profile_1 3.5% (91)   profile_2 71.6% (1848)   profile_3 24.9% (643)</span></span>
+<span><span class="co">#&gt; Group classes group_class_1 43.6% (44)   group_class_2 56.4% (56)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Response probabilities</span></span>
+<span><span class="co">#&gt;          indicator category profile_1 profile_2 profile_3</span></span>
+<span><span class="co">#&gt;  time_with_friends       no     0.978     0.835     0.900</span></span>
+<span><span class="co">#&gt;  time_with_friends      yes     0.022     0.165     0.100</span></span>
+<span><span class="co">#&gt;    on_social_media       no     0.989     0.873     0.208</span></span>
+<span><span class="co">#&gt;    on_social_media      yes     0.011     0.127     0.792</span></span>
+<span><span class="co">#&gt;     tv_video_games       no     1.000     0.841     0.603</span></span>
+<span><span class="co">#&gt;     tv_video_games      yes     0.000     0.159     0.397</span></span>
+<span><span class="co">#&gt;     listened_music       no     1.000     0.917     0.634</span></span>
+<span><span class="co">#&gt;     listened_music      yes     0.000     0.083     0.366</span></span>
+<span><span class="co">#&gt;             sports       no     1.000     0.923     0.933</span></span>
+<span><span class="co">#&gt;             sports      yes     0.000     0.077     0.067</span></span>
+<span><span class="co">#&gt;            walking       no     0.958     0.856     0.909</span></span>
+<span><span class="co">#&gt;            walking      yes     0.042     0.144     0.091</span></span>
+<span><span class="co">#&gt;            reading       no     0.989     0.895     0.851</span></span>
+<span><span class="co">#&gt;            reading      yes     0.011     0.105     0.149</span></span>
+<span><span class="co">#&gt;      part_time_job       no     0.000     1.000     0.982</span></span>
+<span><span class="co">#&gt;      part_time_job      yes     1.000     0.000     0.018</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Thresholds and standard errors: get_results(x, "responses").</span></span>
+<span><span class="co">#&gt; Every other table: get_results(x, what = ), or get_results(x, "all").</span></span></code></pre></div>
+<p>The classes describe three kinds of leisure interval. Class 2 (71.6%
+of the prompts) is low activity: no activity exceeds a probability of
+0.17. Class 3 (24.9%) is media use: social media (0.792), TV or video
+games (0.397) and music (0.366). Class 1 (3.5%) consists of the prompts
+at which the student worked in the part-time job (probability 1.000),
+with almost no other activity.
+<code>get_results(lca, "responses")</code> returns the same
+probabilities as a table, and the response plot compares them across
+classes.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_responses.html">plot_responses</a></span><span class="op">(</span><span class="va">lca</span><span class="op">)</span></span></code></pre></div>
+<p><img src="lca_files/figure-html/responses-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>The activity items have “no”/“yes” labels, so the response plot is
+the appropriate view. For items with distinct, finite numeric category
+labels, such as ratings from 1 to 5, <code><a href="../reference/plot_profiles.html">plot_profiles()</a></code>
+summarizes each item’s distribution in each class by its
+probability-weighted mean, or by its median or mode
+(<code>statistic = "median"</code> or <code>"mode"</code>). Means assume
+meaningful spacing between the category scores. The median is the
+smallest score whose cumulative probability reaches 0.5, and tied modes
+take the smallest score. These summaries use the fitted probabilities,
+including in FIML models, rather than averages of the cases assigned to
+each class, and they are on the raw scale. They have no confidence
+intervals and therefore do not require the parameter-inference
+calculation of the response plot. In mixed models,
+<code><a href="../reference/plot_profiles.html">plot_profiles()</a></code> shows only the continuous indicators.</p>
+<div class="section level3">
+<h3 id="group-classes">Group classes<a class="anchor" aria-label="anchor" href="#group-classes"></a>
+</h3>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"profile_probabilities"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   group_class profile probability group_class_probability</span></span>
+<span><span class="co">#&gt; 1           1       1     0.00778                   0.436</span></span>
+<span><span class="co">#&gt; 2           1       2     0.46348                   0.436</span></span>
+<span><span class="co">#&gt; 3           1       3     0.52874                   0.436</span></span>
+<span><span class="co">#&gt; 4           2       1     0.05862                   0.564</span></span>
+<span><span class="co">#&gt; 5           2       2     0.92787                   0.564</span></span>
+<span><span class="co">#&gt; 6           2       3     0.01351                   0.564</span></span></code></pre></div>
+<p>The group classes are kinds of students. In group class 2 (56.4% of
+the students), 92.8% of the prompts fall in the low-activity class, 5.9%
+in the job class and 1.4% in the media class. In group class 1 (43.6%),
+the prompts divide between media use (52.9%) and low activity (46.3%).
+The two kinds of students therefore differ in media use rather than in
+activity overall. The prevalence plot shows these probabilities.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_prevalence.html">plot_prevalence</a></span><span class="op">(</span><span class="va">lca</span><span class="op">)</span></span></code></pre></div>
+<p><img src="lca_files/figure-html/probability-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="replication-of-the-maximum">Replication of the maximum<a class="anchor" aria-label="anchor" href="#replication-of-the-maximum"></a>
+</h2>
+<p>The likelihood of latent class models often has several local maxima.
+The <code>"starts"</code> table reports the maximum reached from each
+start.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"starts"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    start log_likelihood converged iterations error boundary</span></span>
+<span><span class="co">#&gt; 1      1          -7686      TRUE        315  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 2      2          -7686      TRUE        254  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 3      3          -7686      TRUE        325  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 4      4          -7731      TRUE        323  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 5      5          -7695      TRUE        108  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 6      6          -7731      TRUE        503  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 7      7          -7706      TRUE        158  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 8      8          -7719      TRUE        109  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 9      9          -7686      TRUE        147  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 10    10          -7686      TRUE        262  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 11    11          -7686      TRUE        203  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 12    12          -7703      TRUE         80  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 13    13          -7686      TRUE        147  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 14    14          -7686      TRUE        116  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 15    15          -7686      TRUE        299  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 16    16          -7678      TRUE         81  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 17    17          -7704      TRUE        163  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 18    18          -7678      TRUE         75  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 19    19          -7686      TRUE        122  &lt;NA&gt;    FALSE</span></span>
+<span><span class="co">#&gt; 20    20          -7686      TRUE         98  &lt;NA&gt;    FALSE</span></span></code></pre></div>
+<p>The best log likelihood, -7678, is reached by 2 of the 20 starts; 11
+starts stop at -7686 and the others lower. With few starts, the analysis
+would report a different solution. The number of starts is therefore
+part of the specification, and the replication of the best maximum
+belongs in the report.</p>
+</div>
+<div class="section level2">
+<h2 id="classification">Classification<a class="anchor" aria-label="anchor" href="#classification"></a>
+</h2>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"counts"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         level class effective_count effective_proportion</span></span>
+<span><span class="co">#&gt; 1 individuals     1            91.4               0.0354</span></span>
+<span><span class="co">#&gt; 2 individuals     2          1848.0               0.7157</span></span>
+<span><span class="co">#&gt; 3 individuals     3           642.6               0.2489</span></span>
+<span><span class="co">#&gt; 4      groups     1            43.6               0.4357</span></span>
+<span><span class="co">#&gt; 5      groups     2            56.4               0.5643</span></span>
+<span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"entropy"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         level n_classes n_units entropy_sum relative_entropy</span></span>
+<span><span class="co">#&gt; 1 individuals         3    2582      556.82            0.804</span></span>
+<span><span class="co">#&gt; 2      groups         2     100        8.48            0.878</span></span>
+<span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"average_posteriors"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;          level assigned_class class n_assigned average_posterior</span></span>
+<span><span class="co">#&gt; 1  individuals              1     1         92          9.91e-01</span></span>
+<span><span class="co">#&gt; 2  individuals              1     2         92          1.42e-09</span></span>
+<span><span class="co">#&gt; 3  individuals              1     3         92          8.69e-03</span></span>
+<span><span class="co">#&gt; 4  individuals              2     1       1896          2.45e-10</span></span>
+<span><span class="co">#&gt; 5  individuals              2     2       1896          9.30e-01</span></span>
+<span><span class="co">#&gt; 6  individuals              2     3       1896          6.97e-02</span></span>
+<span><span class="co">#&gt; 7  individuals              3     1        594          3.14e-04</span></span>
+<span><span class="co">#&gt; 8  individuals              3     2        594          1.42e-01</span></span>
+<span><span class="co">#&gt; 9  individuals              3     3        594          8.58e-01</span></span>
+<span><span class="co">#&gt; 10      groups              1     1         42          9.71e-01</span></span>
+<span><span class="co">#&gt; 11      groups              1     2         42          2.88e-02</span></span>
+<span><span class="co">#&gt; 12      groups              2     1         58          4.80e-02</span></span>
+<span><span class="co">#&gt; 13      groups              2     2         58          9.52e-01</span></span></code></pre></div>
+<p>The classes hold 91.4, 1,848.0 and 642.6 prompts and the group
+classes 43.6 and 56.4 students. Relative entropy (Ramaswamy et al.,
+1993) is 0.804 for the prompts and 0.878 for the students. The average
+posterior of the assigned class is 0.991 for the job class, 0.930 for
+low activity and 0.858 for media use, and 0.971 and 0.952 for the group
+classes: the media class overlaps most with low activity, and analyses
+of assigned classes should use the three-step methods below.</p>
+</div>
+<div class="section level2">
+<h2 id="local-independence">Local independence<a class="anchor" aria-label="anchor" href="#local-independence"></a>
+</h2>
+<p>The <code>"residuals"</code> table compares the association of each
+pair of items within each class with the association the model implies
+(none), with Benjamini-Hochberg adjusted p-values (Benjamini &amp;
+Hochberg, 1995).</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"residuals"</span><span class="op">)</span>, <span class="fl">6</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     profile       indicator_1 indicator_2        kind observed expected residual effective_n</span></span>
+<span><span class="co">#&gt; 1 profile_1   on_social_media     walking categorical    0.424 1.60e-16    0.424        91.4</span></span>
+<span><span class="co">#&gt; 2 profile_3            sports     walking categorical    0.166 3.80e-17    0.166       642.6</span></span>
+<span><span class="co">#&gt; 3 profile_3 time_with_friends     walking categorical    0.143 1.45e-17    0.143       642.6</span></span>
+<span><span class="co">#&gt; 4 profile_3    listened_music     walking categorical    0.133 7.66e-17    0.133       642.6</span></span>
+<span><span class="co">#&gt; 5 profile_3    listened_music     reading categorical    0.110 8.70e-17    0.110       642.6</span></span>
+<span><span class="co">#&gt; 6 profile_3    listened_music      sports categorical    0.108 1.42e-16    0.108       642.6</span></span>
+<span><span class="co">#&gt;   statistic df  p_value p_adjusted</span></span>
+<span><span class="co">#&gt; 1     16.43  1 5.04e-05    0.00141</span></span>
+<span><span class="co">#&gt; 2     17.73  1 2.55e-05    0.00107</span></span>
+<span><span class="co">#&gt; 3     13.21  1 2.79e-04    0.00585</span></span>
+<span><span class="co">#&gt; 4     11.38  1 7.43e-04    0.01040</span></span>
+<span><span class="co">#&gt; 5      7.75  1 5.38e-03    0.05022</span></span>
+<span><span class="co">#&gt; 6      7.52  1 6.09e-03    0.05118</span></span></code></pre></div>
+<p>Walking remains associated with sports, time with friends and music
+within the media class (residuals of 0.13 to 0.17, adjusted p-values
+0.001 to 0.010), and with social media within the small job class.
+<code>local_dependence</code> estimates the joint distribution of a pair
+of categorical items within each class, as in Latent GOLD.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dependent</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilca.html">multilca</a></span><span class="op">(</span><span class="va">student_esm</span>, vars <span class="op">=</span> <span class="va">activities</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
+<span>                      n_profiles <span class="op">=</span> <span class="fl">3</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>                      local_dependence <span class="op">=</span> <span class="st">"sports:walking"</span>, n_starts <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>                      tol <span class="op">=</span> <span class="fl">1e-10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span>independent <span class="op">=</span> <span class="va">lca</span>, dependent <span class="op">=</span> <span class="va">dependent</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Model comparison</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Model        Classes  Group classes   k    LogLik       BIC  ΔBIC  Weight       ICL  Entropy  Min AvePP  &lt; 0.8  Group entropy  Group min AvePP</span></span>
+<span><span class="co">#&gt; -----------  -------  -------------  --  --------  --------  ----  ------  --------  -------  ---------  -----  -------------  ---------------</span></span>
+<span><span class="co">#&gt; independent        3              2  29  -7678.14  15489.84  5.63   0.056  16640.78     0.80       0.86      0           0.88             0.95</span></span>
+<span><span class="co">#&gt; dependent          3              2  32  -7668.42  15484.21  0.00   0.944  16618.24     0.81       0.84      0           0.89             0.96</span></span></code></pre></div>
+<p>Freeing the pair lowers the BIC by 5.6. The gain is small, the
+solution is reached by a single start, and the classes keep their
+meaning, so the model with independent items is retained and the
+residual association reported.</p>
+</div>
+<div class="section level2">
+<h2 id="uncertainty-of-the-estimates">Uncertainty of the estimates<a class="anchor" aria-label="anchor" href="#uncertainty-of-the-estimates"></a>
+</h2>
+<p>Several response probabilities of the job class lie on the bound of
+zero or one, where Wald inference is undefined.
+<code>boundary = "fix"</code> holds them at the bound and reports every
+other parameter conditional on them, as in Mplus; the
+<code>fixed_at_bound</code> attribute names the held parameters.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">inference</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/parameter_inference.html">parameter_inference</a></span><span class="op">(</span><span class="va">lca</span>, boundary <span class="op">=</span> <span class="st">"fix"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">inference</span>, <span class="st">"fixed_at_bound"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "measurement.response.profile_1.tv_video_games:no" </span></span>
+<span><span class="co">#&gt;  [2] "measurement.response.profile_1.tv_video_games:yes"</span></span>
+<span><span class="co">#&gt;  [3] "measurement.response.profile_1.listened_music:no" </span></span>
+<span><span class="co">#&gt;  [4] "measurement.response.profile_1.listened_music:yes"</span></span>
+<span><span class="co">#&gt;  [5] "measurement.response.profile_1.sports:no"         </span></span>
+<span><span class="co">#&gt;  [6] "measurement.response.profile_1.sports:yes"        </span></span>
+<span><span class="co">#&gt;  [7] "measurement.response.profile_1.part_time_job:no"  </span></span>
+<span><span class="co">#&gt;  [8] "measurement.response.profile_2.part_time_job:no"  </span></span>
+<span><span class="co">#&gt;  [9] "measurement.response.profile_1.part_time_job:yes" </span></span>
+<span><span class="co">#&gt; [10] "measurement.response.profile_2.part_time_job:yes"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">inference</span>, <span class="fl">8</span><span class="op">)</span></span>
+<span><span class="co">#&gt;      level       outcome          term   parameter estimate standard_error statistic p_value</span></span>
+<span><span class="co">#&gt; 39 profile     profile_1 group_class_1 probability  0.00778        0.00276        NA      NA</span></span>
+<span><span class="co">#&gt; 40 profile     profile_2 group_class_1 probability  0.46348        0.03355        NA      NA</span></span>
+<span><span class="co">#&gt; 41 profile     profile_3 group_class_1 probability  0.52874        0.03360        NA      NA</span></span>
+<span><span class="co">#&gt; 42 profile     profile_1 group_class_2 probability  0.05862        0.00718        NA      NA</span></span>
+<span><span class="co">#&gt; 43 profile     profile_2 group_class_2 probability  0.92787        0.01670        NA      NA</span></span>
+<span><span class="co">#&gt; 44 profile     profile_3 group_class_2 probability  0.01351        0.01463        NA      NA</span></span>
+<span><span class="co">#&gt; 45   group group_class_1          &lt;NA&gt; probability  0.43573        0.06201        NA      NA</span></span>
+<span><span class="co">#&gt; 46   group group_class_2          &lt;NA&gt; probability  0.56427        0.06201        NA      NA</span></span>
+<span><span class="co">#&gt;    p_adjusted conf_low conf_high</span></span>
+<span><span class="co">#&gt; 39         NA  0.00387    0.0156</span></span>
+<span><span class="co">#&gt; 40         NA  0.39873    0.5295</span></span>
+<span><span class="co">#&gt; 41         NA  0.46277    0.5937</span></span>
+<span><span class="co">#&gt; 42         NA  0.04604    0.0744</span></span>
+<span><span class="co">#&gt; 43         NA  0.88748    0.9545</span></span>
+<span><span class="co">#&gt; 44         NA  0.00159    0.1054</span></span>
+<span><span class="co">#&gt; 45         NA  0.32020    0.5587</span></span>
+<span><span class="co">#&gt; 46         NA  0.44131    0.6798</span></span></code></pre></div>
+<p>Ten probabilities are held, both answers of five item–class pairs: TV
+or video games, music, sports and the job in the job class, and the job
+in the low-activity class. Group class 1 holds 0.436 of the students
+(95% interval 0.320 to 0.559), and the probability of a media prompt in
+that class is 0.529 (0.463 to 0.594).</p>
+</div>
+<div class="section level2">
+<h2 id="relating-the-classes-to-affect">Relating the classes to affect<a class="anchor" aria-label="anchor" href="#relating-the-classes-to-affect"></a>
+</h2>
+<p><code><a href="../reference/three_step.html">three_step()</a></code> compares the mean of a variable across
+classes with the BCH correction for classification error (Bolck et al.,
+2004; Vermunt, 2010).</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/three_step.html">three_step</a></span><span class="op">(</span><span class="va">lca</span>, data <span class="op">=</span> <span class="va">student_esm</span>, outcome <span class="op">=</span> <span class="st">"happy"</span>, contrast <span class="op">=</span> <span class="st">"pairs"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Distal outcome: class differences (bch, 95% CI)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class  vs  Difference         95% CI     p  p (BH)</span></span>
+<span><span class="co">#&gt; -----  --  ----------  -------------  ----  ------</span></span>
+<span><span class="co">#&gt;     2   1        0.53  [ 0.13, 0.94]  .010    .029</span></span>
+<span><span class="co">#&gt;     3   1        0.19  [-0.42, 0.79]  .541    .541</span></span>
+<span><span class="co">#&gt;     3   2       -0.35  [-0.86, 0.17]  .189    .284</span></span></code></pre></div>
+<p>Students report higher happiness at low-activity prompts than at job
+prompts (difference 0.53 on the 1 to 7 scale, 95% interval 0.13 to 0.94,
+adjusted p = .029). Media prompts do not differ significantly from
+either class.</p>
+</div>
+<div class="section level2">
+<h2 id="mixed-ordinal-and-count-indicators">Mixed, ordinal and count indicators<a class="anchor" aria-label="anchor" href="#mixed-ordinal-and-count-indicators"></a>
+</h2>
+<p><code><a href="../reference/multilpa.html">multilpa()</a></code> combines categorical indicators, listed in
+<code>categorical</code>, with continuous ones. The model below adds
+three affect ratings as continuous indicators. <code>worried</code> is
+omitted: half of its ratings are 1, and a Gaussian component for that
+floor reaches the variance bound.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">mixed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">student_esm</span>,</span>
+<span>                  vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"happy"</span>, <span class="st">"relaxed"</span>, <span class="st">"exhausted"</span>, <span class="va">activities</span><span class="op">)</span>,</span>
+<span>                  categorical <span class="op">=</span> <span class="va">activities</span>, id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                  n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: A variance reached min_variance; this is a bound-active constrained fit.</span></span>
+<span><span class="va">mixed</span></span>
+<span><span class="co">#&gt; Two-level latent profile analysis: 3 profiles, 2 group classes</span></span>
+<span><span class="co">#&gt; 2582 individuals in 100 groups; varying diagonal residual covariance (VVI), 8 categorical indicators</span></span>
+<span><span class="co">#&gt; Log likelihood: -18531.292688 | AIC: 37156.585 | BIC (groups): 37279.028</span></span>
+<span><span class="co">#&gt; Converged: TRUE | iterations: 39 | best log likelihood reached by 6 of 10 starts (10 converged)</span></span>
+<span><span class="co">#&gt; A variance is at its specified lower bound.</span></span>
+<span><span class="co">#&gt; Smallest standardized Gaussian eigenvalue: 7.725e-07 (profiles, profile_2); Gaussian mass: 522.5; weight effective n: 524.7.</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Class sizes   profile_1 45.2% (1167)   profile_2 20.2% (522)   profile_3 34.6% (892)</span></span>
+<span><span class="co">#&gt; Group classes group_class_1 34.9% (35)   group_class_2 65.1% (65)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Means</span></span>
+<span><span class="co">#&gt;  indicator profile_1 profile_2 profile_3</span></span>
+<span><span class="co">#&gt;      happy      5.60      5.97      3.31</span></span>
+<span><span class="co">#&gt;    relaxed      5.23      5.77      3.16</span></span>
+<span><span class="co">#&gt;  exhausted      3.39      1.00      4.57</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Variances and standard errors: get_results(x, "profiles").</span></span>
+<span><span class="co">#&gt; Every other table: get_results(x, what = ), or get_results(x, "all").</span></span></code></pre></div>
+<p>The affect ratings dominate the classes: the means separate a
+low-affect class (happy 3.31, exhausted 4.57) from two positive ones,
+and the variance of <code>exhausted</code> in one class reaches its
+bound (<code>min_variance</code>), as the warning reports. Indicators
+with more information define the classes, so variables that are to be
+explained by the classes, as affect is here, are better related to them
+with <code><a href="../reference/three_step.html">three_step()</a></code> than added as indicators.</p>
+<p>Ordinal ratings can be modelled as <code>ordinal</code>: an
+adjacent-category logit with category intercepts shared across classes
+and a location per class, instead of six free probabilities per item and
+class (identifying constraints in <code><a href="../reference/multilpa.html">?multilpa</a></code>).</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">affect</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"happy"</span>, <span class="st">"relaxed"</span>, <span class="st">"worried"</span>, <span class="st">"exhausted"</span><span class="op">)</span></span>
+<span><span class="va">ordinal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">student_esm</span>, vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">affect</span>, <span class="va">activities</span><span class="op">)</span>,</span>
+<span>                    id <span class="op">=</span> <span class="st">"student"</span>, ordinal <span class="op">=</span> <span class="va">affect</span>,</span>
+<span>                    categorical <span class="op">=</span> <span class="va">activities</span>, n_profiles <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>                    n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">ordinal</span>, <span class="st">"ordinal"</span><span class="op">)</span>, <span class="fl">7</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   profile indicator category probability location location_standard_error</span></span>
+<span><span class="co">#&gt; 1       1     happy        1    0.197605     -3.4                   0.168</span></span>
+<span><span class="co">#&gt; 2       1     happy        2    0.227278     -3.4                   0.168</span></span>
+<span><span class="co">#&gt; 3       1     happy        3    0.312766     -3.4                   0.168</span></span>
+<span><span class="co">#&gt; 4       1     happy        4    0.182318     -3.4                   0.168</span></span>
+<span><span class="co">#&gt; 5       1     happy        5    0.072647     -3.4                   0.168</span></span>
+<span><span class="co">#&gt; 6       1     happy        6    0.007099     -3.4                   0.168</span></span>
+<span><span class="co">#&gt; 7       1     happy        7    0.000287     -3.4                   0.168</span></span></code></pre></div>
+<p>The <code>"ordinal"</code> table gives the fitted probability of each
+category and the location of each class. Count indicators, such as
+numbers of messages or absences, are listed in <code>count</code>:
+Poisson by default, with one mean per class
+(<code>get_results(fit, "count_means")</code>), or negative binomial
+(<code>count_model = "negative_binomial"</code>) for overdispersion,
+with class-specific or common (<code>count_dispersion = "equal"</code>)
+dispersion.</p>
+</div>
+<div class="section level2">
+<h2 id="options-of-multilca">Options of multilca()<a class="anchor" aria-label="anchor" href="#options-of-multilca"></a>
 </h2>
 <ul>
 <li>
 <strong>Item types.</strong> Binary, ordinal and nominal items share
-one parameterization: unrestricted category probabilities in each
-profile, subject to summing to one. Numeric, integer, logical, character
-and factor columns are accepted; factor levels keep their order, other
-types are sorted. Ordered items can instead be modelled as
-<code>ordinal</code> (an adjacent-category logit with shared category
-intercepts), and counts as <code>count</code> (Poisson); see below.</li>
+one parameterization, unrestricted category probabilities in each class.
+Numeric, integer, logical, character and factor columns are accepted;
+factor levels keep their order, other types are sorted. Ordered items
+can instead be modelled as <code>ordinal</code> and counts as
+<code>count</code> (above).</li>
 <li>
 <strong>Mixed measurement.</strong> Continuous and categorical
-indicators in one model.</li>
+indicators in one model, through <code><a href="../reference/multilpa.html">multilpa()</a></code> with
+<code>categorical</code>.</li>
 <li>
 <strong>Missing answers.</strong> <code>missing = "fiml"</code> uses
 the observed answers of each row.</li>
+<li>
+<strong>Bounds.</strong> <code>min_probability</code> keeps every
+response probability above a lower bound.</li>
 <li>
 <strong>Standard errors.</strong> Observed-information and robust
 (<code>vcov_type = "robust"</code>) standard errors through
 <code><a href="../reference/parameter_inference.html">parameter_inference()</a></code>.</li>
 <li>
 <strong>Model comparison.</strong> <code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code>
-and <code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code>, which keeps each row’s pattern of
-missing answers in a FIML fit.</li>
-<li>
-<strong>External variables.</strong> <code><a href="../reference/three_step.html">three_step()</a></code> and
-<code><a href="../reference/r3step.html">r3step()</a></code> work on a categorical fit.</li>
+and <code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code>; in a FIML fit the bootstrap keeps each
+row’s pattern of missing answers.</li>
 <li>
 <strong>Membership covariates.</strong>
 <code>profile_covariates</code> and <code>group_covariates</code> work
 with categorical indicators, and <code><a href="../reference/parameter_inference.html">parameter_inference()</a></code>
 reports their standard errors.</li>
 <li>
+<strong>External variables.</strong> <code><a href="../reference/three_step.html">three_step()</a></code> and
+<code><a href="../reference/r3step.html">r3step()</a></code> work on a categorical fit.</li>
+<li>
 <strong>Transitions.</strong> <code><a href="../reference/lta.html">lta()</a></code> accepts categorical
 indicators.</li>
-<li>
-<strong>Bounds.</strong> <code>min_probability</code> keeps every
-response probability above a lower bound.</li>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
+<h2 id="other-functions">Other functions<a class="anchor" aria-label="anchor" href="#other-functions"></a>
 </h2>
-<p><code>student_esm</code> holds experience-sampling data: 2,582
-prompts from 100 university students, answered at times when the student
-had not been studying. <code>student</code> identifies the group. Eight
-yes/no items record the leisure activities done since the previous
-prompt, and four items rate affect from 1 to 7. <code>day</code> is the
-study day, from 0 to 13. <code><a href="../reference/student_esm.html">?student_esm</a></code> gives the source.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pak.dynasite.org/latents/">latents</a></span><span class="op">)</span></span></code></pre></div>
-<p>The example uses the first week of observations
-(<code>day &lt;= 6</code>), retaining all 100 students while limiting
-computation.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">first_week</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">student_esm</span>, <span class="va">day</span> <span class="op">&lt;=</span> <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
-<p>The eight activity items are used in several fits, so we store their
-names once.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"time_with_friends"</span>, <span class="st">"on_social_media"</span>, <span class="st">"tv_video_games"</span>,</span>
-<span>                <span class="st">"listened_music"</span>, <span class="st">"sports"</span>, <span class="st">"walking"</span>, <span class="st">"reading"</span>,</span>
-<span>                <span class="st">"part_time_job"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="fitting-the-model">Fitting the model<a class="anchor" aria-label="anchor" href="#fitting-the-model"></a>
-</h2>
-<p>The model specifies two observation-level classes and two group
-classes. The <code>tol</code> argument sets a stricter convergence
-tolerance for this example; accurate numerical standard errors require a
-sufficiently well-converged solution.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">lca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilca.html">multilca</a></span><span class="op">(</span><span class="va">first_week</span>, vars <span class="op">=</span> <span class="va">activities</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
-<span>                n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>                tol <span class="op">=</span> <span class="fl">1e-10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">lca</span></span>
-<span><span class="co">#&gt; Two-level latent class analysis: 2 classes, 2 group classes</span></span>
-<span><span class="co">#&gt; 1422 individuals in 100 groups; 8 categorical indicators</span></span>
-<span><span class="co">#&gt; Classes are labelled profile_1, profile_2, ... in every table.</span></span>
-<span><span class="co">#&gt; Log likelihood: -4315.734843 | AIC: 8669.470 | BIC (groups): 8718.968</span></span>
-<span><span class="co">#&gt; Converged: TRUE | iterations: 39 | best log likelihood reached by 2 of 3 starts (3 converged)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Class sizes   profile_1 38.6% (549)   profile_2 61.4% (873)</span></span>
-<span><span class="co">#&gt; Group classes group_class_1 51.7% (52)   group_class_2 48.3% (48)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Response probabilities</span></span>
-<span><span class="co">#&gt;          indicator category profile_1 profile_2</span></span>
-<span><span class="co">#&gt;  time_with_friends       no     0.937     0.832</span></span>
-<span><span class="co">#&gt;  time_with_friends      yes     0.063     0.168</span></span>
-<span><span class="co">#&gt;    on_social_media       no     0.336     0.924</span></span>
-<span><span class="co">#&gt;    on_social_media      yes     0.664     0.076</span></span>
-<span><span class="co">#&gt;     tv_video_games       no     0.631     0.866</span></span>
-<span><span class="co">#&gt;     tv_video_games      yes     0.369     0.134</span></span>
-<span><span class="co">#&gt;     listened_music       no     0.646     0.941</span></span>
-<span><span class="co">#&gt;     listened_music      yes     0.354     0.059</span></span>
-<span><span class="co">#&gt;             sports       no     0.941     0.916</span></span>
-<span><span class="co">#&gt;             sports      yes     0.059     0.084</span></span>
-<span><span class="co">#&gt;            walking       no     0.887     0.837</span></span>
-<span><span class="co">#&gt;            walking      yes     0.113     0.163</span></span>
-<span><span class="co">#&gt;            reading       no     0.879     0.892</span></span>
-<span><span class="co">#&gt;            reading      yes     0.121     0.108</span></span>
-<span><span class="co">#&gt;      part_time_job       no     0.984     0.959</span></span>
-<span><span class="co">#&gt;      part_time_job      yes     0.016     0.041</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Thresholds and standard errors: get_results(x, "responses").</span></span>
-<span><span class="co">#&gt; Every other table: get_results(x, what = ), or get_results(x, "all").</span></span></code></pre></div>
-<p>The <code>"responses"</code> table contains one row per profile, item
-and category. The column <code>probability</code> is the estimated
-conditional probability of that response within the profile.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"responses"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    profile         indicator category probability threshold probability_standard_error</span></span>
-<span><span class="co">#&gt; 1        1 time_with_friends       no      0.9368     2.696                    0.01281</span></span>
-<span><span class="co">#&gt; 2        2 time_with_friends       no      0.8324     1.603                    0.01525</span></span>
-<span><span class="co">#&gt; 3        1 time_with_friends      yes      0.0632        NA                    0.01281</span></span>
-<span><span class="co">#&gt; 4        2 time_with_friends      yes      0.1676        NA                    0.01525</span></span>
-<span><span class="co">#&gt; 5        1   on_social_media       no      0.3364    -0.679                    0.04592</span></span>
-<span><span class="co">#&gt; 6        2   on_social_media       no      0.9235     2.491                    0.02663</span></span>
-<span><span class="co">#&gt; 7        1   on_social_media      yes      0.6636        NA                    0.04592</span></span>
-<span><span class="co">#&gt; 8        2   on_social_media      yes      0.0765        NA                    0.02663</span></span>
-<span><span class="co">#&gt; 9        1    tv_video_games       no      0.6313     0.538                    0.02892</span></span>
-<span><span class="co">#&gt; 10       2    tv_video_games       no      0.8664     1.870                    0.01605</span></span>
-<span><span class="co">#&gt; 11       1    tv_video_games      yes      0.3687        NA                    0.02892</span></span>
-<span><span class="co">#&gt; 12       2    tv_video_games      yes      0.1336        NA                    0.01605</span></span>
-<span><span class="co">#&gt; 13       1    listened_music       no      0.6464     0.603                    0.03167</span></span>
-<span><span class="co">#&gt; 14       2    listened_music       no      0.9406     2.762                    0.01420</span></span>
-<span><span class="co">#&gt; 15       1    listened_music      yes      0.3536        NA                    0.03167</span></span>
-<span><span class="co">#&gt; 16       2    listened_music      yes      0.0594        NA                    0.01420</span></span>
-<span><span class="co">#&gt; 17       1            sports       no      0.9406     2.762                    0.01208</span></span>
-<span><span class="co">#&gt; 18       2            sports       no      0.9159     2.388                    0.01053</span></span>
-<span><span class="co">#&gt; 19       1            sports      yes      0.0594        NA                    0.01208</span></span>
-<span><span class="co">#&gt; 20       2            sports      yes      0.0841        NA                    0.01053</span></span>
-<span><span class="co">#&gt; 21       1           walking       no      0.8865     2.056                    0.01657</span></span>
-<span><span class="co">#&gt; 22       2           walking       no      0.8365     1.633                    0.01423</span></span>
-<span><span class="co">#&gt; 23       1           walking      yes      0.1135        NA                    0.01657</span></span>
-<span><span class="co">#&gt; 24       2           walking      yes      0.1635        NA                    0.01423</span></span>
-<span><span class="co">#&gt; 25       1           reading       no      0.8790     1.983                    0.01685</span></span>
-<span><span class="co">#&gt; 26       2           reading       no      0.8917     2.108                    0.01190</span></span>
-<span><span class="co">#&gt; 27       1           reading      yes      0.1210        NA                    0.01685</span></span>
-<span><span class="co">#&gt; 28       2           reading      yes      0.1083        NA                    0.01190</span></span>
-<span><span class="co">#&gt; 29       1     part_time_job       no      0.9838     4.103                    0.00625</span></span>
-<span><span class="co">#&gt; 30       2     part_time_job       no      0.9587     3.144                    0.00730</span></span>
-<span><span class="co">#&gt; 31       1     part_time_job      yes      0.0162        NA                    0.00625</span></span>
-<span><span class="co">#&gt; 32       2     part_time_job      yes      0.0413        NA                    0.00730</span></span></code></pre></div>
-<p>The response plot compares the fitted item-response probabilities
-across profiles.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_responses.html">plot_responses</a></span><span class="op">(</span><span class="va">lca</span><span class="op">)</span></span></code></pre></div>
-<p><img src="lca_files/figure-html/responses-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
-<p>These activity items have “no”/“yes” labels, so
-<code>plot_responses(lca)</code> is the appropriate view. A
-profile-score plot requires distinct finite numeric category labels. On
-a model fitted to numeric categories, such as ratings from 1 to 5,
-<code><a href="../reference/plot_profiles.html">plot_profiles()</a></code> can summarize each item’s distribution with
-probability-weighted means, or with <code>statistic = "median"</code> or
-<code>"mode"</code>.</p>
-<p>Means assume meaningful spacing between category scores. The median
-is the smallest score whose cumulative probability reaches 0.5; tied
-modes use the smallest score. These summaries use fitted probabilities,
-including in FIML models, rather than averages of cases assigned to each
-class. They require numeric category labels and use the raw scale.
-Confidence intervals are not computed, so these plots avoid the
-parameter-inference calculation used by the response-probability plot.
-In mixed models, <code><a href="../reference/plot_profiles.html">plot_profiles()</a></code> continues to show only
-continuous indicators.</p>
-<p>The <code>"profile_probabilities"</code> table and the prevalence
-plot summarize how the distribution of observation-level classes differs
-across group classes.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"profile_probabilities"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   group_class profile probability group_class_probability</span></span>
-<span><span class="co">#&gt; 1           1       1      0.0751                   0.517</span></span>
-<span><span class="co">#&gt; 2           1       2      0.9249                   0.517</span></span>
-<span><span class="co">#&gt; 3           2       1      0.7080                   0.483</span></span>
-<span><span class="co">#&gt; 4           2       2      0.2920                   0.483</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_prevalence.html">plot_prevalence</a></span><span class="op">(</span><span class="va">lca</span><span class="op">)</span></span></code></pre></div>
-<p><img src="lca_files/figure-html/probability-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
-<p>The <code>"entropy"</code> table summarizes posterior classification
-separation at both levels.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"entropy"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;         level n_classes n_units entropy_sum relative_entropy</span></span>
-<span><span class="co">#&gt; 1 individuals         2    1422         411            0.583</span></span>
-<span><span class="co">#&gt; 2      groups         2     100          13            0.813</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="mixed-indicators">Mixed indicators<a class="anchor" aria-label="anchor" href="#mixed-indicators"></a>
-</h2>
-<p>Mixed models specify all indicators in <code>vars</code> and the
-categorical subset in <code>categorical</code>. This example treats
-three affect ratings as continuous and the activity indicators as
-categorical. Treating ratings as continuous is a measurement assumption
-that should be evaluated against an ordinal specification. The
-<code>worried</code> item is omitted because its concentration at the
-lowest category can produce a component with variance near the lower
-bound under a Gaussian specification.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">mixed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">first_week</span>,</span>
-<span>                  vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"happy"</span>, <span class="st">"relaxed"</span>, <span class="st">"exhausted"</span>, <span class="va">activities</span><span class="op">)</span>,</span>
-<span>                  categorical <span class="op">=</span> <span class="va">activities</span>, id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>                  n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<p>The default results table reports the continuous indicators’ means
-and variances. The <code>"responses"</code> table reports categorical
-response probabilities.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">mixed</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   profile indicator mean variance standard_deviation mean_standard_error variance_standard_error</span></span>
-<span><span class="co">#&gt; 1       1     happy 3.90    1.963              1.401              0.0653                  0.1076</span></span>
-<span><span class="co">#&gt; 2       1   relaxed 3.66    1.946              1.395              0.0601                  0.1043</span></span>
-<span><span class="co">#&gt; 3       1 exhausted 4.10    2.842              1.686              0.0696                  0.1503</span></span>
-<span><span class="co">#&gt; 4       2     happy 5.98    0.659              0.812              0.0396                  0.0414</span></span>
-<span><span class="co">#&gt; 5       2   relaxed 5.77    1.016              1.008              0.0536                  0.0742</span></span>
-<span><span class="co">#&gt; 6       2 exhausted 2.32    1.976              1.406              0.0672                  0.1379</span></span>
-<span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">mixed</span>, <span class="st">"responses"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    profile         indicator category probability threshold probability_standard_error</span></span>
-<span><span class="co">#&gt; 1        1 time_with_friends       no      0.9309     2.601                    0.01003</span></span>
-<span><span class="co">#&gt; 2        2 time_with_friends       no      0.8046     1.415                    0.01648</span></span>
-<span><span class="co">#&gt; 3        1 time_with_friends      yes      0.0691        NA                    0.01003</span></span>
-<span><span class="co">#&gt; 4        2 time_with_friends      yes      0.1954        NA                    0.01648</span></span>
-<span><span class="co">#&gt; 5        1   on_social_media       no      0.6381     0.567                    0.01863</span></span>
-<span><span class="co">#&gt; 6        2   on_social_media       no      0.7657     1.184                    0.01898</span></span>
-<span><span class="co">#&gt; 7        1   on_social_media      yes      0.3619        NA                    0.01863</span></span>
-<span><span class="co">#&gt; 8        2   on_social_media      yes      0.2343        NA                    0.01898</span></span>
-<span><span class="co">#&gt; 9        1    tv_video_games       no      0.7370     1.030                    0.01685</span></span>
-<span><span class="co">#&gt; 10       2    tv_video_games       no      0.8210     1.523                    0.01654</span></span>
-<span><span class="co">#&gt; 11       1    tv_video_games      yes      0.2630        NA                    0.01685</span></span>
-<span><span class="co">#&gt; 12       2    tv_video_games      yes      0.1790        NA                    0.01654</span></span>
-<span><span class="co">#&gt; 13       1    listened_music       no      0.8394     1.654                    0.01419</span></span>
-<span><span class="co">#&gt; 14       2    listened_music       no      0.8125     1.466                    0.01632</span></span>
-<span><span class="co">#&gt; 15       1    listened_music      yes      0.1606        NA                    0.01419</span></span>
-<span><span class="co">#&gt; 16       2    listened_music      yes      0.1875        NA                    0.01632</span></span>
-<span><span class="co">#&gt; 17       1            sports       no      0.9385     2.726                    0.00928</span></span>
-<span><span class="co">#&gt; 18       2            sports       no      0.9102     2.316                    0.01182</span></span>
-<span><span class="co">#&gt; 19       1            sports      yes      0.0615        NA                    0.00928</span></span>
-<span><span class="co">#&gt; 20       2            sports      yes      0.0898        NA                    0.01182</span></span>
-<span><span class="co">#&gt; 21       1           walking       no      0.8821     2.012                    0.01244</span></span>
-<span><span class="co">#&gt; 22       2           walking       no      0.8251     1.552                    0.01573</span></span>
-<span><span class="co">#&gt; 23       1           walking      yes      0.1179        NA                    0.01244</span></span>
-<span><span class="co">#&gt; 24       2           walking      yes      0.1749        NA                    0.01573</span></span>
-<span><span class="co">#&gt; 25       1           reading       no      0.8670     1.874                    0.01317</span></span>
-<span><span class="co">#&gt; 26       2           reading       no      0.9100     2.313                    0.01259</span></span>
-<span><span class="co">#&gt; 27       1           reading      yes      0.1330        NA                    0.01317</span></span>
-<span><span class="co">#&gt; 28       2           reading      yes      0.0900        NA                    0.01259</span></span>
-<span><span class="co">#&gt; 29       1     part_time_job       no      0.9720     3.549                    0.00647</span></span>
-<span><span class="co">#&gt; 30       2     part_time_job       no      0.9640     3.289                    0.00786</span></span>
-<span><span class="co">#&gt; 31       1     part_time_job      yes      0.0280        NA                    0.00647</span></span>
-<span><span class="co">#&gt; 32       2     part_time_job      yes      0.0360        NA                    0.00786</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="ordinal-and-count-indicators">Ordinal and count indicators<a class="anchor" aria-label="anchor" href="#ordinal-and-count-indicators"></a>
-</h2>
-<p>The affect ratings range from 1 to 7. An unrestricted categorical
-specification requires six free probability parameters per item and
-profile. The ordinal specification instead uses shared category
-intercepts and profile locations under an adjacent-category logit model,
-with identifying constraints described in <code><a href="../reference/multilpa.html">?multilpa</a></code>. The
-<code>ordinal</code> argument identifies the items to which this
-specification applies.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">affect</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"happy"</span>, <span class="st">"relaxed"</span>, <span class="st">"worried"</span>, <span class="st">"exhausted"</span><span class="op">)</span></span>
-<span><span class="va">ordinal</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilpa.html">multilpa</a></span><span class="op">(</span><span class="va">first_week</span>, vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">affect</span>, <span class="va">activities</span><span class="op">)</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
-<span>                    ordinal <span class="op">=</span> <span class="va">affect</span>, categorical <span class="op">=</span> <span class="va">activities</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>                    n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">ordinal</span></span>
-<span><span class="co">#&gt; Two-level latent class analysis: 2 classes, 2 group classes</span></span>
-<span><span class="co">#&gt; 1422 individuals in 100 groups; 8 categorical indicators</span></span>
-<span><span class="co">#&gt; Also ordinal happy, relaxed, worried, exhausted (adjacent-category logit; get_results(x, "ordinal"))</span></span>
-<span><span class="co">#&gt; Classes are labelled profile_1, profile_2, ... in every table.</span></span>
-<span><span class="co">#&gt; Log likelihood: -13513.224894 | AIC: 27120.450 | BIC (groups): 27242.893</span></span>
-<span><span class="co">#&gt; Converged: TRUE | iterations: 21 | best log likelihood reached by 3 of 3 starts (3 converged)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Class sizes   profile_1 43.3% (615)   profile_2 56.7% (807)</span></span>
-<span><span class="co">#&gt; Group classes group_class_1 59.1% (59)   group_class_2 40.9% (41)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Response probabilities</span></span>
-<span><span class="co">#&gt;          indicator category profile_1 profile_2</span></span>
-<span><span class="co">#&gt;  time_with_friends       no     0.798     0.930</span></span>
-<span><span class="co">#&gt;  time_with_friends      yes     0.202     0.070</span></span>
-<span><span class="co">#&gt;    on_social_media       no     0.785     0.630</span></span>
-<span><span class="co">#&gt;    on_social_media      yes     0.215     0.370</span></span>
-<span><span class="co">#&gt;     tv_video_games       no     0.830     0.734</span></span>
-<span><span class="co">#&gt;     tv_video_games      yes     0.170     0.266</span></span>
-<span><span class="co">#&gt;     listened_music       no     0.810     0.840</span></span>
-<span><span class="co">#&gt;     listened_music      yes     0.190     0.160</span></span>
-<span><span class="co">#&gt;             sports       no     0.911     0.936</span></span>
-<span><span class="co">#&gt;             sports      yes     0.089     0.064</span></span>
-<span><span class="co">#&gt;            walking       no     0.815     0.887</span></span>
-<span><span class="co">#&gt;            walking      yes     0.185     0.113</span></span>
-<span><span class="co">#&gt;            reading       no     0.915     0.865</span></span>
-<span><span class="co">#&gt;            reading      yes     0.085     0.135</span></span>
-<span><span class="co">#&gt;      part_time_job       no     0.966     0.970</span></span>
-<span><span class="co">#&gt;      part_time_job      yes     0.034     0.030</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Thresholds and standard errors: get_results(x, "responses").</span></span>
-<span><span class="co">#&gt; Every other table: get_results(x, what = ), or get_results(x, "all").</span></span></code></pre></div>
-<p>The <code>"ordinal"</code> table reports fitted category
-probabilities and profile locations for the ordinal indicators.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">ordinal</span>, <span class="st">"ordinal"</span><span class="op">)</span>, <span class="fl">7</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   profile indicator category probability location location_standard_error</span></span>
-<span><span class="co">#&gt; 1       1     happy        1    2.74e-05     1.86                   0.139</span></span>
-<span><span class="co">#&gt; 2       1     happy        2    2.52e-04     1.86                   0.139</span></span>
-<span><span class="co">#&gt; 3       1     happy        3    3.02e-03     1.86                   0.139</span></span>
-<span><span class="co">#&gt; 4       1     happy        4    2.82e-02     1.86                   0.139</span></span>
-<span><span class="co">#&gt; 5       1     happy        5    2.21e-01     1.86                   0.139</span></span>
-<span><span class="co">#&gt; 6       1     happy        6    4.24e-01     1.86                   0.139</span></span>
-<span><span class="co">#&gt; 7       1     happy        7    3.24e-01     1.86                   0.139</span></span></code></pre></div>
-<p>Count indicators, such as numbers of messages or absences, are
-specified in <code>count</code>. The default Poisson model estimates one
-mean per profile, available through
-<code>get_results(fit, "count_means")</code>. The negative-binomial
-option, <code>count_model = "negative_binomial"</code>, permits
-within-profile overdispersion through profile-specific dispersion
-parameters, or a common parameter with
-<code>count_dispersion = "equal"</code>. Both count specifications
-support membership covariates and latent transition models.</p>
-</div>
-<div class="section level2">
-<h2 id="reference">Reference<a class="anchor" aria-label="anchor" href="#reference"></a>
-</h2>
-<p>The calls below list other functions that work with categorical and
-mixed models. Each comment states what the call returns.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"classification"</span><span class="op">)</span>               <span class="co"># class sizes and average posteriors</span></span>
-<span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"residuals"</span><span class="op">)</span>                    <span class="co"># residual association within profiles</span></span>
-<span><span class="fu"><a href="../reference/parameter_inference.html">parameter_inference</a></span><span class="op">(</span><span class="va">lca</span><span class="op">)</span>                         <span class="co"># standard errors and intervals</span></span>
-<span><span class="fu"><a href="../reference/enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="va">first_week</span>, vars <span class="op">=</span> <span class="va">activities</span>, categorical <span class="op">=</span> <span class="va">activities</span>,</span>
-<span>                  id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">3</span>,</span>
-<span>                  n_group_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>  <span class="co"># compare numbers of classes (slow)</span></span>
-<span><span class="fu"><a href="../reference/plot_profiles.html">plot_profiles</a></span><span class="op">(</span><span class="va">mixed</span><span class="op">)</span>                             <span class="co"># means of the continuous indicators</span></span>
-<span><span class="fu"><a href="../reference/plot_responses.html">plot_responses</a></span><span class="op">(</span><span class="va">mixed</span><span class="op">)</span>                            <span class="co"># answers to the categorical ones</span></span>
-<span><span class="fu"><a href="../reference/multilca.html">multilca</a></span><span class="op">(</span><span class="va">first_week</span>, vars <span class="op">=</span> <span class="va">activities</span>, id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>         n_group_classes <span class="op">=</span> <span class="fl">2</span>, missing <span class="op">=</span> <span class="st">"fiml"</span><span class="op">)</span>  <span class="co"># incomplete answers, if any</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"classification"</span><span class="op">)</span>      <span class="co"># class sizes and average posteriors</span></span>
+<span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">lca</span>, <span class="st">"responses"</span><span class="op">)</span>           <span class="co"># response probabilities with standard errors</span></span>
+<span><span class="fu"><a href="../reference/r3step.html">r3step</a></span><span class="op">(</span><span class="va">lca</span>, data <span class="op">=</span> <span class="va">student_esm</span>, covariates <span class="op">=</span> <span class="st">"day"</span><span class="op">)</span>  <span class="co"># membership regressed on a predictor</span></span>
+<span><span class="fu"><a href="../reference/enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="va">student_esm</span>, vars <span class="op">=</span> <span class="va">activities</span>, categorical <span class="op">=</span> <span class="va">activities</span>,</span>
+<span>                  id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">4</span>,</span>
+<span>                  n_group_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, n_starts <span class="op">=</span> <span class="fl">20</span>, tol <span class="op">=</span> <span class="fl">1e-10</span>,</span>
+<span>                  seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>              <span class="co"># compare numbers of classes (slow)</span></span>
+<span><span class="fu"><a href="../reference/plot_profiles.html">plot_profiles</a></span><span class="op">(</span><span class="va">mixed</span><span class="op">)</span>                    <span class="co"># means of the continuous indicators</span></span>
+<span><span class="fu"><a href="../reference/plot_responses.html">plot_responses</a></span><span class="op">(</span><span class="va">mixed</span><span class="op">)</span>                   <span class="co"># probabilities of the categorical ones</span></span>
+<span><span class="fu"><a href="../reference/multilca.html">multilca</a></span><span class="op">(</span><span class="va">student_esm</span>, vars <span class="op">=</span> <span class="va">activities</span>, id <span class="op">=</span> <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>         n_group_classes <span class="op">=</span> <span class="fl">2</span>, missing <span class="op">=</span> <span class="st">"fiml"</span><span class="op">)</span>  <span class="co"># incomplete answers</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="assumptions">Assumptions<a class="anchor" aria-label="anchor" href="#assumptions"></a>
 </h2>
 <ul>
-<li>Items are independent within a profile.</li>
-<li>Under unrestricted categorical measurement, each item has a separate
-response-probability distribution in every profile. Rare responses can
-produce estimates at the lower bound
-(<code>min_probability</code>).</li>
+<li>Items are independent within a class, unless freed with
+<code>local_dependence</code>.</li>
+<li>Under unrestricted categorical measurement, each item has its own
+response distribution in every class; rare responses can produce
+estimates at the lower bound (<code>min_probability</code>).</li>
+<li>Prompts are independent given the student’s class; their order
+within a day or across days is not modelled.</li>
 <li>Categories are taken from the observed values; factor levels keep
 their order.</li>
 </ul>
+</div>
+<div class="section level2">
+<h2 id="reporting">Reporting<a class="anchor" aria-label="anchor" href="#reporting"></a>
+</h2>
+<p>A report of a two-level LCA states the items and their coding, the
+grouping variable, the candidates compared and the criteria used, the
+number of starts and the replication of the best log likelihood, the
+response probabilities and class probabilities with intervals,
+parameters held at bounds, relative entropy and average posteriors at
+both levels, residual associations, and the method used for external
+variables.</p>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<p>Banfield, J. D., &amp; Raftery, A. E. (1993). Model-based Gaussian
+and non-Gaussian clustering. <em>Biometrics</em>, 49, 803–821.</p>
+<p>Benjamini, Y., &amp; Hochberg, Y. (1995). Controlling the false
+discovery rate: A practical and powerful approach to multiple testing.
+<em>Journal of the Royal Statistical Society: Series B</em>, 57(1),
+289–300.</p>
+<p>Biernacki, C., Celeux, G., &amp; Govaert, G. (2000). Assessing a
+mixture model for clustering with the integrated completed likelihood.
+<em>IEEE Transactions on Pattern Analysis and Machine Intelligence</em>,
+22, 719–725.</p>
+<p>Bolck, A., Croon, M., &amp; Hagenaars, J. (2004). Estimating latent
+structure models with categorical variables: One-step versus three-step
+estimators. <em>Political Analysis</em>, 12(1), 3–27.</p>
+<p>Collins, L. M., &amp; Lanza, S. T. (2010). <em>Latent class and
+latent transition analysis</em>. Wiley.</p>
+<p>Dempster, A. P., Laird, N. M., &amp; Rubin, D. B. (1977). Maximum
+likelihood from incomplete data via the EM algorithm. <em>Journal of the
+Royal Statistical Society: Series B</em>, 39(1), 1–38.</p>
+<p>Neubauer, A. B., &amp; Schmiedek, F. (2024). Approaching academic
+adjustment on multiple time scales. <em>Zeitschrift für
+Erziehungswissenschaft</em>, 27(1), 147–168. <a href="https://doi.org/10.1007/s11618-023-01182-8" class="external-link uri">https://doi.org/10.1007/s11618-023-01182-8</a></p>
+<p>Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., &amp; Robinson, W.
+T. (1993). An empirical pooling approach for estimating marketing mix
+elasticities with PIMS data. <em>Marketing Science</em>, 12,
+103–124.</p>
+<p>Schwarz, G. (1978). Estimating the dimension of a model. <em>The
+Annals of Statistics</em>, 6, 461–464.</p>
+<p>Vermunt, J. K. (2003). Multilevel latent class models.
+<em>Sociological Methodology</em>, 33, 213–239.</p>
+<p>Vermunt, J. K. (2010). Latent class modeling with covariates: Two
+improved three-step approaches. <em>Political Analysis</em>, 18,
+450–469.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

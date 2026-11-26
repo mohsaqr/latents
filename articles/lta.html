@@ -15,6 +15,13 @@
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Latent transition analysis">
+<meta name="citation_title" content="Latent transition analysis">
+<meta name="citation_author" content="Saqr, Mohammed">
+<meta name="citation_author" content="López-Pernas, Sonsoles">
+<meta name="citation_publication_date" content="2026">
+<meta name="citation_publisher" content="latents">
+<meta name="citation_pdf_url" content="https://pak.dynasite.org/latents/pdf/lta.pdf">
+<meta name="citation_abstract_html_url" content="https://pak.dynasite.org/latents/articles/lta.html">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -24,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +54,6 @@
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
     <li><a class="dropdown-item" href="../articles/tree-plot.html">Tree plot</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
@@ -65,7 +71,9 @@
     <li><a class="dropdown-item" href="../articles/case-engagement-evaluation.html">Case study: Evaluating multilevel latent profile models</a></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-covariates.html">Case study: Covariates and staged estimation in multilevel LPA</a></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-transitions.html">Case study: Latent transition analysis of course engagement</a></li>
-    <li><a class="dropdown-item" href="../articles/case-esm-lca.html">Case study: Two-level latent class analysis of leisure activities</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Resources</h6></li>
+    <li><a class="dropdown-item" href="../articles/cite-articles.html">Resources</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -88,28 +96,106 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Latent transition analysis</h1>
-                        <h4 data-toc-skip class="author">Written by <a href="https://saqr.me" class="external-link">Mohammed Saqr</a> and <a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a>
-</h4>
-            
-      
-      <small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/vignettes/articles/lta.Rmd" class="external-link"><code>vignettes/articles/lta.Rmd</code></a></small>
+                        <h4 data-toc-skip class="author">Mohammed
+Saqr</h4>
+            <address class="author_afil">
+      University of Eastern
+Finland<br><h4 data-toc-skip class="author">Sonsoles
+López-Pernas</h4>
+            <address class="author_afil">
+      University of Eastern Finland<br><small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/vignettes/articles/lta.Rmd" class="external-link"><code>vignettes/articles/lta.Rmd</code></a></small>
       <div class="d-none name"><code>lta.Rmd</code></div>
-    </div>
+    </address>
+</address>
+</div>
 
     
     
-<p>Latent transition analysis (LTA) estimates latent states at
-successive occasions and the probabilities of transitions between them.
-In the default model, profiles have a common measurement definition
-across occasions. With latent group classes, initial-state probabilities
-and transition matrices differ by class, representing heterogeneity in
-longitudinal patterns.</p>
+<p>Latent transition analysis (LTA) models change in latent states over
+repeated occasions (Collins &amp; Lanza, 2010). At every occasion, each
+unit belongs to one of a small number of unobserved states, defined, as
+in latent class or profile analysis, by their distributions on the
+observed indicators. Change is the movement of units between these
+states from one occasion to the next. LTA estimates the states, how
+units are distributed over them at the start, and how likely each move
+is.</p>
+<div class="section level2">
+<h2 id="what-latent-transition-analysis-is">What latent transition analysis is<a class="anchor" aria-label="anchor" href="#what-latent-transition-analysis-is"></a>
+</h2>
+<p><strong>States are latent.</strong> The indicators measure the state
+of a unit at an occasion with error. Classifying each occasion
+separately, for instance with one latent profile analysis per occasion,
+and cross-tabulating the assignments treats every misclassification as a
+change of state and overstates instability. LTA estimates the states and
+the transitions in one model, so the transition probabilities are
+corrected for classification error under the model’s assumptions
+(Collins &amp; Lanza, 2010).</p>
+<p><strong>The model has three parts.</strong> With
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>S</mi><mrow><mi>j</mi><mi>t</mi></mrow></msub><annotation encoding="application/x-tex">S_{jt}</annotation></semantics></math>
+the state of unit
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>j</mi><annotation encoding="application/x-tex">j</annotation></semantics></math>
+at occasion
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Y</mi><mrow><mi>j</mi><mi>t</mi></mrow></msub><annotation encoding="application/x-tex">Y_{jt}</annotation></semantics></math>
+its indicators,</p>
+<ul>
+<li>the measurement model
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>Y</mi><mrow><mi>j</mi><mi>t</mi></mrow></msub><mo>∣</mo><msub><mi>S</mi><mrow><mi>j</mi><mi>t</mi></mrow></msub><mo>=</mo><mi>k</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">P(Y_{jt} \mid S_{jt} = k)</annotation></semantics></math>
+defines each state: means and variances for continuous indicators,
+response probabilities for categorical ones;</li>
+<li>the initial probabilities
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>δ</mi><mi>k</mi></msub><mo>=</mo><mi>P</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>S</mi><mrow><mi>j</mi><mn>1</mn></mrow></msub><mo>=</mo><mi>k</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\delta_k = P(S_{j1} = k)</annotation></semantics></math>
+give the distribution of the states at the first occasion;</li>
+<li>the transition probabilities
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>τ</mi><mrow><mi>k</mi><mi>l</mi></mrow></msub><mo>=</mo><mi>P</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>S</mi><mrow><mi>j</mi><mi>t</mi></mrow></msub><mo>=</mo><mi>l</mi><mo>∣</mo><msub><mi>S</mi><mrow><mi>j</mi><mo>,</mo><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>=</mo><mi>k</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\tau_{kl} = P(S_{jt} = l \mid S_{j,t-1} = k)</annotation></semantics></math>
+give the probability of moving from state
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+to state
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>l</mi><annotation encoding="application/x-tex">l</annotation></semantics></math>;
+each row of the transition matrix sums to one, the diagonal holds the
+probabilities of staying, and the off-diagonal cells the direction of
+change.</li>
+</ul>
+<p><strong>Default assumptions make the transitions
+interpretable.</strong> The measurement model is the same at every
+occasion (measurement invariance), so a state means the same thing
+throughout and a transition is a change of state rather than a change of
+the states’ definitions. The next state depends only on the current one
+(the first-order Markov property), and the transition probabilities are
+the same at every move (homogeneity). Each of these can be relaxed, as
+the last section shows.</p>
+<p><strong>LTA is a hidden Markov model.</strong> The states form a
+Markov chain that is not observed directly; only the indicators are. In
+the terminology of hidden Markov models (Rabiner, 1989), the measurement
+model gives the emission distributions. <code><a href="../reference/lta.html">lta()</a></code> estimates the
+model by maximum likelihood with the EM algorithm, computing the
+posterior probabilities of the states with the forward-backward
+recursions.</p>
+<p><strong>Group classes add heterogeneity in change.</strong> A single
+transition matrix assumes that all units change in the same way. With
+latent group classes, each class has its own initial and transition
+probabilities over the same states, a mixed Markov model (van de Pol
+&amp; Langeheine, 1990). The classes are types of dynamics: for example,
+units that leave an unfavourable state quickly and units that remain in
+it. The mover-stayer model (Goodman, 1961) is the special case with one
+class of units that never change state.</p>
+<p><strong>The output describes change:</strong> the prevalence of each
+state over time, the stability of each state (the diagonal of the
+transition matrix), the most likely moves out of each state, the
+differences in dynamics between group classes and, with covariates, the
+predictors of the initial state and of each transition.</p>
+</div>
 <div class="section level2">
 <h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
 </h2>
 <p><code>course_engagement</code> is simulated and has one row per
-course enrolment: 1,422 enrolments from 106 students. <code><a href="../reference/lta.html">lta()</a></code>
-needs three kinds of variables.</p>
+course enrolment: 1,422 enrolments from 106 students. The simulation is
+calibrated to the engagement data of students followed through a full
+study programme (Saqr &amp; López-Pernas, 2021; Saqr et al., 2023): its
+scales, spread, correlations and the persistence of engagement across
+courses follow those data, while no value of the source is retained.
+<code><a href="../reference/lta.html">lta()</a></code> needs three kinds of variables.</p>
 <ul>
 <li>
 <strong>Group:</strong> <code>student</code> identifies whose
@@ -117,15 +203,68 @@ occasions belong together.</li>
 <li>
 <strong>Occasion order:</strong> <code>sequence</code> is the
 position of each course in the student’s history. Students can have
-different numbers of occasions.</li>
+different numbers of occasions (10 to 15 here).</li>
 <li>
 <strong>Indicators:</strong> five activity measures
 (<code>browse</code>, <code>lectures</code>, <code>forum_read</code>,
 <code>forum_post</code>, <code>attendance</code>), each standardized
 within course, so 0 is the course average.</li>
 </ul>
+<p>The data were generated from two engagement profiles and two kinds of
+students, committed and wavering, whose stationary probabilities of an
+engaged enrolment are about 0.8 and 0.25; engagement changes along each
+student’s sequence (<code><a href="../reference/course_engagement.html">?course_engagement</a></code>).
+<code>attendance</code> is generated from the four click measures, so
+the indicators are correlated within profiles.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pak.dynasite.org/latents/">latents</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pak.dynasite.org/latents/">latents</a></span><span class="op">)</span></span>
+<span><span class="va">vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="numbers-of-profiles-and-group-classes">Numbers of profiles and group classes<a class="anchor" aria-label="anchor" href="#numbers-of-profiles-and-group-classes"></a>
+</h2>
+<p><code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> with <code>time</code> compares
+transition models. Because attendance depends on the other indicators,
+the candidates estimate full within-profile covariances
+(<code>covariance_model = "full"</code>); with a diagonal structure, an
+additional profile absorbs that dependence (see the <a href="https://pak.dynasite.org/latents/articles/lpa.html">multilevel
+latent profile analysis</a> vignette).</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_classes.html">enumerate_classes</a></span><span class="op">(</span><span class="va">course_engagement</span>, vars <span class="op">=</span> <span class="va">vars</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
+<span>                          time <span class="op">=</span> <span class="st">"sequence"</span>, covariance_model <span class="op">=</span> <span class="st">"full"</span>,</span>
+<span>                          n_profiles <span class="op">=</span> <span class="fl">2</span><span class="op">:</span><span class="fl">3</span>, n_group_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
+<span>                          n_starts <span class="op">=</span> <span class="fl">5</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 3 of 6 candidates reached their best log likelihood from one start only (profiles3_groups1, profiles3_groups2, profiles3_groups3); refit those you consider with more starts.</span></span>
+<span><span class="va">grid</span></span>
+<span><span class="co">#&gt; Transition-model enumeration: 6 candidates (LTA)</span></span>
+<span><span class="co">#&gt;          candidate n_profiles n_group_classes model log_likelihood n_parameters   bic   aic entropy</span></span>
+<span><span class="co">#&gt;  profiles2_groups1          2               1  &lt;NA&gt;          -8206           43 16613 16499  0.9434</span></span>
+<span><span class="co">#&gt;  profiles3_groups1          3               1  &lt;NA&gt;          -8172           68 16662 16481  0.9462</span></span>
+<span><span class="co">#&gt;  profiles2_groups2          2               2  &lt;NA&gt;          -8188           47 16596 16471  0.9427</span></span>
+<span><span class="co">#&gt;  profiles3_groups2          3               2  &lt;NA&gt;          -8159           77 16677 16472  0.8487</span></span>
+<span><span class="co">#&gt;  profiles2_groups3          2               3  &lt;NA&gt;          -8187           51 16612 16476  0.9429</span></span>
+<span><span class="co">#&gt;  profiles3_groups3          3               3  &lt;NA&gt;          -8151           86 16702 16473  0.9039</span></span>
+<span><span class="co">#&gt;  converged boundary</span></span>
+<span><span class="co">#&gt;       TRUE    FALSE</span></span>
+<span><span class="co">#&gt;       TRUE     TRUE</span></span>
+<span><span class="co">#&gt;       TRUE    FALSE</span></span>
+<span><span class="co">#&gt;       TRUE     TRUE</span></span>
+<span><span class="co">#&gt;       TRUE     TRUE</span></span>
+<span><span class="co">#&gt;       TRUE     TRUE</span></span>
+<span><span class="co">#&gt; Pick one by its name: get_candidate(x, "&lt;candidate&gt;").</span></span>
+<span><span class="fu"><a href="../reference/get_best.html">get_best</a></span><span class="op">(</span><span class="va">grid</span><span class="op">)</span></span>
+<span><span class="co">#&gt;           candidate n_profiles n_group_classes model log_likelihood n_parameters   aic   bic</span></span>
+<span><span class="co">#&gt; 3 profiles2_groups2          2               2  &lt;NA&gt;          -8188           47 16471 16596</span></span>
+<span><span class="co">#&gt;   bic_individual entropy converged boundary n_best_replicated warnings error</span></span>
+<span><span class="co">#&gt; 3          16718   0.943      TRUE    FALSE                 5           &lt;NA&gt;</span></span></code></pre></div>
+<p>The BIC (Schwarz, 1978) selects two profiles and two group classes.
+That candidate has no estimate on a boundary and reaches its best log
+likelihood from every start; all candidates with three profiles have
+boundary estimates and reach their best solutions from a single start. A
+multilevel latent profile analysis of the same data favours additional
+group classes, which absorb the serial dependence that it does not
+model; LTA models that dependence and selects the generating
+structure.</p>
 </div>
 <div class="section level2">
 <h2 id="fit">Fit<a class="anchor" aria-label="anchor" href="#fit"></a>
@@ -136,44 +275,51 @@ order (<code>time</code>). The arguments <code>n_profiles</code> and
 <code>n_group_classes</code> specify the latent structure;
 <code>n_starts</code> and <code>seed</code> control repeated estimation
 from reproducible starting values.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">moves</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lta.html">lta</a></span><span class="op">(</span><span class="va">course_engagement</span>,</span>
-<span>             vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>,</span>
-<span>                      <span class="st">"attendance"</span><span class="op">)</span>,</span>
-<span>             id <span class="op">=</span> <span class="st">"student"</span>, time <span class="op">=</span> <span class="st">"sequence"</span>,</span>
-<span>             n_profiles <span class="op">=</span> <span class="fl">3</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: An initial, transition or group-class probability is at its numerical boundary; Wald</span></span>
-<span><span class="co">#&gt; inference is withheld.</span></span>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">moves</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lta.html">lta</a></span><span class="op">(</span><span class="va">course_engagement</span>, vars <span class="op">=</span> <span class="va">vars</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
+<span>             time <span class="op">=</span> <span class="st">"sequence"</span>, covariance_model <span class="op">=</span> <span class="st">"full"</span>,</span>
+<span>             n_profiles <span class="op">=</span> <span class="fl">2</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">moves</span></span>
-<span><span class="co">#&gt; Latent transition model: 3 profiles, 2 group classes</span></span>
+<span><span class="co">#&gt; Latent transition model: 2 profiles, 2 group classes</span></span>
 <span><span class="co">#&gt; 1422 observations in 106 groups, up to 15 occasions (unbalanced, observed grid)</span></span>
-<span><span class="co">#&gt; Log likelihood: -8242.966906; 47 parameters; BIC (groups): 16705.1155</span></span>
-<span><span class="co">#&gt; Converged: TRUE after 36 iterations; best of 3 starts</span></span>
-<span><span class="co">#&gt; Smallest standardized Gaussian eigenvalue: 0.2092 (profiles, profile_1); Gaussian mass: 470.7; weight effective n: 589.7.</span></span>
+<span><span class="co">#&gt; Log likelihood: -8188.367007; 47 parameters; BIC (groups): 16595.9157</span></span>
+<span><span class="co">#&gt; Converged: TRUE after 18 iterations; best of 10 starts</span></span>
+<span><span class="co">#&gt; Smallest standardized Gaussian eigenvalue: 0.27 (profiles, profile_2); Gaussian mass: 585; weight effective n: 600.5.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Class sizes   profile_1 33.1% (471)   profile_2 40.7% (579)   profile_3 26.2% (372)</span></span>
-<span><span class="co">#&gt; Group classes group_class_1 30.0% (32)   group_class_2 70.0% (74)</span></span>
+<span><span class="co">#&gt; Class sizes   profile_1 58.9% (837)   profile_2 41.1% (585)</span></span>
+<span><span class="co">#&gt; Group classes group_class_1 37.0% (39)   group_class_2 63.0% (67)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Means</span></span>
-<span><span class="co">#&gt;   indicator profile_1 profile_2 profile_3</span></span>
-<span><span class="co">#&gt;      browse     0.396    -0.776     0.706</span></span>
-<span><span class="co">#&gt;    lectures     0.189    -0.612     0.712</span></span>
-<span><span class="co">#&gt;  forum_read     0.454    -0.888     0.807</span></span>
-<span><span class="co">#&gt;  forum_post     0.345    -0.761     0.747</span></span>
-<span><span class="co">#&gt;  attendance     0.254    -0.929     1.124</span></span>
+<span><span class="co">#&gt;   indicator profile_1 profile_2</span></span>
+<span><span class="co">#&gt;      browse     0.538    -0.770</span></span>
+<span><span class="co">#&gt;    lectures     0.423    -0.605</span></span>
+<span><span class="co">#&gt;  forum_read     0.615    -0.879</span></span>
+<span><span class="co">#&gt;  forum_post     0.528    -0.755</span></span>
+<span><span class="co">#&gt;  attendance     0.635    -0.908</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Variances and standard errors: get_results(x, "profiles").</span></span>
 <span><span class="co">#&gt; Every other table: get_results(x, what = ), or get_results(x, "all").</span></span></code></pre></div>
+<p>Profile 1 (58.9% of the enrolments) lies 0.42 to 0.64 standard
+deviations above the course mean on all indicators and profile 2 (41.1%)
+0.61 to 0.91 below it: engaged and disengaged enrolments.</p>
 <p>The <code>"starts"</code> table reports the log likelihood reached by
 each start. Replication of the selected likelihood supports numerical
 stability but does not establish that the global maximum has been
 found.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span>, <span class="st">"starts"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   start log_likelihood converged iterations error</span></span>
-<span><span class="co">#&gt; 1     1          -8243      TRUE         36  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 2     2          -8243      TRUE         48  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 3     3          -8243      TRUE         64  &lt;NA&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt;    start log_likelihood converged iterations error</span></span>
+<span><span class="co">#&gt; 1      1          -8188      TRUE         18  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2      2          -8188      TRUE         21  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3      3          -8188      TRUE         21  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4      4          -8188      TRUE         24  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 5      5          -8188      TRUE         21  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 6      6          -8188      TRUE         24  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 7      7          -8188      TRUE         24  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 8      8          -8188      TRUE         21  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 9      9          -8188      TRUE         18  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 10    10          -8188      TRUE         21  &lt;NA&gt;</span></span></code></pre></div>
+<p>All ten starts reach the log likelihood of -8188.</p>
 </div>
 <div class="section level2">
 <h2 id="profiles">Profiles<a class="anchor" aria-label="anchor" href="#profiles"></a>
@@ -182,13 +328,13 @@ found.</p>
 share of occasions in each profile. For a transition model,
 <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> without an explicit view instead displays transition
 matrices.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_profiles.html">plot_profiles</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lta_files/figure-html/profiles-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <p>The profile heatmap expresses each mean in standard deviations from
 the indicator’s overall mean, facilitating comparison across
 indicators.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_profiles.html">plot_profiles</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lta_files/figure-html/heatmap-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
@@ -199,15 +345,19 @@ indicators.</p>
 probabilities (<code>probability</code>), profile prevalence across
 occasions (<code>prevalence</code>), and estimated group-class
 proportions (<code>group_class_probability</code>).</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span>, <span class="st">"initial"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   group_class profile probability prevalence group_class_probability</span></span>
-<span><span class="co">#&gt; 1           1       1    1.00e-10     0.0841                     0.3</span></span>
-<span><span class="co">#&gt; 2           1       2    7.62e-01     0.8193                     0.3</span></span>
-<span><span class="co">#&gt; 3           1       3    2.38e-01     0.0965                     0.3</span></span>
-<span><span class="co">#&gt; 4           2       1    3.53e-01     0.4372                     0.7</span></span>
-<span><span class="co">#&gt; 5           2       2    2.04e-01     0.2297                     0.7</span></span>
-<span><span class="co">#&gt; 6           2       3    4.44e-01     0.3330                     0.7</span></span></code></pre></div>
+<span><span class="co">#&gt; 1           1       1       0.271      0.246                    0.37</span></span>
+<span><span class="co">#&gt; 2           1       2       0.729      0.754                    0.37</span></span>
+<span><span class="co">#&gt; 3           2       1       0.833      0.789                    0.63</span></span>
+<span><span class="co">#&gt; 4           2       2       0.167      0.211                    0.63</span></span></code></pre></div>
+<p>Group class 2 (63% of the students) starts engaged with probability
+0.833 and is engaged at 78.9% of its occasions; group class 1 (37%)
+starts engaged with probability 0.271 and is engaged at 24.6% of its
+occasions. These prevalences match the stationary probabilities of the
+committed and wavering students in the simulation, about 0.8 and
+0.25.</p>
 </div>
 <div class="section level2">
 <h2 id="transitions">Transitions<a class="anchor" aria-label="anchor" href="#transitions"></a>
@@ -219,49 +369,37 @@ class. The column <code>stable</code> identifies transitions that retain
 the same state; <code>expected_count</code> reports the posterior
 expected transition count. A row with <code>estimated = FALSE</code>
 lacks information for estimating that transition distribution.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span>, <span class="st">"transitions"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    group_class from to probability expected_count origin_expected_count supported stable estimated</span></span>
-<span><span class="co">#&gt; 1            1    1  1      0.5202          17.54                  33.7      TRUE   TRUE      TRUE</span></span>
-<span><span class="co">#&gt; 2            1    1  2      0.3394          11.44                  33.7      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 3            1    1  3      0.1405           4.74                  33.7      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 4            1    2  1      0.0302           9.75                 323.1      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 5            1    2  2      0.9386         303.22                 323.1      TRUE   TRUE      TRUE</span></span>
-<span><span class="co">#&gt; 6            1    2  3      0.0313          10.10                 323.1      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 7            1    3  1      0.2221           8.71                  39.2      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 8            1    3  2      0.2961          11.61                  39.2      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 9            1    3  3      0.4818          18.90                  39.2      TRUE   TRUE      TRUE</span></span>
-<span><span class="co">#&gt; 10           2    1  1      0.5256         214.24                 407.6      TRUE   TRUE      TRUE</span></span>
-<span><span class="co">#&gt; 11           2    1  2      0.1141          46.50                 407.6      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 12           2    1  3      0.3603         146.88                 407.6      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 13           2    2  1      0.2099          43.69                 208.2      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 14           2    2  2      0.6146         127.95                 208.2      TRUE   TRUE      TRUE</span></span>
-<span><span class="co">#&gt; 15           2    2  3      0.1756          36.55                 208.2      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 16           2    3  1      0.4951         150.59                 304.2      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 17           2    3  2      0.1277          38.85                 304.2      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 18           2    3  3      0.3772         114.74                 304.2      TRUE   TRUE      TRUE</span></span>
-<span><span class="co">#&gt;    group_class_probability</span></span>
-<span><span class="co">#&gt; 1                      0.3</span></span>
-<span><span class="co">#&gt; 2                      0.3</span></span>
-<span><span class="co">#&gt; 3                      0.3</span></span>
-<span><span class="co">#&gt; 4                      0.3</span></span>
-<span><span class="co">#&gt; 5                      0.3</span></span>
-<span><span class="co">#&gt; 6                      0.3</span></span>
-<span><span class="co">#&gt; 7                      0.3</span></span>
-<span><span class="co">#&gt; 8                      0.3</span></span>
-<span><span class="co">#&gt; 9                      0.3</span></span>
-<span><span class="co">#&gt; 10                     0.7</span></span>
-<span><span class="co">#&gt; 11                     0.7</span></span>
-<span><span class="co">#&gt; 12                     0.7</span></span>
-<span><span class="co">#&gt; 13                     0.7</span></span>
-<span><span class="co">#&gt; 14                     0.7</span></span>
-<span><span class="co">#&gt; 15                     0.7</span></span>
-<span><span class="co">#&gt; 16                     0.7</span></span>
-<span><span class="co">#&gt; 17                     0.7</span></span>
-<span><span class="co">#&gt; 18                     0.7</span></span></code></pre></div>
+<span><span class="co">#&gt;   group_class from to probability expected_count origin_expected_count supported stable estimated</span></span>
+<span><span class="co">#&gt; 1           1    1  1      0.7742           93.6                   121      TRUE   TRUE      TRUE</span></span>
+<span><span class="co">#&gt; 2           1    1  2      0.2258           27.3                   121      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 3           1    2  1      0.0679           24.7                   364      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 4           1    2  2      0.9321          339.6                   364      TRUE   TRUE      TRUE</span></span>
+<span><span class="co">#&gt; 5           2    1  1      0.8842          582.0                   658      TRUE   TRUE      TRUE</span></span>
+<span><span class="co">#&gt; 6           2    1  2      0.1158           76.2                   658      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 7           2    2  1      0.4076           70.3                   173      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 8           2    2  2      0.5924          102.2                   173      TRUE   TRUE      TRUE</span></span>
+<span><span class="co">#&gt;   group_class_probability</span></span>
+<span><span class="co">#&gt; 1                    0.37</span></span>
+<span><span class="co">#&gt; 2                    0.37</span></span>
+<span><span class="co">#&gt; 3                    0.37</span></span>
+<span><span class="co">#&gt; 4                    0.37</span></span>
+<span><span class="co">#&gt; 5                    0.63</span></span>
+<span><span class="co">#&gt; 6                    0.63</span></span>
+<span><span class="co">#&gt; 7                    0.63</span></span>
+<span><span class="co">#&gt; 8                    0.63</span></span></code></pre></div>
+<p>The group classes differ mainly in recovery from disengagement. A
+committed student (group class 2) who is disengaged in one course is
+engaged in the next with probability 0.408; a wavering student (group
+class 1) with probability 0.068, remaining disengaged with probability
+0.932. Engagement is stable in both classes (0.884 and 0.774). Every
+transition rests on enough expected moves to be estimated
+(<code>supported</code> and <code>estimated</code> are
+<code>TRUE</code>).</p>
 <p>The transition plot displays one matrix per group class, with current
 profiles in rows and next-occasion profiles in columns.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_transitions.html">plot_transitions</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lta_files/figure-html/transition-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
@@ -269,9 +407,10 @@ profiles in rows and next-occasion profiles in columns.</p>
 <h2 id="sequences">Sequences<a class="anchor" aria-label="anchor" href="#sequences"></a>
 </h2>
 <p>The sequence plot displays one row per group, coloured by the most
-probable profile at each occasion. These modal assignments summarize the
-fitted sequences but omit classification uncertainty.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+probable profile at each occasion, as the sequence index plots of
+sequence analysis do (Saqr et al., 2024). These modal assignments
+summarize the fitted sequences but omit classification uncertainty.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_sequences.html">plot_sequences</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lta_files/figure-html/sequences-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
@@ -279,22 +418,43 @@ fitted sequences but omit classification uncertainty.</p>
 <h2 id="classification">Classification<a class="anchor" aria-label="anchor" href="#classification"></a>
 </h2>
 <p>The <code>"entropy"</code> table reports relative entropy for
-occasions and groups. With more than one class, a value of 1 indicates
-certain posterior membership; 0 indicates equal posterior probabilities
-across classes for every case. Entropy summarizes classification
-separation under the fitted model.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+occasions and groups (Ramaswamy et al., 1993). With more than one class,
+a value of 1 indicates certain posterior membership; 0 indicates equal
+posterior probabilities across classes for every case. Entropy
+summarizes classification separation under the fitted model.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span>, <span class="st">"entropy"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         level n_classes n_units entropy_sum relative_entropy</span></span>
-<span><span class="co">#&gt; 1 individuals         3    1422       309.4            0.802</span></span>
-<span><span class="co">#&gt; 2      groups         2     106        16.3            0.778</span></span></code></pre></div>
-<p>Diagnostic plots display per-case uncertainty within each profile
+<span><span class="co">#&gt; 1 individuals         2    1422        56.5            0.943</span></span>
+<span><span class="co">#&gt; 2      groups         2     106        25.4            0.654</span></span></code></pre></div>
+<p>Occasions are classified clearly (0.943), students much less so
+(0.654). Under the transition model a student’s class rests on the
+dynamics of a sequence of 10 to 15 states, and a wavering student who
+happens to stay engaged for several courses resembles a committed one.
+The cross-tabulation with the generating labels shows the
+consequence.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span>, <span class="st">"assignments"</span>, data <span class="op">=</span> <span class="va">course_engagement</span>,</span>
+<span>            truth <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"engagement"</span>, <span class="st">"student_type"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    assignment class        truth      value   n proportion</span></span>
+<span><span class="co">#&gt; 1     profile     1   engagement disengaged  10     0.0171</span></span>
+<span><span class="co">#&gt; 2     profile     2   engagement disengaged 575     0.9829</span></span>
+<span><span class="co">#&gt; 3     profile     1   engagement    engaged 825     0.9857</span></span>
+<span><span class="co">#&gt; 4     profile     2   engagement    engaged  12     0.0143</span></span>
+<span><span class="co">#&gt; 5 group_class     1 student_type  committed   1     0.0161</span></span>
+<span><span class="co">#&gt; 6 group_class     2 student_type  committed  61     0.9839</span></span>
+<span><span class="co">#&gt; 7 group_class     1 student_type   wavering  35     0.7955</span></span>
+<span><span class="co">#&gt; 8 group_class     2 student_type   wavering   9     0.2045</span></span></code></pre></div>
+<p>The profiles recover 825 of the 837 engaged and 575 of the 585
+disengaged enrolments (98.6% and 98.3%). Group class 2 contains 61 of
+the 62 committed students and 9 of the 44 wavering ones. Diagnostic
+plots display per-case uncertainty within each profile
 (<code>what = "entropy"</code>) and posterior probabilities of assigned
 profiles (<code>what = "posteriors"</code>).</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_diagnostics.html">plot_diagnostics</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"entropy"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lta_files/figure-html/entropy-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_diagnostics.html">plot_diagnostics</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"posteriors"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lta_files/figure-html/posteriors-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
@@ -304,12 +464,15 @@ profiles (<code>what = "posteriors"</code>).</p>
 <p>The estimated transitions can be represented as networks.
 <code><a href="../reference/get_tna.html">get_tna()</a></code> returns a network pooled across group classes;
 <code><a href="../reference/get_group_tna.html">get_group_tna()</a></code> returns one network per class. Both
-functions produce <a href="https://cran.r-project.org/package=tna" class="external-link">tna</a> objects that can
-be displayed with <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+functions produce <a href="https://cran.r-project.org/package=tna" class="external-link">tna</a> objects (Tikka et
+al., 2025) that can be displayed with <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> and analysed
+further with tna or with <a href="https://cran.r-project.org/package=Nestimate" class="external-link">Nestimate</a> (Saqr
+et al., 2026), which accepts <code>tna</code> and <code>group_tna</code>
+objects.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/get_tna.html">get_tna</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lta_files/figure-html/networks-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="../reference/get_group_tna.html">get_group_tna</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="lta_files/figure-html/networks-2.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"><img src="lta_files/figure-html/networks-3.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 </div>
@@ -337,7 +500,7 @@ variances differ by occasion.</li>
 previous ones.</li>
 <li>
 <code>mover_stayer = TRUE</code> adds a class of groups that never
-change profile.</li>
+change profile (Goodman, 1961).</li>
 </ul>
 <p><code>enumerate_classes(..., time = "sequence")</code> compares
 numbers of profiles and group classes, and <code><a href="../reference/bootstrap_lrt.html">bootstrap_lrt()</a></code>
@@ -345,41 +508,54 @@ tests a model against a nested one.</p>
 <p>The following example examines whether <code>previous_grade</code>,
 which varies across courses, is associated with transition
 probabilities:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">activity</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span></span>
-<span><span class="va">homogeneous</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lta.html">lta</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">activity</span>, <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>                   time <span class="op">=</span> <span class="st">"sequence"</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">grade</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lta.html">lta</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">activity</span>, <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>             time <span class="op">=</span> <span class="st">"sequence"</span>, transition_covariates <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
-<span>             seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">grade</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lta.html">lta</a></span><span class="op">(</span><span class="va">course_engagement</span>, vars <span class="op">=</span> <span class="va">vars</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
+<span>             time <span class="op">=</span> <span class="st">"sequence"</span>, covariance_model <span class="op">=</span> <span class="st">"full"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>             n_group_classes <span class="op">=</span> <span class="fl">2</span>, transition_covariates <span class="op">=</span> <span class="st">"previous_grade"</span>,</span>
+<span>             n_starts <span class="op">=</span> <span class="fl">10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">grade</span>, <span class="st">"transition_coefficients"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     group_class      from        to           term estimate standard_error statistic  p_value</span></span>
-<span><span class="co">#&gt; 1 group_class_1 profile_1 profile_2    (Intercept)  -1.8398          0.118   -15.566 1.25e-54</span></span>
-<span><span class="co">#&gt; 2 group_class_1 profile_1 profile_2 previous_grade   0.0338          0.121     0.280 7.79e-01</span></span>
-<span><span class="co">#&gt; 3 group_class_1 profile_2 profile_1    (Intercept)  -1.4632          0.130   -11.256 2.17e-29</span></span>
-<span><span class="co">#&gt; 4 group_class_1 profile_2 profile_1 previous_grade   0.0438          0.130     0.337 7.36e-01</span></span>
+<span><span class="co">#&gt; 1 group_class_1 profile_1 profile_2    (Intercept)   -1.050          0.425    -2.471 1.35e-02</span></span>
+<span><span class="co">#&gt; 2 group_class_1 profile_1 profile_2 previous_grade   -0.348          0.398    -0.876 3.81e-01</span></span>
+<span><span class="co">#&gt; 3 group_class_1 profile_2 profile_1    (Intercept)   -2.756          0.453    -6.085 1.17e-09</span></span>
+<span><span class="co">#&gt; 4 group_class_1 profile_2 profile_1 previous_grade   -0.211          0.340    -0.619 5.36e-01</span></span>
+<span><span class="co">#&gt; 5 group_class_2 profile_1 profile_2    (Intercept)   -2.119          0.162   -13.047 6.64e-39</span></span>
+<span><span class="co">#&gt; 6 group_class_2 profile_1 profile_2 previous_grade    0.206          0.162     1.276 2.02e-01</span></span>
+<span><span class="co">#&gt; 7 group_class_2 profile_2 profile_1    (Intercept)   -0.297          0.282    -1.051 2.93e-01</span></span>
+<span><span class="co">#&gt; 8 group_class_2 profile_2 profile_1 previous_grade    0.266          0.211     1.262 2.07e-01</span></span>
 <span><span class="co">#&gt;   conf_low conf_high odds_ratio estimated</span></span>
-<span><span class="co">#&gt; 1   -2.071    -1.608      0.159      TRUE</span></span>
-<span><span class="co">#&gt; 2   -0.203     0.270      1.034      TRUE</span></span>
-<span><span class="co">#&gt; 3   -1.718    -1.208      0.231      TRUE</span></span>
-<span><span class="co">#&gt; 4   -0.211     0.298      1.045      TRUE</span></span></code></pre></div>
-<p>The estimated odds ratios are close to one, and the confidence
-intervals for the log-odds coefficients include zero. These results
-provide limited evidence of an association between previous grade and
-transitions in this example; they do not establish the absence of an
-association. A second-order model, in which the next profile depends on
-the two previous states, can also be compared with the first-order
-specification using BIC:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">second</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lta.html">lta</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">activity</span>, <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>              time <span class="op">=</span> <span class="st">"sequence"</span>, order <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/stats/AIC.html" class="external-link">BIC</a></span><span class="op">(</span><span class="va">homogeneous</span>, <span class="va">grade</span>, <span class="va">second</span><span class="op">)</span></span>
-<span><span class="co">#&gt;             df   BIC</span></span>
-<span><span class="co">#&gt; homogeneous 23 16778</span></span>
-<span><span class="co">#&gt; grade       25 16787</span></span>
-<span><span class="co">#&gt; second      27 16786</span></span></code></pre></div>
-<p>For these data, BIC is lower for the homogeneous first-order model
-than for either extension. Extended models provide transition and
+<span><span class="co">#&gt; 1   -1.883    -0.217     0.3499      TRUE</span></span>
+<span><span class="co">#&gt; 2   -1.128     0.432     0.7058      TRUE</span></span>
+<span><span class="co">#&gt; 3   -3.643    -1.868     0.0636      TRUE</span></span>
+<span><span class="co">#&gt; 4   -0.878     0.457     0.8100      TRUE</span></span>
+<span><span class="co">#&gt; 5   -2.437    -1.801     0.1202      TRUE</span></span>
+<span><span class="co">#&gt; 6   -0.111     0.523     1.2292      TRUE</span></span>
+<span><span class="co">#&gt; 7   -0.849     0.256     0.7434      TRUE</span></span>
+<span><span class="co">#&gt; 8   -0.147     0.680     1.3049      TRUE</span></span></code></pre></div>
+<p>The odds ratios of <code>previous_grade</code> are between 0.71 and
+1.30, and every 95% interval of its log-odds coefficients includes zero.
+These results provide limited evidence of an association between
+previous grade and transitions in this example; they do not establish
+the absence of an association. A second-order model, in which the next
+profile depends on the two previous states, and a mover-stayer model can
+also be compared with the first-order specification using BIC:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">second</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lta.html">lta</a></span><span class="op">(</span><span class="va">course_engagement</span>, vars <span class="op">=</span> <span class="va">vars</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
+<span>              time <span class="op">=</span> <span class="st">"sequence"</span>, covariance_model <span class="op">=</span> <span class="st">"full"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>              n_group_classes <span class="op">=</span> <span class="fl">2</span>, order <span class="op">=</span> <span class="fl">2</span>, n_starts <span class="op">=</span> <span class="fl">10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">stayer</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lta.html">lta</a></span><span class="op">(</span><span class="va">course_engagement</span>, vars <span class="op">=</span> <span class="va">vars</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
+<span>              time <span class="op">=</span> <span class="st">"sequence"</span>, covariance_model <span class="op">=</span> <span class="st">"full"</span>, n_profiles <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>              mover_stayer <span class="op">=</span> <span class="cn">TRUE</span>, n_starts <span class="op">=</span> <span class="fl">10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/AIC.html" class="external-link">BIC</a></span><span class="op">(</span><span class="va">moves</span>, <span class="va">grade</span>, <span class="va">second</span>, <span class="va">stayer</span><span class="op">)</span></span>
+<span><span class="co">#&gt;        df   BIC</span></span>
+<span><span class="co">#&gt; moves  47 16596</span></span>
+<span><span class="co">#&gt; grade  51 16611</span></span>
+<span><span class="co">#&gt; second 55 16628</span></span>
+<span><span class="co">#&gt; stayer 45 16606</span></span></code></pre></div>
+<p>For these data, BIC is lower for the first-order model with two group
+classes than for any extension: the grade covariate (BIC higher by 15),
+the second-order dependence (by 32) and the mover-stayer model with one
+class of movers (by 10). Extended models provide transition and
 initial-state logit coefficients, with Wald standard errors when
 supported by the fitted model, and occasion-specific probability
 summaries.</p>
@@ -393,10 +569,48 @@ the group class, and transition probabilities are the same at every
 occasion; the arguments above relax each of these.</li>
 <li>Profiles have the same definition at every occasion unless
 <code>measurement = "occasion"</code>.</li>
-<li>Indicators are independent within a profile (the default diagonal
-covariance; <code>covariance_model = "full"</code> or a non-diagonal
-<code>model</code> relaxes it).</li>
+<li>Indicators are independent within a profile under the default
+diagonal covariance; <code>covariance_model = "full"</code> or a
+non-diagonal <code>model</code> relaxes it, as here.</li>
 </ul>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<p>Collins, L. M., &amp; Lanza, S. T. (2010). <em>Latent class and
+latent transition analysis</em>. Wiley.</p>
+<p>Goodman, L. A. (1961). Statistical methods for the mover-stayer
+model. <em>Journal of the American Statistical Association</em>, 56,
+841–868.</p>
+<p>Rabiner, L. R. (1989). A tutorial on hidden Markov models and
+selected applications in speech recognition. <em>Proceedings of the
+IEEE</em>, 77(2), 257–286.</p>
+<p>Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., &amp; Robinson, W.
+T. (1993). An empirical pooling approach for estimating marketing mix
+elasticities with PIMS data. <em>Marketing Science</em>, 12,
+103–124.</p>
+<p>Saqr, M., &amp; López-Pernas, S. (2021). The longitudinal
+trajectories of online engagement over a full program. <em>Computers
+&amp; Education</em>, 175, 104325. <a href="https://doi.org/10.1016/j.compedu.2021.104325" class="external-link uri">https://doi.org/10.1016/j.compedu.2021.104325</a></p>
+<p>Saqr, M., López-Pernas, S., Helske, S., Durand, M., Murphy, K.,
+Studer, M., &amp; Ritschard, G. (2024). Sequence analysis in education:
+Principles, technique, and tutorial with R. In M. Saqr &amp; S.
+López-Pernas (Eds.), <em>Learning analytics methods and tutorials: A
+practical guide using R</em> (pp. 321–354). Springer. <a href="https://doi.org/10.1007/978-3-031-54464-4_10" class="external-link uri">https://doi.org/10.1007/978-3-031-54464-4_10</a></p>
+<p>Saqr, M., López-Pernas, S., Helske, S., &amp; Hrastinski, S. (2023).
+The longitudinal association between engagement and achievement varies
+by time, students’ profiles, and achievement state: A full program
+study. <em>Computers &amp; Education</em>, 199, 104787. <a href="https://doi.org/10.1016/j.compedu.2023.104787" class="external-link uri">https://doi.org/10.1016/j.compedu.2023.104787</a></p>
+<p>Saqr, M., López-Pernas, S., &amp; Misiejuk, K. (2026). Nestimate: An
+R package for dynamic, probabilistic, and high order network analysis.
+<em>Applied Psychological Measurement</em>. <a href="https://doi.org/10.1177/01466216261472019" class="external-link uri">https://doi.org/10.1177/01466216261472019</a></p>
+<p>Schwarz, G. (1978). Estimating the dimension of a model. <em>The
+Annals of Statistics</em>, 6, 461–464.</p>
+<p>Tikka, S., López-Pernas, S., &amp; Saqr, M. (2025). tna: An R package
+for transition network analysis. <em>Applied Psychological Measurement,
+49</em>(6), 326–328. <a href="https://doi.org/10.1177/01466216251348840" class="external-link uri">https://doi.org/10.1177/01466216251348840</a></p>
+<p>van de Pol, F., &amp; Langeheine, R. (1990). Mixed Markov latent
+class models. <em>Sociological Methodology</em>, 20, 213–247.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

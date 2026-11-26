@@ -17,8 +17,6 @@
   workflow](https://pak.dynasite.org/latents/articles/workflow-lpa.md):
 - [Latent class analysis: a complete
   workflow](https://pak.dynasite.org/latents/articles/workflow-lca.md):
-- [Class enumeration in mixture
-  models](https://pak.dynasite.org/latents/articles/class-enumeration.md):
 - [Model selection: the evidence for the number of
   classes](https://pak.dynasite.org/latents/articles/model-selection.md):
 - [Tree plot](https://pak.dynasite.org/latents/articles/tree-plot.md):
@@ -50,5 +48,9 @@
   LPA](https://pak.dynasite.org/latents/articles/case-engagement-covariates.md):
 - [Case study: Latent transition analysis of course
   engagement](https://pak.dynasite.org/latents/articles/case-engagement-transitions.md):
-- [Case study: Two-level latent class analysis of leisure
-  activities](https://pak.dynasite.org/latents/articles/case-esm-lca.md):
+
+### Resources
+
+Every article with its reference and PDF
+
+- [Resources](https://pak.dynasite.org/latents/articles/cite-articles.md):

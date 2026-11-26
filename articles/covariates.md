@@ -1,11 +1,75 @@
 # Covariates, outcomes and staged estimation
 
-Variables outside the measurement model can be related to the latent
-classes in two ways. The three-step approach fits the profiles first and
-then relates them to an external variable, correcting for classification
-error, so the profiles stay fixed. The one-step approach adds the
-variable to the model, so it can also change the profiles. Staged
-estimation applies the same idea of fixed profiles to the group classes.
+The distinction between one-step and three-step approaches concerns
+whether external variables are allowed to influence the estimation and
+definition of latent profiles. External variables are not included among
+the indicators used to identify the profiles but are introduced to
+examine their relationships with profile membership. These variables may
+function as predictors of profile membership, covariates, or distal
+outcomes.
+
+In the three-step approach, the measurement model is estimated first,
+using only the indicators specified to define the profiles. Once the
+profiles have been identified, individuals are assigned to their most
+likely profile based on their posterior membership probabilities. In the
+subsequent step, external variables are incorporated into the analysis
+while correcting for the classification errors associated with this
+assignment. This correction is important because profile membership is
+latent and individuals cannot necessarily be classified with complete
+certainty. By accounting for this uncertainty, the three-step approach
+reduces the bias that would arise from treating assigned profile
+membership as if it were directly observed. Importantly, the original
+measurement model remains unchanged: the profile-specific means and
+other measurement parameters are not re-estimated in response to the
+external variables.
+
+In contrast, the one-step approach incorporates external variables
+directly into the latent profile model, estimating the measurement and
+structural components simultaneously. Consequently, the external
+variables can influence the estimation of profile membership and,
+depending on the model specification, alter the profile characteristics
+and classification of individuals. Although this approach allows the
+relationships between latent profiles and external variables to be
+estimated jointly, it may produce a different profile solution from the
+model estimated using only the original measurement indicators (Bolck et
+al., 2004; Vermunt, 2010).
+
+This distinction is particularly relevant in person-centred research,
+where profiles are interpreted as substantively meaningful subgroups
+characterized by distinct patterns across a set of indicators (Saqr et
+al., 2024; Scrucca et al., 2024). Researchers often seek to investigate
+the characteristics, antecedents, and consequences of these subgroups
+after establishing their measurement structure. In such cases, allowing
+external variables to influence profile estimation may change the very
+subgroups that the subsequent analyses are intended to investigate. The
+three-step approach addresses this concern by preserving the original
+profile solution while accounting for classification uncertainty. Staged
+estimation extends the same principle to group classes in multilevel
+models, keeping the profile solution fixed while the group classes are
+estimated. Thus, three-step methods are particularly useful when the
+objective is to investigate relationships with external variables
+without changing the substantive meaning of the previously identified
+profiles.
+
+This guide demonstrates these approaches in a two-level latent profile
+model of course engagement, in which course enrolments are nested within
+students. The measurement model is first estimated from the engagement
+indicators alone, and its classification-error matrix is examined, since
+this matrix is the basis of every three-step correction. The previous
+grade before each enrolment is then related to the profiles in three
+ways: as a distal variable whose mean is compared across profiles with
+[`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md),
+using the BCH and maximum likelihood corrections and, for comparison,
+uncorrected modal assignment; as a predictor of profile membership with
+[`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md); and
+as a covariate estimated jointly with the profiles in a one-step model
+through `profile_covariates`. The guide then shows how a covariate can
+affect an indicator directly rather than through profile membership, a
+form of differential item functioning that can otherwise be mistaken for
+a difference between profiles, and concludes with staged estimation, in
+which the group classes are estimated with the profiles held fixed
+through
+[`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md).
 
 ## Data
 
@@ -23,10 +87,13 @@ library(latents)
 
 ## The measurement model
 
-To fit the profiles without the external variable, we call
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-with `vars` for the indicators, `id` for the group, `n_profiles`,
-`n_group_classes`, `n_starts` and `seed`.
+fits the profiles without the external variable, with `vars` for the
+indicators, `id` for the group, `n_profiles`, `n_group_classes`,
+`n_starts` and `seed`. The within-profile covariances are estimated
+(`covariance_model = "full"`), because the indicators are correlated
+within profiles (see the [multilevel latent profile
+analysis](https://pak.dynasite.org/latents/articles/lpa.html) vignette).
 
 ``` r
 
@@ -34,24 +101,25 @@ fit <- multilpa(course_engagement,
                 vars = c("browse", "lectures", "forum_read", "forum_post",
                          "attendance"),
                 id = "student", n_profiles = 2, n_group_classes = 2,
+                covariance_model = "full",
                 n_starts = 3, seed = 1)
 fit
 #> Two-level latent profile analysis: 2 profiles, 2 group classes
-#> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
-#> Log likelihood: -8439.816424 | AIC: 16925.633 | BIC (groups): 16986.892
-#> Converged: TRUE | iterations: 9 | best log likelihood reached by 3 of 3 starts (3 converged)
-#> Smallest standardized Gaussian eigenvalue: 0.3715 (profiles, profile_2); Gaussian mass: 587.9; weight effective n: 606.
+#> 1422 individuals in 106 groups; varying full residual covariance (VVV)
+#> Log likelihood: -8313.111554 | AIC: 16712.223 | BIC (groups): 16826.751
+#> Converged: TRUE | iterations: 12 | best log likelihood reached by 3 of 3 starts (3 converged)
+#> Smallest standardized Gaussian eigenvalue: 0.271 (profiles, profile_2); Gaussian mass: 583.2; weight effective n: 610.5.
 #> 
-#> Class sizes   profile_1 58.7% (834)   profile_2 41.3% (588)
+#> Class sizes   profile_1 59.0% (839)   profile_2 41.0% (583)
 #> Group classes group_class_1 32.5% (34)   group_class_2 67.5% (72)
 #> 
 #> Means
 #>   indicator profile_1 profile_2
-#>      browse     0.540    -0.766
-#>    lectures     0.427    -0.606
-#>  forum_read     0.620    -0.879
-#>  forum_post     0.530    -0.753
-#>  attendance     0.649    -0.921
+#>      browse     0.531    -0.764
+#>    lectures     0.422    -0.607
+#>  forum_read     0.613    -0.881
+#>  forum_post     0.527    -0.758
+#>  attendance     0.632    -0.908
 #> 
 #> Variances and standard errors: get_results(x, "profiles").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
@@ -59,30 +127,33 @@ fit
 
 ## Classification error
 
-To obtain the classification-error matrix, we call
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-with `"classification_errors"` and `level` for the observations or the
-groups. Each row gives the probability of each assigned class for cases
-in a true class; the three-step methods use it to correct for
-misclassification.
+with `"classification_errors"` returns the classification-error matrix,
+with `level` for the observations or the groups. Each row gives the
+probability of each assigned class for cases in a true class; the
+three-step methods use it to correct for misclassification.
 
 ``` r
 
 get_results(fit, "classification_errors", level = "individuals")
 #>         level true_class assigned_class probability
-#> 1 individuals          1              1      0.9872
-#> 2 individuals          1              2      0.0128
-#> 3 individuals          2              1      0.0214
-#> 4 individuals          2              2      0.9786
+#> 1 individuals          1              1      0.9815
+#> 2 individuals          1              2      0.0185
+#> 3 individuals          2              1      0.0321
+#> 4 individuals          2              2      0.9679
 ```
+
+Enrolments of the first profile are assigned to it with probability
+0.982 and those of the second with probability 0.968, so the corrections
+below are small but not negligible.
 
 ## Class means of an external variable
 
-To estimate the mean of an external variable in each profile, we call
 [`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
-with `data` for the data frame and `outcome` for the variable. The
-default method, BCH, corrects for classification error; standard errors
-are clustered on groups.
+estimates the mean of an external variable in each profile, with `data`
+for the data frame and `outcome` for the variable. The default method,
+BCH, corrects for classification error (Bolck et al., 2004; Bakk &
+Vermunt, 2016); standard errors are clustered on groups.
 
 ``` r
 
@@ -91,14 +162,15 @@ three_step(fit, data = course_engagement, outcome = "previous_grade")
 #> 
 #> Class   Mean          95% CI     SE  Effective n
 #> -----  -----  --------------  -----  -----------
-#>     1   0.22  [ 0.15,  0.29]  0.035       810.27
-#>     2  -0.31  [-0.39, -0.24]  0.036       564.36
+#>     1   0.23  [ 0.16,  0.30]  0.035       803.34
+#>     2  -0.33  [-0.40, -0.27]  0.035       548.42
 ```
 
-To compare the profiles, we call
-[`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
-with `contrast = "pairs"`, which returns each difference between profile
-means with a Benjamini-Hochberg adjusted p-value.
+Previous grades average 0.23 standard deviations above the mean before
+enrolments of the first profile and 0.33 below it before enrolments of
+the second. `contrast = "pairs"` returns each difference between profile
+means with a Benjamini-Hochberg adjusted p-value (Benjamini & Hochberg,
+1995).
 
 ``` r
 
@@ -108,16 +180,21 @@ three_step(fit, data = course_engagement, outcome = "previous_grade",
 #> 
 #> Class  vs  Difference          95% CI      p  p (BH)
 #> -----  --  ----------  --------------  -----  ------
-#>     2   1       -0.54  [-0.64, -0.43]  <.001   <.001
+#>     2   1       -0.57  [-0.67, -0.47]  <.001   <.001
 ```
+
+The difference is -0.57 standard deviations (95% interval -0.67 to
+-0.47).
 
 Maximum likelihood is the other correction. With `method = "ml"`, the
 assigned profile becomes an indicator of the true profile whose
 classification errors are fixed at those of the measurement model, and
 the external variable is normal within each profile, with its own
 variance. The table adds that variance. When the variable is close to
-normal within profiles, ML gives smaller standard errors than BCH; when
-it is skewed, BCH is the more robust choice.
+normal within profiles, ML is usually more efficient than BCH (Vermunt,
+2010), although with classification as accurate as here the standard
+errors are nearly equal; when it is skewed, BCH is the more robust
+choice.
 
 ``` r
 
@@ -127,14 +204,15 @@ three_step(fit, data = course_engagement, outcome = "previous_grade",
 #> 
 #> Class   Mean          95% CI     SE  Variance  Effective n
 #> -----  -----  --------------  -----  --------  -----------
-#>     1   0.22  [ 0.15,  0.29]  0.035      0.94       834.09
-#>     2  -0.32  [-0.39, -0.24]  0.037      0.91       587.91
+#>     1   0.23  [ 0.17,  0.30]  0.035      0.93       838.76
+#>     2  -0.34  [-0.41, -0.27]  0.036      0.91       583.24
 ```
 
-To see the effect of ignoring classification error, we call
-[`three_step()`](https://pak.dynasite.org/latents/reference/three_step.md)
-with `method = "modal"`, which treats each case’s most probable profile
-as known.
+ML gives nearly the same means (0.23 and -0.34), with variances of 0.93
+and 0.91 within the profiles.
+
+`method = "modal"` shows the effect of ignoring classification error: it
+treats each case’s most probable profile as known.
 
 ``` r
 
@@ -144,39 +222,47 @@ three_step(fit, data = course_engagement, outcome = "previous_grade",
 #> 
 #> Class   Mean          95% CI     SE  Effective n
 #> -----  -----  --------------  -----  -----------
-#>     1   0.21  [ 0.15,  0.28]  0.034          836
-#>     2  -0.30  [-0.38, -0.23]  0.036          586
+#>     1   0.22  [ 0.15,  0.29]  0.034          842
+#>     2  -0.32  [-0.39, -0.25]  0.035          580
 ```
+
+The modal means (0.22 and -0.32) are slightly closer together than the
+corrected ones, the attenuation that classification error produces; with
+classification as accurate as here, the difference is small.
 
 ## Predicting class membership
 
-To regress profile membership on a covariate, we call
-[`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md) with
-`data` for the data frame and `covariates` for the predictors. It
-returns multinomial logit coefficients, corrected for classification
-error. `vcov_type = "robust"`, the default, clusters the standard errors
-on groups.
+[`r3step()`](https://pak.dynasite.org/latents/reference/r3step.md)
+regresses profile membership on a covariate, with `data` for the data
+frame and `covariates` for the predictors. It returns multinomial logit
+coefficients, corrected for classification error.
+`vcov_type = "robust"`, the default, clusters the standard errors on
+groups.
 
 ``` r
 
 r3step(fit, data = course_engagement, covariates = "previous_grade",
        vcov_type = "robust")
 #>         level   outcome           term estimate standard_error statistic  p_value p_adjusted
-#> 1 individuals profile_1    (Intercept)    0.376         0.1309      2.87 4.08e-03         NA
-#> 2 individuals profile_1 previous_grade    0.575         0.0596      9.64 5.24e-22   5.24e-22
+#> 1 individuals profile_1    (Intercept)    0.394         0.1362      2.89 3.80e-03         NA
+#> 2 individuals profile_1 previous_grade    0.615         0.0612     10.05 9.55e-24   9.55e-24
 #>   conf_low conf_high
-#> 1    0.119     0.633
-#> 2    0.458     0.692
+#> 1    0.127     0.661
+#> 2    0.495     0.735
 ```
+
+A previous grade one standard deviation higher raises the log odds of
+the first, more active profile against the second by 0.615 (95% interval
+0.495 to 0.735), an odds ratio of about 1.85.
 
 ## One-step estimation
 
-To estimate the covariate together with the profiles, we call
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-with `profile_covariates` for predictors of profile membership.
-`group_covariates` does the same for group-class membership and needs a
-variable that is constant within groups. Covariates must have no missing
-values; missing indicators are integrated out with `missing = "fiml"`.
+with `profile_covariates` estimates the covariate together with the
+profiles, as a predictor of profile membership. `group_covariates` does
+the same for group-class membership and needs a variable that is
+constant within groups. Covariates must have no missing values; missing
+indicators are integrated out with `missing = "fiml"`.
 
 ``` r
 
@@ -184,109 +270,94 @@ one_step <- multilpa(course_engagement,
                      vars = c("browse", "lectures", "forum_read",
                               "forum_post", "attendance"),
                      id = "student", n_profiles = 2, n_group_classes = 2,
+                     covariance_model = "full",
                      profile_covariates = "previous_grade", n_starts = 3,
                      seed = 1)
 one_step
 #> Multilevel LPA with covariates: 2 profiles, 2 group classes
-#> Log likelihood -8422.837628; AIC 16893.675; BIC (groups) 16957.598; converged TRUE
-#> Smallest standardized Gaussian eigenvalue: 0.3712 (profiles, profile_2); Gaussian mass: 587.7; weight effective n: 605.1.
+#> Log likelihood -8295.460308; AIC 16678.921; BIC (groups) 16796.112; converged TRUE
+#> Smallest standardized Gaussian eigenvalue: 0.2705 (profiles, profile_2); Gaussian mass: 582.2; weight effective n: 607.8.
 #> 
-#> Class sizes   profile_1 58.7% (834)   profile_2 41.3% (588)
+#> Class sizes   profile_1 59.1% (840)   profile_2 40.9% (582)
 #> Group classes group_class_1 31.8% (34)   group_class_2 68.2% (72)
 #> 
 #> Means
 #>   indicator profile_1 profile_2
-#>      browse     0.540    -0.766
-#>    lectures     0.429    -0.609
-#>  forum_read     0.619    -0.879
-#>  forum_post     0.530    -0.753
-#>  attendance     0.648    -0.920
+#>      browse     0.530    -0.765
+#>    lectures     0.424    -0.612
+#>  forum_read     0.612    -0.882
+#>  forum_post     0.525    -0.757
+#>  attendance     0.631    -0.910
 #> 
 #> Variances and standard errors: get_results(x, "profiles").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 ```
 
-To obtain the membership coefficients, we call
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-with `"coefficients"`, and for their standard errors and intervals,
-[`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md).
+with `"coefficients"` returns the membership coefficients, and
+[`parameter_inference()`](https://pak.dynasite.org/latents/reference/parameter_inference.md)
+the standard errors and intervals of every parameter, beginning with the
+measurement means.
 
 ``` r
 
 get_results(one_step, "coefficients")
 #>     level       outcome           term parameter estimate
-#> 1 profile     profile_1  group_class_1     logit   -1.538
-#> 2 profile     profile_1  group_class_2     logit    1.268
-#> 3 profile     profile_1 previous_grade     logit    0.422
-#> 4   group group_class_1    (Intercept)     logit   -0.762
-parameter_inference(one_step)
-#>          level       outcome           term   parameter estimate standard_error statistic   p_value
-#> 1  measurement     profile_1         browse        mean    0.540         0.0271     19.88  6.40e-88
-#> 2  measurement     profile_1       lectures        mean    0.429         0.0324     13.24  4.85e-40
-#> 3  measurement     profile_1     forum_read        mean    0.619         0.0248     25.02 3.95e-138
-#> 4  measurement     profile_1     forum_post        mean    0.530         0.0294     18.02  1.42e-72
-#> 5  measurement     profile_1     attendance        mean    0.648         0.0223     29.12 2.05e-186
-#> 6  measurement     profile_2         browse        mean   -0.766         0.0311    -24.65 3.79e-134
-#> 7  measurement     profile_2       lectures        mean   -0.609         0.0309    -19.71  1.67e-86
-#> 8  measurement     profile_2     forum_read        mean   -0.879         0.0261    -33.65 3.00e-248
-#> 9  measurement     profile_2     forum_post        mean   -0.753         0.0277    -27.14 3.54e-162
-#> 10 measurement     profile_2     attendance        mean   -0.920         0.0264    -34.87 2.04e-266
-#> 11 measurement     profile_1         browse    variance    0.591         0.0296        NA        NA
-#> 12 measurement     profile_1       lectures    variance    0.842         0.0419        NA        NA
-#> 13 measurement     profile_1     forum_read    variance    0.483         0.0245        NA        NA
-#> 14 measurement     profile_1     forum_post    variance    0.688         0.0347        NA        NA
-#> 15 measurement     profile_1     attendance    variance    0.385         0.0196        NA        NA
-#> 16 measurement     profile_2         browse    variance    0.526         0.0321        NA        NA
-#> 17 measurement     profile_2       lectures    variance    0.538         0.0320        NA        NA
-#> 18 measurement     profile_2     forum_read    variance    0.363         0.0227        NA        NA
-#> 19 measurement     profile_2     forum_post    variance    0.422         0.0262        NA        NA
-#> 20 measurement     profile_2     attendance    variance    0.375         0.0228        NA        NA
-#> 21     profile     profile_1  group_class_1 coefficient   -1.538         0.1676     -9.18  4.51e-20
-#> 22     profile     profile_1  group_class_2 coefficient    1.268         0.0943     13.44  3.46e-41
-#> 23     profile     profile_1 previous_grade coefficient    0.422         0.0736      5.73  9.78e-09
-#> 24       group group_class_1    (Intercept) coefficient   -0.762         0.2212     -3.44  5.72e-04
+#> 1 profile     profile_1  group_class_1     logit   -1.577
+#> 2 profile     profile_1  group_class_2     logit    1.316
+#> 3 profile     profile_1 previous_grade     logit    0.447
+#> 4   group group_class_1    (Intercept)     logit   -0.764
+head(parameter_inference(one_step), 10)
+#>          level   outcome       term parameter estimate standard_error statistic   p_value
+#> 1  measurement profile_1     browse      mean    0.530         0.0281      18.9  1.45e-79
+#> 2  measurement profile_1   lectures      mean    0.424         0.0328      12.9  2.98e-38
+#> 3  measurement profile_1 forum_read      mean    0.612         0.0257      23.8 5.55e-125
+#> 4  measurement profile_1 forum_post      mean    0.525         0.0303      17.3  3.15e-67
+#> 5  measurement profile_1 attendance      mean    0.631         0.0238      26.5 6.98e-155
+#> 6  measurement profile_2     browse      mean   -0.765         0.0323     -23.7 4.29e-124
+#> 7  measurement profile_2   lectures      mean   -0.612         0.0318     -19.2  2.87e-82
+#> 8  measurement profile_2 forum_read      mean   -0.882         0.0273     -32.4 1.20e-229
+#> 9  measurement profile_2 forum_post      mean   -0.757         0.0285     -26.6 2.16e-155
+#> 10 measurement profile_2 attendance      mean   -0.910         0.0283     -32.1 3.91e-226
 #>    p_adjusted conf_low conf_high
-#> 1    6.40e-88    0.486     0.593
-#> 2    4.85e-40    0.365     0.492
-#> 3   3.95e-138    0.571     0.668
-#> 4    1.42e-72    0.473     0.588
-#> 5   2.05e-186    0.605     0.692
-#> 6   3.79e-134   -0.827    -0.705
-#> 7    1.67e-86   -0.669    -0.548
-#> 8   3.00e-248   -0.930    -0.828
-#> 9   3.54e-162   -0.807    -0.699
-#> 10  2.04e-266   -0.972    -0.868
-#> 11         NA    0.536     0.652
-#> 12         NA    0.764     0.928
-#> 13         NA    0.437     0.534
-#> 14         NA    0.623     0.759
-#> 15         NA    0.348     0.426
-#> 16         NA    0.467     0.593
-#> 17         NA    0.478     0.604
-#> 18         NA    0.321     0.410
-#> 19         NA    0.374     0.477
-#> 20         NA    0.333     0.422
-#> 21   4.51e-20   -1.866    -1.209
-#> 22   3.46e-41    1.083     1.453
-#> 23   9.78e-09    0.278     0.567
-#> 24   5.72e-04   -1.196    -0.328
+#> 1    1.45e-79    0.475     0.585
+#> 2    2.98e-38    0.360     0.488
+#> 3   5.55e-125    0.561     0.662
+#> 4    3.15e-67    0.465     0.584
+#> 5   6.98e-155    0.584     0.677
+#> 6   4.29e-124   -0.828    -0.702
+#> 7    2.87e-82   -0.674    -0.549
+#> 8   1.20e-229   -0.936    -0.829
+#> 9   2.16e-155   -0.813    -0.701
+#> 10  3.91e-226   -0.965    -0.854
 ```
+
+The one-step coefficient of previous grade is 0.447, smaller than the
+three-step coefficient, because it is conditional on the group class and
+the profiles are estimated together with it.
 
 ## Direct effects on indicators
 
 A covariate can also act on an indicator rather than on membership:
 students with better previous grades may attend more within every
 profile. Left out of the model, such an effect is read as a difference
-between the profiles (differential item functioning). To estimate it, we
-call
+between the profiles (differential item functioning).
 [`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
-with `direct_effects`, one `"indicator ~ covariate"` term per effect.
-The covariate shifts the indicator’s mean by the same amount in every
-profile, and the profile means are then the means at a covariate value
-of zero, here the average standardized grade.
+with `direct_effects` estimates it, one `"indicator ~ covariate"` term
+per effect. The covariate shifts the indicator’s mean by the same amount
+in every profile, and the profile means are then the means at a
+covariate value of zero, here the average standardized grade. Direct
+effects are estimated in a profile model with a diagonal covariance
+structure (`EEI` or `VVI`), so the comparison below uses the diagonal
+model with and without them.
 
 ``` r
 
+diagonal <- multilpa(course_engagement,
+                     vars = c("browse", "lectures", "forum_read",
+                              "forum_post", "attendance"),
+                     id = "student", n_profiles = 2, n_group_classes = 2,
+                     n_starts = 3, seed = 1)
 direct <- multilpa(course_engagement,
                    vars = c("browse", "lectures", "forum_read",
                             "forum_post", "attendance"),
@@ -298,7 +369,7 @@ get_results(direct, "direct_effects")
 #>    indicator      covariate estimate standard_error statistic p_value conf_low conf_high
 #> 1 attendance previous_grade  0.03626         0.0178     2.040  0.0414  0.00142    0.0711
 #> 2 forum_post previous_grade  0.00375         0.0209     0.179  0.8578 -0.03724    0.0447
-compare_models(without = fit, direct = direct)
+compare_models(without = diagonal, direct = direct)
 #> Model comparison
 #> 
 #> Model    Profiles  Group classes   k    LogLik       BIC  ΔBIC  Weight       ICL  Entropy  Min AvePP  < 0.8  Group entropy  Group min AvePP
@@ -310,18 +381,19 @@ compare_models(without = fit, direct = direct)
 Attendance rises by 0.036 per unit of previous grade within each profile
 (95% interval 0.001 to 0.071), and forum posting by 0.004 (interval
 -0.037 to 0.045). The effects are small against the profile differences,
-and BIC is lower without them (16986.9 against 16992.1), so the profiles
-do not owe their separation to previous grades.
+and BIC is lower without them (16986.9 against 16992.1), so the profile
+differences on these indicators are not produced by direct effects of
+previous grades.
 
 ## Staged estimation
 
-To hold the profiles fixed while the group classes are estimated, we
-call
 [`fit_staged()`](https://pak.dynasite.org/latents/reference/fit_staged.md)
-with the same arguments as
-[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md).
-It first fits the profiles with one group class, then estimates the
-group classes with the profile means and variances held fixed.
+holds the profiles fixed while the group classes are estimated, with the
+arguments of
+[`multilpa()`](https://pak.dynasite.org/latents/reference/multilpa.md)
+that define the profiles. It first fits the profiles with one group
+class, then estimates the group classes with the profile means and
+covariance matrices held fixed.
 
 ``` r
 
@@ -329,46 +401,51 @@ staged <- fit_staged(course_engagement,
                      vars = c("browse", "lectures", "forum_read",
                               "forum_post", "attendance"),
                      id = "student", n_profiles = 2, n_group_classes = 2,
+                     covariance_model = "full",
                      n_starts = 3, seed = 1)
 staged
 #> Two-level latent profile analysis: 2 profiles, 2 group classes
-#> 1422 individuals in 106 groups; varying diagonal residual covariance (VVI)
-#> Log likelihood: -8440.080258 | AIC: 16886.161 | BIC (groups): 16894.151
+#> 1422 individuals in 106 groups; varying full residual covariance (VVV)
+#> Log likelihood: -8313.829076 | AIC: 16633.658 | BIC (groups): 16641.648
 #> Converged: TRUE | iterations: 9 | best log likelihood reached by 2 of 3 starts (3 converged)
 #> Held fixed, not estimated here: means, variances (first stage)
-#> Parameters estimated here: 3; with the held measurement: 23
-#> Smallest standardized Gaussian eigenvalue: 0.375 (profiles, profile_2); Gaussian mass: 588.5; weight effective n: 606.8.
+#> Parameters estimated here: 3; with the held measurement: 43
+#> Smallest standardized Gaussian eigenvalue: 0.2696 (profiles, profile_2); Gaussian mass: 579.9; weight effective n: 607.9.
 #> 
-#> Class sizes   profile_1 58.6% (834)   profile_2 41.4% (588)
+#> Class sizes   profile_1 59.2% (842)   profile_2 40.8% (580)
 #> Group classes group_class_1 67.5% (72)   group_class_2 32.5% (34)
 #> 
 #> Means
 #>   indicator profile_1 profile_2
-#>      browse     0.537    -0.759
-#>    lectures     0.430    -0.608
-#>  forum_read     0.618    -0.873
-#>  forum_post     0.533    -0.753
-#>  attendance     0.653    -0.923
+#>      browse     0.520    -0.761
+#>    lectures     0.424    -0.621
+#>  forum_read     0.605    -0.885
+#>  forum_post     0.522    -0.764
+#>  attendance     0.625    -0.914
 #> 
 #> Variances and standard errors: get_results(x, "profiles").
 #> Every other table: get_results(x, what = ), or get_results(x, "all").
 ```
 
-To see what each stage estimated, we call
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md)
-with `"stages"`. `parameters` counts the parameters estimated at a
-stage, and `parameters_with_measurement` adds those held fixed.
+with `"stages"` reports what each stage estimated. `parameters` counts
+the parameters estimated at a stage, and `parameters_with_measurement`
+adds those held fixed.
 
 ``` r
 
 get_results(staged, "stages")
 #>         stage group_classes            fixed log_likelihood parameters parameters_with_measurement
-#> 1 measurement             1             <NA>          -8615         21                          21
-#> 2  membership             2 means, variances          -8440          3                          23
+#> 1 measurement             1             <NA>          -8490         41                          41
+#> 2  membership             2 means, variances          -8314          3                          43
 #>   converged
 #> 1      TRUE
 #> 2      TRUE
 ```
+
+The first stage estimates the 41 parameters of the profiles with one
+group class; the second estimates 3 membership parameters with the
+profiles held fixed.
 
 ## Reference
 
@@ -391,16 +468,19 @@ measurement <- multilpa(course_engagement,
                         vars = c("browse", "lectures", "forum_read",
                                  "forum_post", "attendance"),
                         id = "student", n_profiles = 2,
-                        n_group_classes = 1, seed = 1)  # a one-class measurement fit
+                        n_group_classes = 1, covariance_model = "full",
+                        seed = 1)  # a one-class measurement fit
 fit_staged(course_engagement,
            vars = c("browse", "lectures", "forum_read", "forum_post",
                     "attendance"),
            id = "student", n_profiles = 2, n_group_classes = 2,
+           covariance_model = "full",
            measurement = measurement)      # stage two from that fit
 multilpa(course_engagement,
          vars = c("browse", "lectures", "forum_read", "forum_post",
                   "attendance"),
          id = "student", n_profiles = 2, n_group_classes = 2,
+         covariance_model = "full",
          start = starting_values(fit, what = "measurement"),
          fixed = "variances")              # hold chosen parameters fixed
 parameter_inference(staged)                # standard errors of the estimated stage
@@ -419,3 +499,31 @@ parameter_inference(staged)                # standard errors of the estimated st
 - Staged estimation does not carry first-stage uncertainty into the
   second stage, and its likelihood is not the joint maximum.
 - All associations are observational.
+
+## References
+
+Bakk, Z., & Vermunt, J. K. (2016). Robustness of stepwise latent class
+modeling with continuous distal outcomes. *Structural Equation
+Modeling*, 23, 20–31.
+
+Benjamini, Y., & Hochberg, Y. (1995). Controlling the false discovery
+rate: A practical and powerful approach to multiple testing. *Journal of
+the Royal Statistical Society: Series B*, 57(1), 289–300.
+
+Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent
+structure models with categorical variables: One-step versus three-step
+estimators. *Political Analysis*, 12(1), 3–27.
+
+Saqr, M., Vogelsmeier, L. V. D. E., & López-Pernas, S. (2024). Capturing
+where the learning process takes place: A person-specific and
+person-centered primer. *Learning and Individual Differences*, 113,
+102492. <https://doi.org/10.1016/j.lindif.2024.102492>
+
+Scrucca, L., Saqr, M., López-Pernas, S., & Murphy, K. (2024). An
+introduction and R tutorial to model-based clustering in education via
+latent profile analysis. In M. Saqr & S. López-Pernas (Eds.), *Learning
+analytics methods and tutorials: A practical guide using R*
+(pp. 285–317). Springer. <https://doi.org/10.1007/978-3-031-54464-4_9>
+
+Vermunt, J. K. (2010). Latent class modeling with covariates: Two
+improved three-step approaches. *Political Analysis*, 18, 450–469.

@@ -150,9 +150,9 @@ get_results(fit, "responses")
 #> 3        1 time_with_friends      yes 0.024365276         NA
 #> 4        2 time_with_friends      yes 0.170269541         NA
 #> 5        1   on_social_media       no 0.372974753 -0.5194761
-#> 6        2   on_social_media       no 0.993730395  5.0657527
+#> 6        2   on_social_media       no 0.993730396  5.0657527
 #> 7        1   on_social_media      yes 0.627025247         NA
-#> 8        2   on_social_media      yes 0.006269605         NA
+#> 8        2   on_social_media      yes 0.006269604         NA
 #> 9        1    tv_video_games       no 0.737018500  1.0305293
 #> 10       2    tv_video_games       no 0.867019325  1.8748575
 #> 11       1    tv_video_games      yes 0.262981500         NA
@@ -175,5 +175,5 @@ get_results(fit, "profile_probabilities")
 #> 1           1       1 2.240147e-01                 0.54559
 #> 2           1       2 7.759853e-01                 0.54559
 #> 3           2       1 1.000000e+00                 0.45441
-#> 4           2       2 1.688941e-09                 0.45441
+#> 4           2       2 1.688848e-09                 0.45441
 ```

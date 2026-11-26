@@ -235,8 +235,8 @@ compare_models(grid, n_group_classes = 2)
 #> profiles2_groups2         2              2  11  -1097.18  2231.78   0.00   0.996  2450.46     0.67       0.90      0           0.97             0.99
 #> profiles3_groups2         3              2  17  -1092.40  2242.62  10.84   0.004  2578.50     0.68       0.70      1           0.96             0.99
 
-# Is a covariance structure that varies by profile needed? A
-# likelihood-ratio test of each structure against the one before it.
+# A likelihood-ratio test of a covariance structure that varies by
+# profile against a shared one.
 shared <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,
               model = "EEI", n_starts = 2, seed = 1)
 varying <- lpa(faithful, c("eruptions", "waiting"), n_profiles = 2,

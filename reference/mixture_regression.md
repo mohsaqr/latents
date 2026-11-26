@@ -1,10 +1,10 @@
 # Fit a mixture regression model in which the relationship between an outcome and its predictors differs across latent classes
 
-`mixture_regression()` fits a mixture of class-specific regressions, to
-ask whether the relationship between an outcome and its predictors
-differs across latent classes. Classes can differ in outcome level, in
-predictor associations or in trajectory over time. Regression parameters
-and class probabilities are estimated jointly by maximum likelihood.
+`mixture_regression()` fits a mixture of class-specific regressions, in
+which the relationship between an outcome and its predictors differs
+across latent classes. Classes can differ in outcome level, in predictor
+associations or in trajectory over time. Regression parameters and class
+probabilities are estimated jointly by maximum likelihood.
 
 Predictors in `formula` describe variation within classes; covariates in
 `membership` describe who belongs to which class. A coefficient may be

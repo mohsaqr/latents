@@ -1,41 +1,84 @@
 # Group-class and cross-level models: classes of groups from raw ratings
 
-Members of the same team, pupils of the same class or sessions of the
-same student give ratings that share something: the unit they belong to.
-The *additive* model of Houle, Morin and Harvey (2026) asks whether
-those units fall into a small number of latent **group classes** that
-differ in where their members’ ratings sit. It has no individual
-profiles: every member of a group belongs to the group’s class, and
-varies around the group’s own level.
+Individuals belonging to the same team, pupils attending the same
+classroom, or repeated observations from the same student may share
+characteristics because they belong to a common higher-level unit.
+Consequently, their ratings may exhibit similarities that cannot be
+explained solely by individual-level differences. The additive model
+introduced by Houle, Morin and Harvey (2026) accounts for this
+hierarchical structure by identifying latent group classes that differ
+in the average level of their members’ ratings. Unlike models that
+identify individual-level profiles, the additive model does not classify
+individuals into separate latent profiles. Instead, each group is
+assigned to a latent group class, and all individuals within that group
+share the same group-level classification while retaining individual
+variation around their group’s estimated level. The group classes can
+therefore be interpreted as distinct types of groups, rather than
+subgroups of individuals. This distinction follows the person-centred
+perspective, in which latent classifications are interpreted according
+to the level at which the underlying heterogeneity occurs (Scrucca et
+al., 2024; Saqr et al., 2024).
 
-The same machinery fits the other families of that framework: the
-*dispersion* family, whose group classes differ in how much members vary
-around their group, the *additive-dispersion* family, which allows both,
-and two *cross-level* families that estimate individual profiles and
-group classes together.
+The framework extends beyond differences in group means through several
+additional model specifications. The dispersion family identifies group
+classes that differ in the extent of variation among their members,
+while the additive-dispersion family simultaneously accounts for
+differences in group means and within-group variability. Two further
+cross-level families allow individual-level profiles and group-level
+classes to be estimated jointly, thereby capturing heterogeneity at both
+levels of the hierarchical structure.
 
-> These families are **experimental**. Estimation, standard errors,
-> tables, plots, enumeration and the bootstrap likelihood-ratio test are
-> available; missing data and covariates are not yet.
+These model families are currently experimental. Their implementation
+supports model estimation, standard errors, descriptive tables,
+graphical representations, class enumeration, and bootstrap
+likelihood-ratio testing. However, handling missing data and
+incorporating covariates are not yet supported.
 
-## The model
+## The additive model
 
-For group $`j`$ with $`n_j`$ members rating $`d`$ indicators, and group
-class $`h`$:
+Consider a dataset consisting of $`J`$ groups, where group $`j`$
+contains $`n_j`$ individuals who provide ratings on $`d`$ indicators.
+The additive model assumes that each group belongs to one of $`H`$
+latent group classes. The group-level classification is represented by
+$`C_j`$, while $`B_{jr}`$ denotes the group-specific intercept for
+indicator $`r`$. The model can be expressed as follows:
 
 ``` math
-C_j \sim \text{Categorical}(\omega_1, \dots, \omega_H), \qquad
-B_{jr} \mid C_j = h \sim N(\mu_{hr}, T_{hr}), \qquad
-Y_{ijr} \mid B_{jr} \sim N(B_{jr}, W_r).
+C_j \sim \operatorname{Categorical}(\omega_1,\ldots,\omega_H)
 ```
 
-Each group has its own intercept $`B_{jr}`$ per indicator, drawn from
-its class’s distribution. The group classes differ in their means
-$`\mu_h`$ and, optionally, in the between-group spread $`T_h`$; the
-**within-group** variance $`W_r`$ is the same in every class. That
-shared within-group variance is what makes the model additive. The
-likelihood is exact: it is computed from each group’s size, mean and
-within-group scatter, with no numerical integration.
+``` math
+B_{jr}\mid C_j=h \sim N(\mu_{hr},T_{hr})
+```
+
+``` math
+Y_{ijr}\mid B_{jr}\sim N(B_{jr},W_r).
+```
+
+The first component specifies the probability of belonging to each
+latent group class, with $`\omega_h`$ representing the proportion of
+groups belonging to class $`h`$. The second component describes the
+distribution of group-specific intercepts within each class. In
+particular, $`\mu_{hr}`$ represents the average level of indicator $`r`$
+for group class $`h`$, while $`T_{hr}`$ captures between-group
+variability within that class. The third component specifies the
+distribution of individual ratings around their respective group
+intercepts, with $`W_r`$ representing the within-group variance for
+indicator $`r`$.
+
+The defining characteristic of the additive model is that the
+within-group variance is constrained to be equal across all latent group
+classes. Thus, the classes can differ in their average indicator levels
+and, when specified, in their between-group variability, but not in the
+residual variation among individuals within groups. This shared
+within-group variance distinguishes the additive specification from
+models that also allow within-group dispersion to vary across classes.
+
+An additional computational advantage is that the likelihood can be
+evaluated directly using the group sizes, group means, and within-group
+sums of squares. Consequently, estimation does not require numerical
+integration, making the model computationally tractable even when the
+analysis involves multiple indicators and latent group classes.
 
 ## Data
 
@@ -89,11 +132,11 @@ fit
 #> Tables: get_results(x, what = ), e.g. "parameters", "group_classes", "groups", "intercepts"; summary(x); plot(x).
 ```
 
-## How many group classes?
+## The number of group classes
 
-Fit one, two and three classes and compare them by BIC, which for this
-family is penalized by the number of groups (`nobs(fit)` is the number
-of teams).
+Models with one, two and three classes are compared by BIC, which for
+this family is penalized by the number of groups (`nobs(fit)` is the
+number of teams).
 
 ``` r
 
@@ -118,7 +161,7 @@ distribution, not the chi-square;
 [`bootstrap_lrt()`](https://pak.dynasite.org/latents/reference/bootstrap_lrt.md)
 provides it, as shown below for one against two classes.
 
-## Do the classes differ in spread?
+## Differences in spread between classes
 
 `between_variance = "equal"` constrains the between-group variances to
 be equal across classes, which leaves the classes differing in location
@@ -142,7 +185,7 @@ AIC(fit, fit_equal)
 Both criteria prefer the equal-spread model, although the data were
 simulated with more spread in climate among strained teams. With 120
 teams that difference is too small to be told apart from sampling noise,
-which is what the criteria report. The rest of this vignette uses the
+which is what the criteria report. The rest of this article uses the
 varying model to show every parameter.
 
 ## Comparing the group-class families
@@ -203,8 +246,8 @@ bootstrap_lrt(one_class, two_classes, iter = 19, n_starts = 3, seed = 1)
 #> p-value: 0.05 (Monte Carlo SE 0.0487) from 19 of 19 valid replicates (0 invalid)
 ```
 
-With 19 replicates the smallest attainable p-value is 0.05; use several
-hundred replicates for a report.
+With 19 replicates the smallest attainable p-value is 0.05; a report
+uses several hundred replicates.
 
 ## Parameters
 
@@ -247,12 +290,13 @@ get_results(fit)
 ```
 
 The warning comes from a check on each class’s *effective groups*: the
-number of perfectly classified groups that would pin down the class
-weight as precisely as this fit does. It is shown in the `group_classes`
-table below. Here the strained class has about 38 effective groups of
-the 49 it is expected to hold, so most of the information survives the
-classification; the class is simply not large. With fewer than 50
-effective groups, the simulation study found interval coverage for class
+number of groups the class would hold in a perfectly classified sample
+that pins down the class weight as precisely as this fit does. It is
+shown in the `group_classes` table below. Here the strained class has
+about 38 effective groups of the 49 it is expected to hold, so most of
+the information survives the classification; the class is simply not
+large. With fewer than 50 effective groups, the simulation study
+described under *Known limitations* found interval coverage for class
 parameters starting to fall below 95%, and far below it when a class is
 also poorly separated.
 
@@ -395,8 +439,8 @@ al. (2026): each group’s means of the indicators are the group-level
 indicators of its class. In the *full* family, the group classes also
 differ in how their members are distributed over the individual
 profiles; in the *restricted* family they do not, and the two levels are
-estimated separately. Here, sessions of `course_engagement` form
-engagement profiles and students form group classes.
+estimated separately. Here, the course enrolments of `course_engagement`
+form engagement profiles and students form group classes.
 
 ``` r
 
@@ -427,18 +471,18 @@ rbind(get_results(full, "fit"), get_results(restricted, "fit"))
 #> 2 17700          17809      106  1422      TRUE    FALSE
 ```
 
-In the full model one class of students has most of its sessions in one
-profile and the other class mostly in the other. The fits warn that
+In the full model one class of students has most of its enrolments in
+one profile and the other class mostly in the other. The fits warn that
 their criteria cannot show this is real. A group mean is computed from
 the same ratings, so these likelihoods count the data twice: on
-simulated data in which group membership has no effect, BIC still
-preferred two group classes in every data set we checked. The `fit`
-table therefore does not choose the number of group classes or the form,
-and it is not comparable with the group-class families above. Standard
-errors are not reported. Evidence for the classes has to come from
-outside these criteria, such as an ordinary `family = "profiles"` fit to
-the same data, whose BIC did not prefer group classes in those data
-sets.
+simulated data in which group membership has no effect, the BIC of the
+full form preferred two group classes in all 18 simulated data sets
+examined. The `fit` table therefore does not choose the number of group
+classes or the form, and it is not comparable with the group-class
+families above. Standard errors are not reported. Evidence for the
+classes has to come from outside these criteria, such as an ordinary
+`family = "profiles"` fit to the same data, whose BIC did not prefer
+group classes in those data sets.
 
 ``` r
 
@@ -501,4 +545,15 @@ found:
 
 Houle, S. A., Morin, A. J. S., & Harvey, J.-F. (2026). Multilevel latent
 profile analyses: A comprehensive guide. *Organizational Research
-Methods*. <doi:10.1177/10944281261469432>.
+Methods*. <https://doi.org/10.1177/10944281261469432>
+
+Saqr, M., Vogelsmeier, L. V. D. E., & López-Pernas, S. (2024). Capturing
+where the learning process takes place: A person-specific and
+person-centered primer. *Learning and Individual Differences*, 113,
+102492. <https://doi.org/10.1016/j.lindif.2024.102492>
+
+Scrucca, L., Saqr, M., López-Pernas, S., & Murphy, K. (2024). An
+introduction and R tutorial to model-based clustering in education via
+latent profile analysis. In M. Saqr & S. López-Pernas (Eds.), *Learning
+analytics methods and tutorials: A practical guide using R*
+(pp. 285–317). Springer. <https://doi.org/10.1007/978-3-031-54464-4_9>

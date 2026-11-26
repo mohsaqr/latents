@@ -15,6 +15,13 @@
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Latent class analysis: a complete workflow">
+<meta name="citation_title" content="Latent class analysis: a complete workflow">
+<meta name="citation_author" content="Saqr, Mohammed">
+<meta name="citation_author" content="López-Pernas, Sonsoles">
+<meta name="citation_publication_date" content="2026">
+<meta name="citation_publisher" content="latents">
+<meta name="citation_pdf_url" content="https://pak.dynasite.org/latents/pdf/workflow-lca.pdf">
+<meta name="citation_abstract_html_url" content="https://pak.dynasite.org/latents/articles/workflow-lca.html">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -24,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +54,6 @@
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
     <li><a class="dropdown-item" href="../articles/tree-plot.html">Tree plot</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
@@ -65,7 +71,9 @@
     <li><a class="dropdown-item" href="../articles/case-engagement-evaluation.html">Case study: Evaluating multilevel latent profile models</a></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-covariates.html">Case study: Covariates and staged estimation in multilevel LPA</a></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-transitions.html">Case study: Latent transition analysis of course engagement</a></li>
-    <li><a class="dropdown-item" href="../articles/case-esm-lca.html">Case study: Two-level latent class analysis of leisure activities</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Resources</h6></li>
+    <li><a class="dropdown-item" href="../articles/cite-articles.html">Resources</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -88,63 +96,94 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Latent class analysis: a complete workflow</h1>
-                        <h4 data-toc-skip class="author">Written by <a href="https://saqr.me" class="external-link">Mohammed Saqr</a> and <a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a>
-</h4>
-            
-      
-      <small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/vignettes/articles/workflow-lca.Rmd" class="external-link"><code>vignettes/articles/workflow-lca.Rmd</code></a></small>
+                        <h4 data-toc-skip class="author">Mohammed
+Saqr</h4>
+            <address class="author_afil">
+      University of Eastern
+Finland<br><h4 data-toc-skip class="author">Sonsoles
+López-Pernas</h4>
+            <address class="author_afil">
+      University of Eastern Finland<br><small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/vignettes/articles/workflow-lca.Rmd" class="external-link"><code>vignettes/articles/workflow-lca.Rmd</code></a></small>
       <div class="d-none name"><code>workflow-lca.Rmd</code></div>
-    </div>
+    </address>
+</address>
+</div>
 
     
     
-<p>Latent class analysis (LCA) is a mixture model for categorical
-indicators. It assumes that the observations come from a small number of
-unobserved classes, and that within each class the indicators are
-independent, each with its own response probabilities. This vignette
-presents a complete single-level analysis: description of the data,
-selection of the number of classes, estimation, interpretation,
-evaluation of the classification, and the relation of the classes to a
-distal outcome. The final section extends the model to two levels. In
+<p>Latent class analysis (LCA) is a person-centred method for
+identifying unobserved subgroups in data measured on categorical
+indicators (Collins &amp; Lanza, 2010). It assumes that the observations
+come from a small number of unobserved classes, each characterized by
+its own probability of every response to every indicator. Within a
+class, the indicators are assumed to be independent of one another; this
+assumption of local independence means that the classes alone account
+for the associations among the indicators. The model estimates the
+response probabilities of each class, the proportion of the sample in
+each class, and the posterior probability with which each observation
+belongs to each class.</p>
+<p>In learning analytics, LCA has been used to identify the engagement
+state of each student in each course from indicators of online activity.
+In the VaSSTra method, these states are subsequently arranged into
+sequences across the courses of a programme, and similar sequences are
+grouped into trajectories of engagement (López-Pernas &amp; Saqr, 2023,
+2024). Saqr and López-Pernas (2021) and Saqr et al. (2023) applied this
+approach to the engagement of students followed through a complete study
+programme, so that the latent classes of single course enrolments form
+the building blocks of students’ longitudinal trajectories.</p>
+<p>As with latent profile analysis, an LCA involves a sequence of
+decisions: the number of classes, the estimation from multiple starting
+values, the interpretation of the classes, the evaluation of the
+classification and of local independence, and the relation of the
+classes to other variables (Nylund-Gibson &amp; Choi, 2018; Weller et
+al., 2020). This vignette presents a complete single-level analysis in
+that order and extends the model to two levels in the final section. In
 the output of this package the classes of observations are labelled
 <code>profile_1</code>, <code>profile_2</code>, and so on.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pak.dynasite.org/latents/">latents</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<p>The estimation uses random starting values, so the seed is set once
-to make the results reproducible.</p>
+<p>The estimation uses random starting values; the seed is therefore set
+once so that the results can be reproduced.</p>
 <div class="section level2">
 <h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
 </h2>
 <p>The <code>student_esm</code> data contain 2,582 experience-sampling
-reports from university students. At each report a student indicated
-whether they had been engaged in each of eight activities, and rated how
-happy, relaxed, worried and exhausted they felt. The aim of the analysis
-is to identify typical combinations of activities.</p>
+reports from 100 university students, collected in a study of academic
+adjustment (Neubauer &amp; Schmiedek, 2024). At each report made when
+they had not studied since the previous prompt, a student indicated
+whether they had been engaged in each of eight activities since the
+previous report, and rated how happy, relaxed, worried and exhausted
+they felt. The aim of the analysis is to identify typical combinations
+of activities.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">activities</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"time_with_friends"</span>, <span class="st">"on_social_media"</span>, <span class="st">"tv_video_games"</span>,</span>
 <span>                <span class="st">"listened_music"</span>, <span class="st">"sports"</span>, <span class="st">"walking"</span>, <span class="st">"reading"</span>,</span>
 <span>                <span class="st">"part_time_job"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/descriptives.html">descriptives</a></span><span class="op">(</span><span class="va">student_esm</span>, <span class="va">activities</span><span class="op">)</span></span>
-<span><span class="co">#&gt;            variable    n n_missing mean sd min max n_distinct</span></span>
-<span><span class="co">#&gt; 1 time_with_friends 2582         0   NA NA  NA  NA          2</span></span>
-<span><span class="co">#&gt; 2   on_social_media 2582         0   NA NA  NA  NA          2</span></span>
-<span><span class="co">#&gt; 3    tv_video_games 2582         0   NA NA  NA  NA          2</span></span>
-<span><span class="co">#&gt; 4    listened_music 2582         0   NA NA  NA  NA          2</span></span>
-<span><span class="co">#&gt; 5            sports 2582         0   NA NA  NA  NA          2</span></span>
-<span><span class="co">#&gt; 6           walking 2582         0   NA NA  NA  NA          2</span></span>
-<span><span class="co">#&gt; 7           reading 2582         0   NA NA  NA  NA          2</span></span>
-<span><span class="co">#&gt; 8     part_time_job 2582         0   NA NA  NA  NA          2</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">student_esm</span>, select <span class="op">=</span> <span class="va">activities</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  time_with_friends on_social_media tv_video_games listened_music sports     walking   </span></span>
+<span><span class="co">#&gt;  no :2211          no :1837        no :2033       no :2193       no :2397   no :2254  </span></span>
+<span><span class="co">#&gt;  yes: 371          yes: 745        yes: 549       yes: 389       yes: 185   yes: 328  </span></span>
+<span><span class="co">#&gt;  reading    part_time_job</span></span>
+<span><span class="co">#&gt;  no :2291   no :2479     </span></span>
+<span><span class="co">#&gt;  yes: 291   yes: 103</span></span></code></pre></div>
+<p>Every activity is absent at most reports. Social media is the most
+frequent (745 reports) and a part-time job the least frequent (103), so
+the classes are distinguished by how far their probabilities of each
+activity exceed these base rates.</p>
 <p>The reports are nested in students. The first part of this vignette
 treats each report as an independent observation, which corresponds to
-the conventional single-level model. The nesting is taken into account
+the conventional single-level model; the nesting is taken into account
 in the final section.</p>
 </div>
 <div class="section level2">
 <h2 id="selecting-the-number-of-classes">Selecting the number of classes<a class="anchor" aria-label="anchor" href="#selecting-the-number-of-classes"></a>
 </h2>
-<p><code><a href="../reference/enumerate_lca.html">enumerate_lca()</a></code> estimates models with one to six classes
-and returns the results in one table.</p>
+<p>The number of classes is not estimated by the model but specified by
+the analyst, and is therefore chosen by fitting models with different
+numbers of classes and comparing them (see the <a href="https://pak.dynasite.org/latents/articles/enumeration.html">class
+enumeration</a> article). <code><a href="../reference/enumerate_lca.html">enumerate_lca()</a></code> estimates models
+with one to six classes and returns the results in one table.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/enumerate_lca.html">enumerate_lca</a></span><span class="op">(</span><span class="va">student_esm</span>, <span class="va">activities</span>, n_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span></span>
 <span><span class="co">#&gt; 2 of 6 candidates reached their best log likelihood from one start only (classes4, classes5); refit those you consider with more starts.</span></span>
@@ -186,20 +225,25 @@ and returns the results in one table.</p>
 <span><span class="co">#&gt; Tables: get_candidates(x), get_best(x), get_deltas(x), get_knees(x),</span></span>
 <span><span class="co">#&gt;         get_tree(x), get_classification(x), get_entropy(x), get_checks(x).</span></span>
 <span><span class="co">#&gt; Plots:  plot_criteria(x), plot_deltas(x), plot_avepp(x), plot_tree(x), plot_all(x).</span></span></code></pre></div>
-<p>The BIC is lowest for four classes, 13.2 points below the three-class
-model. The fourth class, however, contains 1.3% of the reports (about
-32), which describe many activities at once; a class of this size is
-poorly supported, and the ICL, which penalizes classification
-uncertainty, is lower for three classes than for four. The ICL is lowest
-for one class, which has no uncertainty to penalize, and among the
-models with more than one class it is lowest for two; the two-class
-solution, however, has a relative entropy below 0.5 and therefore
-separates the reports poorly. The three-class model is retained.</p>
+<p>The BIC (Schwarz, 1978) is lowest for four classes, 13.2 points below
+the three-class model. The fourth class, however, contains 1.3% of the
+reports (about 32), which describe many activities at once, and the
+four-class model reaches its best log likelihood from only one of its
+starting values. A class of this size, supported by a solution that the
+starts do not replicate, is weakly supported, and the ICL (Biernacki et
+al., 2000), which additionally penalizes classification uncertainty, is
+lower for three classes than for four. The ICL is lowest for one class,
+which has no uncertainty to penalize, and among the models with more
+than one class it is lowest for two; the two-class solution, however,
+has a relative entropy below 0.5 and therefore separates the reports
+poorly. The three-class model is retained.</p>
 </div>
 <div class="section level2">
 <h2 id="estimation">Estimation<a class="anchor" aria-label="anchor" href="#estimation"></a>
 </h2>
-<p><code><a href="../reference/lca.html">lca()</a></code> fits a single-level latent class model.</p>
+<p><code><a href="../reference/lca.html">lca()</a></code> fits a single-level latent class model, estimated
+by maximum likelihood with the expectation-maximization algorithm from
+multiple starting values.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lca.html">lca</a></span><span class="op">(</span><span class="va">student_esm</span>, <span class="va">activities</span>, n_classes <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="va">fit</span></span>
@@ -312,8 +356,12 @@ confused with which.</p>
 <span><span class="co">#&gt;   info   log likelihood, parameters, BIC                     -7848.45, 26, 15901.17   </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Every check with its reference: get_results(x, "checks"). Other tables: get_results(x, what = ).</span></span></code></pre>
-<p>The relative entropy of 0.66 indicates a moderately clear
-classification.</p>
+<p>The relative entropy of 0.66 (Ramaswamy et al., 1993) indicates a
+moderately clear classification, although the reports of the third class
+are assigned with an average posterior of only 0.71. Relative entropy
+describes the quality of the classification for the chosen model rather
+than serving as a criterion for the number of classes (Sorgente et al.,
+2025).</p>
 </div>
 <div class="section level2">
 <h2 id="local-dependence">Local dependence<a class="anchor" aria-label="anchor" href="#local-dependence"></a>
@@ -324,10 +372,11 @@ compares their observed co-occurrence within a class with the
 co-occurrence the model implies, and a large value indicates a
 dependence the classes do not explain. The p-value refers this Pearson
 statistic to a chi-square distribution that ignores the estimation of
-the model’s table, which makes it very conservative: in simulated data
-from a correctly specified latent class model it rejected 0.25% of pairs
-per class, and 0.08% pooled, at a nominal 5%. <code>p_adjusted</code> is
-corrected across all the pairs by Benjamini-Hochberg. A pair that passes
+the model’s table, which makes it very conservative: in one simulation
+from a correctly specified two-class model (n = 500, 200 replications)
+it rejected 0.25% of pairs per class, and 0.08% pooled, at a nominal 5%.
+<code>p_adjusted</code> is corrected across all the pairs by
+Benjamini-Hochberg (Benjamini &amp; Hochberg, 1995). A pair that passes
 the filter below is therefore strong evidence of dependence, but a pair
 that does not pass it is not evidence of independence.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
@@ -393,11 +442,10 @@ about as well without modelling it.</p>
 </h2>
 <p><code><a href="../reference/three_step.html">three_step()</a></code> estimates the mean of an outcome within
 each class. It uses the BCH method, which applies the inverse estimated
-classification-error matrix to modal class assignments (Bolck, Croon and
-Hagenaars, 2004). These corrected weights can be negative;
-posterior-probability weighting is the separate
-<code>method = "proportional"</code> option. The outcome here is the
-happiness rating.</p>
+classification-error matrix to modal class assignments (Bolck et al.,
+2004). These corrected weights can be negative; posterior-probability
+weighting is the separate <code>method = "proportional"</code> option.
+The outcome here is the happiness rating.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">happiness</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/three_step.html">three_step</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">student_esm</span>, outcome <span class="op">=</span> <span class="st">"happy"</span><span class="op">)</span></span>
 <span><span class="va">happiness</span></span>
@@ -418,9 +466,10 @@ and the work class (4.53).</p>
 <p>Each student contributes many reports, so the reports are not
 independent. When the student identifier is supplied as <code>id</code>,
 <code><a href="../reference/multilca.html">multilca()</a></code> estimates a two-level model: the classes of
-reports are retained, and the students are in addition grouped into
-latent classes that differ in the proportion of their reports belonging
-to each class.</p>
+reports are estimated again, jointly with the student classes, and need
+not coincide with the single-level classes; the students are in addition
+grouped into latent classes that differ in the proportion of their
+reports belonging to each class.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">two_level</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/multilca.html">multilca</a></span><span class="op">(</span><span class="va">student_esm</span>, <span class="va">activities</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
 <span>                      n_profiles <span class="op">=</span> <span class="fl">3</span>, n_group_classes <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
@@ -438,9 +487,55 @@ to each class.</p>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
+<p>Benjamini, Y., &amp; Hochberg, Y. (1995). Controlling the false
+discovery rate: A practical and powerful approach to multiple testing.
+<em>Journal of the Royal Statistical Society: Series B</em>, 57(1),
+289–300.</p>
+<p>Biernacki, C., Celeux, G., &amp; Govaert, G. (2000). Assessing a
+mixture model for clustering with the integrated completed likelihood.
+<em>IEEE Transactions on Pattern Analysis and Machine Intelligence</em>,
+22, 719–725.</p>
 <p>Bolck, A., Croon, M., &amp; Hagenaars, J. (2004). Estimating latent
 structure models with categorical variables: One-step versus three-step
 estimators. <em>Political Analysis</em>, 12(1), 3–27.</p>
+<p>Collins, L. M., &amp; Lanza, S. T. (2010). <em>Latent class and
+latent transition analysis</em>. Wiley.</p>
+<p>López-Pernas, S., &amp; Saqr, M. (2023). From variables to states to
+trajectories (VaSSTra): A method for modelling the longitudinal dynamics
+of learning and behaviour. In <em>Proceedings TEEM 2022: Tenth
+International Conference on Technological Ecosystems for Enhancing
+Multiculturality</em> (pp. 1169–1178).</p>
+<p>López-Pernas, S., &amp; Saqr, M. (2024). Modeling the dynamics of
+longitudinal processes in education: A tutorial with R for the VaSSTra
+method. In M. Saqr &amp; S. López-Pernas (Eds.), <em>Learning analytics
+methods and tutorials: A practical guide using R</em> (pp. 355–379).
+Springer. <a href="https://doi.org/10.1007/978-3-031-54464-4_11" class="external-link uri">https://doi.org/10.1007/978-3-031-54464-4_11</a></p>
+<p>Neubauer, A. B., &amp; Schmiedek, F. (2024). Approaching academic
+adjustment on multiple time scales. <em>Zeitschrift für
+Erziehungswissenschaft</em>, 27(1), 147–168. <a href="https://doi.org/10.1007/s11618-023-01182-8" class="external-link uri">https://doi.org/10.1007/s11618-023-01182-8</a></p>
+<p>Nylund-Gibson, K., &amp; Choi, A. Y. (2018). Ten frequently asked
+questions about latent class analysis. <em>Translational Issues in
+Psychological Science</em>, 4(4), 440–461. <a href="https://doi.org/10.1037/tps0000176" class="external-link uri">https://doi.org/10.1037/tps0000176</a></p>
+<p>Ramaswamy, V., DeSarbo, W. S., Reibstein, D. J., &amp; Robinson, W.
+T. (1993). An empirical pooling approach for estimating marketing mix
+elasticities with PIMS data. <em>Marketing Science</em>, 12,
+103–124.</p>
+<p>Saqr, M., &amp; López-Pernas, S. (2021). The longitudinal
+trajectories of online engagement over a full program. <em>Computers
+&amp; Education</em>, 175, 104325. <a href="https://doi.org/10.1016/j.compedu.2021.104325" class="external-link uri">https://doi.org/10.1016/j.compedu.2021.104325</a></p>
+<p>Saqr, M., López-Pernas, S., Helske, S., &amp; Hrastinski, S. (2023).
+The longitudinal association between engagement and achievement varies
+by time, students’ profiles, and achievement state: A full program
+study. <em>Computers &amp; Education</em>, 199, 104787. <a href="https://doi.org/10.1016/j.compedu.2023.104787" class="external-link uri">https://doi.org/10.1016/j.compedu.2023.104787</a></p>
+<p>Schwarz, G. (1978). Estimating the dimension of a model. <em>The
+Annals of Statistics</em>, 6, 461–464.</p>
+<p>Sorgente, A., Caliciuri, R., Robba, M., Lanz, M., &amp; Zumbo, B. D.
+(2025). A systematic review of latent class analysis in psychology:
+Examining the gap between guidelines and research practice. <em>Behavior
+Research Methods</em>, 57, 301. <a href="https://doi.org/10.3758/s13428-025-02812-1" class="external-link uri">https://doi.org/10.3758/s13428-025-02812-1</a></p>
+<p>Weller, B. E., Bowen, N. K., &amp; Faubert, S. J. (2020). Latent
+class analysis: A guide to best practice. <em>Journal of Black
+Psychology</em>, 46(4), 287–311. <a href="https://doi.org/10.1177/0095798420930932" class="external-link uri">https://doi.org/10.1177/0095798420930932</a></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

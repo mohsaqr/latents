@@ -15,6 +15,13 @@
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Case study: Latent transition analysis of course engagement">
+<meta name="citation_title" content="Case study: Latent transition analysis of course engagement">
+<meta name="citation_author" content="Saqr, Mohammed">
+<meta name="citation_author" content="López-Pernas, Sonsoles">
+<meta name="citation_publication_date" content="2026">
+<meta name="citation_publisher" content="latents">
+<meta name="citation_pdf_url" content="https://pak.dynasite.org/latents/pdf/case-engagement-transitions.pdf">
+<meta name="citation_abstract_html_url" content="https://pak.dynasite.org/latents/articles/case-engagement-transitions.html">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -24,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +54,6 @@
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
     <li><a class="dropdown-item" href="../articles/tree-plot.html">Tree plot</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
@@ -65,7 +71,9 @@
     <li><a class="dropdown-item" href="../articles/case-engagement-evaluation.html">Case study: Evaluating multilevel latent profile models</a></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-covariates.html">Case study: Covariates and staged estimation in multilevel LPA</a></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-transitions.html">Case study: Latent transition analysis of course engagement</a></li>
-    <li><a class="dropdown-item" href="../articles/case-esm-lca.html">Case study: Two-level latent class analysis of leisure activities</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Resources</h6></li>
+    <li><a class="dropdown-item" href="../articles/cite-articles.html">Resources</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -88,13 +96,18 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Case study: Latent transition analysis of course engagement</h1>
-                        <h4 data-toc-skip class="author">Written by <a href="https://saqr.me" class="external-link">Mohammed Saqr</a> and <a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a>
-</h4>
-            
-      
-      <small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/vignettes/articles/case-engagement-transitions.Rmd" class="external-link"><code>vignettes/articles/case-engagement-transitions.Rmd</code></a></small>
+                        <h4 data-toc-skip class="author">Mohammed
+Saqr</h4>
+            <address class="author_afil">
+      University of Eastern
+Finland<br><h4 data-toc-skip class="author">Sonsoles
+López-Pernas</h4>
+            <address class="author_afil">
+      University of Eastern Finland<br><small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/vignettes/articles/case-engagement-transitions.Rmd" class="external-link"><code>vignettes/articles/case-engagement-transitions.Rmd</code></a></small>
       <div class="d-none name"><code>case-engagement-transitions.Rmd</code></div>
-    </div>
+    </address>
+</address>
+</div>
 
     
     
@@ -107,18 +120,24 @@ students who differ only in where it starts.</p>
 <div class="section level2">
 <h2 id="data-and-model">Data and model<a class="anchor" aria-label="anchor" href="#data-and-model"></a>
 </h2>
-<p><code>course_engagement</code> holds 1,422 course enrolments of 106
+<p><code>engagement_momentum</code> holds 1,310 course enrolments of 106
 students, ordered within each student by <code>sequence</code>. The five
-indicators are simulated as continuous values representing a log-count
-scale and standardized within course; no raw counts or
-<code><a href="https://rdrr.io/r/base/Log.html" class="external-link">log1p()</a></code> transformation are generated. The data are
-synthetic and revisit the design of Saqr and López-Pernas (2021), who
-asked how students’ online engagement develops across a program. That
-study identified course-level engagement states and longer-term
-trajectories with latent class analysis and hidden Markov models. Here,
-three profiles and two student classes are working choices for
-illustrating the transition model; they do not establish the number of
-profiles or reproduce the published estimates.</p>
+indicators are simulated as continuous values on a log-activity scale
+and standardized within course. The data are synthetic and follow the
+design of the engagement studies of Saqr and López-Pernas (2021) and
+López-Pernas and Saqr (2024), which identified course-level engagement
+states with latent class analysis and followed students’ sequences of
+states across a program. In the simulation, each student follows one of
+three trajectories (engaged, fluctuating or mostly disengaged), each a
+first-order Markov chain over three engagement states (active, average
+and disengaged). Engaged students show momentum, in that an active
+course tends to be followed by another active course; mostly disengaged
+students show inertia, in that a disengaged course tends to be followed
+by another disengaged course. Three profiles and three student classes
+therefore match the structure from which the data were generated, and
+the <a href="case-engagement-evaluation.html">evaluation vignette</a>
+shows that the BIC selects the same numbers for the multilevel profile
+model.</p>
 <p>For student
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
 at course position
@@ -148,26 +167,28 @@ within a class is estimated from little information; the expected count
 of each transition shows how much.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pak.dynasite.org/latents/">latents</a></span><span class="op">)</span></span>
-<span><span class="va">vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>, <span class="st">"attendance"</span><span class="op">)</span></span>
+<span><span class="va">vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"browse"</span>, <span class="st">"lectures"</span>, <span class="st">"forum_read"</span>, <span class="st">"forum_post"</span>, <span class="st">"active_days"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">moves</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lta.html">lta</a></span><span class="op">(</span><span class="va">course_engagement</span>, <span class="va">vars</span>, <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>             n_group_classes <span class="op">=</span> <span class="fl">2</span>, time <span class="op">=</span> <span class="st">"sequence"</span>, n_starts <span class="op">=</span> <span class="fl">10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">moves</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lta.html">lta</a></span><span class="op">(</span><span class="va">engagement_momentum</span>, <span class="va">vars</span>, <span class="st">"student"</span>, n_profiles <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>             n_group_classes <span class="op">=</span> <span class="fl">3</span>, time <span class="op">=</span> <span class="st">"sequence"</span>, n_starts <span class="op">=</span> <span class="fl">10</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: An initial, transition or group-class probability is at its numerical boundary; Wald</span></span>
 <span><span class="co">#&gt; inference is withheld.</span></span>
 <span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span>, <span class="st">"starts"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    start log_likelihood converged iterations error</span></span>
-<span><span class="co">#&gt; 1      1          -8243      TRUE         36  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 2      2          -8243      TRUE         48  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 3      3          -8243      TRUE         64  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 4      4          -8243      TRUE         48  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 5      5          -8243      TRUE         45  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 6      6          -8243      TRUE         39  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 7      7          -8243      TRUE         46  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 8      8          -8243      TRUE         39  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 9      9          -8243      TRUE         42  &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 10    10          -8243      TRUE         39  &lt;NA&gt;</span></span></code></pre></div>
+<span><span class="co">#&gt; 1      1          -7444      TRUE         43  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2      2          -7444      TRUE         47  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3      3          -7444      TRUE         30  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4      4          -7444      TRUE         46  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 5      5          -7444      TRUE         26  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 6      6          -7444      TRUE         38  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 7      7          -7444      TRUE         30  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 8      8          -7444      TRUE         46  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 9      9          -7444      TRUE         30  &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 10    10          -7444      TRUE         39  &lt;NA&gt;</span></span></code></pre></div>
 <p>All ten starts converge to the same log likelihood, so the solution
-is replicated within this seed’s starts.</p>
+is replicated within this seed’s starts. The warning reports that one
+estimated probability lies at its numerical boundary; the section on
+sparse and boundary estimates below identifies it.</p>
 </div>
 <div class="section level2">
 <h2 id="the-profiles">The profiles<a class="anchor" aria-label="anchor" href="#the-profiles"></a>
@@ -180,43 +201,43 @@ enrolments.</p>
 <p><img src="case-engagement-transitions_files/figure-html/profiles-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    profile  indicator    mean variance standard_deviation mean_standard_error</span></span>
-<span><span class="co">#&gt; 1        1     browse  0.3959   0.6100             0.7810             0.04451</span></span>
-<span><span class="co">#&gt; 2        1   lectures  0.1893   0.7592             0.8713             0.05530</span></span>
-<span><span class="co">#&gt; 3        1 forum_read  0.4542   0.4578             0.6766             0.04182</span></span>
-<span><span class="co">#&gt; 4        1 forum_post  0.3446   0.7146             0.8453             0.05125</span></span>
-<span><span class="co">#&gt; 5        1 attendance  0.2539   0.2044             0.4521             0.04686</span></span>
-<span><span class="co">#&gt; 6        2     browse -0.7760   0.5149             0.7175             0.03067</span></span>
-<span><span class="co">#&gt; 7        2   lectures -0.6117   0.5417             0.7360             0.03107</span></span>
-<span><span class="co">#&gt; 8        2 forum_read -0.8881   0.3540             0.5950             0.02546</span></span>
-<span><span class="co">#&gt; 9        2 forum_post -0.7607   0.4149             0.6441             0.02749</span></span>
-<span><span class="co">#&gt; 10       2 attendance -0.9293   0.3727             0.6105             0.02632</span></span>
-<span><span class="co">#&gt; 11       3     browse  0.7058   0.5291             0.7274             0.05025</span></span>
-<span><span class="co">#&gt; 12       3   lectures  0.7116   0.7967             0.8926             0.06055</span></span>
-<span><span class="co">#&gt; 13       3 forum_read  0.8070   0.4653             0.6821             0.04543</span></span>
-<span><span class="co">#&gt; 14       3 forum_post  0.7470   0.5766             0.7594             0.05167</span></span>
-<span><span class="co">#&gt; 15       3 attendance  1.1241   0.2066             0.4546             0.05551</span></span>
+<span><span class="co">#&gt;    profile   indicator      mean variance standard_deviation mean_standard_error</span></span>
+<span><span class="co">#&gt; 1        1      browse -0.923714   0.3678             0.6065             0.03168</span></span>
+<span><span class="co">#&gt; 2        1    lectures -0.791300   0.4152             0.6443             0.03251</span></span>
+<span><span class="co">#&gt; 3        1  forum_read -0.977232   0.2957             0.5438             0.02844</span></span>
+<span><span class="co">#&gt; 4        1  forum_post -0.869964   0.3856             0.6210             0.03222</span></span>
+<span><span class="co">#&gt; 5        1 active_days -0.959655   0.3397             0.5828             0.03129</span></span>
+<span><span class="co">#&gt; 6        2      browse -0.003945   0.4593             0.6777             0.05270</span></span>
+<span><span class="co">#&gt; 7        2    lectures -0.114705   0.5683             0.7539             0.05394</span></span>
+<span><span class="co">#&gt; 8        2  forum_read -0.065051   0.4242             0.6513             0.05302</span></span>
+<span><span class="co">#&gt; 9        2  forum_post -0.053149   0.4361             0.6604             0.04942</span></span>
+<span><span class="co">#&gt; 10       2 active_days  0.005032   0.4118             0.6417             0.04873</span></span>
+<span><span class="co">#&gt; 11       3      browse  0.765447   0.4967             0.7048             0.03439</span></span>
+<span><span class="co">#&gt; 12       3    lectures  0.722691   0.6362             0.7976             0.03910</span></span>
+<span><span class="co">#&gt; 13       3  forum_read  0.846368   0.3607             0.6006             0.03040</span></span>
+<span><span class="co">#&gt; 14       3  forum_post  0.750965   0.5959             0.7719             0.03750</span></span>
+<span><span class="co">#&gt; 15       3 active_days  0.789730   0.4552             0.6747             0.03422</span></span>
 <span><span class="co">#&gt;    variance_standard_error</span></span>
-<span><span class="co">#&gt; 1                  0.04495</span></span>
-<span><span class="co">#&gt; 2                  0.06044</span></span>
-<span><span class="co">#&gt; 3                  0.03604</span></span>
-<span><span class="co">#&gt; 4                  0.05661</span></span>
-<span><span class="co">#&gt; 5                  0.02189</span></span>
-<span><span class="co">#&gt; 6                  0.03139</span></span>
-<span><span class="co">#&gt; 7                  0.03251</span></span>
-<span><span class="co">#&gt; 8                  0.02148</span></span>
-<span><span class="co">#&gt; 9                  0.02558</span></span>
-<span><span class="co">#&gt; 10                 0.02267</span></span>
-<span><span class="co">#&gt; 11                 0.04793</span></span>
-<span><span class="co">#&gt; 12                 0.06922</span></span>
-<span><span class="co">#&gt; 13                 0.03958</span></span>
-<span><span class="co">#&gt; 14                 0.05569</span></span>
-<span><span class="co">#&gt; 15                 0.02431</span></span></code></pre></div>
-<p>The profiles describe lower, intermediate and higher activity. Their
-attendance means are approximately -0.929, 0.254 and 1.124 in that
-order; the table above gives the corresponding profile labels for this
-fitted solution. The heatmap shows the same means as standard deviations
-from each indicator’s grand mean.</p>
+<span><span class="co">#&gt; 1                  0.02681</span></span>
+<span><span class="co">#&gt; 2                  0.02908</span></span>
+<span><span class="co">#&gt; 3                  0.02226</span></span>
+<span><span class="co">#&gt; 4                  0.02792</span></span>
+<span><span class="co">#&gt; 5                  0.02642</span></span>
+<span><span class="co">#&gt; 6                  0.04686</span></span>
+<span><span class="co">#&gt; 7                  0.05225</span></span>
+<span><span class="co">#&gt; 8                  0.04176</span></span>
+<span><span class="co">#&gt; 9                  0.04283</span></span>
+<span><span class="co">#&gt; 10                 0.04271</span></span>
+<span><span class="co">#&gt; 11                 0.03299</span></span>
+<span><span class="co">#&gt; 12                 0.04223</span></span>
+<span><span class="co">#&gt; 13                 0.02446</span></span>
+<span><span class="co">#&gt; 14                 0.03863</span></span>
+<span><span class="co">#&gt; 15                 0.03178</span></span></code></pre></div>
+<p>Profile 1 is the disengaged state, Profile 2 the average state and
+Profile 3 the active state, with means of days active of -0.960, 0.005
+and 0.790 standard deviations from the course mean. The heatmap shows
+the same means as standard deviations from each indicator’s grand
+mean.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_profiles.html">plot_profiles</a></span><span class="op">(</span><span class="va">moves</span>, what <span class="op">=</span> <span class="st">"heatmap"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-engagement-transitions_files/figure-html/heatmap-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
@@ -236,21 +257,26 @@ of students in the class.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span>, <span class="st">"initial"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   group_class profile probability prevalence group_class_probability</span></span>
-<span><span class="co">#&gt; 1           1       1   1.000e-10    0.08414                  0.3003</span></span>
-<span><span class="co">#&gt; 2           1       2   7.623e-01    0.81932                  0.3003</span></span>
-<span><span class="co">#&gt; 3           1       3   2.377e-01    0.09654                  0.3003</span></span>
-<span><span class="co">#&gt; 4           2       1   3.527e-01    0.43724                  0.6997</span></span>
-<span><span class="co">#&gt; 5           2       2   2.037e-01    0.22974                  0.6997</span></span>
-<span><span class="co">#&gt; 6           2       3   4.436e-01    0.33301                  0.6997</span></span></code></pre></div>
-<p>Student class 1, with 30.0% of students, starts in the lower-activity
-profile with probability 0.762 and in the higher-activity profile with
-probability 0.238; its probability of starting in the intermediate
-profile is effectively zero. Class 2, with 70.0% of students, starts
-across all three profiles, with probabilities 0.204, 0.444 and 0.353.
-Starting and overall shares differ: class 1 starts in the lower profile
-with probability 0.762, but 0.819 of its enrolments are expected there
-over the whole history, while class 2 starts in the higher profile with
-probability 0.444 and spends 0.333 of its enrolments there.</p>
+<span><span class="co">#&gt; 1           1       1      0.7461    0.82094                  0.2178</span></span>
+<span><span class="co">#&gt; 2           1       2      0.1063    0.12384                  0.2178</span></span>
+<span><span class="co">#&gt; 3           1       3      0.1476    0.05522                  0.2178</span></span>
+<span><span class="co">#&gt; 4           2       1      0.3834    0.33770                  0.3408</span></span>
+<span><span class="co">#&gt; 5           2       2      0.3665    0.37729                  0.3408</span></span>
+<span><span class="co">#&gt; 6           2       3      0.2501    0.28501                  0.3408</span></span>
+<span><span class="co">#&gt; 7           3       1      0.1451    0.10101                  0.4414</span></span>
+<span><span class="co">#&gt; 8           3       2      0.2421    0.21144                  0.4414</span></span>
+<span><span class="co">#&gt; 9           3       3      0.6128    0.68755                  0.4414</span></span></code></pre></div>
+<p>Student class 1, with 21.8% of students, starts in the disengaged
+profile with probability 0.746, and 0.821 of its enrolments are expected
+there over the whole history. Class 3, with 44.1% of students, starts in
+the active profile with probability 0.613, and 0.688 of its enrolments
+are expected there. Class 2, with 34.1% of students, starts across all
+three profiles, with probabilities 0.383, 0.367 and 0.250, and spends
+its enrolments in similar proportions. Class 1 is therefore the mostly
+disengaged class, class 2 the fluctuating class and class 3 the engaged
+class. In classes 1 and 3, the expected share of enrolments in the
+dominant profile exceeds the probability of starting there: over the
+program, students drift towards the state that their class favours.</p>
 </div>
 <div class="section level2">
 <h2 id="how-engagement-changes">How engagement changes<a class="anchor" aria-label="anchor" href="#how-engagement-changes"></a>
@@ -268,70 +294,95 @@ this fit.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span>, <span class="st">"transitions"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    group_class from to probability expected_count origin_expected_count supported stable estimated</span></span>
-<span><span class="co">#&gt; 1            1    1  1     0.52017         17.541                 33.72      TRUE   TRUE      TRUE</span></span>
-<span><span class="co">#&gt; 2            1    1  2     0.33936         11.444                 33.72      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 3            1    1  3     0.14047          4.737                 33.72      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 4            1    2  1     0.03017          9.748                323.07      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 5            1    2  2     0.93857        303.221                323.07      TRUE   TRUE      TRUE</span></span>
-<span><span class="co">#&gt; 6            1    2  3     0.03126         10.099                323.07      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 7            1    3  1     0.22210          8.712                 39.22      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 8            1    3  2     0.29606         11.613                 39.22      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 9            1    3  3     0.48184         18.900                 39.22      TRUE   TRUE      TRUE</span></span>
-<span><span class="co">#&gt; 10           2    1  1     0.52559        214.238                407.61      TRUE   TRUE      TRUE</span></span>
-<span><span class="co">#&gt; 11           2    1  2     0.11407         46.497                407.61      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 12           2    1  3     0.36034        146.876                407.61      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 13           2    2  1     0.20987         43.694                208.19      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 14           2    2  2     0.61457        127.949                208.19      TRUE   TRUE      TRUE</span></span>
-<span><span class="co">#&gt; 15           2    2  3     0.17555         36.548                208.19      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 16           2    3  1     0.49508        150.595                304.18      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 17           2    3  2     0.12771         38.847                304.18      TRUE  FALSE      TRUE</span></span>
-<span><span class="co">#&gt; 18           2    3  3     0.37721        114.743                304.18      TRUE   TRUE      TRUE</span></span>
+<span><span class="co">#&gt; 1            1    1  1   9.035e-01      1.963e+02                217.22      TRUE   TRUE      TRUE</span></span>
+<span><span class="co">#&gt; 2            1    1  2   8.718e-02      1.894e+01                217.22      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 3            1    1  3   9.299e-03      2.020e+00                217.22      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 4            1    2  1   6.171e-01      2.141e+01                 34.70      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 5            1    2  2   3.829e-01      1.329e+01                 34.70      TRUE   TRUE      TRUE</span></span>
+<span><span class="co">#&gt; 6            1    2  3   2.284e-08      4.974e-07                 34.70      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 7            1    3  1   2.503e-01      4.007e+00                 16.01      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 8            1    3  2   8.482e-02      1.358e+00                 16.01      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 9            1    3  3   6.649e-01      1.064e+01                 16.01      TRUE   TRUE      TRUE</span></span>
+<span><span class="co">#&gt; 10           2    1  1   4.422e-01      5.979e+01                135.23      TRUE   TRUE      TRUE</span></span>
+<span><span class="co">#&gt; 11           2    1  2   3.376e-01      4.565e+01                135.23      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 12           2    1  3   2.202e-01      2.978e+01                135.23      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 13           2    2  1   3.370e-01      5.108e+01                151.58      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 14           2    2  2   2.700e-01      4.093e+01                151.58      TRUE   TRUE      TRUE</span></span>
+<span><span class="co">#&gt; 15           2    2  3   3.930e-01      5.957e+01                151.58      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 16           2    3  1   2.035e-01      2.378e+01                116.83      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 17           2    3  2   5.657e-01      6.610e+01                116.83      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 18           2    3  3   2.307e-01      2.695e+01                116.83      TRUE   TRUE      TRUE</span></span>
+<span><span class="co">#&gt; 19           3    1  1   3.821e-01      1.902e+01                 49.78      TRUE   TRUE      TRUE</span></span>
+<span><span class="co">#&gt; 20           3    1  2   2.541e-01      1.265e+01                 49.78      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 21           3    1  3   3.638e-01      1.811e+01                 49.78      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 22           3    2  1   1.431e-01      1.647e+01                115.06      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 23           3    2  2   3.835e-01      4.412e+01                115.06      TRUE   TRUE      TRUE</span></span>
+<span><span class="co">#&gt; 24           3    2  3   4.734e-01      5.447e+01                115.06      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 25           3    3  1   4.416e-02      1.623e+01                367.59      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 26           3    3  2   1.479e-01      5.437e+01                367.59      TRUE  FALSE      TRUE</span></span>
+<span><span class="co">#&gt; 27           3    3  3   8.079e-01      2.970e+02                367.59      TRUE   TRUE      TRUE</span></span>
 <span><span class="co">#&gt;    group_class_probability</span></span>
-<span><span class="co">#&gt; 1                   0.3003</span></span>
-<span><span class="co">#&gt; 2                   0.3003</span></span>
-<span><span class="co">#&gt; 3                   0.3003</span></span>
-<span><span class="co">#&gt; 4                   0.3003</span></span>
-<span><span class="co">#&gt; 5                   0.3003</span></span>
-<span><span class="co">#&gt; 6                   0.3003</span></span>
-<span><span class="co">#&gt; 7                   0.3003</span></span>
-<span><span class="co">#&gt; 8                   0.3003</span></span>
-<span><span class="co">#&gt; 9                   0.3003</span></span>
-<span><span class="co">#&gt; 10                  0.6997</span></span>
-<span><span class="co">#&gt; 11                  0.6997</span></span>
-<span><span class="co">#&gt; 12                  0.6997</span></span>
-<span><span class="co">#&gt; 13                  0.6997</span></span>
-<span><span class="co">#&gt; 14                  0.6997</span></span>
-<span><span class="co">#&gt; 15                  0.6997</span></span>
-<span><span class="co">#&gt; 16                  0.6997</span></span>
-<span><span class="co">#&gt; 17                  0.6997</span></span>
-<span><span class="co">#&gt; 18                  0.6997</span></span></code></pre></div>
+<span><span class="co">#&gt; 1                   0.2178</span></span>
+<span><span class="co">#&gt; 2                   0.2178</span></span>
+<span><span class="co">#&gt; 3                   0.2178</span></span>
+<span><span class="co">#&gt; 4                   0.2178</span></span>
+<span><span class="co">#&gt; 5                   0.2178</span></span>
+<span><span class="co">#&gt; 6                   0.2178</span></span>
+<span><span class="co">#&gt; 7                   0.2178</span></span>
+<span><span class="co">#&gt; 8                   0.2178</span></span>
+<span><span class="co">#&gt; 9                   0.2178</span></span>
+<span><span class="co">#&gt; 10                  0.3408</span></span>
+<span><span class="co">#&gt; 11                  0.3408</span></span>
+<span><span class="co">#&gt; 12                  0.3408</span></span>
+<span><span class="co">#&gt; 13                  0.3408</span></span>
+<span><span class="co">#&gt; 14                  0.3408</span></span>
+<span><span class="co">#&gt; 15                  0.3408</span></span>
+<span><span class="co">#&gt; 16                  0.3408</span></span>
+<span><span class="co">#&gt; 17                  0.3408</span></span>
+<span><span class="co">#&gt; 18                  0.3408</span></span>
+<span><span class="co">#&gt; 19                  0.4414</span></span>
+<span><span class="co">#&gt; 20                  0.4414</span></span>
+<span><span class="co">#&gt; 21                  0.4414</span></span>
+<span><span class="co">#&gt; 22                  0.4414</span></span>
+<span><span class="co">#&gt; 23                  0.4414</span></span>
+<span><span class="co">#&gt; 24                  0.4414</span></span>
+<span><span class="co">#&gt; 25                  0.4414</span></span>
+<span><span class="co">#&gt; 26                  0.4414</span></span>
+<span><span class="co">#&gt; 27                  0.4414</span></span></code></pre></div>
 <p>The transition plot draws each class’s matrix as a heatmap, with the
 origin profile in rows and the destination in columns.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_transitions.html">plot_transitions</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-engagement-transitions_files/figure-html/transition-plot-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
-<p>In class 1, lower activity persists with probability 0.939, estimated
-from 303 expected transitions. Each of its other transitions rests on
-fewer than 20 expected transitions, because class-1 students rarely
-leave the lower profile. Class 2 moves between profiles. Its students
-remain in the lower profile with probability 0.615, move from higher to
-intermediate activity with probability 0.495, and from intermediate to
-higher with probability 0.360. Class 1 is therefore a persistently
-low-engagement class, and class 2 a class whose engagement changes from
-course to course.</p>
+<p>In class 1, a disengaged course is followed by another disengaged
+course with probability 0.904, estimated from 196 expected transitions,
+and an average course is followed by a disengaged one with probability
+0.617 (from 34.7 expected transitions): disengagement has inertia, and
+the average state leads back into it. In class 3, an active course is
+followed by another active course with probability 0.808, estimated from
+297 expected transitions, and an average course is followed by an active
+one with probability 0.473: engagement has momentum. Class 2 has no
+dominant transition; its largest probability, 0.566, takes an active
+course to an average one, and its other probabilities lie between 0.20
+and 0.44. These are the patterns of the generating model, in which
+disengagement and activity persist with probability 0.85 in the
+corresponding trajectories, and the fluctuating trajectory moves between
+states with probabilities between 0.25 and 0.40.</p>
 </div>
 <div class="section level2">
 <h2 id="sparse-and-boundary-estimates">Sparse and boundary estimates<a class="anchor" aria-label="anchor" href="#sparse-and-boundary-estimates"></a>
 </h2>
-<p>Some estimates rest on very little information. Class 1’s probability
-of starting in the intermediate profile is at its lower bound, because
-no class-1 student is expected to start there. Class 1’s transitions out
-of the higher and intermediate profiles rest on between 4.7 and 18.9
-expected transitions each, because its students rarely leave the lower
-profile. A probability near zero shows that the data carry little
-information about that movement, not that the movement is impossible.
-Estimates like these can also mean that the chosen number of classes
-divides the available transitions too finely.</p>
+<p>Some estimates rest on little information. Students in class 1 rarely
+occupy the active profile, so its transitions out of the active profile
+rest on 16.0 expected transitions and those out of the average profile
+on 34.7. Its probability of moving from the average to the active
+profile is at its lower bound, which is why Wald inference is withheld
+for this fit. A probability near zero shows that the data carry little
+information about that movement, not that the movement is impossible: in
+the generating model, mostly disengaged students move from the average
+to the active state with probability 0.10. Estimates like these can also
+mean that the chosen number of classes divides the available transitions
+too finely.</p>
 </div>
 <div class="section level2">
 <h2 id="assigned-sequences">Assigned sequences<a class="anchor" aria-label="anchor" href="#assigned-sequences"></a>
@@ -345,11 +396,16 @@ uncertainty.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span>, <span class="st">"sequence_summary"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   group_class groups observations mean_length median_length shortest longest complete gaps</span></span>
-<span><span class="co">#&gt; 1           1     31          417       13.45            13       10      15        8    0</span></span>
-<span><span class="co">#&gt; 2           2     75         1005       13.40            14       10      15       16    0</span></span></code></pre></div>
+<span><span class="co">#&gt; 1           1     22          278       12.64          12.5       10      15        4    0</span></span>
+<span><span class="co">#&gt; 2           2     39          473       12.13          12.0       10      15        3    0</span></span>
+<span><span class="co">#&gt; 3           3     45          559       12.42          12.0       10      15        8    0</span></span></code></pre></div>
 <p>The summary gives the number of students and courses in each assigned
-class. Sequence lengths differ between students, so the rows of the plot
-end at different positions.</p>
+class: 22 students with 278 courses in class 1, 39 with 473 in class 2
+and 45 with 559 in class 3. Sequence lengths range from 10 to 15
+courses, so the rows of the plot end at different positions. The long
+runs of the disengaged profile in class 1 and of the active profile in
+class 3 are the inertia and momentum of the transition table, seen in
+the individual histories.</p>
 </div>
 <div class="section level2">
 <h2 id="classification-uncertainty">Classification uncertainty<a class="anchor" aria-label="anchor" href="#classification-uncertainty"></a>
@@ -357,9 +413,9 @@ end at different positions.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span>, <span class="st">"entropy"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         level n_classes n_units entropy_sum relative_entropy</span></span>
-<span><span class="co">#&gt; 1 individuals         3    1422       309.4           0.8019</span></span>
-<span><span class="co">#&gt; 2      groups         2     106        16.3           0.7781</span></span></code></pre></div>
-<p>Relative entropy is 0.802 for enrolments and 0.778 for students. The
+<span><span class="co">#&gt; 1 individuals         3    1310      252.04           0.8249</span></span>
+<span><span class="co">#&gt; 2      groups         3     106       26.32           0.7740</span></span></code></pre></div>
+<p>Relative entropy is 0.825 for enrolments and 0.774 for students. The
 entropy plot shows, within each profile, how the per-case entropy
 contributions are distributed, and the posterior plot shows the
 posterior probability of each case’s assigned profile.</p>
@@ -389,44 +445,80 @@ class.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">per_class</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_group_tna.html">get_group_tna</a></span><span class="op">(</span><span class="va">moves</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">per_class</span><span class="op">)</span></span></code></pre></div>
-<p><img src="case-engagement-transitions_files/figure-html/group-network-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"><img src="case-engagement-transitions_files/figure-html/group-network-2.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
-<p>The class networks show the two patterns of the transition table: a
-dominant self-loop on the lower profile in class 1, and movement among
-all three profiles in class 2.</p>
+<p><img src="case-engagement-transitions_files/figure-html/group-network-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"><img src="case-engagement-transitions_files/figure-html/group-network-2.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"><img src="case-engagement-transitions_files/figure-html/group-network-3.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>The class networks show the patterns of the transition table: a
+dominant self-loop on the disengaged profile in class 1, movement among
+all three profiles in class 2, and a dominant self-loop on the active
+profile in class 3.</p>
+</div>
+<div class="section level2">
+<h2 id="recovery-of-the-generating-structure">Recovery of the generating structure<a class="anchor" aria-label="anchor" href="#recovery-of-the-generating-structure"></a>
+</h2>
+<p>The same check against the generating states and trajectories as in
+the <a href="case-engagement-profiles.html">introductory vignette</a>
+applies to the transition model.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/get_results.html">get_results</a></span><span class="op">(</span><span class="va">moves</span>, <span class="st">"assignments"</span>, data <span class="op">=</span> <span class="va">engagement_momentum</span>,</span>
+<span>            truth <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"state"</span>, <span class="st">"trajectory"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     assignment class      truth             value   n proportion</span></span>
+<span><span class="co">#&gt; 1      profile     1      state            active   0    0.00000</span></span>
+<span><span class="co">#&gt; 2      profile     2      state            active  37    0.06740</span></span>
+<span><span class="co">#&gt; 3      profile     3      state            active 512    0.93260</span></span>
+<span><span class="co">#&gt; 4      profile     1      state           average  30    0.09288</span></span>
+<span><span class="co">#&gt; 5      profile     2      state           average 258    0.79876</span></span>
+<span><span class="co">#&gt; 6      profile     3      state           average  35    0.10836</span></span>
+<span><span class="co">#&gt; 7      profile     1      state        disengaged 418    0.95434</span></span>
+<span><span class="co">#&gt; 8      profile     2      state        disengaged  20    0.04566</span></span>
+<span><span class="co">#&gt; 9      profile     3      state        disengaged   0    0.00000</span></span>
+<span><span class="co">#&gt; 10 group_class     1 trajectory           engaged   1    0.02326</span></span>
+<span><span class="co">#&gt; 11 group_class     2 trajectory           engaged   4    0.09302</span></span>
+<span><span class="co">#&gt; 12 group_class     3 trajectory           engaged  38    0.88372</span></span>
+<span><span class="co">#&gt; 13 group_class     1 trajectory       fluctuating   1    0.02439</span></span>
+<span><span class="co">#&gt; 14 group_class     2 trajectory       fluctuating  33    0.80488</span></span>
+<span><span class="co">#&gt; 15 group_class     3 trajectory       fluctuating   7    0.17073</span></span>
+<span><span class="co">#&gt; 16 group_class     1 trajectory mostly_disengaged  20    0.90909</span></span>
+<span><span class="co">#&gt; 17 group_class     2 trajectory mostly_disengaged   2    0.09091</span></span>
+<span><span class="co">#&gt; 18 group_class     3 trajectory mostly_disengaged   0    0.00000</span></span></code></pre></div>
+<p>The transition model recovers the states as well as the multilevel
+profile model does: 93.3%, 79.9% and 95.4% of the active, average and
+disengaged enrolments, against 92.9%, 79.9% and 94.7%. It recovers the
+engaged and mostly disengaged trajectories about as well (88.4% and
+90.9%, against 86.0% and 90.9%), but the fluctuating trajectory less
+well (80.5%, against 95.1%).</p>
 </div>
 <div class="section level2">
 <h2 id="limitations">Limitations<a class="anchor" aria-label="anchor" href="#limitations"></a>
 </h2>
 <p>The model assumes constant transition probabilities across course
 positions, so change specific to one stage of the program is averaged
-over positions. Transitions are between successive observed courses,
+over positions; the simulated data satisfy this assumption, but applied
+data need not. Transitions are between successive observed courses,
 which can differ in duration, content and assessment. Class differences
 describe patterns in engagement histories and do not identify their
-causes. Wald standard errors are withheld for this fit, because class
-1’s probability of starting in the intermediate profile sits at its
-lower bound (the note above the profile table), and the numbers of
-profiles and classes were not compared here;
-<code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> with <code>time</code> compares
-transition models over a grid of profile and class counts. The number of
-profiles and classes here is therefore a working choice. The diagonal
-covariance ignores the association between <code>attendance</code> and
-the click measures, which the evaluation vignette shows is present in
-these data; unmodelled dependence can be absorbed by extra profiles and
-change the apparent transitions. Transitions supported by few expected
-counts, such as those out of the higher and intermediate profiles in
-class 1, should not be interpreted.</p>
+causes. Wald standard errors are withheld for this fit because class 1’s
+probability of moving from the average to the active profile sits at its
+lower bound, and the numbers of profiles and classes were not compared
+for the transition model here; <code><a href="../reference/enumerate_classes.html">enumerate_classes()</a></code> with
+<code>time</code> compares transition models over a grid of profile and
+class counts. Transitions supported by few expected counts, such as
+those out of the active profile in class 1, should not be
+interpreted.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
 <p>Collins, L. M., &amp; Lanza, S. T. (2010). <em>Latent class and
 latent transition analysis</em>. Wiley.</p>
+<p>López-Pernas, S., &amp; Saqr, M. (2024). How the dynamics of
+engagement explain the momentum of achievement and the inertia of
+disengagement: A complex systems theory approach. <em>Computers in Human
+Behavior, 153</em>, 108126. <a href="https://doi.org/10.1016/j.chb.2023.108126" class="external-link uri">https://doi.org/10.1016/j.chb.2023.108126</a></p>
 <p>Saqr, M., &amp; López-Pernas, S. (2021). The longitudinal
 trajectories of online engagement over a full program. <em>Computers
 &amp; Education, 175</em>, 104325. <a href="https://doi.org/10.1016/j.compedu.2021.104325" class="external-link uri">https://doi.org/10.1016/j.compedu.2021.104325</a></p>
 <p>Tikka, S., López-Pernas, S., &amp; Saqr, M. (2025). tna: An R package
-for transition network analysis. <em>Applied Psychological
-Measurement</em>. <a href="https://doi.org/10.1177/01466216251348840" class="external-link uri">https://doi.org/10.1177/01466216251348840</a></p>
+for transition network analysis. <em>Applied Psychological Measurement,
+49</em>(6), 326–328. <a href="https://doi.org/10.1177/01466216251348840" class="external-link uri">https://doi.org/10.1177/01466216251348840</a></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

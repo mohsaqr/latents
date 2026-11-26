@@ -1,13 +1,30 @@
 # Mixture regression
 
-A single regression assumes that one line describes everyone. Mixture
-regression drops that assumption: the data are taken to come from a
-small number of latent classes, each with its own regression, and the
-model estimates the regressions, how common each class is, and how
-probably each observation belongs to each class — all at once. The
-method goes by several names: clusterwise regression, latent class
-regression, regression mixture (DeSarbo and Cron 1988; Wedel and DeSarbo
+Conventional regression analysis assumes that a single set of
+relationships between an outcome and its predictors applies uniformly
+across all observations. Mixture regression models relax this assumption
+by allowing the population to consist of a finite number of unobserved
+subgroups (latent classes), each characterized by its own regression
+function. Rather than estimating a single regression equation for the
+entire sample, the model simultaneously estimates class-specific
+regression coefficients, the relative size of each class, and the
+posterior probability of class membership for each observation. This
+allows for the identification of unobserved heterogeneity in the
+relationships between predictors and outcomes. Mixture regression is
+also referred to as clusterwise regression, latent class regression, or
+regression mixture modelling (DeSarbo & Cron, 1988; Wedel & DeSarbo,
 1995).
+
+Conceptually, mixture regression extends the person-centred perspective
+of latent profile analysis from identifying subgroups based on patterns
+of indicator values to identifying subgroups based on patterns of
+relationships among variables. Whereas latent profile analysis
+distinguishes individuals according to their response patterns or
+indicator means, mixture regression distinguishes them according to how
+the outcome relates to its predictors. Thus, individuals belonging to
+different latent classes may exhibit different regression coefficients,
+indicating that the same predictor can have different associations with
+the outcome across subgroups (Scrucca et al., 2024; Saqr et al., 2024).
 
 [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
 fits it for continuous (`"gaussian"`), binary or binomial
@@ -28,12 +45,12 @@ outcomes, at one level or two:
 
 `study_hours` is simulated so that the truth is known. 150 students
 report six weeks each. In each week a student studies with a *deep* or a
-*surface* strategy, and the strategy decides how hours turn into a quiz
-score: deep weeks gain about 4.5 points per hour from a base of 35,
-surface weeks under a point per hour from a base of 55. Steady students
-study deeply in most weeks, erratic students in few. The generating
-strategy and student type are kept in the data so recovery can be
-checked; the models never see them.
+*surface* strategy, and the strategy determines how hours translate into
+a quiz score: deep weeks gain about 4.5 points per hour from a base of
+35, and surface weeks less than one point per hour from a base of 55.
+Steady students study deeply in most weeks, erratic students in few. The
+generating strategy and student type are kept in the data so recovery
+can be checked; the models never see them.
 
 ``` r
 
@@ -79,8 +96,13 @@ fit
 #> Every table: get_results(x, what = ), e.g. "classes", "membership", "fit", "assignments".
 ```
 
-The two classes are the two strategies: a steep regression from a low
-base and a flat one from a high base. Every table comes from
+The two classes correspond to the two strategies. Class 1, 56.4% of the
+weeks, has a steep regression from a low base (4.57 points per hour from
+34.36), and class 2, 43.6%, a flat regression from a high base (0.81
+points per hour from 54.90). Relative entropy is only 0.443: the two
+regression lines cross at about five to six hours of study, near the
+middle of the data, where they predict similar scores, so many weeks
+cannot be assigned with confidence. Every table comes from
 [`get_results()`](https://pak.dynasite.org/latents/reference/get_results.md);
 the class table gives each class’s share, its residual standard
 deviation and how certainly its members are assigned.
@@ -113,6 +135,10 @@ get_results(fit, "recovery", data = study_hours, truth = "strategy")
 #> Class 2   surface    278              0.850
 ```
 
+Class 1 contains 78.2% deep weeks and class 2 85.0% surface weeks, so
+both regressions are recovered, with the misclassification that the low
+entropy implies.
+
 ``` r
 
 plot(fit)
@@ -120,7 +146,7 @@ plot(fit)
 
 ![](mixture-regression_files/figure-html/plot-fitted-1.png)
 
-## How many classes?
+## The number of classes
 
 [`enumerate_regressions()`](https://pak.dynasite.org/latents/reference/enumerate_regressions.md)
 fits a range of class counts and returns their fit statistics in one
@@ -147,14 +173,19 @@ classes
 #> One model: get_results(x, "model", n_classes = ).
 ```
 
-With `bootstrap = B`, each row also gets a parametric bootstrap
-likelihood-ratio test of one class fewer (McLachlan 1987): outcomes are
-simulated from the smaller model, both models are refitted, and the
-p-value is `(b + 1) / (B + 1)`, where `b` is the number of simulated
-statistics at least as large as the observed one. It is slow — `2 B`
-refits per row — so it is not run here.
+The BIC is lowest for two classes (6,336, against 6,510 for one, 6,341
+for three and 6,354 for four), and the three-class model adds a class of
+only 7.5% of the weeks.
 
-## What predicts the class?
+With `bootstrap = B`, each row also gets a parametric bootstrap
+likelihood-ratio test of one class fewer (McLachlan, 1987): outcomes are
+simulated from the smaller model, both models are refitted, and the
+p-value is `(b + 1) / (V + 1)`, where `V` is the number of valid
+replicates and `b` the number of their statistics at least as large as
+the observed one. It is slow, requiring `2 B` refits per row, and is
+therefore not run here.
+
+## Predictors of class membership
 
 `membership` adds a multinomial logit for class membership. Here sleep
 before the quiz makes a deep week more likely, so it should lower the
@@ -173,9 +204,11 @@ get_results(with_sleep, "membership")
 #> Class 2  sleep         -0.26  [-0.45, -0.07]  .007        0.77
 ```
 
-The coefficients are estimated jointly with the regressions — a one-step
-model, not a regression on assigned classes — so classification error
-does not attenuate them.
+Each additional hour of sleep multiplies the odds of a surface week by
+0.77 (95% interval of the log odds -0.45 to -0.07). The coefficients are
+estimated jointly with the regressions, in a one-step model rather than
+a regression on assigned classes, so classification error does not
+attenuate them.
 
 ## Groups that share a class
 
@@ -223,10 +256,18 @@ get_results(students, "membership")
 #> Class 2  motivation     -1.82  [-2.78, -0.86]  <.001        0.16
 ```
 
+Higher motivation lowers the odds of membership in the second class of
+students (odds ratio 0.16 per standard deviation). With time as the
+predictor, a mixture regression whose classes are shared by all
+measurements of a person is latent class growth analysis, presented in
+the [latent class growth
+analysis](https://pak.dynasite.org/latents/articles/trajectory-classes.html)
+article.
+
 A mixture of Bernoulli distributions at a fixed covariate value is
 itself Bernoulli, so identification needs additional structure.
 Covariate-dependent logistic mixtures can be identifiable under suitable
-restrictions and covariate support (Follmann and Lambert 1991). The
+restrictions and covariate support (Follmann & Lambert, 1991). The
 implementation conservatively refuses `family = "binomial"` with one
 trial per row unless the class is shared by a group; this is its
 supported-model policy, not a universal nonidentification theorem:
@@ -243,7 +284,7 @@ mixture_regression(passed ~ hours, data = study_hours, n_classes = 2,
 
 The deep/surface strategy changes from week to week, but steady and
 erratic students use the strategies in different proportions. That is a
-two-level mixture (Vermunt 2003): rows keep their own regression class,
+two-level mixture (Vermunt, 2003): rows keep their own regression class,
 and a latent *group class* shifts the class probabilities of all rows in
 its groups.
 
@@ -308,10 +349,13 @@ summary(two_level)
 #> Group class 2  Class 2        0.718        0.487               74
 ```
 
-The `group_classes` table is the heart of it: within each group class,
-the probability of each regression class. The group-class membership
-model shows motivation separating the two kinds of student, and the
-class model shows the week-level effect of sleep.
+The `group_classes` table is the central result: within each group
+class, the probability of each regression class. Students of group class
+1 (51.3%) follow the deep regression in 86.1% of their weeks, and
+students of group class 2 (48.7%) the surface regression in 71.8%. The
+group-class membership model shows motivation separating the two kinds
+of student (odds ratio 0.15 per standard deviation for group class 2),
+and the class model shows the week-level effect of sleep.
 
 ``` r
 
@@ -326,6 +370,9 @@ get_results(two_level, "recovery", data = study_hours,
 #> Group class 1  erratic            7              0.092
 #> Group class 2  erratic           66              0.892
 ```
+
+Group class 1 contains 90.8% steady students and group class 2 89.2%
+erratic students.
 
 ## Counts, shared effects and equal variances
 
@@ -352,7 +399,10 @@ get_results(asked, "coefficients")
 ```
 
 The `Rate ratio` column (`exp_estimate` in the data frame) is the
-exponentiated coefficient.
+exponentiated coefficient. Each hour of study multiplies the expected
+number of questions by 1.11 in the first class and by 0.90 in the
+second, and the shared effect of sleep (0.98) is not distinguishable
+from no effect.
 
 ## Uncertainty
 
@@ -361,7 +411,7 @@ are analytic (the posterior expectation of the complete-data score), and
 the information is their numerical derivative. `vcov_type = "robust"`
 gives the sandwich estimator with the CR1 small-sample factor
 `G / (G - 1)` for `G` independent units, clustered on the independent
-unit — the row, or the group when `id` defines one, including a
+unit: the row, or the group when `id` defines one, including a
 single-level fit given `id`.
 
 ``` r
@@ -387,7 +437,7 @@ slopes.
 
 [`predict()`](https://rdrr.io/r/stats/predict.html) gives the
 class-averaged mean (`"response"`), every class’s mean
-(`"class_response"`), or — when the outcome is present — the posterior
+(`"class_response"`), or, when the outcome is present, the posterior
 class probabilities of new rows (`"posterior"`).
 [`simulate()`](https://rdrr.io/r/stats/simulate.html) draws new outcomes
 from the fitted model, which is what the bootstrap test uses.
@@ -432,19 +482,21 @@ plot(fit, what = "posteriors")
 
 ![](mixture-regression_files/figure-html/starts-1.png)
 
+Every start reaches the log likelihood of -3144.01.
+
 ## How this compares with other software
 
-The single-level and group-level models match `flexmix` (Leisch 2004):
+The single-level and group-level models match `flexmix` (Leisch, 2004):
 the same likelihood at the same parameters, and the same binomial and
 Poisson estimates. `flexmix` divides the Gaussian residual sum of
 squares by `n - p`, so its Gaussian estimates are not quite the
 maximum-likelihood ones and
 [`mixture_regression()`](https://pak.dynasite.org/latents/reference/mixture_regression.md)
-can reach a slightly higher likelihood. The models compared here use
-`flexmix` for single-level or shared-class grouped mixtures, which
-differ from a two-level latent group-class model. `flexmix` provides
-bootstrap likelihood-ratio tests through `LR_test()` and coefficient
-inference through its refitting facilities.
+can reach a slightly higher likelihood. The comparison covers the
+single-level and shared-class grouped mixtures that `flexmix` fits;
+`flexmix` has no counterpart of the two-level group-class model.
+`flexmix` provides bootstrap likelihood-ratio tests through `LR_test()`
+and coefficient inference through its refitting facilities.
 
 ## References
 
@@ -463,6 +515,17 @@ Software*, 11(8).
 McLachlan, G. J. (1987). On bootstrapping the likelihood ratio test
 statistic for the number of components in a normal mixture. *Applied
 Statistics*, 36, 318–324.
+
+Saqr, M., Vogelsmeier, L. V. D. E., & López-Pernas, S. (2024). Capturing
+where the learning process takes place: A person-specific and
+person-centered primer. *Learning and Individual Differences*, 113,
+102492. <https://doi.org/10.1016/j.lindif.2024.102492>
+
+Scrucca, L., Saqr, M., López-Pernas, S., & Murphy, K. (2024). An
+introduction and R tutorial to model-based clustering in education via
+latent profile analysis. In M. Saqr & S. López-Pernas (Eds.), *Learning
+analytics methods and tutorials: A practical guide using R*
+(pp. 285–317). Springer. <https://doi.org/10.1007/978-3-031-54464-4_9>
 
 Vermunt, J. K. (2003). Multilevel latent class models. *Sociological
 Methodology*, 33, 213–239.

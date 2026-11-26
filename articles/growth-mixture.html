@@ -15,6 +15,13 @@
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Growth mixture models: classes of trajectories">
+<meta name="citation_title" content="Growth mixture models: classes of trajectories">
+<meta name="citation_author" content="Saqr, Mohammed">
+<meta name="citation_author" content="López-Pernas, Sonsoles">
+<meta name="citation_publication_date" content="2026">
+<meta name="citation_publisher" content="latents">
+<meta name="citation_pdf_url" content="https://pak.dynasite.org/latents/pdf/growth-mixture.pdf">
+<meta name="citation_abstract_html_url" content="https://pak.dynasite.org/latents/articles/growth-mixture.html">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -24,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +54,6 @@
     <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
     <li><a class="dropdown-item" href="../articles/workflow-lpa.html">Latent profile analysis: a complete workflow</a></li>
     <li><a class="dropdown-item" href="../articles/workflow-lca.html">Latent class analysis: a complete workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/class-enumeration.html">Class enumeration in mixture models</a></li>
     <li><a class="dropdown-item" href="../articles/model-selection.html">Model selection: the evidence for the number of classes</a></li>
     <li><a class="dropdown-item" href="../articles/tree-plot.html">Tree plot</a></li>
     <li><a class="dropdown-item" href="../articles/evaluation.html">Evaluating a multilevel latent profile model</a></li>
@@ -65,7 +71,9 @@
     <li><a class="dropdown-item" href="../articles/case-engagement-evaluation.html">Case study: Evaluating multilevel latent profile models</a></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-covariates.html">Case study: Covariates and staged estimation in multilevel LPA</a></li>
     <li><a class="dropdown-item" href="../articles/case-engagement-transitions.html">Case study: Latent transition analysis of course engagement</a></li>
-    <li><a class="dropdown-item" href="../articles/case-esm-lca.html">Case study: Two-level latent class analysis of leisure activities</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Resources</h6></li>
+    <li><a class="dropdown-item" href="../articles/cite-articles.html">Resources</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -88,53 +96,72 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Growth mixture models: classes of trajectories</h1>
-                        <h4 data-toc-skip class="author">Written by <a href="https://saqr.me" class="external-link">Mohammed Saqr</a> and <a href="https://sonsoles.me" class="external-link">Sonsoles López-Pernas</a>
-</h4>
-            
-      
-      <small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/vignettes/articles/growth-mixture.Rmd" class="external-link"><code>vignettes/articles/growth-mixture.Rmd</code></a></small>
+                        <h4 data-toc-skip class="author">Mohammed
+Saqr</h4>
+            <address class="author_afil">
+      University of Eastern
+Finland<br><h4 data-toc-skip class="author">Sonsoles
+López-Pernas</h4>
+            <address class="author_afil">
+      University of Eastern Finland<br><small class="dont-index">Source: <a href="https://github.com/mohsaqr/latents/blob/main/vignettes/articles/growth-mixture.Rmd" class="external-link"><code>vignettes/articles/growth-mixture.Rmd</code></a></small>
       <div class="d-none name"><code>growth-mixture.Rmd</code></div>
-    </div>
+    </address>
+</address>
+</div>
 
     
     
-<p>When the same people are measured repeatedly, a single average
-trajectory often hides several kinds of change: some improve, some hold
-steady, some decline. A <strong>growth model with classes</strong> finds
-those kinds from the data. This vignette is about the growth mixture
-model, which lets people vary around their class trajectory, and its
-multilevel form for people nested in clusters; it compares it with
-latent class growth analysis, the model without that variation, which
-has its own article, <a href="https://pak.dynasite.org/latents/articles/trajectory-classes.html">Latent
-class growth analysis</a> (including pass/fail, count and ordered
-outcomes).</p>
+<p>When individuals are measured repeatedly over time, a single average
+growth trajectory may conceal substantial heterogeneity in their
+developmental patterns. Individuals within the same population may
+follow markedly different courses of change, with some improving, others
+remaining relatively stable, and others experiencing a decline. Growth
+mixture modelling addresses this heterogeneity by identifying latent
+subgroups of individuals who follow distinct developmental trajectories.
+Consistent with the person-centred perspective, these latent classes
+represent subgroups characterized by different patterns of change over
+time (Scrucca et al., 2024; Saqr et al., 2024).</p>
+<p>This article examines growth mixture modelling and its multilevel
+extension, which accommodates the hierarchical structure of longitudinal
+data in which individuals are nested within higher-level clusters. A
+central distinction is made between growth mixture modelling and latent
+class growth analysis. Whereas latent class growth analysis assumes that
+individuals within each class follow the same underlying trajectory,
+growth mixture modelling allows individual growth parameters to vary
+within classes. This additional flexibility makes it possible to account
+for individual differences in developmental patterns while
+simultaneously identifying distinct subgroups within the population.</p>
+<p>Latent class growth analysis, including trajectories of binary, count
+and ordered outcomes, is presented in its own article, <a href="https://pak.dynasite.org/latents/articles/trajectory-classes.html">Latent
+class growth analysis</a>.</p>
 <div class="section level2">
 <h2 id="two-models">Two models<a class="anchor" aria-label="anchor" href="#two-models"></a>
 </h2>
 <ul>
 <li>
-<strong>Latent class growth analysis</strong> (Nagin 2005) gives
-every class its own trajectory. Everyone in a class follows that
-trajectory exactly; anything else is noise.</li>
+<strong>Latent class growth analysis</strong> (Nagin, 2005) gives
+every class its own trajectory. Every individual in a class follows that
+trajectory exactly; deviations from it are attributed to measurement
+error.</li>
 <li>
-<strong>The growth mixture model</strong> (Verbeke and Lesaffre
-1996; Muthén and Shedden
+<strong>The growth mixture model</strong> (Verbeke &amp; Lesaffre,
+1996; Muthén &amp; Shedden,
 <ol start="1999" style="list-style-type: decimal">
-<li>also lets people vary <em>around</em> their class trajectory: each
-has their own start and rate of change (random intercepts and
-slopes).</li>
+<li>also allows individuals to vary <em>around</em> their class
+trajectory: each has their own starting level and rate of change (random
+intercepts and slopes).</li>
 </ol>
 </li>
 </ul>
-<p>The difference matters. When people vary within their kind, the first
-model can only express that variation by adding classes, so it tends to
-find more classes than there are (Bauer and Curran 2003). The second
-model separates <em>kinds</em> of change from <em>individual</em>
-variation.</p>
-<p>Both are one call. Persons are the classified units, so
-<code>id</code> names them and <code>class_level = "group"</code> keeps
-all of a person’s measurements in one class; <code>random</code> adds
-the random effects.</p>
+<p>The difference is consequential. When individuals vary within their
+kind, the first model can represent that variation only by adding
+classes, and it therefore tends to identify more classes than there are
+(Bauer &amp; Curran, 2003). The second model separates <em>kinds</em> of
+change from <em>individual</em> variation.</p>
+<p>Both models are fitted with one call. Persons are the classified
+units, so <code>id</code> names them and
+<code>class_level = "group"</code> keeps all of a person’s measurements
+in one class; <code>random</code> adds the random effects.</p>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -200,11 +227,11 @@ these models handle without imputation.</p>
 <span><span class="co">#&gt; 6       1    6  41.5      -0.72  declining</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="how-many-classes-and-which-model">How many classes, and which model?<a class="anchor" aria-label="anchor" href="#how-many-classes-and-which-model"></a>
+<h2 id="the-number-of-classes-and-the-choice-of-model">The number of classes and the choice of model<a class="anchor" aria-label="anchor" href="#the-number-of-classes-and-the-choice-of-model"></a>
 </h2>
-<p>Fit both models for a range of classes and compare them in one table.
-<code>random_covariance = "equal"</code> gives every class the same
-random-effect spread, the usual first choice.</p>
+<p>Both models are fitted for a range of classes and compared in one
+table. <code>random_covariance = "equal"</code> gives every class the
+same random-effect spread, the usual first choice.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trajectories</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">k</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/mixture_regression.html">mixture_regression</a></span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">wave</span>, <span class="va">growth_scores</span>, n_classes <span class="op">=</span> <span class="va">k</span>,</span>
@@ -231,22 +258,25 @@ random-effect spread, the usual first choice.</p>
 <span><span class="co">#&gt; growth_2              2  intercept + wave  10  -5416.53  10890.11    86.51   0.000     0.92</span></span>
 <span><span class="co">#&gt; growth_3              3  intercept + wave  14  -5361.87  10803.59     0.00   1.000     0.90</span></span>
 <span><span class="co">#&gt; growth_4              4  intercept + wave  18  -5358.94  10820.56    16.96   0.000     0.81</span></span></code></pre></div>
-<p>The growth mixture model with three classes is preferred, with nearly
-all the BIC weight. The trajectory model without random effects keeps
-improving as classes are added: five classes are still better than four,
-though only three kinds of student exist. That is the over-extraction
-described above.</p>
+<p>The growth mixture model with three classes is preferred, with a BIC
+weight of 1.000 (BIC 10,803.6, against 10,890.1 for two and 10,820.6 for
+four classes). The trajectory model without random effects keeps
+improving as classes are added: five classes are still better than four
+(BIC 11,424.8 against 11,640.6), although only three kinds of student
+exist. This is the overextraction described above, and every trajectory
+model has a far higher BIC than any growth mixture model.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">comparison</span><span class="op">)</span></span></code></pre></div>
 <p><img src="growth-mixture_files/figure-html/comparison-plot-1.png" class="r-plt" alt="" width="720" style="display: block; margin: auto;"></p>
 <p>For a test rather than a criterion,
 <code><a href="../reference/enumerate_regressions.html">enumerate_regressions()</a></code> fits a range of classes and, with
 <code>bootstrap</code>, adds the bootstrap likelihood-ratio test of each
-number of classes against one fewer (McLachlan 1987; Nylund, Asparouhov
-and Muthén 2007). It refits both models on data simulated from the
-smaller one, so it is slow: with 99 replicates per comparison it took
-about an hour on these data. It rejects two classes in favour of three
-(p = 0.01) and keeps three against four (p = 0.40).</p>
+number of classes against one fewer (McLachlan, 1987; Nylund et al.,
+2007). It refits both models on data simulated from the smaller one, so
+it is slow: with 99 replicates per comparison it took about 35 minutes
+on these data. It rejects two classes in favour of three (p = 0.01, the
+smallest value 99 replicates can give) and keeps three against four (p =
+0.38, from the 98 replicates whose refits succeeded).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/enumerate_regressions.html">enumerate_regressions</a></span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">wave</span>, <span class="va">growth_scores</span>, n_classes <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">4</span>,</span>
 <span>                      id <span class="op">=</span> <span class="st">"student"</span>, class_level <span class="op">=</span> <span class="st">"group"</span>, random <span class="op">=</span> <span class="st">"wave"</span>,</span>
@@ -255,7 +285,8 @@ about an hour on these data. It rejects two classes in favour of three
 <div class="section level2">
 <h2 id="the-chosen-model">The chosen model<a class="anchor" aria-label="anchor" href="#the-chosen-model"></a>
 </h2>
-<p>Refit it with motivation predicting the class:</p>
+<p>The chosen model is refitted with motivation predicting the
+class:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mixture_regression.html">mixture_regression</a></span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">wave</span>, <span class="va">growth_scores</span>, n_classes <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>                          id <span class="op">=</span> <span class="st">"student"</span>, class_level <span class="op">=</span> <span class="st">"group"</span>,</span>
@@ -310,11 +341,12 @@ shows the columns people report, while the data frame keeps every column
 <span><span class="co">#&gt; Class 2  motivation    -1.758  [-2.210, -1.307]  &lt;.001</span></span>
 <span><span class="co">#&gt; Class 3  Intercept      0.020  [-0.316,  0.356]   .907</span></span>
 <span><span class="co">#&gt; Class 3  motivation    -0.809  [-1.189, -0.429]  &lt;.001</span></span></code></pre></div>
-<p>Students start about 4 points apart and change at rates about 0.7
-points per wave apart within each class; those who start higher tend to
-grow a little more slowly (a correlation of about -0.25). More motivated
-students are less likely to be in the declining class (class 2) or the
-stable class (class 3) than in the improving class.</p>
+<p>Within each class, students’ starting levels have a standard
+deviation of about 4 points and their rates of change one of about 0.7
+points per wave; those who start higher tend to grow a little more
+slowly (a correlation of about -0.25). More motivated students are less
+likely to be in the declining class (class 2) or the stable class (class
+3) than in the improving class.</p>
 <p>Because the data were simulated, the classes can be checked against
 the truth:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -332,17 +364,19 @@ the truth:</p>
 <span><span class="co">#&gt; Class 1   declining         0              0.000</span></span>
 <span><span class="co">#&gt; Class 2   declining        97              0.970</span></span>
 <span><span class="co">#&gt; Class 3   declining         0              0.000</span></span></code></pre></div>
+<p>The improving, declining and stable classes contain 98.2%, 97.0% and
+94.3% students of the corresponding simulated kind, a much closer
+recovery than the trajectory model without random effects achieves.</p>
 </div>
 <div class="section level2">
 <h2 id="distal-outcomes">Distal outcomes<a class="anchor" aria-label="anchor" href="#distal-outcomes"></a>
 </h2>
-<p>Do the classes differ on something measured once per student?
-<code><a href="../reference/three_step.html">three_step()</a></code> compares class means with the bias-corrected
-three-step method (Vermunt 2010; Bakk and Vermunt 2016), which accounts
-for students being classified with error. The trajectory model must be
-fitted without <code>membership</code> for this correction, so
-motivation is treated here as a distal variable of the classes from the
-model without it:</p>
+<p><code><a href="../reference/three_step.html">three_step()</a></code> compares the classes on a variable measured
+once per student, using the bias-corrected three-step method (Vermunt,
+2010; Bakk &amp; Vermunt, 2016), which accounts for students being
+classified with error. The trajectory model must be fitted without
+<code>membership</code> for this correction, so motivation is treated
+here as a distal variable of the classes from the model without it:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trajectory_classes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mixture_regression.html">mixture_regression</a></span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">wave</span>, <span class="va">growth_scores</span>,</span>
 <span>                                         n_classes <span class="op">=</span> <span class="fl">3</span>, id <span class="op">=</span> <span class="st">"student"</span>,</span>
@@ -358,6 +392,8 @@ model without it:</p>
 <span><span class="co">#&gt;     2   1       -1.27  [-1.52, -1.03]  &lt;.001   &lt;.001</span></span>
 <span><span class="co">#&gt;     3   1       -0.60  [-0.85, -0.34]  &lt;.001   &lt;.001</span></span>
 <span><span class="co">#&gt;     3   2        0.68  [ 0.43,  0.93]  &lt;.001   &lt;.001</span></span></code></pre></div>
+<p>All three pairs of classes differ in motivation (Benjamini-Hochberg
+adjusted p-values below .001).</p>
 </div>
 <div class="section level2">
 <h2 id="seeing-the-classes">Seeing the classes<a class="anchor" aria-label="anchor" href="#seeing-the-classes"></a>
@@ -395,17 +431,18 @@ the model’s 95% ellipse:</p>
 <div class="section level2">
 <h2 id="students-in-schools">Students in schools<a class="anchor" aria-label="anchor" href="#students-in-schools"></a>
 </h2>
-<p>When the persons are nested in clusters – students in schools,
-patients in clinics – the clusters may differ in which trajectories
+<p>When the persons are nested in clusters, such as students in schools
+or patients in clinics, the clusters may differ in which trajectories
 their persons follow. The multilevel growth mixture model (Asparouhov
-and Muthén 2008; Vermunt 2003) gives every cluster a group class, and
-the group class shifts how probable each trajectory class is for its
+&amp; Muthén, 2008; Vermunt, 2003) gives every cluster a group class,
+and the group class shifts how probable each trajectory class is for its
 persons. <code>cluster</code> names the clusters and
 <code>n_group_classes</code> their number of classes;
 <code>group_membership</code> names cluster-level covariates of the
 group class. The <code>growth_schools</code> data have 600 students in
 40 schools of two (simulated, hidden) types, in which most students
-improve or few do, and a school support programme:</p>
+improve or few do, and a standardized measure of each school’s support
+programme:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">schools</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mixture_regression.html">mixture_regression</a></span><span class="op">(</span><span class="va">score</span> <span class="op">~</span> <span class="va">wave</span>, <span class="va">growth_schools</span>, n_classes <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>                              id <span class="op">=</span> <span class="st">"student"</span>, class_level <span class="op">=</span> <span class="st">"group"</span>,</span>
@@ -479,6 +516,10 @@ school less likely to be in the second group class):</p>
 <span><span class="co">#&gt; Group class 2  programme                   -2.108  [-3.458, -0.758]   .002</span></span>
 <span><span class="co">#&gt; Class 2        Intercept, group class 1    -1.740  [-2.103, -1.377]  &lt;.001</span></span>
 <span><span class="co">#&gt; Class 2        Intercept, group class 2     1.128  [ 0.817,  1.438]  &lt;.001</span></span></code></pre></div>
+<p>In group class 1 (21 schools), 85.1% of the students follow the first
+trajectory class; in group class 2 (19 schools), only 24.5% do. Each
+unit of the programme measure lowers the log odds of a school belonging
+to the second group class by 2.11 (95% interval 0.76 to 3.46).</p>
 <p>The trajectory views read the same as for one level, and the
 classification view shows how confidently each student is
 classified:</p>
@@ -511,6 +552,9 @@ from one (the single-level model with schools as the units) upward:</p>
 <span><span class="co">#&gt;       TRUE    FALSE</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; One model: get_results(x, "model", n_classes = ).</span></span></code></pre></div>
+<p>The BIC is lowest for two group classes (14,102, against 14,246 for
+one and 14,109 for three), the number of school types that generated the
+data.</p>
 </div>
 <div class="section level2">
 <h2 id="choices-and-warnings">Choices and warnings<a class="anchor" aria-label="anchor" href="#choices-and-warnings"></a>
@@ -528,16 +572,17 @@ class; <code>"proportional"</code> shares its shape and lets its size
 differ. <code>random_diagonal = TRUE</code> makes the random effects
 uncorrelated.</li>
 <li>
-<strong>Curved trajectories.</strong> Use
+<strong>Curved trajectories.</strong>
 <code>score ~ wave + I(wave^2)</code> or
-<code>score ~ splines::ns(wave, df = 3)</code>.</li>
+<code>score ~ splines::ns(wave, df = 3)</code> give curved class
+trajectories.</li>
 <li>
 <strong>A degenerate covariance.</strong> When the data cannot
 support a random effect in some class (a variance at zero, or two random
 effects perfectly correlated), the fit warns
 (<code>latents_random_boundary</code>), reports no interval for that
-covariance, and marks it as a boundary in the tables and plots. Simplify
-the random effects, or drop them.</li>
+covariance, and marks it as a boundary in the tables and plots. The
+random effects should then be simplified or removed.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -548,11 +593,11 @@ likelihood, and the analytic scores equal numerical derivatives; for the
 multilevel model too, whose likelihood is checked against a dense sum
 over group classes per school, which reduces to the single-level model
 when the group classes coincide. Against <code><a href="https://cecileproust-lima.github.io/lcmm/reference/hlme.html" class="external-link">lcmm::hlme()</a></code>
-(Proust-Lima, Philipps and Liquet 2017), on configurations with one to
-three classes, shared, proportional and diagonal covariances and
-membership covariates, the likelihoods agree at <code>hlme</code>’s own
-estimates and <code><a href="../reference/mixture_regression.html">mixture_regression()</a></code> reaches at least
-<code>hlme</code>’s maximum.</p>
+(Proust-Lima et al., 2017), on configurations with one to three classes,
+shared, proportional and diagonal covariances and membership covariates,
+the likelihoods agree at <code>hlme</code>’s own estimates and
+<code><a href="../reference/mixture_regression.html">mixture_regression()</a></code> reaches at least <code>hlme</code>’s
+maximum.</p>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
@@ -581,14 +626,23 @@ Modeling</em>, 14, 535–569.</p>
 <p>Proust-Lima, C., Philipps, V., &amp; Liquet, B. (2017). Estimation of
 extended mixed models using latent classes and latent processes: The R
 package lcmm. <em>Journal of Statistical Software</em>, 78(2), 1–56.</p>
-<p>Vermunt, J. K. (2010). Latent class modeling with covariates: Two
-improved three-step approaches. <em>Political Analysis</em>, 18,
-450–469.</p>
-<p>Vermunt, J. K. (2003). Multilevel latent class models.
-<em>Sociological Methodology</em>, 33, 213–239.</p>
+<p>Saqr, M., Vogelsmeier, L. V. D. E., &amp; López-Pernas, S. (2024).
+Capturing where the learning process takes place: A person-specific and
+person-centered primer. <em>Learning and Individual Differences</em>,
+113, 102492. <a href="https://doi.org/10.1016/j.lindif.2024.102492" class="external-link uri">https://doi.org/10.1016/j.lindif.2024.102492</a></p>
+<p>Scrucca, L., Saqr, M., López-Pernas, S., &amp; Murphy, K. (2024). An
+introduction and R tutorial to model-based clustering in education via
+latent profile analysis. In M. Saqr &amp; S. López-Pernas (Eds.),
+<em>Learning analytics methods and tutorials: A practical guide using
+R</em> (pp. 285–317). Springer. <a href="https://doi.org/10.1007/978-3-031-54464-4_9" class="external-link uri">https://doi.org/10.1007/978-3-031-54464-4_9</a></p>
 <p>Verbeke, G., &amp; Lesaffre, E. (1996). A linear mixed-effects model
 with heterogeneity in the random-effects population. <em>Journal of the
 American Statistical Association</em>, 91, 217–221.</p>
+<p>Vermunt, J. K. (2003). Multilevel latent class models.
+<em>Sociological Methodology</em>, 33, 213–239.</p>
+<p>Vermunt, J. K. (2010). Latent class modeling with covariates: Two
+improved three-step approaches. <em>Political Analysis</em>, 18,
+450–469.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
