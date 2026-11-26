@@ -41,8 +41,7 @@ active course tends to be followed by another active course; mostly disengaged
 students show inertia, in that a disengaged course tends to be followed by
 another disengaged course. Three profiles and three student classes therefore
 match the structure from which the data were generated, and the
-[evaluation vignette](case-engagement-evaluation.html) shows that the
-information criteria select the same numbers for the multilevel profile model.
+[evaluation vignette](case-engagement-evaluation.html) shows that the BIC selects the same numbers for the multilevel profile model.
 
 For student $i$ at course position $t$, $C_{it}$ is the latent profile and
 $G_i$ the student's class. The model estimates
@@ -147,7 +146,8 @@ plot_transitions(moves)
 
 In class 1, a disengaged course is followed by another disengaged course with
 probability 0.904, estimated from 196 expected transitions, and an average
-course is followed by a disengaged one with probability 0.617: disengagement
+course is followed by a disengaged one with probability 0.617 (from 34.7
+expected transitions): disengagement
 has inertia, and the average state leads back into it. In class 3, an active
 course is followed by another active course with probability 0.808, estimated
 from 297 expected transitions, and an average course is followed by an active
@@ -285,7 +285,8 @@ engagement over a full program. *Computers & Education, 175*, 104325.
 <https://doi.org/10.1016/j.compedu.2021.104325>
 
 Tikka, S., López-Pernas, S., & Saqr, M. (2025). tna: An R package for
-transition network analysis. *Applied Psychological Measurement*.
+transition network analysis. *Applied Psychological Measurement, 49*(6),
+326–328.
 <https://doi.org/10.1177/01466216251348840>
 
 ```{r restore-options, include = FALSE}

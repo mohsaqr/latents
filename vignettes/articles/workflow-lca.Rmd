@@ -65,7 +65,8 @@ so that the results can be reproduced.
 
 The `student_esm` data contain 2,582 experience-sampling reports from 100
 university students, collected in a study of academic adjustment (Neubauer &
-Schmiedek, 2024). At each report a student indicated whether they had been
+Schmiedek, 2024). At each report made when they had not studied since the previous prompt, a
+student indicated whether they had been
 engaged in each of eight activities since the previous report, and rated how
 happy, relaxed, worried and exhausted they felt. The aim of the analysis is
 to identify typical combinations of activities.
@@ -171,8 +172,8 @@ probability matrix, which shows which classes are confused with which.
 diagnostics(fit)
 ```
 
-The relative entropy of 0.66 (Ramaswamy et al., 1993) indicates a moderately
-clear classification. Relative entropy describes the quality of the
+The relative entropy of 0.66 (Ramaswamy et al., 1993) indicates a moderately clear classification, although the reports of the
+third class are assigned with an average posterior of only 0.71. Relative entropy describes the quality of the
 classification for the chosen model rather than serving as a criterion for
 the number of classes (Sorgente et al., 2025).
 
@@ -184,11 +185,13 @@ observed co-occurrence within a class with the co-occurrence the model
 implies, and a large value indicates a dependence the classes do not explain.
 The p-value refers this Pearson statistic to a chi-square distribution that
 ignores the estimation of the model's table, which makes it very conservative:
-in simulated data from a correctly specified latent class model it rejected
+in one simulation from a correctly specified two-class model (n = 500, 200
+replications) it rejected
 0.25% of pairs per class, and 0.08% pooled, at a nominal 5%. `p_adjusted` is
-corrected across all the pairs by Benjamini-Hochberg. A pair that passes the
+corrected across all the pairs by Benjamini-Hochberg (Benjamini & Hochberg,
+1995). A pair that passes the
 filter below is therefore strong evidence of dependence, but a pair that does
-not pass it is not evidence of independence (Benjamini & Hochberg, 1995).
+not pass it is not evidence of independence.
 
 ```{r residuals}
 subset(get_results(fit, "residuals"), p_adjusted < 0.01)
@@ -238,7 +241,7 @@ activities about as well without modelling it.
 
 `three_step()` estimates the mean of an outcome within each class. It uses
 the BCH method, which applies the inverse estimated classification-error matrix
-to modal class assignments (Bolck, Croon and Hagenaars, 2004). These corrected
+to modal class assignments (Bolck et al., 2004). These corrected
 weights can be negative; posterior-probability weighting is the separate
 `method = "proportional"` option. The outcome here is the happiness rating.
 
@@ -255,8 +258,9 @@ work class (4.53).
 
 Each student contributes many reports, so the reports are not independent.
 When the student identifier is supplied as `id`, `multilca()` estimates a
-two-level model: the classes of reports are retained, and the students are
-in addition grouped into latent classes that differ in the proportion of
+two-level model: the classes of reports are estimated again, jointly with the student classes,
+and need not coincide with the single-level classes; the students are in
+addition grouped into latent classes that differ in the proportion of
 their reports belonging to each class.
 
 ```{r two-level, message = FALSE}

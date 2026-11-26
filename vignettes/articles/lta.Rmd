@@ -35,7 +35,8 @@ occasion with error. Classifying each occasion separately, for instance with
 one latent profile analysis per occasion, and cross-tabulating the
 assignments treats every misclassification as a change of state and
 overstates instability. LTA estimates the states and the transitions in one
-model, so the transition probabilities are free of classification error
+model, so the transition probabilities are corrected for classification error under
+the model's assumptions
 (Collins & Lanza, 2010).
 
 **The model has three parts.** With $S_{jt}$ the state of unit $j$ at
@@ -344,7 +345,7 @@ stopifnot(all(slopes$conf_low < 0 & slopes$conf_high > 0),
 
 For these data, BIC is lower for the first-order model with two group
 classes than for any extension: the grade covariate (BIC higher by 15), the
-second-order dependence (by 32) and the mover-stayer structure (by 10).
+second-order dependence (by 32) and the mover-stayer model with one class of movers (by 10).
 Extended models provide transition and initial-state logit coefficients,
 with Wald standard errors when supported by the fitted model, and
 occasion-specific probability summaries.
@@ -400,7 +401,8 @@ Schwarz, G. (1978). Estimating the dimension of a model. *The Annals of
 Statistics*, 6, 461--464.
 
 Tikka, S., López-Pernas, S., & Saqr, M. (2025). tna: An R package for
-transition network analysis. *Applied Psychological Measurement*.
+transition network analysis. *Applied Psychological Measurement, 49*(6),
+326--328.
 <https://doi.org/10.1177/01466216251348840>
 
 van de Pol, F., & Langeheine, R. (1990). Mixed Markov latent class models.

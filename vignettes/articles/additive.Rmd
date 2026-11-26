@@ -78,7 +78,7 @@ Y_{ijr}\mid B_{jr}\sim N(B_{jr},W_r).
 $$
 
 The first component specifies the probability of belonging to each latent
-group class, with $\omega_h$ representing the proportion of groups assigned to
+group class, with $\omega_h$ representing the proportion of groups belonging to
 class $h$. The second component describes the distribution of group-specific
 intercepts within each class. In particular, $\mu_{hr}$ represents the average
 level of indicator $r$ for group class $h$, while $T_{hr}$ captures
@@ -175,7 +175,7 @@ AIC(fit, fit_equal)
 Both criteria prefer the equal-spread model, although the data were simulated
 with more spread in climate among strained teams. With 120 teams that
 difference is too small to be told apart from sampling noise, which is what
-the criteria report. The rest of this vignette uses the varying model to show
+the criteria report. The rest of this article uses the varying model to show
 every parameter.
 
 ## Comparing the group-class families
@@ -224,12 +224,11 @@ get_results(fit)
 ```
 
 The warning comes from a check on each class's *effective groups*: the
-number of perfectly classified groups that would pin down the class weight
-as precisely as this fit does. It is shown in the `group_classes` table below.
+number of groups the class would hold in a perfectly classified sample that
+pins down the class weight as precisely as this fit does. It is shown in the `group_classes` table below.
 Here the strained class has about 38 effective groups of the 49 it is expected
 to hold, so most of the information survives the classification; the class is
-simply not large. With fewer than 50 effective groups, the simulation study
-found interval coverage for class parameters starting to fall below 95%, and
+simply not large. With fewer than 50 effective groups, the simulation study described under *Known limitations* found interval coverage for class parameters starting to fall below 95%, and
 far below it when a class is also poorly separated.
 
 `level` separates the three kinds of parameter: `"between"` rows are the
@@ -311,7 +310,7 @@ cross-level families follow the manifest specification of Houle et al.
 of its class. In the *full* family, the group classes also differ in how
 their members are distributed over the individual profiles; in the
 *restricted* family they do not, and the two levels are estimated separately.
-Here, sessions of `course_engagement` form engagement profiles and students
+Here, the course enrolments of `course_engagement` form engagement profiles and students
 form group classes.
 
 ```{r cross-level}
@@ -325,12 +324,12 @@ get_results(full, "composition")
 rbind(get_results(full, "fit"), get_results(restricted, "fit"))
 ```
 
-In the full model one class of students has most of its sessions in one
+In the full model one class of students has most of its enrolments in one
 profile and the other class mostly in the other. The fits warn that their
 criteria cannot show this is real. A group mean is computed from the same
 ratings, so these likelihoods count the data twice: on simulated data in which
-group membership has no effect, BIC still preferred two group classes in every
-simulated data set examined. The `fit` table therefore does not choose the number of
+group membership has no effect, the BIC of the full form preferred two group classes in all 18 simulated data
+sets examined. The `fit` table therefore does not choose the number of
 group classes or the form, and it is not comparable with the group-class
 families above. Standard errors are not reported. Evidence for the classes has
 to come from outside these criteria, such as an ordinary `family = "profiles"`

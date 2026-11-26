@@ -26,7 +26,7 @@ Three-step covariate analysis is a method for examining associations between lat
 
 In the course-engagement example, the primary research question is whether students' previous grades are associated with their engagement patterns in a subsequent course. This relationship can be investigated in several ways. One approach is to regress latent profile membership on previous grades in order to assess whether prior academic performance predicts the likelihood of belonging to a particular engagement profile. A second approach is to compare mean previous grades across the identified profiles. A third approach is to estimate the model jointly by including previous grades directly in the latent profile model.
 
-These approaches differ in the extent to which the external variable is allowed to influence the latent profile solution. In the three-step approaches, the measurement model is estimated first, and the resulting profile definitions are held fixed while associations with previous grades are examined. This preserves the original interpretation of the engagement profiles. In one-step estimation, previous grade enters the latent profile model and can change the profiles. The final section turns to staged estimation, which holds the profile definitions fixed while the student classes are estimated.
+These approaches differ in the extent to which the external variable is allowed to influence the latent profile solution. In the three-step approaches, the measurement model is estimated first, and the resulting profile definitions are held fixed while associations with previous grades are examined. This preserves the original interpretation of the engagement profiles. In one-step estimation, previous grade enters the latent profile model and can change the profiles. A later section turns to staged estimation, which holds the profile definitions fixed while the student classes are estimated.
 
 ```{r setup}
 library(latents)
@@ -35,7 +35,7 @@ library(latents)
 ## Data and engagement profiles
 The bundled synthetic `engagement_momentum` dataset contains enrolment records nested within students, following the design of the engagement studies of Saqr and López-Pernas (2021) and López-Pernas and Saqr (2024). Engagement is represented by five activity indicators: page views (`browse`), lecture videos viewed (`lectures`), forum posts read (`forum_read`), forum posts written (`forum_post`), and active days (`active_days`). Each indicator is simulated as a continuous value representing a log-activity scale and standardized within course to make activity levels comparable across courses.
 
-The variable `previous_grade` represents the standardized grade obtained in the preceding course. For a student's first observed course, an entry grade is used instead. The variable `grade` is the standardized grade of the course itself, which is analysed as a distal outcome below. Because this grade is measured before engagement in the subsequent course, it can be treated as a predictor of later engagement patterns. The [introductory vignette](case-engagement-profiles.html) provides additional explanation of the longitudinal structure of the data and the distinction between the student and enrolment levels.
+The variable `previous_grade` represents the standardized grade obtained in the preceding course. For a student's first observed course, an entry grade is used instead. The variable `grade` is the standardized grade of the course itself, which is analysed as a distal outcome below. Because the previous grade is obtained before engagement in the current course, it can be treated as a predictor of later engagement patterns. The [introductory vignette](case-engagement-profiles.html) provides additional explanation of the longitudinal structure of the data and the distinction between the student and enrolment levels.
 
 The indicator vector `vars` specifies the activity measures used to estimate the latent engagement profiles. In keeping `previous_grade` separate from these indicators, the engagement profiles can first be established using activity data alone. The relationship between previous academic performance and profile membership can then be examined in a subsequent stage without allowing grades to influence the initial definition of the profiles.
 
@@ -55,7 +55,7 @@ The model considered here includes three engagement profiles and three student c
 
 Model estimation relies on several assumptions. Students are assumed to be independent of one another, while enrolments are assumed to be conditionally independent given student class. The model also assumes conditional independence among the engagement indicators within each profile. Violations of this latter assumption can affect the profiles that are recovered from the data. In addition, because latent profile models use likelihood-based estimation, the optimization procedure may converge to different local maxima depending on its starting values.
 
-The [evaluation vignette](case-engagement-evaluation.html) discusses indicator dependence, likelihood maxima, and related model-evaluation issues in greater detail. In the present tutorial, the same candidate model is retained throughout so that the different covariate methods can be compared on a common basis. Ten random starts are used to reduce sensitivity to local solutions, and a fixed random seed ensures that the numerical results are reproducible.
+The [evaluation vignette](case-engagement-evaluation.html) discusses indicator dependence, likelihood maxima, and related model-evaluation issues in greater detail. In the present tutorial, the same candidate model is retained throughout so that the different covariate methods can be compared on a common basis. Ten starts (the first from Ward's clustering, the rest random) are used to reduce sensitivity to local solutions, and a fixed random seed ensures that the numerical results are reproducible.
 
 ```{r fit}
 fit <- multilpa(engagement_momentum, vars, id = "student", time = "sequence",
@@ -116,11 +116,11 @@ The reported 95% confidence intervals are based on the normal approximation. Whe
 r3step(fit, data = engagement_momentum, covariates = "previous_grade", vcov_type = "robust")
 ```
 
-In the fitted model, a one-standard-deviation increase in previous grade is associated with a 1.035 decrease in the log odds of belonging to the disengaged profile (Profile 1) rather than the active profile. The corresponding 95% confidence interval ranges from -1.245 to -0.824. For the average profile (Profile 2), the estimated decrease in log odds is 0.433, with a 95% confidence interval from -0.648 to -0.217.
+In the fitted model, a one-standard-deviation increase in previous grade changes the log odds of belonging to the disengaged profile (Profile 1) rather than the active profile by -1.035 (95% confidence interval -1.245 to -0.824). For the average profile (Profile 2), the estimated decrease in log odds is 0.433, with a 95% confidence interval from -0.648 to -0.217.
 
 Both coefficients are negative: higher previous grades are associated with lower relative odds of membership in the average or disengaged profiles compared with the active profile. The association is strongest for the disengaged profile. The results therefore show a consistent association between stronger previous academic performance and more active engagement in the subsequent course.
 
-These findings are observational associations. Although `previous_grade` is measured before engagement in the subsequent course, temporal ordering alone does not establish that higher grades cause students to adopt a more active engagement pattern.
+These findings are observational associations. Although `previous_grade` is measured before engagement in the subsequent course, temporal ordering alone does not establish that higher grades cause students to adopt a more active engagement pattern. In the generating model of these data, the previous grade has no effect on the engagement state: the association arises because the previous grade reflects the engagement state of the previous course, and engagement states persist.
 
 ## Comparing previous grades across profiles
 
@@ -141,7 +141,7 @@ $$
 \widehat{\mu}_k-\widehat{\mu}_l.
 $$
 
-The BCH correction requires the classification-error matrix to be invertible and the resulting weighted profile sizes to be sufficiently well behaved for estimation. The default standard errors account for the clustering of multiple enrolments within students, while the previously estimated classification-error matrix is treated as fixed. Consequently, uncertainty from estimation of that matrix is not propagated into the reported standard errors.
+The BCH correction requires the classification-error matrix to be invertible and the resulting weighted profile sizes to be sufficiently well behaved for estimation. The default standard errors account for the clustering of multiple enrolments within students, while the previously estimated classification-error matrix is treated as fixed. With the default `step_one = "fixed"`, uncertainty from estimation of that matrix is not propagated into the reported standard errors; `step_one = "estimated"` adds its first-order contribution.
 
 Although `three_step()` can also be used with distal outcomes measured after profile membership, `previous_grade` occurs before the engagement measures in this example. The estimated contrasts should therefore be interpreted as differences in prior academic performance across subsequently observed engagement profiles rather than as effects of profile membership on grades.
 
@@ -178,7 +178,7 @@ Modal analysis is simple to interpret, but it treats estimated profile assignmen
 
 The effect of this simplification is particularly visible for the average profile, which showed the greatest classification overlap. Under modal assignment, the estimated Profile 3 versus Profile 2 difference is $0.340$, compared with $0.364$ under the BCH correction, and the corresponding standard error is 0.076 under modal assignment and 0.095 under BCH. Modal assignment therefore both attenuates the contrast and understates its uncertainty.
 
-Thus, accounting for classification error affects both the estimated contrast and its estimated uncertainty. The difference is most noticeable for the two profiles that are hardest to distinguish. Classification adjustment matters most when external variables are compared across partially overlapping latent profiles.
+Thus, accounting for classification error affects both the estimated contrast and its estimated uncertainty. The understatement of uncertainty is largest for the two profiles that are hardest to distinguish. Classification adjustment matters most when external variables are compared across partially overlapping latent profiles.
 
 ### The course grade as a distal outcome
 
@@ -189,7 +189,7 @@ three_step(fit, data = engagement_momentum, outcome = "grade",
            contrast = "pairs")
 ```
 
-Course grades are 1.52 standard deviations higher in active than in disengaged enrolments, 0.81 higher in average than in disengaged enrolments, and 0.71 higher in active than in average enrolments. The engagement state of a course is therefore strongly associated with the grade obtained in it, the association on which the momentum of achievement described by López-Pernas and Saqr (2024) rests. As with previous grade, the comparison is observational.
+Course grades are 1.52 standard deviations higher in active than in disengaged enrolments, 0.81 higher in average than in disengaged enrolments, and 0.71 higher in active than in average enrolments. The engagement state of a course is therefore strongly associated with the grade obtained in it, in line with the link between engagement and achievement described by López-Pernas and Saqr (2024). As with previous grade, the comparison is observational.
 
 ## Estimating profiles and grade associations together
 
@@ -278,7 +278,7 @@ staged <- fit_staged(
 staged
 ```
 
-In the staged solution, Profile 1 represents the disengaged state, Profile 2 the average state, and Profile 3 the active state. Their estimated `active_days` means are -0.989, -0.025, and 0.783, respectively. The numerical labels happen to match those of the earlier joint model, which separate fits do not guarantee, and the same broad engagement patterns remain recognizable. The estimated means differ slightly because the profiles were obtained under a different estimation procedure.
+In the staged solution, Profile 1 represents the disengaged state, Profile 2 the average state, and Profile 3 the active state. Their estimated `active_days` means are -0.989, -0.025, and 0.783, respectively. The profile numbers happen to match those of the earlier joint model, which separate fits do not guarantee; the student-class numbers do not, since staged class 1 (47 students) corresponds to joint class 2 and staged class 2 (21 students) to joint class 1. In both models the same broad engagement patterns remain recognizable. The estimated means differ slightly because the profiles were obtained under a different estimation procedure.
 
 The parameters estimated at each stage can be examined through the `"stages"` results table:
 
@@ -294,7 +294,7 @@ Overall, staged estimation provides a way to preserve a previously established s
 
 ## Interpretation and limitations
 
-The membership regressions and grade contrasts indicate a consistent relationship between academic performance and engagement. Disengaged enrolments follow lower grades than active and average ones, and the grade of a course is strongly associated with the engagement state in it. The distinction between the average and active profiles is smaller, because these profiles show greater classification overlap and a correspondingly less certain difference in previous grades.
+The membership regressions and grade contrasts indicate a consistent relationship between academic performance and engagement. Disengaged enrolments follow lower grades than active and average ones, and the grade of a course is strongly associated with the engagement state in it. The difference between the average and active profiles is smaller, and it is estimated less precisely because these two profiles overlap most in classification.
 
 The different estimation strategies should not be interpreted as interchangeable versions of the same analysis. Three-step methods retain the profile definitions established in the measurement model and then examine their associations with external variables. In contrast, one-step estimation allows the covariate to contribute directly to estimation of the profiles and estimates the membership regression conditional on student class. The choice between these approaches therefore depends on the analytic objective: whether the priority is to preserve an existing profile solution or to estimate the measurement and covariate components jointly.
 

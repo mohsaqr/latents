@@ -1,0 +1,62 @@
+== 2026-11-26 00:25:51 running: Rscript validation/growth-blrt-2026-11-26/run.R ==
+Warning messages:
+1: 1 of 99 bootstrap replicates were invalid (a refit failed, did not converge or separated); the p-value uses the 98 valid replicates. 
+2: 1 of 99 bootstrap replicates were invalid (a refit failed, did not converge or separated); the p-value uses the 98 valid replicates. 
+    user   system  elapsed 
+2132.992    1.462 2134.557 
+Mixture regression class enumeration
+
+ n_classes n_group_classes log_likelihood n_parameters   bic   icl entropy smallest_share converged blrt_p_value
+         1               1          -5466            6 10966 10966      NA        1.00000      TRUE           NA
+         2               1          -5417           10 10890 10924  0.9177        0.34056      TRUE       0.0101
+         3               1          -5362           14 10804 10867  0.9042        0.29582      TRUE       0.0100
+         4               1          -5359           18 10820 10893  0.9118        0.01346      TRUE       0.3838
+ blrt_n_invalid best_bic
+             NA    FALSE
+              1    FALSE
+              0     TRUE
+              1    FALSE
+
+One model: get_results(x, "model", n_classes = ).
+  n_classes n_group_classes log_likelihood n_parameters      aic      bic bic_rows    sabic      icl   entropy
+1         1               1      -5466.137            6 10944.27 10966.50 10977.39 10947.47 10966.50        NA
+2         2               1      -5416.534           10 10853.07 10890.11 10908.27 10858.39 10924.35 0.9176512
+3         3               1      -5361.871           14 10751.74 10803.59 10829.02 10759.19 10866.75 0.9041934
+4         4               1      -5358.547           18 10753.09 10819.76 10852.45 10762.68 10893.11 0.9118156
+  smallest_share converged n_best_replicated note best_bic blrt_statistic blrt_p_value blrt_replicates blrt_n_invalid
+1      1.0000000      TRUE                12 <NA>    FALSE             NA           NA              NA             NA
+2      0.3405615      TRUE                11 <NA>    FALSE      99.204606   0.01010101              98              1
+3      0.2958226      TRUE                 6 <NA>     TRUE     109.327407   0.01000000              99              0
+4      0.0134554      TRUE                 4 <NA>    FALSE       6.646286   0.38383838              98              1
+  blrt_flagged
+1           NA
+2            1
+3            0
+4            1
+R version 4.5.2 (2025-10-31)
+Platform: aarch64-unknown-linux-gnu
+Running under: Ubuntu 24.04.5 LTS
+
+Matrix products: default
+BLAS:   /usr/lib/aarch64-linux-gnu/blas/libblas.so.3.12.0 
+LAPACK: /usr/lib/aarch64-linux-gnu/lapack/liblapack.so.3.12.0  LAPACK version 3.12.0
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C               LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8    LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C             LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+time zone: Europe/Helsinki
+tzcode source: system (glibc)
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] latents_1.4.4  testthat_3.3.2
+
+loaded via a namespace (and not attached):
+ [1] compiler_4.5.2  magrittr_2.0.5  R6_2.6.1        rprojroot_2.1.1 cli_3.6.6       tools_4.5.2     parallel_4.5.2 
+ [8] withr_3.0.3     otel_0.3.0      desc_1.4.3      pkgload_1.5.3   brio_1.1.5      pkgbuild_1.4.8  lifecycle_1.0.5
+[15] rlang_1.3.0    
+== exit 0 after 2135s ==

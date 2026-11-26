@@ -61,9 +61,7 @@ influence profile estimation may change the very subgroups that the
 subsequent analyses are intended to investigate. The three-step approach
 addresses this concern by preserving the original profile solution while
 accounting for classification uncertainty. Staged estimation extends the same
-principle to group classes in multilevel models, keeping the group
-classification separate from subsequent analyses involving external
-variables. Thus, three-step methods are particularly useful when the
+principle to group classes in multilevel models, keeping the profile solution fixed while the group classes are estimated. Thus, three-step methods are particularly useful when the
 objective is to investigate relationships with external variables without
 changing the substantive meaning of the previously identified profiles.
 
@@ -71,7 +69,7 @@ This guide demonstrates these approaches in a two-level latent profile model
 of course engagement, in which course enrolments are nested within students.
 The measurement model is first estimated from the engagement indicators
 alone, and its classification-error matrix is examined, since this matrix is
-the basis of every three-step correction. The previous grade of each student
+the basis of every three-step correction. The previous grade before each enrolment
 is then related to the profiles in three ways: as a distal variable whose mean
 is compared across profiles with `three_step()`, using the BCH and maximum
 likelihood corrections and, for comparison, uncorrected modal assignment; as
@@ -161,7 +159,8 @@ assigned profile becomes an indicator of the true profile whose
 classification errors are fixed at those of the measurement model, and the
 external variable is normal within each profile, with its own variance. The
 table adds that variance. When the variable is close to normal within
-profiles, ML gives smaller standard errors than BCH; when it is skewed, BCH
+profiles, ML is usually more efficient than BCH (Vermunt, 2010), although with
+classification as accurate as here the standard errors are nearly equal; when it is skewed, BCH
 is the more robust choice.
 
 ```{r ml}
@@ -220,7 +219,8 @@ one_step
 ```
 
 `get_results()` with `"coefficients"` returns the membership coefficients,
-and `parameter_inference()` their standard errors and intervals.
+and `parameter_inference()` the standard errors and intervals of every
+parameter, beginning with the measurement means.
 
 ```{r coefficients}
 get_results(one_step, "coefficients")
@@ -279,15 +279,15 @@ unit of previous grade within each profile (95% interval
 `r round(effect_of("forum_post", "conf_low"), 3)` to
 `r round(effect_of("forum_post", "conf_high"), 3)`). The effects are small
 against the profile differences, and BIC is lower without them
-(`r bic_of("without")` against `r bic_of("direct")`), so
-the profiles do not owe their separation to previous grades.
+(`r bic_of("without")` against `r bic_of("direct")`), so the profile differences on these indicators are not produced by direct
+effects of previous grades.
 
 ## Staged estimation
 
 `fit_staged()` holds the profiles fixed while the group classes are
-estimated, with the same arguments as `multilpa()`. It first fits the
+estimated, with the arguments of `multilpa()` that define the profiles. It first fits the
 profiles with one group class, then estimates the group classes with the
-profile means and variances held fixed.
+profile means and covariance matrices held fixed.
 
 ```{r staged}
 staged <- fit_staged(course_engagement,

@@ -25,8 +25,7 @@ priori and is not a parameter of the model; it must be determined by
 comparing models fitted with different numbers of classes. No single
 statistic identifies the correct number: information criteria,
 likelihood-based tests and indices of classification quality each have known
-limitations, and they frequently disagree (Nylund, Asparouhov and Muthén,
-2007). Class enumeration is therefore an inferential judgement that
+limitations, and they frequently disagree (Nylund et al., 2007). Class enumeration is therefore an inferential judgement that
 integrates several sources of evidence and is reported transparently. This
 guide describes each source of evidence that latents computes for a set of
 candidate models: its definition, its interpretation, and the conditions
@@ -164,8 +163,9 @@ expresses each observation as a deviation from its own group's mean in units
 of that group's standard deviation, so that the profiles describe
 within-person fluctuation rather than between-person level.
 
-Under covariance structures that estimate a separate variance for each
-indicator (`EEI`, `VVI`, `EEE`, `VVV`, `EVI`, `VEI`), grand-mean scaling is a
+Under the covariance structures `EEI`, `VEI`, `EVI`, `VVI`, `EEE`, `VEE`,
+`EVV` and `VVV`, whose constraints are preserved when each indicator is
+rescaled, grand-mean scaling is a
 reparameterization of the unconstrained likelihood. Corresponding optima have
 the same class membership, entropy and AvePP when bounds and priors transform
 consistently. The package's absolute variance floor is expressed in the fitted
@@ -291,8 +291,7 @@ The entropy `EN` of ICL, AWE and CLC is the same under both conventions: the
 soft entropy of the complete-data classification, which in a two-level model
 is the group class of every student together with the profile of every
 enrolment. It is the entropy of the group-class posteriors plus, within each
-group class, the entropy of the profile posteriors (Biernacki, Celeux and
-Govaert 2000). With one group class it is the entropy of the profile
+group class, the entropy of the profile posteriors (the complete-data entropy of Biernacki et al., 2000, applied to both levels). With one group class it is the entropy of the profile
 posteriors. The two conventions therefore differ only in `n`, and in a
 single-level model, where the two sample sizes coincide, every criterion is
 identical under both. A transition model from `lta()` is the exception: its
@@ -345,7 +344,8 @@ enrolments as units `r bic_individual_pick`, ICL with students as units
 `r icl_groups_pick`, and AIC `r aic_pick`. Such disagreement is typical rather
 than anomalous. The criteria were derived for different purposes, and their
 penalties largely account for the pattern: AIC favours the largest candidate
-in this grid, whereas the entropy-based criteria favour smaller ones.
+in this grid, as does the CLC, which has no parameter penalty, whereas the ICL and AWE
+favour smaller ones.
 AIC does not always have the lightest penalty: SABIC's per-parameter penalty
 is smaller at the group sample size used here, as the formula above shows.
 
@@ -407,8 +407,7 @@ plot_selection(models, what = "deltas", using = "icl_individual")
 
 The knee, or elbow, of a decreasing curve is the point at which it changes
 from steep to flat. `get_results(x, "knees")` locates it with a simplified,
-geometric version of the Kneedle algorithm (Satopää, Albrecht, Irwin and
-Raghavan, 2011):
+geometric version of the Kneedle algorithm (Satopää et al., 2011):
 
 1. both axes, the number of classes and the criterion, are rescaled to the
    unit interval;
@@ -455,7 +454,7 @@ shifts when the range is shortened by one candidate constitutes weak evidence.
 | `moves when the largest is left out` | the knee depends on the range fitted |
 
 In this grid the knee along the number of group classes lies at two group
-classes for every number of profiles and every structure, and it is stable;
+classes for every number of profiles from two to four and every structure, and it is stable;
 along the number of profiles, the `VVV` lines with two or more group classes
 have no knee, because the criterion does not fall beyond two profiles. The
 deltas and the knees are interpreted jointly.
@@ -482,7 +481,7 @@ posterior probabilities of membership quantify separation.
   single value and is undefined (`NA`) for a level with one class.
 - **Average posterior probability (AvePP)** of a class is the mean posterior
   probability of that class among the units modally assigned to it. Values of
-  0.7 to 0.8 or above are conventionally taken to indicate adequate
+  0.7 or above are conventionally taken to indicate adequate
   separation (Nagin, 2005). Being class-specific, it reveals a single poorly
   separated class that entropy would average away.
 - **Odds of correct classification (OCC)** of a class is
@@ -565,7 +564,7 @@ assignments can represent them in subsequent analyses.
 Because the likelihood is multimodal, a solution replicated from several random
 starts is more credible than one obtained from a single start. An estimate on
 the boundary of the parameter space, such as a variance at its lower bound or
-a class with negligible membership, indicates a model too complex for the
+a class with negligible membership, can indicate a model too complex for the
 data. `plot_selection(x, what = "trust")` represents each candidate by a tile labelled
 with the number of starts that reached its maximum likelihood and shaded by
 the first problem detected:
@@ -619,7 +618,7 @@ two and `cutoff` the AvePP threshold for the last.
 
 The clustering tree shows how the profiles of each model are partitioned in the
 model with one additional profile: each profile is linked to the profiles of
-the larger model that receive its observations (Zappia and Oshlack, 2018). A
+the larger model that receive its observations (Zappia & Oshlack, 2018). A
 profile that divides cleanly into two suggests a substantive distinction,
 whereas a profile formed from several profiles of the smaller model suggests
 a reallocation of observations rather than a refinement. Each number of
@@ -660,8 +659,7 @@ The conventional likelihood ratio test is invalid for comparing mixtures with
 `k` and `k + 1` classes, because the null model lies on the boundary of the
 parameter space of the alternative, where the test statistic does not follow
 its usual asymptotic distribution. `bootstrap_lrt()` approximates the null
-distribution by parametric bootstrap (McLachlan, 1987; Nylund, Asparouhov and
-Muthén, 2007): data sets are simulated from the fitted null model, both
+distribution by parametric bootstrap (McLachlan, 1987; Nylund et al., 2007): data sets are simulated from the fitted null model, both
 models are re-estimated on each, and the observed statistic is referred to
 the simulated distribution. Of `B` requested data sets, let `V` satisfy the
 estimation checks and `b` of those have a statistic at least as large as the
@@ -674,7 +672,7 @@ Applied analyses should use 99 or more and inspect the valid count. The
 three group classes with two profiles.
 
 The Vuong-Lo-Mendell-Rubin test refers the same statistic to an asymptotic
-approximation of its distribution (Vuong, 1989; Lo, Mendell and Rubin, 2001):
+approximation of its distribution (Vuong, 1989; Lo et al., 2001):
 a weighted sum of chi-square variables with one degree of freedom, whose
 weights are the eigenvalues of a matrix formed from the scores and second
 derivatives of both models. The test requires no simulation. Its adjusted
@@ -696,7 +694,8 @@ stopifnot(all(with(lmr, vlmr_p) < 0.01))
 ```
 
 Each additional group class is supported by the test (every p-value below
-0.01), as it is by the bootstrap test and the BIC, although the improvement
+0.01), as it is by the BIC (the bootstrap test, run for two against three group
+classes, agrees), although the improvement
 from the third and fourth group classes is small.
 
 The regularity conditions of Vuong's theorem do not hold for mixture models
@@ -806,7 +805,8 @@ Biernacki, C., Celeux, G., & Govaert, G. (2000). Assessing a mixture model
 for clustering with the integrated completed likelihood. *IEEE Transactions
 on Pattern Analysis and Machine Intelligence*, 22, 719--725.
 
-Bozdogan, H. (1987). Model selection and Akaike's information criterion.
+Bozdogan, H. (1987). Model selection and Akaike's information criterion
+(AIC): The general theory and its analytical extensions.
 *Psychometrika*, 52, 345--370.
 
 Cavanaugh, J. E. (1999). A large-sample model selection criterion based on

@@ -128,11 +128,11 @@ plot(comparison)
 
 For a test rather than a criterion, `enumerate_regressions()` fits a range of
 classes and, with `bootstrap`, adds the bootstrap likelihood-ratio test of
-each number of classes against one fewer (McLachlan 1987; Nylund, Asparouhov
-and Muthén 2007). It refits both models on data simulated from the smaller
-one, so it is slow: with 99 replicates per comparison it took about an hour
-on these data. It rejects two classes in favour of three (p = 0.01) and keeps
-three against four (p = 0.40).
+each number of classes against one fewer (McLachlan, 1987; Nylund et al., 2007). It refits both models on data simulated from the smaller
+one, so it is slow: with 99 replicates per comparison it took about 35 minutes on
+these data. It rejects two classes in favour of three (p = 0.01, the smallest
+value 99 replicates can give) and keeps three against four (p = 0.38, from the
+98 replicates whose refits succeeded).
 
 ```{r blrt, eval = FALSE}
 enumerate_regressions(score ~ wave, growth_scores, n_classes = 1:4,
@@ -161,8 +161,8 @@ get_results(fit, "random")
 get_results(fit, "membership")
 ```
 
-Students start about 4 points apart and change at rates about 0.7 points per
-wave apart within each class; those who start higher tend to grow a little
+Within each class, students' starting levels have a standard deviation of
+about 4 points and their rates of change one of about 0.7 points per wave; those who start higher tend to grow a little
 more slowly (a correlation of about -0.25). More motivated students are less
 likely to be in the declining class (class 2) or the stable class (class 3)
 than in the improving class.
@@ -243,13 +243,12 @@ plot(fit, what = "classification")
 
 When the persons are nested in clusters, such as students in schools or
 patients in clinics, the clusters may differ in which trajectories their
-persons follow. The multilevel growth mixture model (Asparouhov and Muthén 2008;
-Vermunt 2003) gives every cluster a group class, and the group class shifts
+persons follow. The multilevel growth mixture model (Asparouhov & Muthén, 2008; Vermunt, 2003) gives every cluster a group class, and the group class shifts
 how probable each trajectory class is for its persons. `cluster` names the
 clusters and `n_group_classes` their number of classes; `group_membership`
 names cluster-level covariates of the group class. The `growth_schools` data
 have 600 students in 40 schools of two (simulated, hidden) types, in which
-most students improve or few do, and a school support programme:
+most students improve or few do, and a standardized measure of each school's support programme:
 
 ```{r schools}
 schools <- mixture_regression(score ~ wave, growth_schools, n_classes = 2,
@@ -273,8 +272,8 @@ get_results(schools, "membership")
 ```
 
 In group class 1 (21 schools), 85.1% of the students follow the first
-trajectory class; in group class 2 (19 schools), only 24.5% do. The
-programme lowers the log odds of a school belonging to the second group class
+trajectory class; in group class 2 (19 schools), only 24.5% do. Each unit of the programme measure lowers the log odds of a school belonging
+to the second group class
 by 2.11 (95% interval 0.76 to 3.46).
 
 The trajectory views read the same as for one level, and the classification
@@ -318,7 +317,7 @@ The BIC is lowest for two group classes (14,102, against 14,246 for one and
   some class (a variance at zero, or two random effects perfectly
   correlated), the fit warns (`latents_random_boundary`), reports no interval
   for that covariance, and marks it as a boundary in the tables and plots.
-  The random effects are then simplified or removed.
+  The random effects should then be simplified or removed.
 
 ## How this was checked
 
@@ -327,7 +326,7 @@ likelihood, and the analytic scores equal numerical derivatives; for the
 multilevel model too, whose likelihood is checked against a dense sum over
 group classes per school, which reduces to the single-level model when the
 group classes coincide. Against
-`lcmm::hlme()` (Proust-Lima, Philipps and Liquet 2017), on configurations with
+`lcmm::hlme()` (Proust-Lima et al., 2017), on configurations with
 one to three classes, shared, proportional and diagonal covariances and
 membership covariates, the likelihoods agree at `hlme`'s own estimates and
 `mixture_regression()` reaches at least `hlme`'s maximum.

@@ -228,7 +228,7 @@ attr(inference, "fixed_at_bound")
 tail(inference, 8)
 ```
 
-Ten probabilities are held, both answers of five items: TV or video games,
+Ten probabilities are held, both answers of five item–class pairs: TV or video games,
 music, sports and the job in the job class, and the job in the low-activity
 class. Group class 1 holds 0.436 of the students (95% interval 0.320 to
 0.559), and the probability of a media prompt in that class is 0.529 (0.463
@@ -245,7 +245,7 @@ three_step(lca, data = student_esm, outcome = "happy", contrast = "pairs")
 
 Students report higher happiness at low-activity prompts than at job prompts
 (difference 0.53 on the 1 to 7 scale, 95% interval 0.13 to 0.94, adjusted
-p = .029). Media prompts do not differ from either class.
+p = .029). Media prompts do not differ significantly from either class.
 
 ## Mixed, ordinal and count indicators
 

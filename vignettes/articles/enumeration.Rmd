@@ -83,7 +83,8 @@ regularity conditions required for the usual chi-squared approximation of
 the likelihood ratio statistic (McLachlan, 1987). Alternative procedures
 include the parametric bootstrap likelihood ratio test (McLachlan, 1987) and
 the Lo-Mendell-Rubin approximate likelihood ratio test (Lo et al., 2001),
-which are available for supported models through `bootstrap_lrt()`. These
+available for supported models through `bootstrap_lrt()` and
+`get_results(x, "lmr")`, respectively. These
 tests require repeated model estimation and, consequently, careful
 evaluation of convergence and estimation stability.
 
@@ -223,7 +224,8 @@ such a profile.
 
 The default search depends on the covariance specification. EII, EEI and EEE
 models use emEM screening: five times `n_starts` starts are screened by a
-short EM run each, and the best `n_starts` are continued to convergence
+short EM run each, and the first start and the best of the others, `n_starts` in all, are
+continued to convergence
 (Biernacki et al., 2003). The other structures start from k-means, because
 with profile-specific variances emEM reaches spurious maxima more often. The `search`
 argument can override these defaults. The `cores` argument permits parallel
@@ -448,8 +450,7 @@ stopifnot(knee_along_groups == "profiles2_groups2_VVV", isTRUE(knee_stable),
           all(grepl("_groups2_", group_knees)))
 ```
 
-Along the number of group classes, the knee lies at two group classes for
-every number of profiles and every structure; with two profiles and `VVV`
+Along the number of group classes, the knee lies at two group classes for every number of profiles from two to four and every structure; with two profiles and `VVV`
 it is `r knee_along_groups`, and it does not move when the largest candidate
 is removed (`stable`). Along the number of profiles, the BIC of the `VVV`
 candidates with two or more group classes does not fall beyond two
@@ -560,7 +561,8 @@ calibrated probability that a model is correct.
 The candidates preferred by BIC, ICL and AWE with students as the units:
 
 ```{r compare-names}
-compare_models(models, bic_groups_pick, icl_groups_pick, awe_groups_pick)
+compare_models(models, "profiles2_groups4_VVV", "profiles2_groups3_VVV",
+               "profiles2_groups2_EEE")
 ```
 
 The same comparison with labels, and with the candidate analysed below:
@@ -622,9 +624,8 @@ stopifnot(test_valid == 19, isTRUE(all.equal(test_p, 0.05)))
 
 All `r test_valid` simulated data sets are valid, and none yields a
 likelihood ratio as large as the observed one, so the p-value is
-`r test_p`, the smallest attainable with this number of data sets. The test
-therefore rejects two group classes in favour of three, in agreement with the
-BIC.
+`r test_p`, the smallest attainable with this number of data sets. The result therefore favours three group classes over two, in agreement with
+the BIC, at the smallest p-value that 19 bootstrap samples can give.
 
 ## The choice
 
@@ -751,8 +752,10 @@ stopifnot(lca_entropy < 0.6, lca_avepp < 0.7, lca_lowest == "classes3_groups2")
 
 Among the three-class models, the model with two group classes has the
 lower BIC. Its relative entropy is `r lca_entropy`, and its least distinct
-class has an AvePP of `r lca_avepp`. The classes of this model overlap
-substantially, which limits their substantive interpretation; the
+class has an AvePP of `r lca_avepp`. This solution was reached by a single start and lies below the maximum found
+with more starts in the [lca vignette](https://pak.dynasite.org/latents/articles/lca.html)
+(log likelihood -7,695.0 against -7,678.1), so its overlapping classes
+reflect the search rather than the model; the
 [two-level latent class analysis](https://pak.dynasite.org/latents/articles/lca.html)
 vignette analyses these data with more starts.
 
@@ -950,7 +953,8 @@ Bolck, A., Croon, M., & Hagenaars, J. (2004). Estimating latent structure
 models with categorical variables: One-step versus three-step estimators.
 *Political Analysis*, 12(1), 3--27.
 
-Bozdogan, H. (1987). Model selection and Akaike's information criterion.
+Bozdogan, H. (1987). Model selection and Akaike's information criterion
+(AIC): The general theory and its analytical extensions.
 *Psychometrika*, 52, 345--370.
 
 Cavanaugh, J. E. (1999). A large-sample model selection criterion based on

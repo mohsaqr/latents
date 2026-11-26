@@ -172,8 +172,9 @@ article).
 Two candidates with three profiles (two and four group classes) raise
 warnings: one profile has too little membership for its 20 free means and
 covariances, and both reached their best likelihood from a single start.
-Every criterion rejects three profiles, so the warnings do not affect the
-choice.
+The AIC, whose penalty is the weakest, favours three profiles with four group
+classes; the BIC rejects three profiles at every number of group classes, so
+the warnings do not affect the choice by BIC.
 
 ## The chosen model
 
@@ -210,9 +211,7 @@ get_results(full, "profile_probabilities")
 Group class 2 (67.5% of the students) has 79.3% engaged enrolments and group
 class 1 (32.5%) 16.4%: mostly engaged and mostly disengaged students. Neither
 class is pure: a mostly engaged student is disengaged in about one course in
-five, a mostly disengaged student engaged in about one in six. Students are
-mixtures of profiles in class-specific proportions, consistent with the
-longitudinal studies cited above. The prevalence plot shows these
+five, a mostly disengaged student engaged in about one in six. Students are mixtures of profiles in class-specific proportions. The prevalence plot shows these
 probabilities.
 
 ```{r probability-plot}
@@ -274,10 +273,10 @@ get_results(full, "assignments", data = course_engagement,
 
 Profile 1 contains 824 of the 837 engaged enrolments and profile 2 567 of the
 585 disengaged ones (98% and 97%). Group class 2 contains 61 of the 62
-committed students but also 10 of the 44 wavering ones. Each student's class
-rests on about 13 enrolments, much less information than the five indicators
-provide about one enrolment, so the upper level is classified less
-accurately.
+committed students but also 10 of the 44 wavering ones. The model classifies the students with high certainty (relative entropy
+0.942), yet recovers the wavering students less well: group classes differ
+only in their proportions of profiles, so a wavering student whose
+enrolments happen to be mostly engaged resembles a committed one.
 
 ## Uncertainty of the estimates
 
@@ -318,7 +317,7 @@ classifications (`agreement` of 1).
 
 ## Relating the classes to other variables
 
-Entering an external variable in the model changes the classes it is meant to
+Entering an external variable in the model can change the classes it is meant to
 explain. Three-step methods hold the classes fixed and correct for
 classification error (Bolck et al., 2004; Vermunt, 2010). `r3step()`
 regresses profile membership on predictors, with the last profile, here the
@@ -397,7 +396,8 @@ sampling design.
   [latent class analysis](https://pak.dynasite.org/latents/articles/lca.html)
   vignette).
 - **Model families.** `family` fits group-class models from raw ratings
-  (`"additive"`, `"restricted_cross_level"`, `"full_cross_level"`; see the
+  (`"additive"`, `"dispersion"`, `"additive_dispersion"`,
+  `"restricted_cross_level"`, `"full_cross_level"`; see the
   [group-class and cross-level](https://pak.dynasite.org/latents/articles/additive.html)
   article).
 - **Order of observations.** `time` orders each group's observations for the

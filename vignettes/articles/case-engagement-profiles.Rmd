@@ -41,11 +41,12 @@ library(latents)
 The engagement example revisits the setting studied by Saqr and López-Pernas
 (2021) and López-Pernas and Saqr (2024): the online engagement of students
 followed across the courses of a complete study programme. These studies
-distinguished three engagement states within courses (active, average and
-disengaged) and three longer-term student trajectories (engaged, fluctuating
-and mostly disengaged), and described the momentum of engaged students, who
-tend to remain active, and the inertia of disengaged students, who tend to
-remain disengaged. The bundled synthetic `engagement_momentum` data reproduce
+distinguished engagement states within courses and longer-term student
+trajectories across courses. López-Pernas and Saqr (2024) identified three
+states (active, average and disengaged) and three trajectories (engaged,
+fluctuating and mostly disengaged), and described the momentum of engaged
+students, who tend to remain active, and the inertia of disengaged students,
+who tend to remain disengaged. The bundled synthetic `engagement_momentum` data reproduce
 this nested longitudinal design: the states and trajectories that generated
 the data are known, so the analysis can be checked against them. The purpose
 of the example is to illustrate the analytical questions and workflow; the
@@ -193,7 +194,8 @@ latent structure. The
 compared with alternatives containing different numbers of Level-1 profiles
 and Level-2 student classes.
 
-The model is estimated from ten random starts to check whether different
+The model is estimated from ten starts, the first from Ward's clustering and
+the others random, to check whether different
 initial values lead to the same likelihood solution. Setting `seed = 1` makes
 these starts reproducible while restoring the caller's random state after
 estimation. A tighter convergence criterion, specified through `tol`, is used
@@ -454,7 +456,8 @@ López-Pernas, S., & Saqr, M. (2023). From variables to states to trajectories
 (VaSSTra): A method for modelling the longitudinal dynamics of learning and
 behaviour. In *Proceedings TEEM 2022: Tenth International Conference on
 Technological Ecosystems for Enhancing Multiculturality* (pp. 1169-1178).
-Springer Nature Singapore.
+Lecture Notes in Educational Technology. Springer.
+[doi:10.1007/978-981-99-0942-1_123](https://doi.org/10.1007/978-981-99-0942-1_123).
 [doi:10.1007/978-981-99-0942-1_123](https://doi.org/10.1007/978-981-99-0942-1_123).
 
 López-Pernas, S., & Saqr, M. (2024). How the dynamics of engagement explain

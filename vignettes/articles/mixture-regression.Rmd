@@ -85,8 +85,9 @@ fit
 The two classes correspond to the two strategies. Class 1, 56.4% of the
 weeks, has a steep regression from a low base (4.57 points per hour from
 34.36), and class 2, 43.6%, a flat regression from a high base (0.81 points
-per hour from 54.90). Relative entropy is only 0.443: at few hours of study
-the two regressions predict similar scores, so many weeks cannot be assigned
+per hour from 54.90). Relative entropy is only 0.443: the two regression lines cross at about
+five to six hours of study, near the middle of the data, where they predict
+similar scores, so many weeks cannot be assigned
 with confidence. Every table comes from `get_results()`; the
 class table gives each class's share, its residual standard deviation and how
 certainly its members are assigned.
@@ -127,10 +128,10 @@ three and 6,354 for four), and the three-class model adds a class of only
 7.5% of the weeks.
 
 With `bootstrap = B`, each row also gets a parametric bootstrap
-likelihood-ratio test of one class fewer (McLachlan 1987): outcomes are
+likelihood-ratio test of one class fewer (McLachlan, 1987): outcomes are
 simulated from the smaller model, both models are refitted, and the p-value
-is `(b + 1) / (B + 1)`, where `b` is the number of simulated statistics at
-least as large as the observed one.
+is `(b + 1) / (V + 1)`, where `V` is the number of valid replicates and `b`
+the number of their statistics at least as large as the observed one.
 It is slow, requiring `2 B` refits per row, and is therefore not run here.
 
 ## Predictors of class membership
@@ -177,7 +178,7 @@ article.
 A mixture of Bernoulli distributions at a fixed covariate value is itself
 Bernoulli, so identification needs additional structure. Covariate-dependent
 logistic mixtures can be identifiable under suitable restrictions and covariate
-support (Follmann and Lambert 1991). The implementation conservatively refuses
+support (Follmann & Lambert, 1991). The implementation conservatively refuses
 `family = "binomial"` with one trial per row unless the class is shared by a
 group; this is its supported-model policy, not a universal nonidentification
 theorem:
@@ -191,7 +192,7 @@ mixture_regression(passed ~ hours, data = study_hours, n_classes = 2,
 
 The deep/surface strategy changes from week to week, but steady and erratic
 students use the strategies in different proportions. That is a two-level
-mixture (Vermunt 2003): rows keep their own regression class, and a latent
+mixture (Vermunt, 2003): rows keep their own regression class, and a latent
 *group class* shifts the class probabilities of all rows in its groups.
 
 ```{r two-level}
@@ -279,13 +280,13 @@ Every start reaches the log likelihood of -3144.01.
 
 ## How this compares with other software
 
-The single-level and group-level models match `flexmix` (Leisch 2004): the
+The single-level and group-level models match `flexmix` (Leisch, 2004): the
 same likelihood at the same parameters, and the same binomial and Poisson
 estimates. `flexmix` divides the Gaussian residual sum of squares by
 `n - p`, so its Gaussian estimates are not quite the maximum-likelihood ones
-and `mixture_regression()` can reach a slightly higher likelihood. The models
-compared here use `flexmix` for single-level or shared-class grouped mixtures,
-which differ from a two-level latent group-class model. `flexmix` provides
+and `mixture_regression()` can reach a slightly higher likelihood. The comparison covers the single-level and shared-class grouped mixtures
+that `flexmix` fits; `flexmix` has no counterpart of the two-level
+group-class model. `flexmix` provides
 bootstrap likelihood-ratio tests through `LR_test()` and coefficient inference
 through its refitting facilities.
 

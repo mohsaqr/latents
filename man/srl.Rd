@@ -21,7 +21,8 @@ items on the 1 to 7 response scale:
 }
 \source{
 The \code{SRL_GPT} data of the psychnets package, with descriptive
-column names. Saqr, M. (2025). Delving into the psychology of machines:
+column names. Vogelsmeier, L. V. D. E., Oliveira, E., Misiejuk, K.,
+López-Pernas, S., & Saqr, M. (2025). Delving into the psychology of machines:
 Exploring the structure of self-regulated learning via LLM-generated
 survey responses. \emph{Computers in Human Behavior}, 173, 108769.
 \doi{10.1016/j.chb.2025.108769}

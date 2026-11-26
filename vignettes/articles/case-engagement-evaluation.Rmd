@@ -176,7 +176,7 @@ candidates <- enumerate_classes(engagement_momentum, vars, id = "student",
 get_results(candidates, "candidates")
 ```
 
-Under the diagonal covariance specification, the lowest BIC is obtained for the model with three profiles and three student classes, with a BIC of 15153.1, an interior minimum: removing a profile or a class (15390.2 for two profiles, 15216.0 for two classes) or adding one (15178.6 for four profiles, 15164.7 for four classes) raises the BIC. The full-covariance models fit worse throughout; the best of them, also with three profiles and three classes, has a BIC of 15248.0, 94.9 points above its diagonal counterpart, because its 30 additional covariance parameters do not improve the likelihood enough to justify them.
+Under the diagonal covariance specification, the lowest BIC is obtained for the model with three profiles and three student classes, with a BIC of 15153.1, an interior minimum: removing a profile or a class (15390.2 for two profiles, 15216.0 for two classes) or adding one (15178.6 for four profiles, 15164.7 for four classes) raises the BIC. No full-covariance model reaches the BIC of the best diagonal model, although with two profiles the full-covariance models have the lower BIC of the two structures; the best of them, also with three profiles and three classes, has a BIC of 15248.0, 94.9 points above its diagonal counterpart, because its 30 additional covariance parameters do not improve the likelihood enough to justify them.
 
 Most candidate models also show stable likelihood replication across starts. The exceptions are the larger candidates: the four-profile, four-class models with either covariance structure and the four-profile, two-class full-covariance model reach their best solution from only one of the six initializations. This weaker replication suggests greater numerical uncertainty for those candidates and illustrates why class enumeration should not be based on information criteria alone.
 
@@ -192,7 +192,7 @@ get_results(full, "covariances") |>
   head(6)
 ```
 
-In the three-profile, three-class full-covariance model, the estimated within-profile covariances between indicators are all close to zero (about -0.002 to 0.032 in the first profile shown here). The full-covariance model therefore estimates the associations that the diagonal model fixes at zero and finds them negligible, which is why its additional parameters are penalized without a compensating gain in fit.
+In the three-profile, three-class full-covariance model, the covariances printed for the first profile are close to zero (-0.002 to 0.032). The full-covariance model therefore estimates the associations that the diagonal model fixes at zero and finds them negligible, which is why its additional parameters are penalized without a compensating gain in fit.
 
 This agreement between the two specifications supports the diagonal measurement model for these data. It should not, however, be interpreted as independent evidence that the three profiles or the three student classes are substantively correct. Those questions require consideration of the broader pattern of model fit, numerical stability, classification quality, and substantive interpretability.
 

@@ -131,9 +131,9 @@ students, gaining 3.37 points per wave from 47.56), a declining trajectory
 trajectory (class 1, 34.5%, gaining 1.05 points per wave from 61.00). Higher
 motivation lowers the odds of the declining class relative to the stable one
 (odds ratio 0.36) and raises the odds of the improving class (odds ratio
-1.87). The improving and declining classes recover 92.6% and 95.0% of the
-students generated with those trajectories, whereas the stable class also
-absorbs a quarter of the improving students, whose spread around their
+1.87). Of the students assigned to the improving and declining classes, 92.6% and
+95.0% were generated with those trajectories, whereas a quarter of the
+stable class (26 of 104 students) are improving students, whose spread around their
 trajectory the model does not represent.
 
 ## Seeing the classes
@@ -200,8 +200,8 @@ plot(curved)
 
 For outcomes that are not continuous scores, latent class growth analysis is
 the available model: random effects for a binary, count or ordered outcome
-require numerical integration, which the growth mixture model does not
-perform. An alternative for trajectories of categorical states is to
+require numerical integration, which the growth mixture model in latents does
+not perform. An alternative for trajectories of categorical states is to
 identify the state of each person at each occasion and model the resulting
 sequences of states (López-Pernas & Saqr, 2023, 2024).
 
@@ -224,7 +224,7 @@ plot(pass_fit, what = "coefficients")
 ```
 
 **Ordered bands.** The score in four ordered bands, with a cumulative-logit
-(proportional odds) trajectory per class (McCullagh 1980): each class has its
+(proportional odds) trajectory per class (McCullagh, 1980): each class has its
 own thresholds between the bands and its own slope over the waves.
 
 ```{r ordinal}
@@ -301,6 +301,8 @@ López-Pernas, S., & Saqr, M. (2023). From variables to states to trajectories
 (VaSSTra): A method for modelling the longitudinal dynamics of learning and
 behaviour. In *Proceedings TEEM 2022: Tenth International Conference on
 Technological Ecosystems for Enhancing Multiculturality* (pp. 1169--1178).
+Lecture Notes in Educational Technology. Springer.
+<https://doi.org/10.1007/978-981-99-0942-1_123>
 
 López-Pernas, S., & Saqr, M. (2024). Modeling the dynamics of longitudinal
 processes in education: A tutorial with R for the VaSSTra method. In M. Saqr

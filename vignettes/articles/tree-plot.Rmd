@@ -33,7 +33,7 @@ smaller solution passes its members to one or more classes of the larger,
 and the solutions are nested. When the larger solution redistributes
 observations across class boundaries, the classes of the two solutions
 overlap without nesting. A clustering tree represents these relations for a
-sequence of solutions (Zappia and Oshlack, 2018). Each row of the tree is
+sequence of solutions (Zappia & Oshlack, 2018). Each row of the tree is
 one solution, divided into its classes in proportion to their size, and the
 band between two classes in adjacent rows is proportional to the
 observations they share.
@@ -65,13 +65,13 @@ with different numbers of group classes, whose classes need not coincide.
 ## Data and candidates
 
 `student_esm` holds experience-sampling data from 100 university students
-(Neubauer and Schmiedek, 2024). At each prompt when they had not studied
+(Neubauer & Schmiedek, 2024). At each prompt when they had not studied
 since the previous one, the students reported which of eight leisure
 activities they had done. The prompts are the observations and the students
 the groups. The candidates combine one to four classes of prompts with one to
 three group classes of students. Each candidate is fitted from twenty random
-starts with a tight convergence tolerance, because a latent class model of
-eight binary items has many local maxima.
+starts because a latent class model of eight binary items has many local maxima, and
+with a tight convergence tolerance.
 
 ```{r candidates, message = FALSE, warning = FALSE}
 library(latents)
@@ -288,7 +288,7 @@ options(old_options)
 
 Neubauer, A. B., & Schmiedek, F. (2024). Approaching academic adjustment on
 multiple time scales. *Zeitschrift für Erziehungswissenschaft, 27*(1),
-147-168. <https://doi.org/10.1007/s11618-023-01182-8>
+147--168. <https://doi.org/10.1007/s11618-023-01182-8>
 
 Vermunt, J. K. (2003). Multilevel latent class models. *Sociological
 Methodology*, 33, 213--239.
