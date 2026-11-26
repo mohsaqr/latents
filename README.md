@@ -981,40 +981,40 @@ Further guides are on the [package website](https://pak.dynasite.org/latents/art
 
 The source repository contains further worked examples and software comparison studies. The package citation is available through `citation("latents")`.
 
-Saqr, M., & López-Pernas, S. (2026). *Multilevel latent profile analysis*. latents. <https://doi.org/10.5281/zenodo.24532395> · [HTML](https://pak.dynasite.org/latents/articles/lpa.html) · [PDF](https://pak.dynasite.org/latents/pdf/lpa.pdf)
+Saqr, M., & López-Pernas, S. (2026). *Multilevel latent profile analysis with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532395> · [HTML](https://pak.dynasite.org/latents/articles/lpa.html) · [PDF](https://pak.dynasite.org/latents/pdf/lpa.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Two-level latent class analysis*. latents. <https://doi.org/10.5281/zenodo.24532393> · [HTML](https://pak.dynasite.org/latents/articles/lca.html) · [PDF](https://pak.dynasite.org/latents/pdf/lca.pdf)
+Saqr, M., & López-Pernas, S. (2026). *Multilevel latent class analysis with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532393> · [HTML](https://pak.dynasite.org/latents/articles/lca.html) · [PDF](https://pak.dynasite.org/latents/pdf/lca.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Latent transition analysis*. latents. <https://doi.org/10.5281/zenodo.24532430> · [HTML](https://pak.dynasite.org/latents/articles/lta.html) · [PDF](https://pak.dynasite.org/latents/pdf/lta.pdf)
+Saqr, M., & López-Pernas, S. (2026). *Latent transition analysis with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532430> · [HTML](https://pak.dynasite.org/latents/articles/lta.html) · [PDF](https://pak.dynasite.org/latents/pdf/lta.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Class enumeration*. latents. <https://doi.org/10.5281/zenodo.24532420> · [HTML](https://pak.dynasite.org/latents/articles/enumeration.html) · [PDF](https://pak.dynasite.org/latents/pdf/enumeration.pdf)
+Saqr, M., & López-Pernas, S. (2026). *Class enumeration for finite mixture models with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532420> · [HTML](https://pak.dynasite.org/latents/articles/enumeration.html) · [PDF](https://pak.dynasite.org/latents/pdf/enumeration.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Latent profile analysis: a complete workflow*. latents. <https://doi.org/10.5281/zenodo.24532447> · [HTML](https://pak.dynasite.org/latents/articles/workflow-lpa.html) · [PDF](https://pak.dynasite.org/latents/pdf/workflow-lpa.pdf)
+Saqr, M., & López-Pernas, S. (2026). *A complete latent profile analysis workflow with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532447> · [HTML](https://pak.dynasite.org/latents/articles/workflow-lpa.html) · [PDF](https://pak.dynasite.org/latents/pdf/workflow-lpa.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Latent class analysis: a complete workflow*. latents. <https://doi.org/10.5281/zenodo.24532443> · [HTML](https://pak.dynasite.org/latents/articles/workflow-lca.html) · [PDF](https://pak.dynasite.org/latents/pdf/workflow-lca.pdf)
+Saqr, M., & López-Pernas, S. (2026). *A complete latent class analysis workflow with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532443> · [HTML](https://pak.dynasite.org/latents/articles/workflow-lca.html) · [PDF](https://pak.dynasite.org/latents/pdf/workflow-lca.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Model selection: the evidence for the number of classes*. latents. <https://doi.org/10.5281/zenodo.24532434> · [HTML](https://pak.dynasite.org/latents/articles/model-selection.html) · [PDF](https://pak.dynasite.org/latents/pdf/model-selection.pdf)
+Saqr, M., & López-Pernas, S. (2026). *Selecting the number of classes in mixture models with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532434> · [HTML](https://pak.dynasite.org/latents/articles/model-selection.html) · [PDF](https://pak.dynasite.org/latents/pdf/model-selection.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Tree plot*. latents. <https://doi.org/10.5281/zenodo.24532440> · [HTML](https://pak.dynasite.org/latents/articles/tree-plot.html) · [PDF](https://pak.dynasite.org/latents/pdf/tree-plot.pdf)
+Saqr, M., & López-Pernas, S. (2026). *Tree plots of how classes split as their number increases with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532440> · [HTML](https://pak.dynasite.org/latents/articles/tree-plot.html) · [PDF](https://pak.dynasite.org/latents/pdf/tree-plot.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Evaluating a multilevel latent profile model*. latents. <https://doi.org/10.5281/zenodo.24532426> · [HTML](https://pak.dynasite.org/latents/articles/evaluation.html) · [PDF](https://pak.dynasite.org/latents/pdf/evaluation.pdf)
+Saqr, M., & López-Pernas, S. (2026). *Evaluating a multilevel latent profile model with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532426> · [HTML](https://pak.dynasite.org/latents/articles/evaluation.html) · [PDF](https://pak.dynasite.org/latents/pdf/evaluation.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Covariates, outcomes and staged estimation*. latents. <https://doi.org/10.5281/zenodo.24532418> · [HTML](https://pak.dynasite.org/latents/articles/covariates.html) · [PDF](https://pak.dynasite.org/latents/pdf/covariates.pdf)
+Saqr, M., & López-Pernas, S. (2026). *Covariates and distal outcomes of latent profiles and classes with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532418> · [HTML](https://pak.dynasite.org/latents/articles/covariates.html) · [PDF](https://pak.dynasite.org/latents/pdf/covariates.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Mixture regression*. latents. <https://doi.org/10.5281/zenodo.24532432> · [HTML](https://pak.dynasite.org/latents/articles/mixture-regression.html) · [PDF](https://pak.dynasite.org/latents/pdf/mixture-regression.pdf)
+Saqr, M., & López-Pernas, S. (2026). *Mixture regression with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532432> · [HTML](https://pak.dynasite.org/latents/articles/mixture-regression.html) · [PDF](https://pak.dynasite.org/latents/pdf/mixture-regression.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Latent class growth analysis: classes of trajectories*. latents. <https://doi.org/10.5281/zenodo.24532437> · [HTML](https://pak.dynasite.org/latents/articles/trajectory-classes.html) · [PDF](https://pak.dynasite.org/latents/pdf/trajectory-classes.pdf)
+Saqr, M., & López-Pernas, S. (2026). *Latent class growth analysis with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532437> · [HTML](https://pak.dynasite.org/latents/articles/trajectory-classes.html) · [PDF](https://pak.dynasite.org/latents/pdf/trajectory-classes.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Growth mixture models: classes of trajectories*. latents. <https://doi.org/10.5281/zenodo.24532428> · [HTML](https://pak.dynasite.org/latents/articles/growth-mixture.html) · [PDF](https://pak.dynasite.org/latents/pdf/growth-mixture.pdf)
+Saqr, M., & López-Pernas, S. (2026). *Growth mixture models with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532428> · [HTML](https://pak.dynasite.org/latents/articles/growth-mixture.html) · [PDF](https://pak.dynasite.org/latents/pdf/growth-mixture.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Group-class and cross-level models: classes of groups from raw ratings*. latents. <https://doi.org/10.5281/zenodo.24532397> · [HTML](https://pak.dynasite.org/latents/articles/additive.html) · [PDF](https://pak.dynasite.org/latents/pdf/additive.pdf)
+Saqr, M., & López-Pernas, S. (2026). *Group-level classes estimated from raw ratings with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532397> · [HTML](https://pak.dynasite.org/latents/articles/additive.html) · [PDF](https://pak.dynasite.org/latents/pdf/additive.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Case study: Multilevel latent profile analysis of course engagement*. latents. <https://doi.org/10.5281/zenodo.24532405> · [HTML](https://pak.dynasite.org/latents/articles/case-engagement-profiles.html) · [PDF](https://pak.dynasite.org/latents/pdf/case-engagement-profiles.pdf)
+Saqr, M., & López-Pernas, S. (2026). *Case study: Multilevel latent profile analysis of course engagement with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532405> · [HTML](https://pak.dynasite.org/latents/articles/case-engagement-profiles.html) · [PDF](https://pak.dynasite.org/latents/pdf/case-engagement-profiles.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Case study: Evaluating multilevel latent profile models*. latents. <https://doi.org/10.5281/zenodo.24532403> · [HTML](https://pak.dynasite.org/latents/articles/case-engagement-evaluation.html) · [PDF](https://pak.dynasite.org/latents/pdf/case-engagement-evaluation.pdf)
+Saqr, M., & López-Pernas, S. (2026). *Case study: Evaluating multilevel latent profile models of course engagement with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532403> · [HTML](https://pak.dynasite.org/latents/articles/case-engagement-evaluation.html) · [PDF](https://pak.dynasite.org/latents/pdf/case-engagement-evaluation.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Case study: Covariates and staged estimation in multilevel LPA*. latents. <https://doi.org/10.5281/zenodo.24532399> · [HTML](https://pak.dynasite.org/latents/articles/case-engagement-covariates.html) · [PDF](https://pak.dynasite.org/latents/pdf/case-engagement-covariates.pdf)
+Saqr, M., & López-Pernas, S. (2026). *Case study: Covariates and staged estimation in course engagement profiles with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532399> · [HTML](https://pak.dynasite.org/latents/articles/case-engagement-covariates.html) · [PDF](https://pak.dynasite.org/latents/pdf/case-engagement-covariates.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Case study: Latent transition analysis of course engagement*. latents. <https://doi.org/10.5281/zenodo.24532408> · [HTML](https://pak.dynasite.org/latents/articles/case-engagement-transitions.html) · [PDF](https://pak.dynasite.org/latents/pdf/case-engagement-transitions.pdf)
+Saqr, M., & López-Pernas, S. (2026). *Case study: Latent transition analysis of course engagement with the latents R package*. latents. <https://doi.org/10.5281/zenodo.24532408> · [HTML](https://pak.dynasite.org/latents/articles/case-engagement-transitions.html) · [PDF](https://pak.dynasite.org/latents/pdf/case-engagement-transitions.pdf)
 
 

@@ -1,5 +1,5 @@
 ---
-title: "Mixture regression"
+title: "Mixture regression with the latents R package"
 author:
   - name: Mohammed Saqr
     url: https://saqr.me
@@ -9,7 +9,7 @@ author:
     affiliation: University of Eastern Finland
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Mixture regression}
+  %\VignetteIndexEntry{Mixture regression with the latents R package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

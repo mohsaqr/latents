@@ -1,5 +1,5 @@
 ---
-title: "Latent class analysis: a complete workflow"
+title: "A complete latent class analysis workflow with the latents R package"
 author:
   - name: Mohammed Saqr
     url: https://saqr.me
@@ -12,7 +12,7 @@ output:
     toc: true
     toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{Latent class analysis: a complete workflow}
+  %\VignetteIndexEntry{A complete latent class analysis workflow with the latents R package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

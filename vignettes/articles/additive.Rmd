@@ -1,5 +1,5 @@
 ---
-title: "Group-class and cross-level models: classes of groups from raw ratings"
+title: "Group-level classes estimated from raw ratings with the latents R package"
 author:
   - name: Mohammed Saqr
     url: https://saqr.me
@@ -12,7 +12,7 @@ output:
     toc: true
     toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{Group-class and cross-level models: classes of groups from raw ratings}
+  %\VignetteIndexEntry{Group-level classes estimated from raw ratings with the latents R package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

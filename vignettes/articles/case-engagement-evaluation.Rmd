@@ -1,5 +1,5 @@
 ---
-title: "Case study: Evaluating multilevel latent profile models"
+title: "Case study: Evaluating multilevel latent profile models of course engagement with the latents R package"
 author:
   - name: Mohammed Saqr
     url: https://saqr.me
@@ -12,7 +12,7 @@ output:
     toc: true
     toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{Case study: Evaluating multilevel latent profile models}
+  %\VignetteIndexEntry{Case study: Evaluating multilevel latent profile models of course engagement with the latents R package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

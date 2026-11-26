@@ -1,5 +1,5 @@
 ---
-title: "Case study: Latent transition analysis of course engagement"
+title: "Case study: Latent transition analysis of course engagement with the latents R package"
 author:
   - name: Mohammed Saqr
     url: https://saqr.me

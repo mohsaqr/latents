@@ -1,5 +1,5 @@
 ---
-title: "Multilevel latent profile analysis"
+title: "Multilevel latent profile analysis with the latents R package"
 author:
   - name: Mohammed Saqr
     url: https://saqr.me
@@ -9,7 +9,7 @@ author:
     affiliation: University of Eastern Finland
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Multilevel latent profile analysis}
+  %\VignetteIndexEntry{Multilevel latent profile analysis with the latents R package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
