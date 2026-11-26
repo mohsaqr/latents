@@ -1440,6 +1440,8 @@ The source repository contains further worked examples and software
 comparison studies. The package citation is available through
 `citation("latents")`.
 
+### Vignettes
+
 Saqr, M., & López-Pernas, S. (2026). *Multilevel latent profile analysis
 with the latents R package*. latents.
 <https://doi.org/10.5281/zenodo.24532395> ·
@@ -1464,6 +1466,10 @@ mixture models with the latents R package*. latents.
 [HTML](https://pak.dynasite.org/latents/articles/enumeration.html) ·
 [PDF](https://pak.dynasite.org/latents/pdf/enumeration.pdf)
 
+### Guides
+
+#### Complete workflows
+
 Saqr, M., & López-Pernas, S. (2026). *A complete latent profile analysis
 workflow with the latents R package*. latents.
 <https://doi.org/10.5281/zenodo.24532447> ·
@@ -1475,6 +1481,8 @@ workflow with the latents R package*. latents.
 <https://doi.org/10.5281/zenodo.24532443> ·
 [HTML](https://pak.dynasite.org/latents/articles/workflow-lca.html) ·
 [PDF](https://pak.dynasite.org/latents/pdf/workflow-lca.pdf)
+
+#### Choosing and evaluating a model
 
 Saqr, M., & López-Pernas, S. (2026). *Selecting the number of classes in
 mixture models with the latents R package*. latents.
@@ -1494,11 +1502,21 @@ profile model with the latents R package*. latents.
 [HTML](https://pak.dynasite.org/latents/articles/evaluation.html) ·
 [PDF](https://pak.dynasite.org/latents/pdf/evaluation.pdf)
 
+#### Covariates and group-level classes
+
 Saqr, M., & López-Pernas, S. (2026). *Covariates and distal outcomes of
 latent profiles and classes with the latents R package*. latents.
 <https://doi.org/10.5281/zenodo.24532418> ·
 [HTML](https://pak.dynasite.org/latents/articles/covariates.html) ·
 [PDF](https://pak.dynasite.org/latents/pdf/covariates.pdf)
+
+Saqr, M., & López-Pernas, S. (2026). *Group-level classes estimated from
+raw ratings with the latents R package*. latents.
+<https://doi.org/10.5281/zenodo.24532397> ·
+[HTML](https://pak.dynasite.org/latents/articles/additive.html) ·
+[PDF](https://pak.dynasite.org/latents/pdf/additive.pdf)
+
+#### Regression and growth models
 
 Saqr, M., & López-Pernas, S. (2026). *Mixture regression with the
 latents R package*. latents. <https://doi.org/10.5281/zenodo.24532432> ·
@@ -1516,11 +1534,7 @@ latents R package*. latents. <https://doi.org/10.5281/zenodo.24532428> ·
 [HTML](https://pak.dynasite.org/latents/articles/growth-mixture.html) ·
 [PDF](https://pak.dynasite.org/latents/pdf/growth-mixture.pdf)
 
-Saqr, M., & López-Pernas, S. (2026). *Group-level classes estimated from
-raw ratings with the latents R package*. latents.
-<https://doi.org/10.5281/zenodo.24532397> ·
-[HTML](https://pak.dynasite.org/latents/articles/additive.html) ·
-[PDF](https://pak.dynasite.org/latents/pdf/additive.pdf)
+### Case studies
 
 Saqr, M., & López-Pernas, S. (2026). *Case study: Multilevel latent
 profile analysis of course engagement with the latents R package*.

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">latents</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,10 +65,10 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.4.6" id="latents-146">latents 1.4.6<a class="anchor" aria-label="anchor" href="#latents-146"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.4.7" id="latents-147">latents 1.4.7<a class="anchor" aria-label="anchor" href="#latents-147"></a></h2>
 <p>Changes since the CRAN release 1.1.9.</p>
 <div class="section level3">
-<h3 id="refit-a-model-made-with-if-1-4-6">Refit a model made with 1.1.9 if<a class="anchor" aria-label="anchor" href="#refit-a-model-made-with-if-1-4-6"></a></h3>
+<h3 id="refit-a-model-made-with-if-1-4-7">Refit a model made with 1.1.9 if<a class="anchor" aria-label="anchor" href="#refit-a-model-made-with-if-1-4-7"></a></h3>
 <ul><li>it is a two-step model with covariates and categorical indicators (<code>fixed = "measurement"</code>). Its standard errors now hold the response probabilities, as documented, and can be substantially smaller;</li>
 <li>you compared a staged fit with a jointly estimated one in <code><a href="../reference/compare_models.html">compare_models()</a></code>. Criteria now count the staged fit’s measurement parameters, which can reverse the ranking;</li>
 <li>you used the local-independence check of <code><a href="../reference/diagnostics.html">diagnostics()</a></code>. It used unadjusted p-values and flagged a pair in up to half of correctly specified models; it now applies the Benjamini-Hochberg adjustment it states;</li>
@@ -77,7 +77,7 @@
 <li>it is an <code><a href="../reference/lta.html">lta()</a></code> fit with homogeneous transitions and <code>drop_empty = FALSE</code>. Its BIC now counts every row with a positive weight, as the general transition engine’s does.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="warnings-1-4-6">Warnings<a class="anchor" aria-label="anchor" href="#warnings-1-4-6"></a></h3>
+<h3 id="warnings-1-4-7">Warnings<a class="anchor" aria-label="anchor" href="#warnings-1-4-7"></a></h3>
 <ul><li>A cross-level fit with group classes warns that its likelihood counts the ratings twice, so its criteria favour group classes and the full form even on data with no group structure.</li>
 <li>Enumerations name the candidates that reached their best log likelihood from one start only; refit those with more <code>n_starts</code> before comparing their criteria.</li>
 <li>A transition row with fewer than one expected outgoing move warns and is marked unsupported; its Wald tests are refused.</li>
@@ -85,7 +85,7 @@
 <code><a href="../reference/descriptives.html">descriptives()</a></code> warns that it describes the recorded rows without weights.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="new-features-1-4-6">New features<a class="anchor" aria-label="anchor" href="#new-features-1-4-6"></a></h3>
+<h3 id="new-features-1-4-7">New features<a class="anchor" aria-label="anchor" href="#new-features-1-4-7"></a></h3>
 <ul><li>New dataset <code>engagement_momentum</code>: simulated engagement states and trajectories over a study programme, with three states, three student trajectories and course grades, for the engagement case studies.</li>
 <li>One function per plot or table, taking any object the package returns: <code><a href="../reference/plot_sizes.html">plot_sizes()</a></code>, <code><a href="../reference/plot_entropy.html">plot_entropy()</a></code>, <code><a href="../reference/plot_posteriors.html">plot_posteriors()</a></code>, <code><a href="../reference/plot_avepp.html">plot_avepp()</a></code>, <code><a href="../reference/plot_heatmap.html">plot_heatmap()</a></code>, <code><a href="../reference/plot_bars.html">plot_bars()</a></code>, <code><a href="../reference/plot_raincloud.html">plot_raincloud()</a></code>, <code><a href="../reference/plot_parallel.html">plot_parallel()</a></code>, <code><a href="../reference/plot_pairs.html">plot_pairs()</a></code>, <code><a href="../reference/plot_trajectories.html">plot_trajectories()</a></code>, <code><a href="../reference/plot_individuals.html">plot_individuals()</a></code>, <code><a href="../reference/plot_classification.html">plot_classification()</a></code>, <code><a href="../reference/plot_coefficients.html">plot_coefficients()</a></code>, <code><a href="../reference/plot_criteria.html">plot_criteria()</a></code>, <code><a href="../reference/plot_deltas.html">plot_deltas()</a></code>, <code><a href="../reference/plot_trust.html">plot_trust()</a></code> and <code><a href="../reference/plot_all.html">plot_all()</a></code>; <code><a href="../reference/get_checks.html">get_checks()</a></code>, <code><a href="../reference/get_entropy.html">get_entropy()</a></code>, <code><a href="../reference/get_classification.html">get_classification()</a></code>, <code><a href="../reference/get_avepp.html">get_avepp()</a></code>, <code><a href="../reference/get_residuals.html">get_residuals()</a></code> and <code><a href="../reference/get_replication.html">get_replication()</a></code>. <code><a href="../reference/overview.html">overview()</a></code> prints and draws everything about an object.</li>
 <li>Enumeration grids have a verb per table (<code><a href="../reference/get_candidates.html">get_candidates()</a></code>, <code><a href="../reference/get_best.html">get_best()</a></code>, <code><a href="../reference/get_deltas.html">get_deltas()</a></code>, <code><a href="../reference/get_knees.html">get_knees()</a></code>, <code><a href="../reference/get_tree.html">get_tree()</a></code>) and print a one-screen summary that warns about edge minima, single-start maxima and low average posteriors.</li>
@@ -114,7 +114,7 @@
 <li>Every vignette and article except the verification report has a PDF version; the Resources page on the website lists them all.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="bug-fixes-1-4-6">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-4-6"></a></h3>
+<h3 id="bug-fixes-1-4-7">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-4-7"></a></h3>
 <ul><li>
 <code>compare_models(test = "lrt")</code> accepted pairs that are not nested; they are now refused. Comparing shared with group-class slopes failed.</li>
 <li>
