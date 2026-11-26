@@ -1,4 +1,4 @@
-# Latent class analysis: a complete workflow
+# A complete latent class analysis workflow with the latents R package
 
 Latent class analysis (LCA) is a person-centred method for identifying
 unobserved subgroups in data measured on categorical indicators (Collins

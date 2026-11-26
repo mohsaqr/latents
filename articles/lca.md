@@ -1,4 +1,4 @@
-# Two-level latent class analysis
+# Multilevel latent class analysis with the latents R package
 
 Latent class analysis (LCA) is the categorical-data counterpart of
 latent profile analysis, extending the person-centred approach to

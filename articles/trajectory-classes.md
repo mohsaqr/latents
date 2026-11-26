@@ -1,4 +1,4 @@
-# Latent class growth analysis: classes of trajectories
+# Latent class growth analysis with the latents R package
 
 Latent class growth analysis (LCGA), also known as group-based
 trajectory modelling, is a person-centred approach used to identify

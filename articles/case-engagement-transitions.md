@@ -1,4 +1,4 @@
-# Case study: Latent transition analysis of course engagement
+# Case study: Latent transition analysis of course engagement with the latents R package
 
 Latent transition analysis (LTA) estimates the probability of moving
 from one latent profile to another between consecutive occasions

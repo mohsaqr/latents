@@ -38,7 +38,7 @@ López-Pernas 2026), follows the same discipline: its engines are
 verified against R, Python, SPSS, Mplus, NIST reference datasets and
 published results, and each comparison records the reference value, the
 computed value and its tolerance. This article states how the contract
-is met for latents 1.4.5 and what evidence supports it.
+is met for latents 1.4.6 and what evidence supports it.
 
 At this build, 40,098 current checks compare latents with 4 commercial
 programs, 18 R packages and 18 published analyses on 672 distinct

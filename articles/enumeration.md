@@ -1,4 +1,4 @@
-# Class enumeration
+# Class enumeration for finite mixture models with the latents R package
 
 Class enumeration refers to the process of determining the number of
 latent classes to be retained in an analysis. In latent profile analysis

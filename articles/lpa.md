@@ -1,4 +1,4 @@
-# Multilevel latent profile analysis
+# Multilevel latent profile analysis with the latents R package
 
 Latent profile analysis (LPA) is a person-centred statistical approach
 used to identify unobserved subpopulations within a heterogeneous

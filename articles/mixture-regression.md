@@ -1,4 +1,4 @@
-# Mixture regression
+# Mixture regression with the latents R package
 
 Conventional regression analysis assumes that a single set of
 relationships between an outcome and its predictors applies uniformly

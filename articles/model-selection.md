@@ -1,4 +1,4 @@
-# Model selection: the evidence for the number of classes
+# Selecting the number of classes in mixture models with the latents R package
 
 In finite mixture modelling, the number of latent classes is not known a
 priori and is not a parameter of the model; it must be determined by

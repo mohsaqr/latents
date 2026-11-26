@@ -1,4 +1,4 @@
-# Tree plot
+# Tree plots of how classes split as their number increases with the latents R package
 
 Class enumeration estimates one mixture model for each number of
 classes. Each model is fitted from its own starting values, and the

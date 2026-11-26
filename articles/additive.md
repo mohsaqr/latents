@@ -1,4 +1,4 @@
-# Group-class and cross-level models: classes of groups from raw ratings
+# Group-level classes estimated from raw ratings with the latents R package
 
 Individuals belonging to the same team, pupils attending the same
 classroom, or repeated observations from the same student may share

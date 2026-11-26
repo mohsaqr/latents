@@ -1,4 +1,4 @@
-# Case study: Evaluating multilevel latent profile models
+# Case study: Evaluating multilevel latent profile models of course engagement with the latents R package
 
 Multilevel latent profile analysis (MLPA) estimates latent profiles at
 the observation level while simultaneously modeling how the

@@ -1,4 +1,4 @@
-# Latent profile analysis: a complete workflow
+# A complete latent profile analysis workflow with the latents R package
 
 Latent profile analysis (LPA) is a person-centred method for identifying
 unobserved subgroups in data measured on continuous indicators. Whereas

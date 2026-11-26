@@ -1,4 +1,4 @@
-# Latent transition analysis
+# Latent transition analysis with the latents R package
 
 Latent transition analysis (LTA) models change in latent states over
 repeated occasions (Collins & Lanza, 2010). At every occasion, each unit

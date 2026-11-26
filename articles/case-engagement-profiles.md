@@ -1,4 +1,4 @@
-# Case study: Multilevel latent profile analysis of course engagement
+# Case study: Multilevel latent profile analysis of course engagement with the latents R package
 
 Multilevel latent profile analysis (MLPA) is used when observations are
 nested within higher-level units and the aim is to identify latent

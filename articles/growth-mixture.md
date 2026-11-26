@@ -1,4 +1,4 @@
-# Growth mixture models: classes of trajectories
+# Growth mixture models with the latents R package
 
 When individuals are measured repeatedly over time, a single average
 growth trajectory may conceal substantial heterogeneity in their

@@ -1,4 +1,4 @@
-# Case study: Covariates and staged estimation in multilevel LPA
+# Case study: Covariates and staged estimation in course engagement profiles with the latents R package
 
 Three-step covariate analysis is a method for examining associations
 between latent profile membership and variables that are external to the

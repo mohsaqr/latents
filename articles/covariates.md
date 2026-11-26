@@ -1,4 +1,4 @@
-# Covariates, outcomes and staged estimation
+# Covariates and distal outcomes of latent profiles and classes with the latents R package
 
 The distinction between one-step and three-step approaches concerns
 whether external variables are allowed to influence the estimation and

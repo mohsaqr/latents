@@ -1,4 +1,4 @@
-# Evaluating a multilevel latent profile model
+# Evaluating a multilevel latent profile model with the latents R package
 
 A fitted mixture model is evaluated on four questions: whether the
 estimation found a stable solution, how clearly observations and groups
